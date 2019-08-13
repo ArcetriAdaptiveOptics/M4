@@ -10,7 +10,7 @@ class Mask(object):
         pass
     
     def loadMesasurementeMask(self):
-        print('pluto')
+        print('minnie')
     
     def loadIFMask(self):
         pass
