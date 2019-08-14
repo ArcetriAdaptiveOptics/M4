@@ -8,39 +8,9 @@ class IFFunctions(object):
 
 
     def __init__(self, device):
-        '''
-        arg:
-            device: elemento ottico da calibrare.
-                ex. m4= tutto lo speccio, segment= un petalo
-        '''
-        if device == "m4":
-            self._device = _m4.allDevices.m4()
-        elif device == "segment":
-            print('Segment number: ')
-            x = int(input())
-            self._device = _m4.allDevices.segment(x)
-        else:
-            raise OSError('Device %s doesnt exists' % device)
-        
+        self._device= device
         self._nActs = self._device.nActs()
         
-        
-    def acqIntMat(self):
-        pass
-    
-    
-    def ifRedux(self):
-        pass
-    
-    
-    def buildIntMat(self):
-        pass
-    
-    
-    def buildRecMat(self):
-        pass
-    
-    
     
     def _pokeActuators(self, indexing, amplitude, 
                             pushOrPull, modeMatrix= None):
@@ -101,4 +71,22 @@ class IFFunctions(object):
                 
             
             return matrixToApply
+        
+                
+    def acqIntMat(self):
+        pass
+    
+    
+    def ifRedux(self):
+        pass
+    
+    
+    def buildIntMat(self):
+        pass
+    
+    
+    def buildRecMat(self):
+        pass
+    
+    
             

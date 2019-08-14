@@ -1,7 +1,5 @@
 '''
-Created on 13 ago 2019
-
-@author: rm
+@author: cs
 '''
 
 class Mask(object):
