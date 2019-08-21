@@ -9,6 +9,7 @@ from matplotlib.pyplot import ion
 
 
     #cmd=np.random.rand(5352)
+    #a=np.ones(892) b=np.zeros(4460) cmd=np.append(a,b)
 def createActMap(cmd):
     fitsFileName='/Users/rm/Desktop/Arcetri/M4/ActuatorCoordinates.fits'
     hduList= pyfits.open(fitsFileName)

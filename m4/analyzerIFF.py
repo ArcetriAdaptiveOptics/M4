@@ -1,8 +1,8 @@
 '''
 @author: cs
 '''
-from m4.utils.saveInfo import SaveAdditionalInfo
-from m4.utils import logging
+from m4.utils.saveIFFInfo import SaveAdditionalInfo
+from m4.utils import logger
 import numpy as np
 import os
 from m4.utils.interferometer_converter import InterferometerConverter
@@ -33,7 +33,7 @@ class AnalyzerIFF(object):
     def createCube(self):
         cubeAllAct= None
         ic= InterferometerConverter()
-        logging.log('Creo il cubo delle IFF per', self._who)
+        logger.log('Creo il cubo delle IFF per', self._who)
         
         for i in range(self._actsVector.shape[0]):
             for k in range(self._nPushPull):
@@ -70,16 +70,27 @@ class AnalyzerIFF(object):
         return self._cube
     
     @staticmethod
-    def fromH5Folder(device, h5Folder):
+    def loadModalIFFInfoFromH5Folder(device, h5Folder):
         theObject= AnalyzerIFF(device)
         theObject._h5Folder= h5Folder
-        a= SaveAdditionalInfo.loadAdditionalInfo(h5Folder)
+        a= SaveAdditionalInfo.loadIFFInfoModal(h5Folder)
         theObject._who= a[0]
         theObject._actsVector= a[1]
         theObject._cmdMatrix= a[2]
         theObject._indexingList= a[3]
         theObject._cmdAmplitude= a[4]
         theObject._nPushPull= a[5]
+        return theObject
+    
+    @staticmethod
+    def loadZonalIFFInfoFromH5Folder(device, h5Folder):
+        theObject= AnalyzerIFF(device)
+        theObject._h5Folder= h5Folder
+        a= SaveAdditionalInfo.loadIFFInfoZonal(h5Folder)
+        theObject._who= a[0]
+        theObject._actsVector= a[1]
+        theObject._cmdAmplitude= a[2]
+        theObject._nPushPull= a[3]
         return theObject
     
     def _createInteractionMatrix(self):

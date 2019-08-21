@@ -12,7 +12,7 @@ dimExt= 2.54
         
 class m4(object):
     def __init__(self):
-        self._nActsTot= 5136
+        self._nActsTot= 5352
         
     def nActs(self):
         return self._nActsTot
@@ -43,7 +43,7 @@ class segment(m4):
         else:
             raise OSError('Segment number %s doesnt exists' % segmentIndex)
         
-        self._nActSeg= 800
+        self._nActSeg= 892
         self._nSeg= 6
         
     def nActs(self):

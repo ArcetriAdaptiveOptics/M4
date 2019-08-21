@@ -3,15 +3,17 @@
 '''
 
 import numpy as np
-from m4.utils import saveInfo
-from m4.utils import logging
+from m4.utils import saveIFFInfo
+from m4.utils import logger
 import copy
 import os
+from m4.type.commandHistory import CmdHistory
 
 class IFFunctions(object):
 
 
     def __init__(self, device):
+        self.device= device
         self._device= device[0]
         self._who= device[1]
         self._nActs = self._device.nActs()
@@ -25,10 +27,30 @@ class IFFunctions(object):
     def _measureAndStoreH5(self, filename):
         #deve acquisire e mettere il file h5 nel posto giusto
         pass
+    
+    def _amplitudeReorganization(self, indexing, indexingList, 
+                                 amplitude, nPushPull):
+        where=[] 
+        for i in indexing:           
+            for j in range(nPushPull): 
+                a=np.where(indexingList[j]==i)  
+                where.append(a) 
+         
+         
+        where=np.array(where)
+        vect=np.zeros(amplitude.shape[0]*nPushPull) 
+        for i in range(amplitude.shape[0]): 
+            for k in range(nPushPull): 
+                p= nPushPull * i + k
+                mode= indexingList[k][i]
+                aa=np.where(indexing==mode)
+                vect[where[p][0][0]+ indexing.shape[0] * k]=amplitude[aa[0][0]]
+        
+        return vect
   
     
-    def pushPull(self, storeInFolder, indexing, nPushPull, amplitude, 
-                 cmdMatrix= None):
+    def acq_IFFunctions(self, storeInFolder, indexing, nPushPull, amplitude, 
+                        cmdMatrix= None):
         
         '''
          arg:
@@ -36,77 +58,70 @@ class IFFunctions(object):
                         da applicare (numpy.array([]))
              nPushPull= numero di push pull consecutivi sull'attuatore
                          (int)
-             Amplitude= ampiezza del modo
+             Amplitude= vettore con l'ampiezza dei modi (numpy.array([]))
              cmdMatrix= matrice dei comandi dei modi 
                          (nActs x nModes)
         '''
         indexingImput= copy.copy(indexing)
-        save= saveInfo.SaveAdditionalInfo(storeInFolder)
+        save= saveIFFInfo.SaveAdditionalInfo(storeInFolder)
         dove= save._createFolderToStoreMeasurements()
         vecPushPull= np.array((1,-1)) 
         
         
         if cmdMatrix is None:
             print ('Misuro IF zonali')
-            logging.log("Misuro le funzioni di influenza", "zonali")
-            save._saveIFFInfo(dove, self._who, amplitude,
+            logger.log("Misuro le funzioni di influenza zonali", dove)
+            save._saveIFFInfoZonal(dove, self._who, amplitude,
                                 indexingImput, nPushPull)
             
-            for ind in indexing:
+            zipped=zip(indexing, amplitude)
+            for ind, amp in zipped:
                 for j in range(nPushPull):
-                    self._pokeActuators(ind,amplitude,
+                    self._pokeActuators(ind, amp,
                                          vecPushPull[0])
                     nome='pos%03d_pp%03d' % (ind, j)
                     self._measureAndStoreH5(os.path.join(dove, nome))
-                    print('misura positiva %03d, Push %03d' %(ind, j))
-                    self._pokeActuators(ind, amplitude, 
+                    print('misura positiva attuatore %03d, Push %03d' %(ind, j))
+                    self._pokeActuators(ind, amp, 
                                               vecPushPull[1])
                     nome='neg%03d_pp%03d' % (ind, j)
                     self._measureAndStoreH5(os.path.join(dove, nome))
-                    print('misura negativa %03d, Push %03d' %(ind, j))
-                  
+                    print('misura negativa attuatore %03d, Push %03d' %(ind, j))
+                        
         
         else:
             print ('Misuro IF globali')
-            logging.log("Misuro le funzioni di influenza", "globali")
+            logger.log("Misuro le funzioni di influenza modali", dove)
             
-            nFrame= indexing.size * nPushPull
-            matrixToApply= np.zeros((self._nActs,nFrame))
-             
-            indexingList=[]     
-            for j in range(nPushPull):
-                np.random.shuffle(indexing)
-                indexingList.append(list(indexing))
-                 
-                cmdList=[]
-                for i in indexing:
-                    cmd= cmdMatrix[:,i]
-                    cmdList.append(cmd)
-                
-                for i in range(len(cmdList)):
-                    k= len(cmdList)*j + i
-                    matrixToApply.T[k]=cmdList[i]
+            cmdH= CmdHistory(self.device)
+            matrixToApply, indexingList= cmdH.createCmdHistory(
+                                            indexing, nPushPull, cmdMatrix)
+            cmdH.saveCmdHistory()
              
             randomIndexing= np.array(indexingList)     
-            save._saveIFFInfo(dove, self._who, amplitude,
+            save._saveIFFInfoModal(dove, self._who, amplitude,
                                 indexingImput, nPushPull, 
-                                randomIndexing, cmdMatrix)   
-                  
-            for ind in range(matrixToApply.shape[1]):
+                                randomIndexing, cmdMatrix) 
+              
+            aa= np.arange(matrixToApply.shape[1])
+            reorganizedAmplitude= self._amplitudeReorganization(indexing, 
+                                                indexingList, amplitude, nPushPull)
+            zipped= zip(aa, reorganizedAmplitude)
+            for ind, amp in zipped:
                 
-                self._pokeActuators(ind, amplitude,
+                self._pokeActuators(ind, amp,
                                          vecPushPull[0], matrixToApply)
-                nome='pos%03d' % i
+                nome='pos%03d' % ind
                 self._measureAndStoreH5(os.path.join(dove, nome))
                 print('misura positiva %03d' %ind)
-                self._pokeActuators(ind, amplitude, 
+                self._pokeActuators(ind, amp, 
                                         vecPushPull[1], matrixToApply)
-                nome='neg%03d' % i
+                nome='neg%03d' % ind
                 self._measureAndStoreH5(os.path.join(dove, nome))
                 print('misura negativa %03d' %ind)
                 
             
-            return matrixToApply, indexingList
+        return dove
 
     
     
