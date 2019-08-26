@@ -53,14 +53,20 @@ class segment(m4):
         '''
         actuatorIndex= numero dell'attuatore del segmento (tra 0 e 799)
         '''
+        
         if modeMatrix is None:
             act = indexing + (self._nActSeg * self._segmentIndex)
             super().pokeActs(act, amplitude, pushOrPull)
         else:
-            super().pokeActs(indexing, amplitude, pushOrPull, modeMatrix)
-            #così vorrò mettere 800 info in 5000 spazi quindi devo 
-            #trovare come metterli nel posto giusto (con act) e tenere
-            #gli altri a zero
+            matrix= np.zeros([super()._nActsTot, modeMatrix.shape[1]])
+            actuator= np.arange(self._segmentIndex* self._segmentIndex, 
+                                self._segmentIndex+(self._nActSeg * self._segmentIndex))
+            aa=np.arange(modeMatrix.shape[0])
+            zipped= zip(actuator, aa)
+            for act,j in zipped:
+                matrix[act][indexing]=modeMatrix[j][indexing]
+            super().pokeActs(indexing, amplitude, pushOrPull, matrix)
+            
         
 
 

@@ -3,10 +3,10 @@
 '''
 import os
 
-def log(info1, info2):
+def log(info1, info2, info3):
     import logging
         
-    string=" ".join([info1, info2])
+    string=" ".join([info1, info2, info3])
     dove= '/Users/rm/Desktop/Arcetri/M4/ProvaCodice' 
     filename= os.path.join(dove, 'example.log')
          

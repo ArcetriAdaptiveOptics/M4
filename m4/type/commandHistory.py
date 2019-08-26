@@ -19,7 +19,7 @@ class CmdHistory(object):
         self._cmdMatrix= None 
         
     
-    def createCmdHistory(self, indexing, nPushPull, cmdMatrix):
+    def createShuffleCmdHistory(self, indexing, nPushPull, cmdMatrix):
         self._indexing= indexing
         self._nPushPull= nPushPull
         self._cmdMatrix= cmdMatrix
@@ -45,6 +45,9 @@ class CmdHistory(object):
         self._indexingList= np.array(indexingList)
                 
         return matrixToApply, indexingList
+    
+    def createCmdHistory(self):
+        pass
     
     
     def saveCmdHistory(self):

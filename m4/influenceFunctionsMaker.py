@@ -9,7 +9,7 @@ import copy
 import os
 from m4.type.commandHistory import CmdHistory
 
-class IFFunctions(object):
+class IFFunctionsMaker(object):
 
 
     def __init__(self, device):
@@ -39,12 +39,12 @@ class IFFunctions(object):
          
         where=np.array(where)
         vect=np.zeros(amplitude.shape[0]*nPushPull) 
+          
         for i in range(amplitude.shape[0]): 
             for k in range(nPushPull): 
                 p= nPushPull * i + k
-                mode= indexingList[k][i]
-                aa=np.where(indexing==mode)
-                vect[where[p][0][0]+ indexing.shape[0] * k]=amplitude[aa[0][0]]
+                indvect=where[p][0][0]+ indexing.shape[0] * k
+                vect[indvect]=amplitude[i]
         
         return vect
   
@@ -70,7 +70,7 @@ class IFFunctions(object):
         
         if cmdMatrix is None:
             print ('Misuro IF zonali')
-            logger.log("Misuro le funzioni di influenza zonali", dove)
+            logger.log("Misura delle funzioni di influenza zonali", self._who, dove)
             save._saveIFFInfoZonal(dove, self._who, amplitude,
                                 indexingImput, nPushPull)
             
@@ -91,10 +91,10 @@ class IFFunctions(object):
         
         else:
             print ('Misuro IF globali')
-            logger.log("Misuro le funzioni di influenza modali", dove)
+            logger.log("Misura delle funzioni di influenza modali", self._who, dove)
             
             cmdH= CmdHistory(self.device)
-            matrixToApply, indexingList= cmdH.createCmdHistory(
+            matrixToApply, indexingList= cmdH.createShuffleCmdHistory(
                                             indexing, nPushPull, cmdMatrix)
             cmdH.saveCmdHistory()
              
@@ -104,9 +104,10 @@ class IFFunctions(object):
                                 randomIndexing, cmdMatrix) 
               
             aa= np.arange(matrixToApply.shape[1])
-            reorganizedAmplitude= self._amplitudeReorganization(indexing, 
+            reorganizedAmplitude= self._amplitudeReorganization(indexingImput, 
                                                 indexingList, amplitude, nPushPull)
             zipped= zip(aa, reorganizedAmplitude)
+            
             for ind, amp in zipped:
                 
                 self._pokeActuators(ind, amp,
@@ -124,9 +125,6 @@ class IFFunctions(object):
         return dove
 
     
-    
-    def ifRedux(self):
-        pass
 
     
             
