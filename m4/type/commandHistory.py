@@ -3,6 +3,7 @@
 '''
 
 from m4.utils import saveIFFInfo
+from m4.utils.configuration import Configuration
 import numpy as np
 import os 
 import pyfits
@@ -50,11 +51,16 @@ class CmdHistory(object):
         pass
     
     
+    @staticmethod
+    def _storageFolder():
+        return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+                                   "CommandHistory")
+
+
     def saveCmdHistory(self):
-        storeInFolder="/Users/rm/Desktop/Arcetri/M4/ProvaCodice/CommandHistory"
+        storeInFolder= CmdHistory._storageFolder()
         save= saveIFFInfo.SaveAdditionalInfo(storeInFolder)
         dove= save._createFolderToStoreMeasurements()
-        
         fitsFileName= os.path.join(dove, 'info.fits')
         header= pyfits.Header()
         header['NPUSHPUL']= self._nPushPull
@@ -62,12 +68,12 @@ class CmdHistory(object):
         pyfits.writeto(fitsFileName, self._indexing, header)
         pyfits.append(fitsFileName, self._indexingList, header)
         pyfits.append(fitsFileName, self._cmdMatrix, header)
-        
+
     @staticmethod
     def loadCmdHistory(device, tt):
         theObject= CmdHistory(device)
         theObject._tt= tt
-        storeInFolder="/Users/rm/Desktop/Arcetri/M4/ProvaCodice/CommandHistory"
+        storeInFolder= CmdHistory._storageFolder()
         folder= os.path.join(storeInFolder, tt)
         additionalInfoFitsFileName= os.path.join(folder, 'info.fits')
         header= pyfits.getheader(additionalInfoFitsFileName)
