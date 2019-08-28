@@ -3,37 +3,45 @@
 '''
 
 from m4.utils import saveIFFInfo
+from m4.utils.configuration import Configuration
 import numpy as np
 import os 
+import copy
 import pyfits
 
 
 class CmdHistory(object):
     
     def __init__(self, device):
-        self._device= device[0]
-        self._who= device[1]
+        self._device= device
+        self._who= self._device._who 
         self._nActs = self._device.nActs()
-        self._indexing= None 
+        self._modeVector= None 
         self._nPushPull= None
         self._cmdMatrix= None 
         
+    @staticmethod
+    def _storageFolder():
+        return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+                                       "CommandHistory")
     
-    def createShuffleCmdHistory(self, indexing, nPushPull, cmdMatrix):
-        self._indexing= indexing
+        
+    
+    def shuffleCmdHistoryMaker(self, modeVector, nPushPull, cmdMatrix):
+        self._modeVector= copy.copy(modeVector)
         self._nPushPull= nPushPull
         self._cmdMatrix= cmdMatrix
         
-        nFrame= indexing.size * nPushPull
+        nFrame= modeVector.size * nPushPull
         matrixToApply= np.zeros((self._nActs,nFrame))
              
         indexingList=[]     
         for j in range(nPushPull):
-            np.random.shuffle(indexing)
-            indexingList.append(list(indexing))
+            np.random.shuffle(modeVector)
+            indexingList.append(list(modeVector))
                  
             cmdList=[]
-            for i in indexing:
+            for i in modeVector:
                 cmd= cmdMatrix[:,i]
                 cmdList.append(cmd)
                 
@@ -41,17 +49,88 @@ class CmdHistory(object):
                 k= len(cmdList)*j + i
                 matrixToApply.T[k]=cmdList[i]
                 
-        self._matrixToApply= matrixToApply
+        self._cmdHistory= matrixToApply
         self._indexingList= np.array(indexingList)
                 
-        return matrixToApply, indexingList
-    
-    def createCmdHistory(self):
-        pass
+        return self._cmdHistory, self._indexingList
     
     
-    def saveCmdHistory(self):
-        storeInFolder="/Users/rm/Desktop/Arcetri/M4/ProvaCodice/CommandHistory"
+    def tidyCmdHistoryMaker(self, modeVector, nPushPull, cmdMatrix):
+        self._modeVector= copy.copy(modeVector)
+        self._nPushPull= nPushPull
+        self._cmdMatrix= cmdMatrix
+        
+        nFrame= modeVector.size * nPushPull
+        matrixToApply= np.zeros((self._nActs,nFrame))
+        
+        cmdList=[]
+        for i in modeVector:
+            cmd= cmdMatrix[:,i]
+            cmdList.append(cmd)
+        
+        for j in range(nPushPull):
+            for i in range(len(cmdList)):
+                k= len(cmdList)*j + i
+                matrixToApply.T[k]=cmdList[i]
+        
+        self._cmdHistory= matrixToApply
+        
+        return self._cmdHistory
+    
+               
+    def _amplitudeReorganization(self, indexingInput, indexingList, 
+                                 amplitude, nPushPull):
+        where=[] 
+        for i in indexingInput:           
+            for j in range(nPushPull): 
+                a=np.where(indexingList[j]==i)  
+                where.append(a) 
+         
+         
+        where=np.array(where)
+        vect=np.zeros(amplitude.shape[0]*nPushPull) 
+          
+        for i in range(amplitude.shape[0]): 
+            for k in range(nPushPull): 
+                p= nPushPull * i + k
+                indvect=where[p][0][0]+ indexingInput.shape[0] * k
+                vect[indvect]=amplitude[i]
+        
+        return vect
+    
+    
+    def zippedAmplitude(self, amplitude):
+        aa= np.arange(self._cmdHistory.shape[1])
+        reorganizedAmplitude= self._amplitudeReorganization(self._modeVector, 
+                                                self._indexingList, 
+                                                amplitude, self._nPushPull)
+        #zipped= np.dstack((aa, reorganizedAmplitude))
+        zipped= zip(aa, reorganizedAmplitude)
+        return zipped
+    
+    def cmdHistoryToApply(self, amplitude):
+        zipped= self.zippedAmplitude(amplitude)
+        matrixWithAmp= self._cmdHistory
+        for i, amp in zipped:
+            matrixWithAmp.T[i]= matrixWithAmp.T[i]* amp
+            
+        vecPushPull= np.array((1,-1)) 
+        matrixToApply= np.zeros((self._nActs,
+                            self._cmdHistory.shape[1]*vecPushPull.shape[0]))
+        
+        for i in range(self._cmdHistory.shape[1]):
+            j=2*i
+            matrixToApply.T[j]= matrixWithAmp.T[i]* vecPushPull[0]
+            matrixToApply.T[j+1]= matrixWithAmp.T[i]* vecPushPull[1]
+            
+        
+        return matrixToApply
+        
+        
+    
+    
+    def save(self):
+        storeInFolder= CmdHistory._storageFolder()
         save= saveIFFInfo.SaveAdditionalInfo(storeInFolder)
         dove= save._createFolderToStoreMeasurements()
         
@@ -64,10 +143,10 @@ class CmdHistory(object):
         pyfits.append(fitsFileName, self._cmdMatrix, header)
         
     @staticmethod
-    def loadCmdHistory(device, tt):
+    def load(device, tt):
         theObject= CmdHistory(device)
         theObject._tt= tt
-        storeInFolder="/Users/rm/Desktop/Arcetri/M4/ProvaCodice/CommandHistory"
+        storeInFolder= CmdHistory._storageFolder()
         folder= os.path.join(storeInFolder, tt)
         additionalInfoFitsFileName= os.path.join(folder, 'info.fits')
         header= pyfits.getheader(additionalInfoFitsFileName)

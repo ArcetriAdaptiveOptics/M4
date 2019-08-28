@@ -11,11 +11,16 @@ from m4.utils.interferometer_converter import InterferometerConverter
 class AnalyzerIFF(object):
     
     def __init__(self):
+        self._indexingList= None
         self._cube= None
         self._reducedCube= None
         self._rec= None
         self._intMat= None
 
+    def _ttData(self):
+        split= os.path.split(self._h5Folder)
+        self._tt= split[1]
+        return self._tt
     
     @staticmethod
     def loadModalIFFInfoFromH5Folder(h5Folder):
@@ -57,19 +62,26 @@ class AnalyzerIFF(object):
     def createCube(self):
         cubeAllAct= None
         ic= InterferometerConverter()
-        logger.log('Creazione del cubo delle IFF per', self._who, self._h5Folder)
+        self._ttData()
+        logger.log('Creazione del cubo delle IFF per', self._who, self._tt)
         
         aa=np.arange(self._actsVector.shape[0])
         zipped= zip(aa, self._cmdAmplitude)
         for i, amp in zipped:
             for k in range(self._nPushPull):
-                p= self._nPushPull * i + k
-                where= self._indexReorganization()
-                n=where[p][0][0]
-                mis= k* self._indexingLis.shape[1] + n
+                if self._indexingList is None:
+                    mis = self._actsVector[i]
+                    nomePos= 'pos%03d_pp%03d.h5' % (mis, k)               
+                    nomeNeg= 'neg%03d_pp%03d.h5' % (mis, k)
+                else:
+                    p= self._nPushPull * i + k
+                    where= self._indexReorganization()
+                    n=where[p][0][0]
+                    mis= k* self._indexingList.shape[1] + n
                 
-                nomePos= 'pos%03d.h5' % mis                
-                nomeNeg= 'neg%03d.h5' % mis
+                    nomePos= 'pos%03d.h5' % mis                
+                    nomeNeg= 'neg%03d.h5' % mis
+                    
                 imgPos= ic.from4D(os.path.join(self._h5Folder,nomePos))
                 imgNeg= ic.from4D(os.path.join(self._h5Folder,nomeNeg))
                 imgIF= (imgPos - imgNeg) / (2*amp)

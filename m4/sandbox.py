@@ -51,3 +51,19 @@ def main2108_amplitudeReaorgTEST():
     vect= IF._amplitudeReorganization(indexingImput, indexingList, amplitude, 3) 
     
     return indexingList, vect
+
+
+def main2808_commandHistoryTest():
+    from m4.utils import createDevice 
+    from m4.type.commandHistory import CmdHistory 
+    device= createDevice.myDevice("segment") 
+    cmdH= CmdHistory(device)
+    modeVector=np.array([11,12,13,14,15])
+    cmdMatrix=np.ones([892,700]) 
+    cmdMatrix.T[30]=np.zeros(892)
+    amplitude=np.array([1,2,3,4,5])
+    mat, ind= cmdH.shuffleCmdHistoryMaker(modeVector, 3, cmdMatrix)
+    matrixToApply= cmdH.cmdHistoryToApply(amplitude)
+    
+    return mat, ind, matrixToApply
+    

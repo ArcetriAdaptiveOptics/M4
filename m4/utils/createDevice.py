@@ -2,7 +2,7 @@
 @author: cs
 '''
 
-import m4 as _m4
+from m4 import deformableMirror
 
 def myDevice(nameStr):
     '''
@@ -11,15 +11,13 @@ def myDevice(nameStr):
              ex. m4= tutto lo speccio, segment= un petalo
     '''
     if nameStr == "m4":
-        device = _m4.allDevices.m4()
-        deviceInfo= 'All segments'
-        device= device, deviceInfo
+        device = deformableMirror.m4()
+
     elif nameStr == "segment":
         print('Segment number: ')
         x = int(input())
-        device = _m4.allDevices.segment(x)
-        deviceInfo= 'Segment number %d' %x 
-        device= device, deviceInfo 
+        device = deformableMirror.segment(x)
+         
     else:
         raise OSError('Device %s doesnt exists' % device)
     

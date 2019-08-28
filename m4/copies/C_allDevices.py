@@ -13,6 +13,7 @@ dimExt= 2.54
 class m4(object):
     def __init__(self):
         self._nActsTot= 5352
+        self._who= 'All segments'
         
     def nActs(self):
         return self._nActsTot
@@ -45,13 +46,14 @@ class segment(m4):
         
         self._nActSeg= 892
         self._nSeg= 6
+        self._who= 'Segment number %s' % segmentIndex
         
     def nActs(self):
         return self._nActSeg
     
     def pokeActs(self, indexing, amplitude, pushOrPull, modeMatrix= None):
         '''
-        actuatorIndex= numero dell'attuatore del segmento (tra 0 e 799)
+        actuatorIndex= numero dell'attuatore del segmento (tra 0 e 891)
         '''
         
         if modeMatrix is None:
