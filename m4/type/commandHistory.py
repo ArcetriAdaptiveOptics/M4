@@ -2,9 +2,10 @@
 @author: cs
 '''
 
-from m4.utils import saveIFFInfo
+from m4.utils import trackingNumberFolder
 from m4.utils.configuration import Configuration
 import numpy as np
+from m4.utils import logger
 import os 
 import copy
 import pyfits
@@ -19,15 +20,62 @@ class CmdHistory(object):
         self._modeVector= None 
         self._nPushPull= None
         self._cmdMatrix= None 
+        self._cmdHToApply= None
+        self._ampVect= None 
+        
+    def getCommandHistory(self):
+        return self._cmdHToApply
         
     @staticmethod
     def _storageFolder():
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                                        "CommandHistory")
+        
+
+    '''
+         arg:
+             modesVector= vettore dell'indice dei modi o degli attuatori
+                        da applicare (numpy.array([]))
+             nPushPull= numero di push pull consecutivi sull'attuatore
+                         (int)
+             ampVector= vettore con l'ampiezza dei modi (numpy.array([]))
+             cmdMatrix= matrice dei comandi dei modi 
+                         (nActs x nModes)
+                         matrice diagonale nel caso di comandi zonali
+    '''
+        
+    def tidyCommandHistoryMaker(self, modeVector, ampVector,
+                                        cmdMatrix, nPushPull):
+        self._ampVect= ampVector
+        cmdHistory= self._tidyCmdHistory(modeVector, nPushPull, cmdMatrix)
+        aa= np.arange(self._cmdHistory.shape[1])
+        bb= np.tile(ampVector, nPushPull)
+        zipped= zip(aa, bb)
+        matrixToApply= self._cmdHistoryToApply(zipped)
+        self._cmdHToApply= matrixToApply
+        tt= self.save()
+        logger.log('Creazione della commandHistoryMatrix', 'ordinata', tt)
+        print(tt)
+        
+        return matrixToApply
     
+    
+    def shuffleCommandHistoryMaker(self, modeVector, ampVector, 
+                                        cmdMatrix, nPushPull):
+        self._ampVect= ampVector
+        cmdHistory, indexingList= self._shuffleCmdHistory(
+                                        modeVector, nPushPull, cmdMatrix)
+        zipped= self._zippedAmplitude(ampVector)
+        matrixToApply= self._cmdHistoryToApply(zipped)
+        self._cmdHToApply=matrixToApply
+        tt= self.save()
+        logger.log('Creazione della commandHistoryMatrix', 'casuale', tt)
+        print(tt)
+        
+        return matrixToApply
         
     
-    def shuffleCmdHistoryMaker(self, modeVector, nPushPull, cmdMatrix):
+    def _shuffleCmdHistory(self, modeVector, nPushPull, cmdMatrix):
         self._modeVector= copy.copy(modeVector)
         self._nPushPull= nPushPull
         self._cmdMatrix= cmdMatrix
@@ -55,10 +103,11 @@ class CmdHistory(object):
         return self._cmdHistory, self._indexingList
     
     
-    def tidyCmdHistoryMaker(self, modeVector, nPushPull, cmdMatrix):
+    def _tidyCmdHistory(self, modeVector, nPushPull, cmdMatrix):
         self._modeVector= copy.copy(modeVector)
         self._nPushPull= nPushPull
         self._cmdMatrix= cmdMatrix
+        self._indexingList= np.tile(modeVector, nPushPull)
         
         nFrame= modeVector.size * nPushPull
         matrixToApply= np.zeros((self._nActs,nFrame))
@@ -99,7 +148,7 @@ class CmdHistory(object):
         return vect
     
     
-    def zippedAmplitude(self, amplitude):
+    def _zippedAmplitude(self, amplitude):
         aa= np.arange(self._cmdHistory.shape[1])
         reorganizedAmplitude= self._amplitudeReorganization(self._modeVector, 
                                                 self._indexingList, 
@@ -108,8 +157,7 @@ class CmdHistory(object):
         zipped= zip(aa, reorganizedAmplitude)
         return zipped
     
-    def cmdHistoryToApply(self, amplitude):
-        zipped= self.zippedAmplitude(amplitude)
+    def _cmdHistoryToApply(self, zipped):
         matrixWithAmp= self._cmdHistory
         for i, amp in zipped:
             matrixWithAmp.T[i]= matrixWithAmp.T[i]* amp
@@ -122,25 +170,26 @@ class CmdHistory(object):
             j=2*i
             matrixToApply.T[j]= matrixWithAmp.T[i]* vecPushPull[0]
             matrixToApply.T[j+1]= matrixWithAmp.T[i]* vecPushPull[1]
-            
         
         return matrixToApply
         
-        
-    
     
     def save(self):
         storeInFolder= CmdHistory._storageFolder()
-        save= saveIFFInfo.SaveAdditionalInfo(storeInFolder)
-        dove= save._createFolderToStoreMeasurements()
+        save= trackingNumberFolder.TtFolder(storeInFolder)
+        dove, tt= save._createFolderToStoreMeasurements()
         
         fitsFileName= os.path.join(dove, 'info.fits')
         header= pyfits.Header()
         header['NPUSHPUL']= self._nPushPull
         header['WHO']= self._who
-        pyfits.writeto(fitsFileName, self._indexing, header)
+        pyfits.writeto(fitsFileName, self._modeVector, header)
         pyfits.append(fitsFileName, self._indexingList, header)
         pyfits.append(fitsFileName, self._cmdMatrix, header)
+        pyfits.append(fitsFileName, self._cmdHToApply, header)
+        pyfits.append(fitsFileName, self._ampVect, header)
+        
+        return tt
         
     @staticmethod
     def load(device, tt):
@@ -151,9 +200,11 @@ class CmdHistory(object):
         additionalInfoFitsFileName= os.path.join(folder, 'info.fits')
         header= pyfits.getheader(additionalInfoFitsFileName)
         hduList= pyfits.open(additionalInfoFitsFileName)
-        theObject._indexing= hduList[0].data
+        theObject._modeVector= hduList[0].data
         theObject._indexingList= hduList[1].data
         theObject._cmdMatrix= hduList[2].data
+        theObject._cmdHToApply= hduList[3].data
+        theObject._ampVect= hduList[4].data
         theObject._who= header['WHO']
         try:
             theObject._nPushPull= header['NPUSHPUL']

@@ -3,8 +3,10 @@
 '''
 
 import numpy as np
-from m4.utils import saveIFFInfo
+from m4.utils import trackingNumberFolder
+from m4.utils.configuration import Configuration
 from m4.utils import logger
+import pyfits
 import copy
 import os
 from m4.type.commandHistory import CmdHistory
@@ -16,11 +18,16 @@ class IFFunctionsMaker(object):
         self._device= device
         self._who= self._device._who
         self._nActs = self._device.nActs()
+        
+    @staticmethod
+    def _storageFolder():
+        return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+                                       "IFFunctions")
 
     
     
-    def acq_IFFunctions(self, storeInFolder, modesVector, nPushPull, amplitude, 
-                        cmdMatrix):
+    def acq_IFFunctions(self, modesVector, nPushPull, amplitude, 
+                        cmdMatrix, shuffle=None):
         
         '''
          arg:
@@ -33,26 +40,80 @@ class IFFunctionsMaker(object):
                          (nActs x nModes)
                          matrice diagonale nel caso di comandi zonali
         '''
+        storeInFolder= self._storageFolder()
         indexingImput= copy.copy(modesVector)
-        save= saveIFFInfo.SaveAdditionalInfo(storeInFolder)
+        save= trackingNumberFolder.TtFolder(storeInFolder)
         dove, tt= save._createFolderToStoreMeasurements()
         
-        if np.count_nonzero(cmdMatrix - np.diag(np.diagonal(cmdMatrix))) == 0:
+        diagonalMat= self._diagonalControll(cmdMatrix)
+        if np.count_nonzero(diagonalMat - np.diag(np.diagonal(diagonalMat))) == 0:
             print ('Misuro IF zonali')
             logger.log("Misura delle funzioni di influenza zonali", self._who, tt)
-            save._saveIFFInfo(dove, self._who, amplitude,
-                                indexingImput, nPushPull, cmdMatrix)
-            
             
         else:
             print ('Misuro IF globali')
             logger.log("Misura delle funzioni di influenza modali", self._who, tt)
+        
+        
+        self._saveInfo(dove, self._who, amplitude, indexingImput, nPushPull, cmdMatrix)
+                
+        cmdH= CmdHistory(self._device)
+        
+        if shuffle is None:
+            commandHistoryMatrixToApply= cmdH.tidyCommandHistoryMaker(modesVector,
+                                                                  amplitude,
+                                                                  cmdMatrix, 
+                                                                  nPushPull)
+        else:
+            commandHistoryMatrixToApply= cmdH.shuffleCommandHistoryMaker(modesVector,
+                                                                  amplitude,
+                                                                  cmdMatrix, 
+                                                                  nPushPull)
+        
+         
+        self._applyToDM() 
+           
+    def _diagonalControll(self, matrix):
+        v= np.zeros((self._nActs,1))
+        reps= matrix.shape[0] - matrix.shape[1]
+        vects= np.tile(v, reps)
+        newMatrix= np.hstack((matrix, vects))
+        
+        return newMatrix
+        
+     
+    def _applyToDM(self):
+        pass       
+     
             
-            cmdH= CmdHistory(self.device)
+    def _saveInfo(self, folder, who, amplitude,
+                                vectorOfActuatorsOrModes, nPushPull, cmdMatrix):
             
+        fitsFileName= os.path.join(folder, 'info.fits')
+        header= pyfits.Header()
+        header['NPUSHPUL']= nPushPull
+        header['WHO']= who
+        pyfits.writeto(fitsFileName, vectorOfActuatorsOrModes, header)
+        pyfits.append(fitsFileName, cmdMatrix, header)
+        pyfits.append(fitsFileName, amplitude, header)
+
             
+    @staticmethod
+    def loadInfo(folder):
+        additionalInfoFitsFileName= os.path.join(folder, 'info.fits')
+        header= pyfits.getheader(additionalInfoFitsFileName)
+        hduList= pyfits.open(additionalInfoFitsFileName)
+        actsVector= hduList[0].data
+        cmdMatrix= hduList[1].data
+        cmdAmpl= hduList[2].data
+        who= header['WHO']
+        try:
+            nPushPull= header['NPUSHPUL']
+        except KeyError:
+            nPushPull= 1
             
-            
+        return (who, actsVector, cmdMatrix, cmdAmpl, nPushPull)
+     
             
             
             

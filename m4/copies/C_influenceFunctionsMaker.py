@@ -3,7 +3,7 @@
 '''
 
 import numpy as np
-from m4.utils import saveIFFInfo
+from m4.copies import C_saveIFFInfo
 from m4.utils import logger
 import copy
 import os

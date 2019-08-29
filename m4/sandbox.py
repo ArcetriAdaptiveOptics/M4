@@ -62,8 +62,31 @@ def main2808_commandHistoryTest():
     cmdMatrix=np.ones([892,700]) 
     cmdMatrix.T[30]=np.zeros(892)
     amplitude=np.array([1,2,3,4,5])
-    mat, ind= cmdH.shuffleCmdHistoryMaker(modeVector, 3, cmdMatrix)
-    matrixToApply= cmdH.cmdHistoryToApply(amplitude)
+    matrixToApply= cmdH.shuffleCommandHistoryMaker(modeVector, 
+                                                   amplitude, cmdMatrix, 3)
+    #matrixToApply2= cmdH.tidyCommandHistoryMaker(modeVector, 
+                                                    #amplitude, cmdMatrix, 3)
     
-    return mat, ind, matrixToApply
+    return matrixToApply
+
+def main2908_provaIFF():
+    from m4.utils import createDevice 
+    device= createDevice.myDevice("segment") 
+    from m4.influenceFunctionsMaker import IFFunctionsMaker
+    IF= IFFunctionsMaker(device) 
+    
+    #cmdMatrix=np.ones([892,800]) 
+    #cmdMatrix.T[30]=np.zeros(892) 
+    cmdMatrix=np.zeros((892,800))  
+    for i in range(800):
+        cmdMatrix[i][i]=1
+    modeVect=np.array([10,11,12,13,14,15,16,17,18,19,30,31,32,33,34]) 
+    amp= np.array([0,1,2,3,4,5,6,7,8,9,0.30,0.31,0.32,0.33,0.34])
+    
+    IF.acq_IFFunctions(modeVect, 3, amp, cmdMatrix, 1)
+    
+    
+    
+    
+    
     
