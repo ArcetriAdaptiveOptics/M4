@@ -54,8 +54,6 @@ class IFFunctionsMaker(object):
             print ('Misuro IF globali')
             logger.log("Misura delle funzioni di influenza modali", self._who, tt)
         
-        
-        self._saveInfo(dove, self._who, amplitude, indexingImput, nPushPull, cmdMatrix)
                 
         cmdH= CmdHistory(self._device)
         
@@ -69,9 +67,13 @@ class IFFunctionsMaker(object):
                                                                   amplitude,
                                                                   cmdMatrix, 
                                                                   nPushPull)
-        
+        self._indexingList= cmdH.getIndexingList()
+        self._saveInfo(dove, self._who, amplitude, indexingImput,
+                        nPushPull, cmdMatrix, self._indexingList)
+         
          
         self._applyToDM() 
+           
            
     def _diagonalControll(self, matrix):
         v= np.zeros((self._nActs,1))
@@ -86,8 +88,8 @@ class IFFunctionsMaker(object):
         pass       
      
             
-    def _saveInfo(self, folder, who, amplitude,
-                                vectorOfActuatorsOrModes, nPushPull, cmdMatrix):
+    def _saveInfo(self, folder, who, amplitude,vectorOfActuatorsOrModes,
+                     nPushPull, cmdMatrix, indexingList):
             
         fitsFileName= os.path.join(folder, 'info.fits')
         header= pyfits.Header()
@@ -96,6 +98,7 @@ class IFFunctionsMaker(object):
         pyfits.writeto(fitsFileName, vectorOfActuatorsOrModes, header)
         pyfits.append(fitsFileName, cmdMatrix, header)
         pyfits.append(fitsFileName, amplitude, header)
+        pyfits.append(fitsFileName, indexingList, header)
 
             
     @staticmethod
@@ -106,13 +109,14 @@ class IFFunctionsMaker(object):
         actsVector= hduList[0].data
         cmdMatrix= hduList[1].data
         cmdAmpl= hduList[2].data
+        indexingList= hduList[3].data
         who= header['WHO']
         try:
             nPushPull= header['NPUSHPUL']
         except KeyError:
             nPushPull= 1
             
-        return (who, actsVector, cmdMatrix, cmdAmpl, nPushPull)
+        return (who, actsVector, cmdMatrix, cmdAmpl, nPushPull, indexingList)
      
             
             

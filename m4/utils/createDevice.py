@@ -2,7 +2,7 @@
 @author: cs
 '''
 
-from m4 import deformableMirror
+from m4.type import deformableMirror
 
 def myDevice(nameStr):
     '''

@@ -25,6 +25,9 @@ class CmdHistory(object):
         
     def getCommandHistory(self):
         return self._cmdHToApply
+    
+    def getIndexingList(self):
+        return self._indexingList
         
     @staticmethod
     def _storageFolder():

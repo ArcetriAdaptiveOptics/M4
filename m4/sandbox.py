@@ -26,9 +26,8 @@ def main1908_createFileInfo():
 
 def main1908_analyzer(tt):
     from m4.analyzerIFFunctions import AnalyzerIFF
-    save=os.path.join("/Users/rm/Desktop/Arcetri/M4/ProvaCodice/", tt)
-    #an= AnalyzerIFF.loadModalIFFInfoFromH5Folder(device,save)
-    an= AnalyzerIFF.loadZonalIFFInfoFromH5Folder(save)
+    save=os.path.join("/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions", tt)
+    an= AnalyzerIFF.loadInfoFromh5Folder(save)
     
     return an
 
@@ -75,11 +74,11 @@ def main2908_provaIFF():
     from m4.influenceFunctionsMaker import IFFunctionsMaker
     IF= IFFunctionsMaker(device) 
     
-    #cmdMatrix=np.ones([892,800]) 
-    #cmdMatrix.T[30]=np.zeros(892) 
-    cmdMatrix=np.zeros((892,800))  
-    for i in range(800):
-        cmdMatrix[i][i]=1
+    cmdMatrix=np.ones([892,800]) 
+    cmdMatrix.T[30]=np.zeros(892) 
+    #cmdMatrix=np.zeros((892,800))  
+    #for i in range(800):
+    #    cmdMatrix[i][i]=1
     modeVect=np.array([10,11,12,13,14,15,16,17,18,19,30,31,32,33,34]) 
     amp= np.array([0,1,2,3,4,5,6,7,8,9,0.30,0.31,0.32,0.33,0.34])
     
