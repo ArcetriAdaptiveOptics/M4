@@ -6,6 +6,7 @@ import pyfits
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import ion 
+from m4.utils.configuration import Configuration
 
 nActsTot= 5352
 nActSeg= 892
@@ -32,7 +33,7 @@ def createActMap(cmd):
     else:
         raise OSError('The number of actuators chosen is incorrect')
     
-    fitsFileName='/Users/rm/Desktop/Arcetri/M4/ActuatorCoordinates.fits'
+    fitsFileName=Configuration.M4COORDINATE_ROOT_FOLDER
     hduList= pyfits.open(fitsFileName)
     co=np.array(hduList[0].data)
     x=co[0][:] 

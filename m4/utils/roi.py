@@ -10,6 +10,7 @@ class ROI():
     def __init__(self):
         self._DetectorROI= None
         self._AnalysisROI= None
+        self._pupilXYRadius= None
         
     
     def getDetectorROI(self, image):
@@ -21,3 +22,7 @@ class ROI():
         
     def setAnalysisROI(self, analysisMask):
         self._AnalysisROI= analysisMask
+        
+        
+    def getZernikeCoord(self, roi):
+        return self._pupilXYRadius 

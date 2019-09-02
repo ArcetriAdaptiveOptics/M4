@@ -2,11 +2,11 @@
 @author: cs
 '''
 
-from m4.utils import logger
+from m4.ground import logger
 import numpy as np
 import pyfits
 import os
-from m4.utils.interferometer_converter import InterferometerConverter
+from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influenceFunctionsMaker import IFFunctionsMaker
 
 class AnalyzerIFF(object):
@@ -40,6 +40,9 @@ class AnalyzerIFF(object):
     
     def getCube(self):
         return self._cube
+    
+    def getIFShape(self):
+        return self.getCube()[:,:,0].shape
     
     def getMasterMask(self):
         aa=np.sum(self._cube.mask.astype(int), axis=2)
@@ -105,6 +108,10 @@ class AnalyzerIFF(object):
     
     def setAnalysisMaskFromMasterMask(self):
         self._analysisMask= self.getMasterMask()
+        
+    def setDetectorMask(self, maskFromIma):
+        self._analysisMask= maskFromIma
+        self._rec=None
         
     def _getMaskedInfluenceFunction(self, idxInfluenceFunction):
         return np.ma.array(self.getCube()[:,:,idxInfluenceFunction], 

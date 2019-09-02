@@ -5,7 +5,7 @@
 import numpy as np
 from m4.utils import trackingNumberFolder
 from m4.utils.configuration import Configuration
-from m4.utils import logger
+from m4.ground import logger
 import pyfits
 import copy
 import os

@@ -3,7 +3,7 @@
 '''
 
 import os
-from m4.utils.timestamp import Timestamp
+from m4.ground.timestamp import Timestamp
 
 class TtFolder(object):
     
