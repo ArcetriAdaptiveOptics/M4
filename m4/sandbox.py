@@ -8,6 +8,8 @@ import os
 import copy
 import pyfits
 from matplotlib import pyplot as plt
+from m4.utils import roi
+from _pylief import NONE
 
 
 def main1908_createFileInfo():
@@ -99,9 +101,12 @@ def main0409_imageM4():
     
     mask=np.zeros(segment.shape, dtype=np.bool) 
     mask[np.where(segment==segment.max())]=1  
-    ima=np.ma.masked_array(segment * 632.8e-9, mask=mask)
+    imaseg=np.ma.masked_array(segment * 632.8e-9, mask=mask)
     
-    return m4, segment, ima
+    mask=np.zeros(m4.shape, dtype=np.bool) 
+    mask[np.where(m4==m4.max())]=1  
+    imam4=np.ma.masked_array(m4 * 632.8e-9, mask=mask)
+    return m4, segment, imaseg, imam4
 
 
 def main0409_ROI(ima):
@@ -109,21 +114,56 @@ def main0409_ROI(ima):
     import sklearn.cluster as skc
     import skimage.segmentation as sks
     graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)
-    labels = skc.spectral_clustering(graph, n_clusters=4, eigen_solver='arpack')
+    labels = skc.spectral_clustering(graph, n_clusters=7, eigen_solver='arpack')
     label_im = -np.ones(ima.mask.shape)
     label_im[ima.mask] = labels
     
     markers = ima.mask.astype('int')*0
     markers[0,0]=1
-    markers[180,79]=2
-    markers[296,258]=3 
-    markers[170,436]=4
-    markers[34,258]=5
+    markers[83,257]=2
+    markers[164,407]=3 
+    markers[339,409]=4
+    markers[433,254]=5
+    markers[338,103]=6
+    markers[157,101]=7
+    markers[232,270]=8
     roi_mask = sks.random_walker(ima.mask, markers)  
     
     return label_im, markers, roi_mask
     
+  
+def main0509_makeImgWhitPhase(m4):
+    mask=np.zeros(m4.shape, dtype=np.bool) 
+    mask[np.where(m4==m4.max())]=1  
+    imam4=np.ma.masked_array(m4 * 10, mask=mask)
     
+    from m4.utils.roi import ROI
+    r=ROI()
+    roi= r._ROIonM4(imam4)
+    return imam4, roi
+
+def prova(imam4, roi):
+    finalIma= None
+    a=np.array((0,10,20,30,40,50))
+    aa= np.arange(a.shape[0])
+    cc= np.arange(len(roi)-1)
+    zipped= zip(aa, cc)
+    
+    bbList=[]
+    for i,j in zipped:
+        bb=np.zeros(imam4.shape)
+        bb[np.where(roi[j]== True)]=a[i]
+        bbList.append(bb)
+    
+    for bb in bbList:   
+        if finalIma is None: 
+            finalIma= imam4.data + bb.data
+        else:
+            finalIma= finalIma + bb.data
+    
+    finalImag= np.ma.masked_array(finalIma, mask=imam4.mask)
+     
+    return finalImag
     
     
     

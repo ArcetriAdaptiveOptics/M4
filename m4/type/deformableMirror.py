@@ -2,10 +2,11 @@
 @author: cs
 '''
 
+from m4.utils.configuration import Configuration
 
 class m4(object):
     def __init__(self):
-        self._nActsTot= 5352
+        self._nActsTot= Configuration.nActsTot
         self._who= 'All segments'
         
     def nActs(self):
@@ -21,8 +22,8 @@ class segment(m4):
         else:
             raise OSError('Segment number %s doesnt exists' % segmentIndex)
         
-        self._nActSeg= 892
-        self._nSeg= 6
+        self._nActSeg= Configuration.nActSeg
+        self._nSeg= Configuration.n_Seg
         self._who= 'Segment number %s' % segmentIndex
         
     def nActs(self):

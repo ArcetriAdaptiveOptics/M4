@@ -8,25 +8,23 @@ from matplotlib import pyplot as plt
 from matplotlib.pyplot import ion 
 from m4.utils.configuration import Configuration
 
-nActsTot= 5352
-nActSeg= 892
 
     #cmd=np.random.rand(5352)
     #a=np.ones(892) b=np.zeros(4460) cmd=np.append(a,b)
 def createActMap(cmd):
-    if cmd.shape[0]== nActsTot:
+    if cmd.shape[0]== Configuration.nActsTot:
         cmd=cmd
-    elif cmd.shape[0]== nActSeg:
+    elif cmd.shape[0]== Configuration.nActSeg:
         print('Segment number: ')
         x = int(input())
-        if x < 6:
+        if x < Configuration.n_Seg:
             segmentIndex = x
         else:
             raise OSError('Segment number %s doesnt exists' % x)
         
-        command=np.zeros(nActsTot)
+        command=np.zeros(Configuration.nActsTot)
         for j in range(cmd.shape[0]):
-            act= j + (nActSeg* segmentIndex)
+            act= j + (Configuration.nActSeg* segmentIndex)
             command[act]=cmd[j]
         cmd= command
         
