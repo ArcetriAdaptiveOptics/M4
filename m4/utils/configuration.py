@@ -14,7 +14,7 @@ class Configuration(object):
         FLATTENING_ROOT_FOLDER= os.path.join(CALIBRATION_ROOT_FOLDER, "IFFunctions")
         
     #Interf  
-        Lambda= 633
+        Lambda= 2
     #Ott
         ParabolaPupilXYRadius= np.array([0, 0, 1]) #centerX, centerY, radius
     #DM

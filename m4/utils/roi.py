@@ -74,8 +74,8 @@ class ROI():
         markers[433,254]=4
         markers[338,103]=5
         markers[157,101]=6
-        markers[232,270]=7
-        markers[83,257]=8
+        markers[232,270]=8
+        markers[83,257]=7
         roi_mask = sks.random_walker(ima.mask, markers)
         
         roiList=[]

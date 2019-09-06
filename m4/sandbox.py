@@ -140,11 +140,9 @@ def main0509_makeImgWhitPhase(m4):
     from m4.utils.roi import ROI
     r=ROI()
     roi= r._ROIonM4(imam4)
-    return imam4, roi
 
-def prova(imam4, roi):
     finalIma= None
-    a=np.array((0,10,20,30,40,50))
+    a=np.array((10,20,30,40,50,60))
     aa= np.arange(a.shape[0])
     cc= np.arange(len(roi)-1)
     zipped= zip(aa, cc)
@@ -166,10 +164,50 @@ def prova(imam4, roi):
     return finalImag
     
     
+def main0609_TESTps():  
+    m4, seg, imas, ima= main0409_imageM4()
+    finalIma= main0509_makeImgWhitPhase(m4) 
+    from m4.utils.imgRedux import PhaseSolve
+    ps= PhaseSolve()
+    spl=np.array((20,30,40,50,60,10))
+    m4NewImage, img_phaseSolveList, imgList= ps.m4PhaseSolver(finalIma, spl)
+    return m4NewImage, img_phaseSolveList, imgList
     
     
-    
-
+#     
+#     n= ps.n_calculator(spl)
+#     
+#     from m4.utils.roi import ROI
+#     r=ROI()
+#     roiList= r._ROIonM4(finalIma)
+#     media=[]
+#     imgList=[]
+#     for roi in roiList:
+#         img= np.zeros(finalIma.shape)
+#         img[np.where(roi== True)]= np.ma.compress(roi.ravel(), finalIma)
+#         imgg= np.ma.masked_array(img, mask= roi)
+#         m= img.mean()
+#         media.append(m)
+#         imgList.append(imgg)
+#         
+#     aa= np.arange(n.shape[0])   
+#     zipped= zip(aa, imgList)
+#     img_phaseSolveList=[]
+#     for i, imgg in zipped:
+#         img_phaseSolve= np.ma.masked_array(imgg.data - n[i], mask= np.invert(imgg.mask))
+#         img_phaseSolveList.append(img_phaseSolve)
+#      
+#     m4NewImage= None   
+#     for j in range(1, len(img_phaseSolveList)):
+#             if m4NewImage is None:
+#                 m4NewImage= np.ma.array(img_phaseSolveList[0].filled(1)* img_phaseSolveList[j].filled(1), 
+#                                          mask=(img_phaseSolveList[0].mask * img_phaseSolveList[j].mask))
+#             else:
+#                 m4NewImage = np.ma.array(m4NewImage.filled(1) * img_phaseSolveList[j].filled(1), 
+#                                          mask=(m4NewImage.mask * img_phaseSolveList[j].mask))
+#         
+#     
+#     return finalIma, roiList, media, imgList, img_phaseSolveList, m4NewImage
     
     
 

@@ -45,37 +45,52 @@ class PhaseSolve():
     
     
     def n_calculator(self, splValues): 
-        n=np.array(splValues.shape[0])   
+        n=np.zeros(splValues.shape[0])   
         for i in range(splValues.shape[0]):
             n[i]= (2.* splValues[i]) / self._lambda
         self._n= n
         return self._n
     
     
-    def m4PhaseSolver(self, m4Ima): 
+    def m4PhaseSolver(self, m4Ima, splValues): 
+        self.n_calculator(splValues)
         roiList= self._r._ROIonM4(m4Ima)
+        m4NewImage= None
         
         media=[]
         imgList=[]
         for roi in roiList:
-            img= np.ma.masked_array(m4Ima, mask=roi)
+            img= np.zeros(m4Ima.shape)
+            img[np.where(roi== True)]= np.ma.compress(roi.ravel(), m4Ima)
+            imgg= np.ma.masked_array(img, mask= roi)
             m= img.mean()
             media.append(m)
-            imgList.append(img)
+            imgList.append(imgg)
                
         aa= np.arange(self._n.shape[0])   
         zipped= zip(aa, imgList)
         img_phaseSolveList=[]
-        for i, img in zipped:
-            img_phaseSolve= img - self._n[i]
+        for i, imgg in zipped:
+            img_phaseSolve= np.ma.masked_array(imgg.data - self._n[i], mask= np.invert(imgg.mask))
             img_phaseSolveList.append(img_phaseSolve)
         
-        img_phaseSolveList[0]= imgList[0]
-        
-        for j in range(img_phaseSolveList.shape[0]):
-            m4NewImage= img_phaseSolveList[0] + img_phaseSolveList[j]
+        #img_phaseSolveList[len(img_phaseSolveList)-1].data= imgList[len(imgList)-1].data
+          
+          
+        for j in range(1, len(img_phaseSolveList)):
+            if m4NewImage is None:
+                m4NewImage= np.ma.array(img_phaseSolveList[0].filled(1)* img_phaseSolveList[j].filled(1), 
+                                         mask=(img_phaseSolveList[0].mask * img_phaseSolveList[j].mask))
+            else:
+                m4NewImage = np.ma.array(m4NewImage.filled(1) * img_phaseSolveList[j].filled(1), 
+                                         mask=(m4NewImage.mask * img_phaseSolveList[j].mask))
             
-        return m4NewImage
+        return m4NewImage, img_phaseSolveList, imgList
+    
+    
+    
+    
+    
         
         
     def masterRoiPhaseSolver(self, segIma):
