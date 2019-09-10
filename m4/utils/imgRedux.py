@@ -4,36 +4,64 @@
 
 import numpy as np
 from m4.utils.configuration import Configuration
-from m4.ground.zernikeGenerator import ZernikeGenerator
 from m4.utils.roi import ROI
+from m4.ground.zernikeGenerator import ZernikeGenerator
 
 
 class TipTiltDetrend():
     
     def __init__(self):
-        self._pupillXYR= Configuration.ParabolaPupilXYRadius
+        self._pupilXYRadius= Configuration.ParabolaPupilXYRadius
+        self._zg= ZernikeGenerator(2*self._pupilXYRadius[2])
+    
+    def tipTiltRemover(self, image, roi):   
+
+        coef= self.zernikeFit(image, np.array([2,3]))
+        surfaceMap=self.zernikeSurface(coef)
+        
+        cx= self._pupilXYRadius[0]
+        cy= self._pupilXYRadius[1]
+        r= self._pupilXYRadius[2]
+        imaCut=image[cy-r:cy+r, cx-r:cx+r]
+        imageTTR= np.ma.masked_array(imaCut.data - surfaceMap, mask=np.invert(roi))
+            
+        return surfaceMap, imageTTR
+  
+       
+    def zernikeFit(self, img, zernikeMode):
+        '''
+        zernikeMode= vector of Zernike modes to remove
+        '''
+        z= self._zg.getZernike(2)
+        nPointsInMask= len(z.compressed())
+        cx= self._pupilXYRadius[0]
+        cy= self._pupilXYRadius[1]
+        r= self._pupilXYRadius[2]
+        imaCut=img[cy-r:cy+r, cx-r:cx+r]
+        imaCutM= np.ma.masked_array(imaCut.data, mask=z.mask)
+        
+        a=np.zeros(zernikeMode.size)
+        
+        for i in range(0, zernikeMode.size):
+            z=self._zg.getZernike(zernikeMode[i])
+            a[i]= np.dot(z.compressed(),imaCutM.compressed()) / nPointsInMask
+            
+        return a
     
     
-    def tipTiltRemover(self, image, roi, analyzerIFFunctions):
-        imaList=[]
-        for r in roi:
-            a= np.ma.masked_array(image.data, mask= r)
-            imaList.append(a)
-        
-        zm4= ZernikeGenerator(analyzerIFFunctions)
-        zm4.setPupilCenterAndRadiusInIFCoords(self._pupillXYR[0], self._pupillXYR[1], self._pupillXYR[2])    
+    def zernikeSurface(self, surfaceZernikeCoeffArray):
+        surfaceMap=0.0;
+        firstZernModeIndex= 2
+        lastZernModeIndex= 2+len(surfaceZernikeCoeffArray)
+        indexZernModes= np.arange(firstZernModeIndex, lastZernModeIndex)
+        zd= self._zg.getZernikeDict(indexZernModes)
             
-        tipTiltList=[]
-        for ima in imaList:
-            tt= zm4.zernikeFit(ima, np.array([2,3]))
-            tipTiltList.append(tt)
+        for i in indexZernModes:
+            surfaceMap= surfaceMap+ surfaceZernikeCoeffArray[i-2]*zd[i]
         
-        ttMean= np.mean(tt, 0)
-        zernikeCmd, surfaceMap= zm4.zernikeToDMCommand(ttMean)
-        ttImage= image - surfaceMap
-            
-        return ttImage
-        
+        return surfaceMap
+  
+    
         
 
 class PhaseSolve():
@@ -67,14 +95,15 @@ class PhaseSolve():
             media.append(m)
             imgList.append(imgg)
                
-        aa= np.arange(self._n.shape[0])   
+        aa= np.arange(self._n.shape[0])
         zipped= zip(aa, imgList)
         img_phaseSolveList=[]
         for i, imgg in zipped:
             img_phaseSolve= np.ma.masked_array(imgg.data - self._n[i], mask= np.invert(imgg.mask))
             img_phaseSolveList.append(img_phaseSolve)
         
-        #img_phaseSolveList[len(img_phaseSolveList)-1].data= imgList[len(imgList)-1].data
+        img_phaseSolveList[len(img_phaseSolveList)-1]= np.ma.masked_array(imgList[len(imgList)-1].data, 
+                                                                mask= np.invert(imgList[len(imgList)-1].mask))
           
           
         for j in range(1, len(img_phaseSolveList)):
@@ -88,14 +117,21 @@ class PhaseSolve():
         return m4NewImage, img_phaseSolveList, imgList
     
     
-    
-    
-    
         
         
-    def masterRoiPhaseSolver(self, segIma):
-        pass
-            
+    def masterRoiPhaseSolver(self, segIma, splValue):
+        self.n_calculator(splValue)
+        roiList= self._r._ROIonSegment(segIma)
+          
+        img= np.zeros(segIma.shape)
+        img[np.where(roiList[1]== True)]= np.ma.compress(roiList[1].ravel(), segIma)
+        imgg= np.ma.masked_array(img, mask= roiList[1])
+        
+        img_phaseSolve= np.ma.masked_array(imgg.data - self._n, mask= np.invert(imgg.mask))
+        
+        return img_phaseSolve
+          
+          
             
             
             

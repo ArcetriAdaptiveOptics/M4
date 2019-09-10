@@ -132,7 +132,7 @@ def main0409_ROI(ima):
     return label_im, markers, roi_mask
     
   
-def main0509_makeImgWhitPhase(m4):
+def main0509_makeM4ImgWhitPhase(m4):
     mask=np.zeros(m4.shape, dtype=np.bool) 
     mask[np.where(m4==m4.max())]=1  
     imam4=np.ma.masked_array(m4 * 10, mask=mask)
@@ -160,19 +160,87 @@ def main0509_makeImgWhitPhase(m4):
             finalIma= finalIma + bb.data
     
     finalImag= np.ma.masked_array(finalIma, mask=imam4.mask)
-     
+    
+    fitsFileName= os.path.join('/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova', 'imgProvaM4.fits')
+    header= pyfits.Header()
+    pyfits.writeto(fitsFileName, finalImag.data, header)
+    pyfits.append(fitsFileName, finalImag.mask.astype(int), header)
+    pyfits.append(fitsFileName, a, header)
+    return finalImag
+
+def main1009_makeSegImgWhitPhase(seg):
+    mask=np.zeros(seg.shape, dtype=np.bool) 
+    mask[np.where(seg==seg.max())]=1  
+    imaseg=np.ma.masked_array(seg * 10, mask=mask)
+    
+    from m4.utils.roi import ROI
+    r=ROI()
+    roi= r._ROIonSegment(imaseg)
+    finalIma= None
+    a=np.array((0,20,40))
+    aa= np.arange(a.shape[0])
+    cc= np.arange(len(roi))
+    zipped= zip(aa, cc)
+    bbList=[]
+    for i,j in zipped:
+        bb=np.zeros(imaseg.shape)
+        bb[np.where(roi[j]== True)]=a[i]
+        bbList.append(bb)
+    for bb in bbList:   
+        if finalIma is None: 
+            finalIma= imaseg.data + bb.data
+        else:
+            finalIma= finalIma + bb.data
+    
+    finalImag= np.ma.masked_array(finalIma, mask=imaseg.mask)
+    fitsFileName= os.path.join('/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova', 'imgProvaSeg.fits')
+    header= pyfits.Header()
+    pyfits.writeto(fitsFileName, finalImag.data, header)
+    pyfits.append(fitsFileName, finalImag.mask.astype(int), header)
+    pyfits.append(fitsFileName, a, header)
     return finalImag
     
     
-def main0609_TESTps():  
-    m4, seg, imas, ima= main0409_imageM4()
-    finalIma= main0509_makeImgWhitPhase(m4) 
+    
+def main0609_TESTpsM4():  
+    fitsFileName= os.path.join('/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova', 'imgProva.fits')
+    header= pyfits.getheader(fitsFileName)
+    hduList= pyfits.open(fitsFileName)
+    finalIma= np.ma.masked_array(hduList[0].data, hduList[1].data.astype(bool))
+    #m4, seg, imas, ima= main0409_imageM4()
+    #finalIma= main0509_makeImgWhitPhase(m4) 
     from m4.utils.imgRedux import PhaseSolve
     ps= PhaseSolve()
     spl=np.array((20,30,40,50,60,10))
     m4NewImage, img_phaseSolveList, imgList= ps.m4PhaseSolver(finalIma, spl)
     return m4NewImage, img_phaseSolveList, imgList
     
+
+def main1009_TESTpsSeg():
+    fitsFileName= os.path.join('/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova', 'imgProvaSeg.fits')
+    header= pyfits.getheader(fitsFileName)
+    hduList= pyfits.open(fitsFileName)
+    finalIma= np.ma.masked_array(hduList[0].data, hduList[1].data.astype(bool))
+    from m4.utils.imgRedux import PhaseSolve
+    ps= PhaseSolve()
+    spl=np.array([5])
+    img_phaseSolve= ps.masterRoiPhaseSolver(finalIma, spl)
+    return img_phaseSolve
+
+
+def main1009_tiptil():
+    fitsFileName= os.path.join('/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova', 'imgProvaSeg.fits')
+    header= pyfits.getheader(fitsFileName)
+    hduList= pyfits.open(fitsFileName)
+    finalIma= np.ma.masked_array(hduList[0].data, hduList[1].data.astype(bool))
+    from m4.utils.roi import ROI
+    r=ROI()
+    roi= r._ROIonSegment(finalIma)
+    from m4.utils.imgRedux import TipTiltDetrend 
+    tt= TipTiltDetrend()
+    surfaceMap, imageTTR= tt.tipTiltRemover(finalIma, roi[1])
+    return finalIma, imageTTR
+
     
 #     
 #     n= ps.n_calculator(spl)

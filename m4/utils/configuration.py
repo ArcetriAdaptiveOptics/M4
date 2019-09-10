@@ -16,7 +16,7 @@ class Configuration(object):
     #Interf  
         Lambda= 2
     #Ott
-        ParabolaPupilXYRadius= np.array([0, 0, 1]) #centerX, centerY, radius
+        ParabolaPupilXYRadius= np.array([256, 256, 256]) #centerX, centerY, radius
     #DM
         n_Seg= 6
         nActsTot= 5352
