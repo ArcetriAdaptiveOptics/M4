@@ -3,7 +3,7 @@
 '''
 
 import numpy as np
-from m4.utils.configuration import Configuration
+from m4.ground.configuration import Configuration
 from m4.utils.roi import ROI
 from m4.ground.zernikeGenerator import ZernikeGenerator
 
@@ -28,7 +28,7 @@ class TipTiltDetrend():
         return surfaceMap, imageTTR
   
        
-    def zernikeFit(self, img, zernikeMode):
+    def _zernikeFit(self, img, zernikeMode):
         '''
         zernikeMode= vector of Zernike modes to remove
         '''
@@ -49,7 +49,7 @@ class TipTiltDetrend():
         return a
     
     
-    def zernikeSurface(self, surfaceZernikeCoeffArray):
+    def _zernikeSurface(self, surfaceZernikeCoeffArray):
         surfaceMap=0.0;
         firstZernModeIndex= 2
         lastZernModeIndex= 2+len(surfaceZernikeCoeffArray)

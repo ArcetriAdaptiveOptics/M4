@@ -3,10 +3,10 @@
 '''
 
 import os 
-from m4.utils.configuration import Configuration
+from m4.ground.configuration import Configuration
 from m4.analyzerIFFunctions import AnalyzerIFF
-from m4.utils.trackingNumberFolder import TtFolder
-from m4.utils.tipTiltDetrend import TipTiltDetrend
+from m4.ground.trackingNumberFolder import TtFolder
+from m4.utils.imgRedux import TipTiltDetrend
 import numpy as np
 import pyfits
 

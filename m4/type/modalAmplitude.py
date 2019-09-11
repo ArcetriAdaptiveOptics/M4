@@ -3,7 +3,7 @@
 '''
 
 
-from m4.utils.configuration import Configuration
+from m4.ground.configuration import Configuration
 import os   
 import pyfits
     

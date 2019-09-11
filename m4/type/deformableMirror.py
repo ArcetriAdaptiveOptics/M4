@@ -2,7 +2,7 @@
 @author: cs
 '''
 
-from m4.utils.configuration import Configuration
+from m4.ground.configuration import Configuration
 
 class m4(object):
     def __init__(self):

@@ -103,7 +103,7 @@ class AnalyzerIFF(object):
         return theObject
     
     
-    def setAnalysisMark(self, analysisMask):
+    def setAnalysisMask(self, analysisMask):
         self._analysisMask= analysisMask
     
     def setAnalysisMaskFromMasterMask(self):

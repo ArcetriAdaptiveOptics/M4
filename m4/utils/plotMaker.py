@@ -6,7 +6,7 @@ import pyfits
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import ion 
-from m4.utils.configuration import Configuration
+from m4.ground.configuration import Configuration
 
 
     #cmd=np.random.rand(5352)

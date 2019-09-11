@@ -99,9 +99,9 @@ def main0409_imageM4():
     ima= hduList[0].data
     segment= ima[1]
     
-    mask=np.zeros(segment.shape, dtype=np.bool) 
-    mask[np.where(segment==segment.max())]=1  
-    imaseg=np.ma.masked_array(segment * 632.8e-9, mask=mask)
+    #mask=np.zeros(segment.shape, dtype=np.bool) 
+    #mask[np.where(segment==segment.max())]=1  
+    imaseg=np.ma.masked_array(segment * 632.8e-9, mask=segment)
     
     mask=np.zeros(m4.shape, dtype=np.bool) 
     mask[np.where(m4==m4.max())]=1  
@@ -159,7 +159,7 @@ def main0509_makeM4ImgWhitPhase(m4):
         else:
             finalIma= finalIma + bb.data
     
-    finalImag= np.ma.masked_array(finalIma, mask=imam4.mask)
+    finalImag= np.ma.masked_array(finalIma, mask=np.invert(imam4.mask))
     
     fitsFileName= os.path.join('/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova', 'imgProvaM4.fits')
     header= pyfits.Header()
@@ -241,43 +241,17 @@ def main1009_tiptil():
     surfaceMap, imageTTR= tt.tipTiltRemover(finalIma, roi[1])
     return finalIma, imageTTR
 
-    
-#     
-#     n= ps.n_calculator(spl)
-#     
-#     from m4.utils.roi import ROI
-#     r=ROI()
-#     roiList= r._ROIonM4(finalIma)
-#     media=[]
-#     imgList=[]
-#     for roi in roiList:
-#         img= np.zeros(finalIma.shape)
-#         img[np.where(roi== True)]= np.ma.compress(roi.ravel(), finalIma)
-#         imgg= np.ma.masked_array(img, mask= roi)
-#         m= img.mean()
-#         media.append(m)
-#         imgList.append(imgg)
-#         
-#     aa= np.arange(n.shape[0])   
-#     zipped= zip(aa, imgList)
-#     img_phaseSolveList=[]
-#     for i, imgg in zipped:
-#         img_phaseSolve= np.ma.masked_array(imgg.data - n[i], mask= np.invert(imgg.mask))
-#         img_phaseSolveList.append(img_phaseSolve)
-#      
-#     m4NewImage= None   
-#     for j in range(1, len(img_phaseSolveList)):
-#             if m4NewImage is None:
-#                 m4NewImage= np.ma.array(img_phaseSolveList[0].filled(1)* img_phaseSolveList[j].filled(1), 
-#                                          mask=(img_phaseSolveList[0].mask * img_phaseSolveList[j].mask))
-#             else:
-#                 m4NewImage = np.ma.array(m4NewImage.filled(1) * img_phaseSolveList[j].filled(1), 
-#                                          mask=(m4NewImage.mask * img_phaseSolveList[j].mask))
-#         
-#     
-#     return finalIma, roiList, media, imgList, img_phaseSolveList, m4NewImage
-    
-    
+def main1109_tiptilt(imas):
+    from m4.utils.imgRedux import TipTiltDetrend 
+    tt= TipTiltDetrend()
+    sur= tt.zernikeSurface(np.array([3,3,10]))
+    aa= np.ma.masked_array(sur, mask= np.invert(imas.mask))
+    from m4.utils.roi import ROI
+    r=ROI()
+    roi= r._ROIonSegment(imas)
+    surfaceMap, imageTTR= tt.tipTiltRemover(aa, roi[1])
+    return aa, imageTTR
+
 
     
     
