@@ -55,7 +55,7 @@ class ROI():
         for i in range(2,5):
             maski=np.zeros(roi_mask.shape, dtype=np.bool)
             maski[np.where(roi_mask==i)]=1 
-            roiList.append(maski)
+            roiList.append(np.invert(maski))
             
         self._DetectorROI= roiList    
         return self._DetectorROI
@@ -82,7 +82,7 @@ class ROI():
         for i in range(2,8):
             maski=np.zeros(roi_mask.shape, dtype=np.bool)
             maski[np.where(roi_mask==i)]=1 
-            roiList.append(maski)
+            roiList.append(np.invert(maski))
             
         self._DetectorROI= roiList    
         return self._DetectorROI

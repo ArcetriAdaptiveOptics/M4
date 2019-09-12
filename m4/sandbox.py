@@ -244,12 +244,13 @@ def main1009_tiptil():
 def main1109_tiptilt(imas):
     from m4.utils.imgRedux import TipTiltDetrend 
     tt= TipTiltDetrend()
-    sur= tt.zernikeSurface(np.array([3,3,10]))
+    sur= tt._zernikeSurface(np.array([10,10, 3]))
     aa= np.ma.masked_array(sur, mask= np.invert(imas.mask))
     from m4.utils.roi import ROI
     r=ROI()
     roi= r._ROIonSegment(imas)
-    surfaceMap, imageTTR= tt.tipTiltRemover(aa, roi[1])
+    
+    surfaceMap, imageTTR= tt.tipTiltRemover(aa, roi)
     return aa, imageTTR
 
 

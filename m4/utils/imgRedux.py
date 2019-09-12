@@ -15,15 +15,23 @@ class TipTiltDetrend():
         self._zg= ZernikeGenerator(2*self._pupilXYRadius[2])
     
     def tipTiltRemover(self, image, roi):   
-
-        coef= self.zernikeFit(image, np.array([2,3]))
-        surfaceMap=self.zernikeSurface(coef)
+        coefList=[]
+        for r in roi:
+            ima= np.ma.masked_array(image.data, mask=r)
+            coef= self._zernikeFit(ima, np.array([2,3]))
+            coefList.append(coef)
+            
+        tip= (coefList[0][0] + coefList[2][0])/2.
+        tilt= (coefList[0][1] + coefList[2][1])/2.
+        
+        surfcoef= np.array([tip, tilt]) 
+        surfaceMap=self._zernikeSurface(surfcoef)
         
         cx= self._pupilXYRadius[0]
         cy= self._pupilXYRadius[1]
         r= self._pupilXYRadius[2]
         imaCut=image[cy-r:cy+r, cx-r:cx+r]
-        imageTTR= np.ma.masked_array(imaCut.data - surfaceMap, mask=np.invert(roi))
+        imageTTR= np.ma.masked_array(imaCut.data - surfaceMap, mask=roi[1])
             
         return surfaceMap, imageTTR
   
@@ -33,18 +41,19 @@ class TipTiltDetrend():
         zernikeMode= vector of Zernike modes to remove
         '''
         z= self._zg.getZernike(2)
-        nPointsInMask= len(z.compressed())
         cx= self._pupilXYRadius[0]
         cy= self._pupilXYRadius[1]
         r= self._pupilXYRadius[2]
         imaCut=img[cy-r:cy+r, cx-r:cx+r]
         imaCutM= np.ma.masked_array(imaCut.data, mask=z.mask)
         
-        a=np.zeros(zernikeMode.size)
-        
+        mat= np.zeros((z.compressed().shape[0], zernikeMode.size))
         for i in range(0, zernikeMode.size):
             z=self._zg.getZernike(zernikeMode[i])
-            a[i]= np.dot(z.compressed(),imaCutM.compressed()) / nPointsInMask
+            mat.T[i]= z.compressed()
+         
+        inv= np.linalg.pinv(mat)   
+        a= np.dot(inv,imaCutM.compressed())
             
         return a
     
