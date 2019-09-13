@@ -58,21 +58,23 @@ class IFFunctionsMaker(object):
         cmdH= CmdHistory(self._device)
         
         if shuffle is None:
-            commandHistoryMatrixToApply= cmdH.tidyCommandHistoryMaker(modesVector,
+            commandHistoryMatrixToApply, tt_cmdH= cmdH.tidyCommandHistoryMaker(modesVector,
                                                                   amplitude,
                                                                   cmdMatrix, 
                                                                   nPushPull)
         else:
-            commandHistoryMatrixToApply= cmdH.shuffleCommandHistoryMaker(modesVector,
+            commandHistoryMatrixToApply, tt_cmdH= cmdH.shuffleCommandHistoryMaker(modesVector,
                                                                   amplitude,
                                                                   cmdMatrix, 
                                                                   nPushPull)
         self._indexingList= cmdH.getIndexingList()
-        self._saveInfo(dove, self._who, amplitude, indexingImput,
+        self._saveInfo(dove, self._who, tt_cmdH, amplitude, indexingImput,
                         nPushPull, cmdMatrix, self._indexingList)
          
          
         self._applyToDM() 
+        
+        return tt
            
            
     def _diagonalControll(self, matrix):
@@ -85,16 +87,41 @@ class IFFunctionsMaker(object):
         
      
     def _applyToDM(self):
-        pass       
+        pass
+    
+    def _testIFFunctions(self):
+        fold='/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/OIM_25modes.fits' 
+        hduList= pyfits.open(fold) 
+        cube50= hduList[0].data
+        
+        imaList=[]
+        maskList=[]
+        for i in range(cube50.shape[0]):
+            if i%2 == 0:
+                imaList.append(cube50[i])
+            else:
+                maskList.append(cube50[i])
+                
+        cube25= None
+        zipped= zip(imaList, maskList)      
+        for ima, mask in zipped:
+            immagine=np.ma.masked_array(ima, mask= mask)
+            if cube25 is None:
+                cube25= immagine
+            else:
+                cube25= np.ma.dstack((cube25, immagine))
+        
+        return cube25
      
             
-    def _saveInfo(self, folder, who, amplitude,vectorOfActuatorsOrModes,
+    def _saveInfo(self, folder, who, tt_cmdH, amplitude,vectorOfActuatorsOrModes,
                      nPushPull, cmdMatrix, indexingList):
             
         fitsFileName= os.path.join(folder, 'info.fits')
         header= pyfits.Header()
         header['NPUSHPUL']= nPushPull
         header['WHO']= who
+        header['TT_CMDH']= tt_cmdH
         pyfits.writeto(fitsFileName, vectorOfActuatorsOrModes, header)
         pyfits.append(fitsFileName, cmdMatrix, header)
         pyfits.append(fitsFileName, amplitude, header)
@@ -111,12 +138,13 @@ class IFFunctionsMaker(object):
         cmdAmpl= hduList[2].data
         indexingList= hduList[3].data
         who= header['WHO']
+        tt_cmdH= header['TT_CMDH']
         try:
             nPushPull= header['NPUSHPUL']
         except KeyError:
             nPushPull= 1
             
-        return (who, actsVector, cmdMatrix, cmdAmpl, nPushPull, indexingList)
+        return (who, tt_cmdH, actsVector, cmdMatrix, cmdAmpl, nPushPull, indexingList)
      
             
             

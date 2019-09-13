@@ -60,7 +60,7 @@ class CmdHistory(object):
         logger.log('Creazione della commandHistoryMatrix', 'ordinata', tt)
         print(tt)
         
-        return matrixToApply
+        return matrixToApply, tt
     
     
     def shuffleCommandHistoryMaker(self, modeVector, ampVector, 
@@ -75,7 +75,7 @@ class CmdHistory(object):
         logger.log('Creazione della commandHistoryMatrix', 'casuale', tt)
         print(tt)
         
-        return matrixToApply
+        return matrixToApply, tt
         
     
     def _shuffleCmdHistory(self, modeVector, nPushPull, cmdMatrix):

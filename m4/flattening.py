@@ -26,9 +26,9 @@ class Flattenig():
                                        "Flattening")
         
         
-    def flatCommand(self):
+    def flatCommand(self, wf):
         #comando che permette di ottenere la misura del wf dall'interferometro (wf)
-        wf=np.zeros(7)
+        #wf=np.zeros(7)
         
         self._an.setDetectorMask(wf.mask | self._an.getMasterMask())
         rec= self._an.getReconstructor()

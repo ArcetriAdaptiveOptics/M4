@@ -38,7 +38,7 @@ def createActMap(cmd):
     y=co[1][:] 
     
     plt.clf()
-    plt.scatter(x, y, c=cmd)
+    plt.scatter(x, y, c=cmd, marker=",") #marker dimensione del pixel
     plt.colorbar()
     ion()  #per continuare a lavorare da terminale
     plt.show()
