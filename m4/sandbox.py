@@ -255,37 +255,36 @@ def main1109_tiptilt(imas):
     return aa, imageTTR
 
 
-    
-def main1309_testIFF_measureCreator():
-    from m4.utils import createDevice 
-    device= createDevice.myDevice("segment") 
+### FUNZIONI PER TEST IFF ###    
+def testIFF_shuffleMeasureCreator(device, cmdMatrix, modeVect, amp, nPushPull):
+    modeVectInput= np.copy(modeVect)
     from m4.influenceFunctionsMaker import IFFunctionsMaker
     IF= IFFunctionsMaker(device) 
     
-    cmdMatrix=np.zeros([892,800]) 
-    cmdMatrix.T[3]=np.ones(892)
-    cmdMatrix.T[7]=np.ones(892)
-    cmdMatrix.T[21]=np.ones(892)
-    #modeVect=np.array([1,17,20])
-    #amp= np.array([1,2,3])
-    modeVect=np.array([1,3,7,9,11,17,18,19,20])
-    amp= np.arange(9)+1
-    tt= IF.acq_IFFunctions(modeVect, 3, amp, cmdMatrix, 1)
+    tt= IF.acq_IFFunctions(modeVect, nPushPull, amp, cmdMatrix, 1)
     
     folder= os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, "IFFunctions", tt)
     who, tt_cmdH, actsVector, cmdMatrix, amplitude, nPushPull, indexingList= IF.loadInfo(folder)
     
-    cube= IF._testIFFunctions()
+    cube= IF._testIFFunctions_createCube25fromFileFitsMeasure()
+    from m4.type.commandHistory import CmdHistory
+    cmdH= CmdHistory(device)
+    amplReorg= cmdH._amplitudeReorganization(modeVectInput, indexingList, amp, nPushPull)
      
     misure= None 
     for i in range(indexingList.shape[0]):
         for j in range(indexingList.shape[1]):
+            mask= np.invert(cube[:,:,indexingList[i][j]].mask)
+            k= i * indexingList.shape[1] + j
             if misure is None:
-                misure= cube[:,:,indexingList[i][j]].data
-                misure= np.ma.dstack((misure, cube[:,:,indexingList[i][j]].data * -1))
+                misure= np.ma.masked_array(cube[:,:,indexingList[i][j]].data * amplReorg[k], mask= mask)
+                misure= np.ma.dstack((misure, np.ma.masked_array(cube[:,:,indexingList[i][j]].data * amplReorg[k] * -1, 
+                                                                 mask= mask)))
             else:
-                misure= np.ma.dstack((misure, cube[:,:,indexingList[i][j]].data * 1))
-                misure= np.ma.dstack((misure, cube[:,:,indexingList[i][j]].data * -1))
+                misure= np.ma.dstack((misure, np.ma.masked_array(cube[:,:,indexingList[i][j]].data * amplReorg[k] * 1,
+                                                                  mask= mask)))
+                misure= np.ma.dstack((misure, np.ma.masked_array(cube[:,:,indexingList[i][j]].data * amplReorg[k] * -1,
+                                                                  mask= mask)))
     
     fitsFileName= os.path.join(folder, 'misure.fits')
     header= pyfits.Header()
@@ -300,26 +299,32 @@ def main1309_testIFF_measureCreator():
     pyfits.append(fitsFileName, misure.mask.astype(int), header)
     return tt
 
-def main1309_testIFF_an(tt):
+def testIFF_tidyMeasureCreator(device, cmdMatrix, modeVect, amp, nPushPull):
+    pass
+
+def testIFF_an(tt):
     from m4.analyzerIFFunctions import AnalyzerIFF
-    an= AnalyzerIFF()
-    cube= an.createCube(tt)
+    fileName= os.path.join("/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions", tt)
+    an= AnalyzerIFF.loadMeasureFromFits(fileName)
+    cube= an.createCube()
     intMat= an.getInteractionMatrix()
     rec= an.getReconstructor()
     prod= np.dot(rec, intMat)
-    return an, prod
+    return an, prod, cube
 
-def main1309_testIFF_spiano(an, i):
-    cubeMeasure= an._cubeMeasure
-    wf= cubeMeasure[:, :, i]
+def testIFF_spiano(an):
+    ampr= np.random.randn(25)
+    wf= np.dot(an._cube, ampr)
     
     an.setDetectorMask(wf.mask | an.getMasterMask())
     rec= an.getReconstructor()
     wf_masked = np.ma.masked_array(wf.data, 
                                        mask=np.ma.mask_or(wf.mask, an.getMasterMask()))
         
-    command= -np.dot(rec, wf_masked.compressed())
-    return command
+    amp= np.dot(rec, wf_masked.compressed())
+    surf= np.dot(an._cube, amp)
+    spWf= wf - surf
+    return amp, spWf
     
     
     

@@ -89,7 +89,7 @@ class IFFunctionsMaker(object):
     def _applyToDM(self):
         pass
     
-    def _testIFFunctions(self):
+    def _testIFFunctions_createCube25fromFileFitsMeasure(self):
         fold='/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/OIM_25modes.fits' 
         hduList= pyfits.open(fold) 
         cube50= hduList[0].data
@@ -110,7 +110,6 @@ class IFFunctionsMaker(object):
                 cube25= immagine
             else:
                 cube25= np.ma.dstack((cube25, immagine))
-        
         return cube25
      
             

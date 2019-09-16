@@ -8,8 +8,8 @@ import pyfits
 import os
 from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influenceFunctionsMaker import IFFunctionsMaker
-from pylint.test.functional import bad_staticmethod_argument
-from _pylief import NONE
+from numpy import who
+
 
 class AnalyzerIFF(object):
     
@@ -63,25 +63,43 @@ class AnalyzerIFF(object):
                 where.append(a)      
         return where
     
+    def _amplitudeReorganization(self, indexingInput, indexingList, 
+                                 amplitude, nPushPull):
+        where=[] 
+        for i in indexingInput:           
+            for j in range(nPushPull): 
+                a=np.where(indexingList[j]==i)  
+                where.append(a) 
+        where=np.array(where)
+        vect=np.zeros(amplitude.shape[0]*nPushPull) 
+          
+        for i in range(amplitude.shape[0]): 
+            for k in range(nPushPull): 
+                p= nPushPull * i + k
+                indvect=where[p][0][0]+ indexingInput.shape[0] * k
+                vect[indvect]=amplitude[i]
+        return vect
     
-    def createCube(self, tt):
+    
+    def createCube(self):
         cubeAllAct= None
         #self._ttData()
         #logger.log('Creazione del cubo delle IFF per', self._who, self._tt)
-        self._cubeMeasure, self._actsVector, cmdMatrix, cmdAmplitude, self._indexingList, who, tt_cmdH, self._nPushPull= self.loadMeasureFromFits(tt)
         where= self._indexReorganization()
         misurePos, misureNeg= self._splitMeasureFromFits(self._cubeMeasure)
+        amplReorg= self._amplitudeReorganization(self._actsVector, self._indexingList, self._amplitude, self._nPushPull)
+        
         
         for i in range(self._actsVector.shape[0]):
             for k in range(self._nPushPull):
                 p= self._nPushPull * i + k
-                where= self._indexReorganization()
+                #where= self._indexReorganization()
                 n=where[p][0][0]
                 mis= k* self._indexingList.shape[1] + n
                 
                 imgPos= misurePos[:,:,mis]
                 imgNeg= misureNeg[:,:,mis]
-                imgIF= (imgPos - imgNeg) / 2 #non divido per l'ampiezza perchè nelle misure non c'è
+                imgIF= (imgPos - imgNeg) / (2 * amplReorg[mis])
                 ifPushPullKth= imgIF-np.ma.median(imgIF)
                 
                 if k==0:
@@ -157,19 +175,23 @@ class AnalyzerIFF(object):
         fitsFileName= os.path.join(dove, 'misure.fits')
         header= pyfits.getheader(fitsFileName)
         hduList= pyfits.open(fitsFileName)
-        misure= np.ma.masked_array(hduList[4].data, hduList[5].data.astype(bool))
-        actsVector= hduList[0].data
-        cmdMatrix= hduList[1].data
-        cmdAmplitude= hduList[2].data
-        indexingList= hduList[3].data
+        theObject= AnalyzerIFF()
+        theObject._cubeMeasure= np.ma.masked_array(hduList[4].data, hduList[5].data.astype(bool))
+        theObject._actsVector= hduList[0].data
+        theObject._cmdMatrix= hduList[1].data
+        theObject._amplitude= hduList[2].data
+        theObject._indexingList= hduList[3].data
         who= header['WHO']
         tt_cmdH= header['TT_CMDH']
         try:
             nPushPull= header['NPUSHPUL']
         except KeyError:
             nPushPull= 1
+        theObject._who= who
+        theObject._tt_cmdH= tt_cmdH
+        theObject._nPushPull= nPushPull
         
-        return misure, actsVector, cmdMatrix, cmdAmplitude, indexingList, who, tt_cmdH, nPushPull
+        return theObject
 
         
     
