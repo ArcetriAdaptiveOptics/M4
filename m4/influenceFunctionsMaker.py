@@ -39,6 +39,10 @@ class IFFunctionsMaker(object):
              cmdMatrix= matrice dei comandi dei modi 
                          (nActs x nModes)
                          matrice diagonale nel caso di comandi zonali
+             shuffle= se non indicato viene creata la matrice della storia dei comandi ordinata
+             
+        return:
+                tracking number delle misure effettuate
         '''
         storeInFolder= self._storageFolder()
         indexingImput= copy.copy(modesVector)

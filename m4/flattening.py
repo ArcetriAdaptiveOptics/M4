@@ -7,6 +7,7 @@ from m4.ground.configuration import Configuration
 from m4.analyzerIFFunctions import AnalyzerIFF
 from m4.ground.trackingNumberFolder import TtFolder
 from m4.utils.imgRedux import TipTiltDetrend
+from m4.influenceFunctionsMaker import IFFunctionsMaker
 import numpy as np
 import pyfits
 
@@ -14,7 +15,8 @@ import pyfits
 class Flattenig():
     
     def __init__(self, trackingNumber):
-        self.iffPath= os.path.join(Configuration.FLATTENING_ROOT_FOLDER, trackingNumber)
+        IF= IFFunctionsMaker()
+        self.iffPath= os.path.join(IF._storageFolder(), trackingNumber)
         self._an= AnalyzerIFF.loadInfoFromh5Folder(self.iffPath)
         self._who= self._an._who
         self._command= None

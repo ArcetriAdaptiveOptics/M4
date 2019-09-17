@@ -52,10 +52,9 @@ class TestCalc(unittest.TestCase):
         
         from m4 import sandbox
         tt= sandbox.testIFF_tidyMeasureCreator(device, cmdMatrix, modeVect, amp, nPushPull)
-        #an, prod, cube= sandbox.testIFF_an(tt)  
-        #amp, spWf= sandbox.testIFF_spiano(an)
-        #aa= spWf.std()
-        aa= 0
+        an, prod, cube= sandbox.testIFF_an(tt)  
+        amp, spWf= sandbox.testIFF_spiano(an)
+        aa= spWf.std()
         
         if aa <1e-6:
             result = True

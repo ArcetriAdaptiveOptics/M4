@@ -8,7 +8,9 @@ import pyfits
 import os
 from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influenceFunctionsMaker import IFFunctionsMaker
-from numpy import who
+from m4.utils.roi import ROI
+from m4.utils.imgRedux import TipTiltDetrend
+from m4.ground.configuration import Configuration
 
 
 class AnalyzerIFF(object):
@@ -65,6 +67,15 @@ class AnalyzerIFF(object):
     
     def _amplitudeReorganization(self, indexingInput, indexingList, 
                                  amplitude, nPushPull):
+        '''
+            arg:
+                indexingInput= vettore di modi scelti per la realizzazione delle funzioni d'influenza
+                indexingList= tupla che indica come sono stati applicati i modi
+                amplitude= ampiezza dei modi applicati
+                
+            return:
+                vect= vettore (amp.shape x nPushPull.shape) con le ampiezze ordinate nello stesso modo dell'indexingList
+        '''
         where=[] 
         for i in indexingInput:           
             for j in range(nPushPull): 
@@ -81,13 +92,18 @@ class AnalyzerIFF(object):
         return vect
     
     
-    def createCube(self):
+    def createCube(self, tiptiltDetrend= None, phaseAmbiguity= None):
+        '''
+            arg:
+                ttDetrend= 
+                phaseSolve=
+        '''
         cubeAllAct= None
-        #self._ttData()
-        #logger.log('Creazione del cubo delle IFF per', self._who, self._tt)
+        self._ttData()
+        self._logCubeCreation(tiptiltDetrend, phaseAmbiguity)
         where= self._indexReorganization()
         misurePos, misureNeg= self._splitMeasureFromFits(self._cubeMeasure)
-        amplReorg= self._amplitudeReorganization(self._actsVector, self._indexingList, self._amplitude, self._nPushPull)
+        amplReorg= self._amplitudeReorganization(self._actsVector, self._indexingList, self._cmdAmplitude, self._nPushPull)
         
         
         for i in range(self._actsVector.shape[0]):
@@ -100,6 +116,14 @@ class AnalyzerIFF(object):
                 imgPos= misurePos[:,:,mis]
                 imgNeg= misureNeg[:,:,mis]
                 imgIF= (imgPos - imgNeg) / (2 * amplReorg[mis])
+                if tiptiltDetrend is None:
+                    imgIF= imgIF
+                else:
+                    r=ROI()
+                    roi= r._ROIonSegment(imgIF)
+                    tt= TipTiltDetrend()
+                    surfaceMap, imgIF= tt.tipTiltRemover(imgIF, roi)
+                    
                 ifPushPullKth= imgIF-np.ma.median(imgIF)
                 
                 if k==0:
@@ -138,8 +162,21 @@ class AnalyzerIFF(object):
         
         return misurePos, misureNeg
     
+    def _logCubeCreation(self, tiptiltDetrend= None, phaseAmbiguity= None):
+        if (tiptiltDetrend is None and phaseAmbiguity is None):
+            logger.log('Creazione del cubo delle IFF per', self._who, self._tt, '(Tip e tilt= ignorato, Phase ambiguity= ignorata)')
+        elif tiptiltDetrend is None:
+            logger.log('Creazione del cubo delle IFF per', self._who, self._tt, '(Tip e tilt= ignorato, Phase ambiguity= risolta)')
+        elif phaseAmbiguity is None:
+            logger.log('Creazione del cubo delle IFF per', self._who, self._tt, '(Tip e tilt= rimosso, Phase ambiguity= ignorata)')
+        else:
+            logger.log('Creazione del cubo delle IFF per', self._who, self._tt, '(Tip e tilt= rimosso, Phase ambiguity= risolta)')
     
-    def saveCubeAsFits(self, fitsFileName):
+    
+    def saveCubeAsFits(self, cubeName):
+        tt=self._ttData()
+        dove=os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, 'IFFunctions', tt)
+        fitsFileName= os.path.join(dove, cubeName)
         header= pyfits.Header()
         header['NPUSHPUL']= self._nPushPull
         header['WHO']= self._who
@@ -176,10 +213,11 @@ class AnalyzerIFF(object):
         header= pyfits.getheader(fitsFileName)
         hduList= pyfits.open(fitsFileName)
         theObject= AnalyzerIFF()
+        theObject._h5Folder= dove
         theObject._cubeMeasure= np.ma.masked_array(hduList[4].data, hduList[5].data.astype(bool))
         theObject._actsVector= hduList[0].data
         theObject._cmdMatrix= hduList[1].data
-        theObject._amplitude= hduList[2].data
+        theObject._cmdAmplitude= hduList[2].data
         theObject._indexingList= hduList[3].data
         who= header['WHO']
         tt_cmdH= header['TT_CMDH']

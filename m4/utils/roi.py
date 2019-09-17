@@ -6,6 +6,7 @@ import numpy as np
 import sklearn.feature_extraction as skf_e
 import sklearn.cluster as skc
 import skimage.segmentation as sks
+from skimage.measure import label
 
 
 class ROI():
@@ -38,17 +39,18 @@ class ROI():
         return self._pupilXYRadius 
     
     def _ROIonSegment(self, ima):
-        graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)
-        labels = skc.spectral_clustering(graph, n_clusters=4, eigen_solver='arpack')
+#       graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)
+#       labels = skc.spectral_clustering(graph, n_clusters=4, eigen_solver='arpack')
+        labels = label(ima.mask.astype(int))
         label_im = -np.ones(ima.mask.shape)
-        label_im[ima.mask] = labels
+        label_im[ima.mask.astype(int)] = labels
         
         markers = ima.mask.astype('int')*0
         markers[0,0]=1
-        markers[180,79]=2
-        markers[296,258]=3 
-        markers[170,436]=4
-        markers[34,258]=5
+        markers[73,39]=2
+        markers[115,116]=3
+        markers[79, 221]=4
+        markers[9,128]=5
         roi_mask = sks.random_walker(ima.mask, markers) 
         
         roiList=[]
@@ -62,8 +64,10 @@ class ROI():
     
     
     def _ROIonM4(self, ima):
-        graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)
-        labels = skc.spectral_clustering(graph, n_clusters=7, eigen_solver='arpack')
+#       graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)
+#       labels = skc.spectral_clustering(graph, n_clusters=7, eigen_solver='arpack')
+        
+        labels = label(ima.mask.astype(int))
         label_im = -np.ones(ima.mask.shape)
         label_im[ima.mask] = labels
         

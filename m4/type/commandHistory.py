@@ -45,6 +45,8 @@ class CmdHistory(object):
              cmdMatrix= matrice dei comandi dei modi 
                          (nActs x nModes)
                          matrice diagonale nel caso di comandi zonali
+         return:
+             matrixToApply: command history (nAct, nModes x nPushPusll x 2)
     '''
         
     def tidyCommandHistoryMaker(self, modeVector, ampVector,
@@ -110,7 +112,11 @@ class CmdHistory(object):
         self._modeVector= copy.copy(modeVector)
         self._nPushPull= nPushPull
         self._cmdMatrix= cmdMatrix
-        self._indexingList= np.tile(modeVector, nPushPull)
+        indList=[]
+        for i in range(nPushPull):
+            indList.append(modeVector)
+        self._indexingList= np.array(indList)  
+        #self._indexingList= np.tile(modeVector, nPushPull)
         
         nFrame= modeVector.size * nPushPull
         matrixToApply= np.zeros((self._nActs,nFrame))

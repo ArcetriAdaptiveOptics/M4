@@ -229,7 +229,7 @@ def main1009_TESTpsSeg():
     return img_phaseSolve
 
 
-def main1009_tiptil():
+def main1009_tiptiltImage():
     fitsFileName= os.path.join('/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova', 'imgProvaSeg.fits')
     header= pyfits.getheader(fitsFileName)
     hduList= pyfits.open(fitsFileName)
@@ -242,7 +242,7 @@ def main1009_tiptil():
     surfaceMap, imageTTR= tt.tipTiltRemover(finalIma, roi[1])
     return finalIma, imageTTR
 
-def main1109_tiptilt(imas):
+def main1109_tiptiltZernike(imas):
     from m4.utils.imgRedux import TipTiltDetrend 
     tt= TipTiltDetrend()
     sur= tt._zernikeSurface(np.array([10,10, 3]))
@@ -300,13 +300,51 @@ def testIFF_shuffleMeasureCreator(device, cmdMatrix, modeVect, amp, nPushPull):
     return tt
 
 def testIFF_tidyMeasureCreator(device, cmdMatrix, modeVect, amp, nPushPull):
-    pass
+    from m4.influenceFunctionsMaker import IFFunctionsMaker
+    IF= IFFunctionsMaker(device) 
+    
+    tt= IF.acq_IFFunctions(modeVect, nPushPull, amp, cmdMatrix)
+    
+    folder= os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, "IFFunctions", tt)
+    who, tt_cmdH, actsVector, cmdMatrix, amplitude, nPushPull, indexingList= IF.loadInfo(folder)
+    
+    cube= IF._testIFFunctions_createCube25fromFileFitsMeasure()
+    ampl= np.tile(amplitude, nPushPull)
+    
+    misure= None 
+    for i in range(indexingList.shape[0]):
+        for j in range(indexingList.shape[1]):
+            mask= np.invert(cube[:,:,indexingList[i][j]].mask)
+            k= i * indexingList.shape[1] + j
+            if misure is None:
+                misure= np.ma.masked_array(cube[:,:,indexingList[i][j]].data * ampl[k], mask= mask)
+                misure= np.ma.dstack((misure, np.ma.masked_array(cube[:,:,indexingList[i][j]].data * ampl[k] * -1, 
+                                                                 mask= mask)))
+            else:
+                misure= np.ma.dstack((misure, np.ma.masked_array(cube[:,:,indexingList[i][j]].data * ampl[k] * 1,
+                                                                  mask= mask)))
+                misure= np.ma.dstack((misure, np.ma.masked_array(cube[:,:,indexingList[i][j]].data * ampl[k] * -1,
+                                                                  mask= mask)))
+    
+    fitsFileName= os.path.join(folder, 'misure.fits')
+    header= pyfits.Header()
+    header['NPUSHPUL']= nPushPull
+    header['WHO']= who
+    header['TT_CMDH']= tt_cmdH
+    pyfits.writeto(fitsFileName, actsVector, header)
+    pyfits.append(fitsFileName, cmdMatrix, header)
+    pyfits.append(fitsFileName, amplitude, header)
+    pyfits.append(fitsFileName, indexingList, header)
+    pyfits.append(fitsFileName, misure.data, header)
+    pyfits.append(fitsFileName, misure.mask.astype(int), header)    
+    return tt
+    
 
-def testIFF_an(tt):
+def testIFF_an(tt, ttD= None):
     from m4.analyzerIFFunctions import AnalyzerIFF
     fileName= os.path.join("/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions", tt)
     an= AnalyzerIFF.loadMeasureFromFits(fileName)
-    cube= an.createCube()
+    cube= an.createCube(ttD)
     intMat= an.getInteractionMatrix()
     rec= an.getReconstructor()
     prod= np.dot(rec, intMat)
@@ -326,8 +364,16 @@ def testIFF_spiano(an):
     spWf= wf - surf
     return amp, spWf
     
-    
-    
+### FINE FUNZIONI TEST IFF ###
+
+def main1709_ttDetrend(image):
+    from m4.utils.roi import ROI
+    r=ROI()
+    roi= r._ROIonSegment(image)
+    from m4.utils.imgRedux import TipTiltDetrend 
+    tt= TipTiltDetrend()
+    surfaceMap, imageTTR= tt.tipTiltRemover(image, roi)
+    return surfaceMap, imageTTR
     
     
     

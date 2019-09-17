@@ -11,12 +11,12 @@ class Configuration(object):
         
         CALIBRATION_ROOT_FOLDER= "/Users/rm/Desktop/Arcetri/M4/ProvaCodice"
         
-        FLATTENING_ROOT_FOLDER= os.path.join(CALIBRATION_ROOT_FOLDER, "IFFunctions")
         
     #Interf  
         Lambda= 2
     #Ott
-        ParabolaPupilXYRadius= np.array([256, 256, 256]) #centerX, centerY, radius
+        ParabolaPupilXYRadius= np.array([128, 128, 128]) #centerX, centerY, radius
+        #ParabolaPupilXYRadius= np.array([256, 256, 256])
     #DM
         n_Seg= 6
         nActsTot= 5352
