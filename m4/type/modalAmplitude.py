@@ -6,6 +6,8 @@
 from m4.ground.configuration import Configuration
 import os   
 import pyfits
+import h5py
+import numpy as np
     
     
     
@@ -24,7 +26,7 @@ class ModalAmplitude():
         return self._modalAmplitude
     
     
-    def save(self, tag, modalAmplitude):
+    def saveAsFits(self, tag, modalAmplitude):
         '''
             tag (stringa)= nome del file da salvare
             modalAmplitude (array)= vettore delle ampiezze
@@ -34,14 +36,34 @@ class ModalAmplitude():
         fitsFileName= os.path.join(storeInFolder, filename)
         pyfits.writeto(fitsFileName, modalAmplitude)
         
+    def saveAsH5(self, tag, modalAmplitude):
+        storeInFolder= ModalAmplitude._storageFolder()
+        filename= tag + '.h5'
+        hf = h5py.File(os.path.join(storeInFolder,filename), 'w')
+        hf.create_dataset('dataset_1', data=modalAmplitude)
+        hf.close()
     
     @staticmethod 
-    def load(fitsfilename):
+    def loadFromFits(fitsfilename):
         theObject= ModalAmplitude()
         storeInFolder= ModalAmplitude._storageFolder()
         allFitsFileName= os.path.join(storeInFolder, fitsfilename)
         hduList= pyfits.open(allFitsFileName)
         theObject._modalAmplitude= hduList[0].data
         theObject._fitsfilename= fitsfilename
-        
         return theObject
+    
+    @staticmethod 
+    def loadFromH5(filename):
+        storeInFolder= ModalAmplitude._storageFolder()
+        hf = h5py.File(os.path.join(storeInFolder,filename), 'r')
+        hf.keys()
+        data= hf.get('dataset_1')
+        modalAmplitude= np.array(data)
+        hf.close()
+        theObject= ModalAmplitude()
+        theObject._modalAmplitude= modalAmplitude
+        theObject._fitsfilename= filename
+        return theObject
+        
+        

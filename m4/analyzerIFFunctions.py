@@ -6,6 +6,7 @@ from m4.ground import logger
 import numpy as np
 import pyfits
 import os
+import h5py
 from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influenceFunctionsMaker import IFFunctionsMaker
 from m4.utils.roi import ROI
@@ -32,7 +33,7 @@ class AnalyzerIFF(object):
     def loadInfoFromh5Folder(h5Folder):
         theObject= AnalyzerIFF()
         theObject._h5Folder= h5Folder
-        a= IFFunctionsMaker.loadInfo(h5Folder)
+        a= IFFunctionsMaker.loadInfoFromFits(h5Folder)
         theObject._who= a[0]
         theObject._actsVector= a[1]
         theObject._cmdMatrix= a[2]
@@ -185,6 +186,20 @@ class AnalyzerIFF(object):
         pyfits.append(fitsFileName, self._cmdAmplitude)
         pyfits.append(fitsFileName, self._actsVector)
         
+    def saveCubeAsH5(self, cubeName):
+        tt=self._ttData()
+        dove=os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, 'IFFunctions', tt)
+        fitsFileName= os.path.join(dove, cubeName)
+        hf = h5py.File(fitsFileName, 'w')
+        hf.create_dataset('dataset_1', data=self._cube.data)
+        hf.create_dataset('dataset_2', data=self._cube.mask.astype(int))
+        hf.create_dataset('dataset_3', data=self._cmdAmplitude)
+        hf.create_dataset('dataset_4', data=self._actsVector)
+        hf.attrs['NPUSHPUL']= self._nPushPull
+        hf.attrs['WHO']= self._who
+        hf.close()
+        
+        
     @staticmethod
     def loadCubeFromFits(fitsFileName):
         header= pyfits.getheader(fitsFileName)
@@ -205,6 +220,24 @@ class AnalyzerIFF(object):
         theObject._who= who
         theObject._cube= cube
         return theObject
+    
+    @staticmethod
+    def loadCubeFromH5(fileName):
+        theObject= AnalyzerIFF()
+        hf = h5py.File(fileName, 'r')
+        hf.keys()
+        data1= hf.get('dataset_1')
+        data2= hf.get('dataset_2')
+        data3= hf.get('dataset_3')
+        data4= hf.get('dataset_4')
+        theObject._cube= np.ma.masked_array(np.array(data1), np.array(data2.astype(bool)))
+        theObject._actsVector= np.array(data4)
+        theObject._cmdAmplitude= np.array(data3)
+        theObject._nPushPull= hf.attrs['NPUSHPUL']
+        theObject._who= hf.attrs['WHO']
+        hf.close()
+        return theObject
+        
     
     @staticmethod 
     def loadMeasureFromFits(tt):
@@ -228,7 +261,6 @@ class AnalyzerIFF(object):
         theObject._who= who
         theObject._tt_cmdH= tt_cmdH
         theObject._nPushPull= nPushPull
-        
         return theObject
 
         

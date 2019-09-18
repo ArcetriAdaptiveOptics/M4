@@ -9,6 +9,7 @@ from m4.ground import logger
 import pyfits
 import copy
 import os
+import h5py
 from m4.type.commandHistory import CmdHistory
 
 class IFFunctionsMaker(object):
@@ -28,6 +29,10 @@ class IFFunctionsMaker(object):
     
     def acq_IFFunctions(self, modesVector, nPushPull, amplitude, 
                         cmdMatrix, shuffle=None):
+        self._vectorOfActuatorsOrModes= modesVector
+        self._nPushPull= nPushPull
+        self._amplitude= amplitude
+        self._cmdMatrix= cmdMatrix
         
         '''
          arg:
@@ -45,7 +50,7 @@ class IFFunctionsMaker(object):
                 tracking number delle misure effettuate
         '''
         storeInFolder= self._storageFolder()
-        indexingImput= copy.copy(modesVector)
+        indexingInput= copy.copy(modesVector)
         save= trackingNumberFolder.TtFolder(storeInFolder)
         dove, tt= save._createFolderToStoreMeasurements()
         
@@ -62,18 +67,17 @@ class IFFunctionsMaker(object):
         cmdH= CmdHistory(self._device)
         
         if shuffle is None:
-            commandHistoryMatrixToApply, tt_cmdH= cmdH.tidyCommandHistoryMaker(modesVector,
+            commandHistoryMatrixToApply, self._tt_cmdH= cmdH.tidyCommandHistoryMaker(modesVector,
                                                                   amplitude,
                                                                   cmdMatrix, 
                                                                   nPushPull)
         else:
-            commandHistoryMatrixToApply, tt_cmdH= cmdH.shuffleCommandHistoryMaker(modesVector,
+            commandHistoryMatrixToApply, self._tt_cmdH= cmdH.shuffleCommandHistoryMaker(modesVector,
                                                                   amplitude,
                                                                   cmdMatrix, 
                                                                   nPushPull)
         self._indexingList= cmdH.getIndexingList()
-        self._saveInfo(dove, self._who, tt_cmdH, amplitude, indexingImput,
-                        nPushPull, cmdMatrix, self._indexingList)
+        self._saveInfoAsFits(dove)
          
          
         self._applyToDM() 
@@ -117,22 +121,32 @@ class IFFunctionsMaker(object):
         return cube25
      
             
-    def _saveInfo(self, folder, who, tt_cmdH, amplitude,vectorOfActuatorsOrModes,
-                     nPushPull, cmdMatrix, indexingList):
-            
+    def _saveInfoAsFits(self, folder):
         fitsFileName= os.path.join(folder, 'info.fits')
         header= pyfits.Header()
-        header['NPUSHPUL']= nPushPull
-        header['WHO']= who
-        header['TT_CMDH']= tt_cmdH
-        pyfits.writeto(fitsFileName, vectorOfActuatorsOrModes, header)
-        pyfits.append(fitsFileName, cmdMatrix, header)
-        pyfits.append(fitsFileName, amplitude, header)
-        pyfits.append(fitsFileName, indexingList, header)
+        header['NPUSHPUL']= self._nPushPull
+        header['WHO']= self._who
+        header['TT_CMDH']= self._tt_cmdH
+        pyfits.writeto(fitsFileName, self._vectorOfActuatorsOrModes, header)
+        pyfits.append(fitsFileName, self._cmdMatrix, header)
+        pyfits.append(fitsFileName, self._amplitude, header)
+        pyfits.append(fitsFileName, self._indexingList, header)
+        
+    def _saveInfoAsH5(self, folder):
+        fitsFileName= os.path.join(folder, 'info.h5')
+        hf = h5py.File(fitsFileName, 'w')
+        hf.create_dataset('dataset_1', data=self._vectorOfActuatorsOrModes)
+        hf.create_dataset('dataset_2', data=self._cmdMatrix)
+        hf.create_dataset('dataset_3', data=self._amplitude)
+        hf.create_dataset('dataset_4', data=self._indexingList)
+        hf.attrs['NPUSHPUL']= self._nPushPull
+        hf.attrs['WHO']= self._who
+        hf.attrs['TT_CMDH']= self._tt_cmdH
+        hf.close()
 
             
     @staticmethod
-    def loadInfo(folder):
+    def loadInfoFromFits(folder):
         additionalInfoFitsFileName= os.path.join(folder, 'info.fits')
         header= pyfits.getheader(additionalInfoFitsFileName)
         hduList= pyfits.open(additionalInfoFitsFileName)
@@ -147,6 +161,27 @@ class IFFunctionsMaker(object):
         except KeyError:
             nPushPull= 1
             
+        return (who, tt_cmdH, actsVector, cmdMatrix, cmdAmpl, nPushPull, indexingList)
+    
+    @staticmethod
+    def loadInfoFromH5(tt):
+        storeInFolder= IFFunctionsMaker._storageFolder()
+        folder= os.path.join(storeInFolder, tt)
+        fileName= os.path.join(folder, 'info.h5')
+        hf = h5py.File(fileName, 'r')
+        hf.keys()
+        data1= hf.get('dataset_1')
+        data2= hf.get('dataset_2')
+        data3= hf.get('dataset_3')
+        data4= hf.get('dataset_4')
+        actsVector= np.array(data1)
+        cmdMatrix= np.array(data2)
+        cmdAmpl= np.array(data3)
+        indexingList= np.array(data4)
+        nPushPull= hf.attrs['NPUSHPUL']
+        who= hf.attrs['WHO']
+        tt_cmdH= hf.attrs['TT_CMDH']
+        
         return (who, tt_cmdH, actsVector, cmdMatrix, cmdAmpl, nPushPull, indexingList)
      
             

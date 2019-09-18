@@ -264,7 +264,7 @@ def testIFF_shuffleMeasureCreator(device, cmdMatrix, modeVect, amp, nPushPull):
     tt= IF.acq_IFFunctions(modeVect, nPushPull, amp, cmdMatrix, 1)
     
     folder= os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, "IFFunctions", tt)
-    who, tt_cmdH, actsVector, cmdMatrix, amplitude, nPushPull, indexingList= IF.loadInfo(folder)
+    who, tt_cmdH, actsVector, cmdMatrix, amplitude, nPushPull, indexingList= IF.loadInfoFromFits(folder)
     
     cube= IF._testIFFunctions_createCube25fromFileFitsMeasure()
     from m4.type.commandHistory import CmdHistory
@@ -306,7 +306,7 @@ def testIFF_tidyMeasureCreator(device, cmdMatrix, modeVect, amp, nPushPull):
     tt= IF.acq_IFFunctions(modeVect, nPushPull, amp, cmdMatrix)
     
     folder= os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, "IFFunctions", tt)
-    who, tt_cmdH, actsVector, cmdMatrix, amplitude, nPushPull, indexingList= IF.loadInfo(folder)
+    who, tt_cmdH, actsVector, cmdMatrix, amplitude, nPushPull, indexingList= IF.loadInfoFromFits(folder)
     
     cube= IF._testIFFunctions_createCube25fromFileFitsMeasure()
     ampl= np.tile(amplitude, nPushPull)

@@ -9,6 +9,7 @@ from m4.ground import logger
 import os 
 import copy
 import pyfits
+import h5py
 
 
 class CmdHistory(object):
@@ -58,7 +59,7 @@ class CmdHistory(object):
         zipped= zip(aa, bb)
         matrixToApply= self._cmdHistoryToApply(zipped)
         self._cmdHToApply= matrixToApply
-        tt= self.save()
+        tt= self.saveAsFits()
         logger.log('Creazione della commandHistoryMatrix', 'ordinata', tt)
         print(tt)
         
@@ -73,7 +74,7 @@ class CmdHistory(object):
         zipped= self._zippedAmplitude(ampVector)
         matrixToApply= self._cmdHistoryToApply(zipped)
         self._cmdHToApply=matrixToApply
-        tt= self.save()
+        tt= self.saveAsFits()
         logger.log('Creazione della commandHistoryMatrix', 'casuale', tt)
         print(tt)
         
@@ -183,7 +184,7 @@ class CmdHistory(object):
         return matrixToApply
         
     
-    def save(self):
+    def saveAsFits(self):
         storeInFolder= CmdHistory._storageFolder()
         save= trackingNumberFolder.TtFolder(storeInFolder)
         dove, tt= save._createFolderToStoreMeasurements()
@@ -197,11 +198,26 @@ class CmdHistory(object):
         pyfits.append(fitsFileName, self._cmdMatrix, header)
         pyfits.append(fitsFileName, self._cmdHToApply, header)
         pyfits.append(fitsFileName, self._ampVect, header)
+        return tt
+    
+    def saveAsH5(self):
+        storeInFolder= CmdHistory._storageFolder()
+        save= trackingNumberFolder.TtFolder(storeInFolder)
+        dove, tt= save._createFolderToStoreMeasurements()
         
+        fitsFileName= os.path.join(dove, 'info.h5')
+        hf = h5py.File(fitsFileName, 'w')
+        hf.create_dataset('dataset_1', data=self._modeVector)
+        hf.create_dataset('dataset_2', data=self._indexingList)
+        hf.create_dataset('dataset_3', data=self._cmdHToApply)
+        hf.create_dataset('dataset_4', data=self._ampVect)
+        hf.attrs['NPUSHPUL']= self._nPushPull
+        hf.attrs['WHO']= self._who
+        hf.close()
         return tt
         
     @staticmethod
-    def load(device, tt):
+    def loadFromFits(device, tt):
         theObject= CmdHistory(device)
         theObject._tt= tt
         storeInFolder= CmdHistory._storageFolder()
@@ -218,9 +234,32 @@ class CmdHistory(object):
         try:
             theObject._nPushPull= header['NPUSHPUL']
         except KeyError:
-            theObject._nPushPull= 1
-            
+            theObject._nPushPull= 1 
         return theObject
+    
+    @staticmethod
+    def loadFromH5(device, tt):
+        theObject= CmdHistory(device)
+        theObject._tt= tt
+        storeInFolder= CmdHistory._storageFolder()
+        folder= os.path.join(storeInFolder, tt)
+        fileName= os.path.join(folder, 'info.h5')
+        hf = h5py.File(fileName, 'r')
+        hf.keys()
+        data1= hf.get('dataset_1')
+        data2= hf.get('dataset_2')
+        data3= hf.get('dataset_3')
+        data4= hf.get('dataset_4')
+        theObject._nPushPull= hf.attrs['NPUSHPUL']
+        theObject._who= hf.attrs['WHO']
+        theObject._modeVector= np.array(data1)
+        theObject._indexingList= np.array(data2)
+        theObject._cmdHToApply= np.array(data3)
+        theObject._ampVect= np.array(data4)
+        hf.close()
+        return theObject
+        
+        
         
         
         
