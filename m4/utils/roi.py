@@ -3,8 +3,8 @@
 '''
 
 import numpy as np
-import sklearn.feature_extraction as skf_e
-import sklearn.cluster as skc
+#import sklearn.feature_extraction as skf_e
+#import sklearn.cluster as skc
 import skimage.segmentation as sks
 from skimage.measure import label
 
@@ -26,17 +26,7 @@ class ROI():
         
     def setAnalysisROI(self, analysisMask):
         self._AnalysisROI= analysisMask
-        
-        
-    def getZernikeCoord(self, roi):
-        xCoord=[]
-        yCoord=[]
-        for r in roi:
-            y, x= np.where(r==1)
-            xCoord.append(x)
-            yCoord.append(y)
-             
-        return self._pupilXYRadius 
+ 
     
     def _ROIonSegment(self, ima):
 #       graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)
@@ -46,15 +36,26 @@ class ROI():
         label_im[ima.mask.astype(int)] = labels
         
         markers = ima.mask.astype('int')*0
+        
+        #per immagini 256x256
+#         markers[0,0]=1
+#         markers[73,39]=2
+#         markers[115,116]=3
+#         markers[79, 221]=4
+#         markers[9,128]=5
+        
+        #per immagini 512x512
         markers[0,0]=1
-        markers[73,39]=2
-        markers[115,116]=3
-        markers[79, 221]=4
-        markers[9,128]=5
+        markers[170,86]=2
+        markers[216,266]=3
+        markers[177, 416]=4
+        markers[17,258]=5
+        
         roi_mask = sks.random_walker(ima.mask, markers) 
         
+        
         roiList=[]
-        for i in range(2,5):
+        for i in range(2,6):
             maski=np.zeros(roi_mask.shape, dtype=np.bool)
             maski[np.where(roi_mask==i)]=1 
             roiList.append(np.invert(maski))
@@ -69,8 +70,9 @@ class ROI():
         
         labels = label(ima.mask.astype(int))
         label_im = -np.ones(ima.mask.shape)
-        label_im[ima.mask] = labels
+        label_im[ima.mask.astype(int)] = labels
         
+        #per immagini 512x512
         markers = ima.mask.astype('int')*0
         markers[0,0]=1
         markers[164,407]=2 
@@ -83,7 +85,7 @@ class ROI():
         roi_mask = sks.random_walker(ima.mask, markers)
         
         roiList=[]
-        for i in range(2,8):
+        for i in range(2,9):
             maski=np.zeros(roi_mask.shape, dtype=np.bool)
             maski[np.where(roi_mask==i)]=1 
             roiList.append(np.invert(maski))

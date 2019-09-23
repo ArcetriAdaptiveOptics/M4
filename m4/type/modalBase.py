@@ -14,16 +14,30 @@ class ModalBase():
     def __init__(self):
         self._modalBase= None 
         self._fitsfilename= None
-    
-    def getModalBase(self):
-        return self.modalBase
+        self._tag= None
     
     @staticmethod
     def _storageFolder():
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                                        "ModalBase")
         
+    def getModalBase(self):
+        return self._modalBase
+
+    def getTag(self):
+        return self._tag
+    
+    def getFitsFileName(self):
+        return self._fitsfilename
+        
+        
     def saveAsFits(self, tag, modalBase):
+        self._tag= tag
+        '''
+            tag (stringa)= nome del file da salvare
+            modalBase= matrice dei comandi 
+                                (nActs x nModes)
+        '''
         storeInFolder= ModalBase._storageFolder()
         filename= tag + '.fits'
         fitsFileName= os.path.join(storeInFolder, filename)

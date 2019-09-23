@@ -11,6 +11,7 @@ import copy
 import os
 import h5py
 from m4.type.commandHistory import CmdHistory
+from m4.ground import objectFromFitsFileName
 
 class IFFunctionsMaker(object):
 
@@ -24,26 +25,27 @@ class IFFunctionsMaker(object):
     def _storageFolder():
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                                        "IFFunctions")
-
     
     
-    def acq_IFFunctions(self, modesVector, nPushPull, amplitude, 
-                        cmdMatrix, shuffle=None):
-        self._vectorOfActuatorsOrModes= modesVector
+    def acq_IFFunctions(self, modesVectorFitsFileName, nPushPull, amplitudeFitsFileName, 
+                        cmdMatrixFitsFileName, shuffle=None):
+        
+        amplitude, modesVector, cmdMatrix= objectFromFitsFileName.readObjectFitsFileName(amplitudeFitsFileName, modesVectorFitsFileName,
+                                                                        cmdMatrixFitsFileName)
         self._nPushPull= nPushPull
-        self._amplitude= amplitude
-        self._cmdMatrix= cmdMatrix
+        
+        self._modesVectorTag= modesVectorFitsFileName
+        self._amplitudeTag= amplitudeFitsFileName
+        self._cmdMatrixTag= cmdMatrixFitsFileName
+
         
         '''
          arg:
-             modesVector= vettore dell'indice dei modi o degli attuatori
-                        da applicare (numpy.array([]))
+             modesVectorTag= fits file name (modes.fits)
              nPushPull= numero di push pull consecutivi sull'attuatore
                          (int)
-             Amplitude= vettore con l'ampiezza dei modi (numpy.array([]))
-             cmdMatrix= matrice dei comandi dei modi 
-                         (nActs x nModes)
-                         matrice diagonale nel caso di comandi zonali
+             amplitudeTag= fits file name (amp.fits)
+             cmdMatrixTag= fits file name (modalBase.fits)
              shuffle= se non indicato viene creata la matrice della storia dei comandi ordinata
              
         return:
@@ -127,18 +129,18 @@ class IFFunctionsMaker(object):
         header['NPUSHPUL']= self._nPushPull
         header['WHO']= self._who
         header['TT_CMDH']= self._tt_cmdH
-        pyfits.writeto(fitsFileName, self._vectorOfActuatorsOrModes, header)
-        pyfits.append(fitsFileName, self._cmdMatrix, header)
-        pyfits.append(fitsFileName, self._amplitude, header)
-        pyfits.append(fitsFileName, self._indexingList, header)
+        header['MODEVECT']= self._modesVectorTag
+        header['CMDMAT']= self._cmdMatrixTag
+        header['AMP']= self._amplitudeTag
+        pyfits.writeto(fitsFileName, self._indexingList, header)
         
     def _saveInfoAsH5(self, folder):
         fitsFileName= os.path.join(folder, 'info.h5')
         hf = h5py.File(fitsFileName, 'w')
-        hf.create_dataset('dataset_1', data=self._vectorOfActuatorsOrModes)
-        hf.create_dataset('dataset_2', data=self._cmdMatrix)
-        hf.create_dataset('dataset_3', data=self._amplitude)
-        hf.create_dataset('dataset_4', data=self._indexingList)
+        hf.create_dataset('dataset_1', data=self._indexingList)
+        hf.attrs['MODEVECT']= self._modesVectorTag
+        hf.attrs['CMDMAT']= self._cmdMatrixTag
+        hf.attrs['AMP']= self._amplitudeTag
         hf.attrs['NPUSHPUL']= self._nPushPull
         hf.attrs['WHO']= self._who
         hf.attrs['TT_CMDH']= self._tt_cmdH
@@ -150,10 +152,10 @@ class IFFunctionsMaker(object):
         additionalInfoFitsFileName= os.path.join(folder, 'info.fits')
         header= pyfits.getheader(additionalInfoFitsFileName)
         hduList= pyfits.open(additionalInfoFitsFileName)
-        actsVector= hduList[0].data
-        cmdMatrix= hduList[1].data
-        cmdAmpl= hduList[2].data
-        indexingList= hduList[3].data
+        actsVectorTag= header['MODEVECT']
+        cmdMatrixTag= header['CMDMAT']
+        cmdAmplTag= header['AMP']
+        indexingList= hduList[0].data
         who= header['WHO']
         tt_cmdH= header['TT_CMDH']
         try:
@@ -161,6 +163,7 @@ class IFFunctionsMaker(object):
         except KeyError:
             nPushPull= 1
             
+        cmdAmpl, actsVector, cmdMatrix= objectFromFitsFileName.readObjectFitsFileName(cmdAmplTag, actsVectorTag, cmdMatrixTag)
         return (who, tt_cmdH, actsVector, cmdMatrix, cmdAmpl, nPushPull, indexingList)
     
     @staticmethod
@@ -171,17 +174,15 @@ class IFFunctionsMaker(object):
         hf = h5py.File(fileName, 'r')
         hf.keys()
         data1= hf.get('dataset_1')
-        data2= hf.get('dataset_2')
-        data3= hf.get('dataset_3')
-        data4= hf.get('dataset_4')
-        actsVector= np.array(data1)
-        cmdMatrix= np.array(data2)
-        cmdAmpl= np.array(data3)
-        indexingList= np.array(data4)
+        actsVectorTag= hf.attrs['MODEVECT']
+        cmdMatrixTag= hf.attrs['CMDMAT']
+        cmdAmplTag= hf.attrs['AMP']
+        indexingList= np.array(data1)
         nPushPull= hf.attrs['NPUSHPUL']
         who= hf.attrs['WHO']
         tt_cmdH= hf.attrs['TT_CMDH']
         
+        cmdAmpl, actsVector, cmdMatrix= objectFromFitsFileName.readObjectFitsFileName(cmdAmplTag, actsVectorTag, cmdMatrixTag)
         return (who, tt_cmdH, actsVector, cmdMatrix, cmdAmpl, nPushPull, indexingList)
      
             

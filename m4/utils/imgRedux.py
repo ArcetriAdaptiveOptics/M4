@@ -14,15 +14,28 @@ class TipTiltDetrend():
         self._pupilXYRadius= Configuration.ParabolaPupilXYRadius
         self._zg= ZernikeGenerator(2*self._pupilXYRadius[2])
     
-    def tipTiltRemover(self, image, roi):   
+    def tipTiltRemover(self, image, roi, finalIndex, analysisInd= None):   
+        ''' 
+            arg:
+                image= immagine da analizzare
+                roi= roi dell'immagine
+                finalIndex= indice della roi finale
+                analysisInd= indice delle roi da utilizzare per l'analisi
+        '''
         coefList=[]
         for r in roi:
             ima= np.ma.masked_array(image.data, mask=r)
             coef= self._zernikeFit(ima, np.array([2,3]))
             coefList.append(coef)
             
-        tip= (coefList[0][0] + coefList[2][0])/2.
-        tilt= (coefList[0][1] + coefList[2][1])/2.
+        del coefList[finalIndex]
+        if analysisInd is None:
+            coef_List= coefList
+        else:
+            coef_List=[]
+            for i in range(len(analysisInd)):
+                coef_List.append(coefList[i])
+        tip, tilt= np.average(coef_List, axis=0)
         
         surfcoef= np.array([tip, tilt]) 
         surfaceMap=self._zernikeSurface(surfcoef)
@@ -31,9 +44,9 @@ class TipTiltDetrend():
         cy= self._pupilXYRadius[1]
         r= self._pupilXYRadius[2]
         imaCut=image[cy-r:cy+r, cx-r:cx+r]
-        imageTTR= np.ma.masked_array(imaCut.data - surfaceMap, mask=roi[1])
+        imageTTR= np.ma.masked_array(imaCut.data - surfaceMap, mask=roi[finalIndex])
             
-        return surfaceMap, imageTTR
+        return coefList, imageTTR
   
        
     def _zernikeFit(self, img, zernikeMode):

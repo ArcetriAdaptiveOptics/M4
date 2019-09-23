@@ -10,6 +10,7 @@ import pyfits
 from matplotlib import pyplot as plt
 from m4.utils import roi
 from m4.ground.configuration import Configuration
+from m4.ground import objectFromFitsFileName
 
 
 
@@ -256,12 +257,14 @@ def main1109_tiptiltZernike(imas):
 
 
 ### FUNZIONI PER TEST IFF ###    
-def testIFF_shuffleMeasureCreator(device, cmdMatrix, modeVect, amp, nPushPull):
-    modeVectInput= np.copy(modeVect)
+def testIFF_shuffleMeasureCreator(device, cmdMatrixTag, modeVectTag, ampTag, nPushPull):
+    from m4.type.modesVector import ModesVector
+    mv= ModesVector.loadFromFits(modeVectTag)
+    modeVectInput= mv.getModesVector()
     from m4.influenceFunctionsMaker import IFFunctionsMaker
     IF= IFFunctionsMaker(device) 
     
-    tt= IF.acq_IFFunctions(modeVect, nPushPull, amp, cmdMatrix, 1)
+    tt= IF.acq_IFFunctions(modeVectTag, nPushPull, ampTag, cmdMatrixTag, 1)
     
     folder= os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, "IFFunctions", tt)
     who, tt_cmdH, actsVector, cmdMatrix, amplitude, nPushPull, indexingList= IF.loadInfoFromFits(folder)
@@ -269,7 +272,7 @@ def testIFF_shuffleMeasureCreator(device, cmdMatrix, modeVect, amp, nPushPull):
     cube= IF._testIFFunctions_createCube25fromFileFitsMeasure()
     from m4.type.commandHistory import CmdHistory
     cmdH= CmdHistory(device)
-    amplReorg= cmdH._amplitudeReorganization(modeVectInput, indexingList, amp, nPushPull)
+    amplReorg= cmdH._amplitudeReorganization(modeVectInput, indexingList, amplitude, nPushPull)
      
     misure= None 
     for i in range(indexingList.shape[0]):
@@ -299,11 +302,11 @@ def testIFF_shuffleMeasureCreator(device, cmdMatrix, modeVect, amp, nPushPull):
     pyfits.append(fitsFileName, misure.mask.astype(int), header)
     return tt
 
-def testIFF_tidyMeasureCreator(device, cmdMatrix, modeVect, amp, nPushPull):
+def testIFF_tidyMeasureCreator(device, cmdMatrixTag, modeVectTag, ampTag, nPushPull):
     from m4.influenceFunctionsMaker import IFFunctionsMaker
     IF= IFFunctionsMaker(device) 
     
-    tt= IF.acq_IFFunctions(modeVect, nPushPull, amp, cmdMatrix)
+    tt= IF.acq_IFFunctions(modeVectTag, nPushPull, ampTag, cmdMatrixTag)
     
     folder= os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, "IFFunctions", tt)
     who, tt_cmdH, actsVector, cmdMatrix, amplitude, nPushPull, indexingList= IF.loadInfoFromFits(folder)
@@ -374,6 +377,36 @@ def main1709_ttDetrend(image):
     tt= TipTiltDetrend()
     surfaceMap, imageTTR= tt.tipTiltRemover(image, roi)
     return surfaceMap, imageTTR
+
+def immaginiprova():
+    fitsRoot= "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova"
+    fitsFileName= os.path.join(fitsRoot, 'mode_0005.fits')
+    hduList= pyfits.open(fitsFileName)
+    ima= hduList[0].data
+    m4= np.ma.masked_array(ima[0], mask= ima[1])
+    fitsFileName= os.path.join(fitsRoot, 'mode_0006.fits')
+    hduList= pyfits.open(fitsFileName)
+    ima= hduList[0].data
+    segment= np.ma.masked_array(ima[0], mask= ima[1])
+    return m4, segment
+
+def immaginiProvaTTDetrendSeg():
+    push= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0000.fits')
+    pull= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0001.fits')
+    mode0= np.ma.masked_array(pull.data - push.data, mask= push.mask)
     
+    push= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0002.fits')
+    pull= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0003.fits')
+    mode1= np.ma.masked_array(pull.data - push.data, mask= push.mask)
+    return mode0, mode1
     
+def immaginiProvaTTDetrendAll():
+    push= objectFromFitsFileName.readImageFromFitsFileName('All/img_0000.fits')
+    pull= objectFromFitsFileName.readImageFromFitsFileName('All/img_0001.fits')
+    mode0= np.ma.masked_array(pull.data - push.data, mask= push.mask)
+    
+    push= objectFromFitsFileName.readImageFromFitsFileName('All/img_0002.fits')
+    pull= objectFromFitsFileName.readImageFromFitsFileName('All/img_0003.fits')
+    mode1= np.ma.masked_array(pull.data - push.data, mask= push.mask)
+    return mode0, mode1
     
