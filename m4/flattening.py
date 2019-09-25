@@ -4,20 +4,16 @@
 
 import os 
 from m4.ground.configuration import Configuration
-from m4.analyzerIFFunctions import AnalyzerIFF
 from m4.ground.trackingNumberFolder import TtFolder
 from m4.utils.imgRedux import TipTiltDetrend
-from m4.influenceFunctionsMaker import IFFunctionsMaker
 import numpy as np
 import pyfits
 
 
 class Flattenig():
     
-    def __init__(self, trackingNumber):
-        IF= IFFunctionsMaker()
-        self.iffPath= os.path.join(IF._storageFolder(), trackingNumber)
-        self._an= AnalyzerIFF.loadInfoFromh5Folder(self.iffPath)
+    def __init__(self, analyzerIFFunctions):
+        self._an= analyzerIFFunctions
         self._who= self._an._who
         self._command= None
         self._flatteningWf= None
@@ -30,7 +26,8 @@ class Flattenig():
         
     def flatCommand(self, wf):
         #comando che permette di ottenere la misura del wf dall'interferometro (wf)
-        #wf=np.zeros(7)
+        ampr= np.random.randn(25)
+        wf= np.dot(self._an._cube, ampr)
         
         self._an.setDetectorMask(wf.mask | self._an.getMasterMask())
         rec= self._an.getReconstructor()

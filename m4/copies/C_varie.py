@@ -63,3 +63,61 @@
             finalImaList.append(imageTTR)
         
         return finalImaList
+    
+    
+    
+    
+    
+    
+# ZERNIKE
+    cx= self._pupilXYRadius[0]
+        cy= self._pupilXYRadius[1]
+        r= self._pupilXYRadius[2]
+        imaCut=img[cy-r:cy+r, cx-r:cx+r]
+        imaCutM= np.ma.masked_array(imaCut.data, mask=z.mask)
+    
+    mat= np.zeros((z.compressed().shape[0], zernikeMode.size)) 
+        for i in range(0, zernikeMode.size):
+            z=self._zg.getZernike(zernikeMode[i])
+            
+            mat.T[i]= z.compressed()
+            
+            
+            
+# PHASE SOLVE
+
+    def m4PhaseSolver(self, m4Ima, splValues): 
+        self.n_calculator(splValues)
+        roiList= self._r._ROIonM4(m4Ima)
+        m4NewImage= None
+        
+        media=[]
+        imgList=[]
+        for roi in roiList:
+            img= np.zeros(m4Ima.shape)
+            img[np.where(roi== True)]= np.ma.compress(roi.ravel(), m4Ima)
+            imgg= np.ma.masked_array(img, mask= roi)
+            m= img.mean()
+            media.append(m)
+            imgList.append(imgg)
+               
+        aa= np.arange(self._n.shape[0])
+        zipped= zip(aa, imgList)
+        img_phaseSolveList=[]
+        for i, imgg in zipped:
+            img_phaseSolve= np.ma.masked_array(imgg.data - self._n[i], mask= imgg.mask)
+            img_phaseSolveList.append(img_phaseSolve)
+        
+        img_phaseSolveList[len(img_phaseSolveList)-1]= np.ma.masked_array(imgList[len(imgList)-1].data, 
+                                                                mask= np.invert(imgList[len(imgList)-1].mask))
+          
+          
+        for j in range(1, len(img_phaseSolveList)):
+            if m4NewImage is None:
+                m4NewImage= np.ma.array(img_phaseSolveList[0].filled(1)* img_phaseSolveList[j].filled(1), 
+                                         mask=(img_phaseSolveList[0].mask * img_phaseSolveList[j].mask))
+            else:
+                m4NewImage = np.ma.array(m4NewImage.filled(1) * img_phaseSolveList[j].filled(1), 
+                                         mask=(m4NewImage.mask * img_phaseSolveList[j].mask))
+            
+        return m4NewImage, img_phaseSolveList, imgList

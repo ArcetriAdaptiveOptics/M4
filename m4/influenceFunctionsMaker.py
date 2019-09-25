@@ -13,8 +13,8 @@ import h5py
 from m4.type.commandHistory import CmdHistory
 from m4.ground import objectFromFitsFileName
 
-class IFFunctionsMaker(object):
 
+class IFFunctionsMaker(object):
 
     def __init__(self, device):
         self._device= device
@@ -37,8 +37,6 @@ class IFFunctionsMaker(object):
         self._modesVectorTag= modesVectorFitsFileName
         self._amplitudeTag= amplitudeFitsFileName
         self._cmdMatrixTag= cmdMatrixFitsFileName
-
-        
         '''
          arg:
              modesVectorTag= fits file name (modes.fits)

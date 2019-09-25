@@ -24,17 +24,18 @@ class TipTiltDetrend():
         '''
         coefList=[]
         for r in roi:
-            ima= np.ma.masked_array(image.data, mask=r)
+            imag= np.ma.masked_array(image.data, mask=r)
+            ima= np.ma.MaskedArray.copy(imag)
             coef= self._zernikeFit(ima, np.array([2,3]))
             coefList.append(coef)
             
-        del coefList[finalIndex]
         if analysisInd is None:
             coef_List= coefList
+            del coef_List[finalIndex]
         else:
             coef_List=[]
             for i in range(len(analysisInd)):
-                coef_List.append(coefList[i])
+                coef_List.append(coefList[analysisInd[i]])
         tip, tilt= np.average(coef_List, axis=0)
         
         surfcoef= np.array([tip, tilt]) 
@@ -46,7 +47,7 @@ class TipTiltDetrend():
         imaCut=image[cy-r:cy+r, cx-r:cx+r]
         imageTTR= np.ma.masked_array(imaCut.data - surfaceMap, mask=roi[finalIndex])
             
-        return coefList, imageTTR
+        return coefList, imaCut, surfaceMap, imageTTR
   
        
     def _zernikeFit(self, img, zernikeMode):
@@ -54,33 +55,22 @@ class TipTiltDetrend():
         zernikeMode= vector of Zernike modes to remove
         '''
         z= self._zg.getZernike(2)
-        cx= self._pupilXYRadius[0]
-        cy= self._pupilXYRadius[1]
-        r= self._pupilXYRadius[2]
-        imaCut=img[cy-r:cy+r, cx-r:cx+r]
-        imaCutM= np.ma.masked_array(imaCut.data, mask=z.mask)
-        
-        mat= np.zeros((z.compressed().shape[0], zernikeMode.size))
+        mat= np.zeros((img.compressed().shape[0], zernikeMode.size)) 
         for i in range(0, zernikeMode.size):
             z=self._zg.getZernike(zernikeMode[i])
-            mat.T[i]= z.compressed()
-         
+            aa= np.ma.masked_array(z, mask= img.mask)
+            mat.T[i]= aa.compressed()
+        
+        self._mat= mat
         inv= np.linalg.pinv(mat)   
-        a= np.dot(inv,imaCutM.compressed())
-            
+        a= np.dot(inv, img.compressed())  
         return a
     
     
     def _zernikeSurface(self, surfaceZernikeCoeffArray):
-        surfaceMap=0.0;
-        firstZernModeIndex= 2
-        lastZernModeIndex= 2+len(surfaceZernikeCoeffArray)
-        indexZernModes= np.arange(firstZernModeIndex, lastZernModeIndex)
-        zd= self._zg.getZernikeDict(indexZernModes)
-            
-        for i in indexZernModes:
-            surfaceMap= surfaceMap+ surfaceZernikeCoeffArray[i-2]*zd[i]
-        
+        surfaceMap= np.dot(self._mat, surfaceZernikeCoeffArray)
+        #v= np.ma.masked_array(np.zeros((512,512)), mask=rois[0])               
+        #v[rois[0]]= surfaceMap 
         return surfaceMap
   
     
@@ -110,10 +100,8 @@ class PhaseSolve():
         media=[]
         imgList=[]
         for roi in roiList:
-            img= np.zeros(m4Ima.shape)
-            img[np.where(roi== True)]= np.ma.compress(roi.ravel(), m4Ima)
-            imgg= np.ma.masked_array(img, mask= roi)
-            m= img.mean()
+            imgg= np.ma.masked_array(m4Ima.data, mask= roi)
+            m= imgg.mean()
             media.append(m)
             imgList.append(imgg)
                
@@ -121,11 +109,11 @@ class PhaseSolve():
         zipped= zip(aa, imgList)
         img_phaseSolveList=[]
         for i, imgg in zipped:
-            img_phaseSolve= np.ma.masked_array(imgg.data - self._n[i], mask= np.invert(imgg.mask))
+            img_phaseSolve= np.ma.masked_array(imgg.data - self._n[i], mask= imgg.mask)
             img_phaseSolveList.append(img_phaseSolve)
         
-        img_phaseSolveList[len(img_phaseSolveList)-1]= np.ma.masked_array(imgList[len(imgList)-1].data, 
-                                                                mask= np.invert(imgList[len(imgList)-1].mask))
+        img_phaseSolveList[len(img_phaseSolveList)-1]= np.ma.masked_array(imgList[len(imgList)-2].data, 
+                                                                mask= imgList[len(imgList)-2].mask)
           
           
         for j in range(1, len(img_phaseSolveList)):
@@ -144,12 +132,10 @@ class PhaseSolve():
     def masterRoiPhaseSolver(self, segIma, splValue):
         self.n_calculator(splValue)
         roiList= self._r._ROIonSegment(segIma)
-          
-        img= np.zeros(segIma.shape)
-        img[np.where(roiList[1]== True)]= np.ma.compress(roiList[1].ravel(), segIma)
-        imgg= np.ma.masked_array(img, mask= roiList[1])
+    
+        imgg= np.ma.masked_array(segIma.data, mask= roiList[1])
         
-        img_phaseSolve= np.ma.masked_array(imgg.data - self._n, mask= np.invert(imgg.mask))
+        img_phaseSolve= np.ma.masked_array(imgg.data - self._n, mask= imgg.mask)
         
         return img_phaseSolve
           
