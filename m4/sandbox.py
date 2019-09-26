@@ -378,6 +378,14 @@ def main1709_ttDetrend(image):
     surfaceMap, imageTTR= tt.tipTiltRemover(image, roi)
     return surfaceMap, imageTTR
 
+def main2609_ttDetrend(image):
+    from m4.utils.roi import ROI
+    r=ROI()
+    roi= r._ROIonSegment(image)
+    from m4.utils.imgRedux import TipTiltDetrend 
+    tt= TipTiltDetrend()
+    return roi, tt
+
 def immaginiprova():
     fitsRoot= "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova"
     fitsFileName= os.path.join(fitsRoot, 'mode_0005.fits')
@@ -393,12 +401,12 @@ def immaginiprova():
 def immaginiProvaTTDetrendSeg():
     push= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0000.fits')
     pull= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0001.fits')
-    mode0= np.ma.masked_array(pull.data - push.data, mask= push.mask)
+    mode0= np.ma.masked_array(pull.data - push.data, mask= np.invert(push.mask))
     
-    push= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0002.fits')
-    pull= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0003.fits')
-    mode1= np.ma.masked_array(pull.data - push.data, mask= push.mask)
-    return mode0, mode1
+#     push= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0002.fits')
+#     pull= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0003.fits')
+#     mode1= np.ma.masked_array(pull.data - push.data, mask= np.invert(push.mask))
+    return mode0
     
 def immaginiProvaTTDetrendAll():
     push= objectFromFitsFileName.readImageFromFitsFileName('All/img_0000.fits')
