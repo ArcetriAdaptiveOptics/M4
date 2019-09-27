@@ -2,6 +2,7 @@
 @author: cs
 '''
 
+from m4.ground.configuration import Configuration
 from m4.ground.zernikeGenerator import ZernikeGenerator
 from m4.ground.zernikeMask import CircularMask
 import numpy as np
@@ -9,14 +10,12 @@ import numpy as np
 
 class ZernikeOnM4(object):
     
-    def __init__(self, analyzerIFFunctions):
-        self._an = analyzerIFFunctions
-        self._shapeIFs= self._an.getCube()[:,:,0].shape
-        self._nPixelOnDiameter= None
-        self._nActs= self._an.getCube()[:,0,0].shape
-        self._pupilXYRadius= None
-        self._zg= None
+    def __init__(self):
+        self._pupilXYRadius= Configuration.ParabolaPupilXYRadius
+        self._zg= ZernikeGenerator(2*self._pupilXYRadius[2])
         
+    def getPupilCenterAndRadiusInIFCoords(self):
+        return self._pupilXYRadius
         
     def setPupilCenterAndRadiusInIFCoords(self, centerX, centerY, radius):
         self._pupilXYRadius= np.array([centerX, centerY, radius])
@@ -27,43 +26,47 @@ class ZernikeOnM4(object):
         '''
         zernikeMode= vector of Zernike modes to remove
         '''
-        z= self._zg.getZernike(2)
-        nPointsInMask= len(z.compressed())
-        cx= self._pupilXYRadius[0]
-        cy= self._pupilXYRadius[1]
-        r= self._pupilXYRadius[2]
-        imaCut=img[cy-r:cy+r, cx-r:cx+r]
-        imaCutM= np.ma.masked_array(imaCut.data, mask=z.mask)
-        
-        a=np.zeros(zernikeMode.size)
-        
+        mat= np.zeros((img.compressed().shape[0], zernikeMode.size)) 
         for i in range(0, zernikeMode.size):
             z=self._zg.getZernike(zernikeMode[i])
-            a[i]= np.dot(z.compressed(),imaCutM.compressed()) / nPointsInMask
+            aa= np.ma.masked_array(z, mask= img.mask)
+            mat.T[i]= aa.compressed()
             
-        return a
+        self._mat= mat
+        inv= np.linalg.pinv(mat)   
+        a= np.dot(inv, img.compressed())  
+        return a, mat
+    
+    def zernikeSurface(self, surfaceZernikeCoeffArray, imaMask, mat, index= None):
+        zernikeSurfaceMap= None
+        
+        if index is None:
+            zernikeSurfaceMap= np.dot(mat, surfaceZernikeCoeffArray)
+        else:
+            for i in range(len(index)):
+                k= index[i]
+                zernikeSurface= np.dot(mat[:,k], surfaceZernikeCoeffArray[k])
+                if zernikeSurfaceMap is None:
+                    zernikeSurfaceMap= zernikeSurface
+                else:
+                    zernikeSurfaceMap= zernikeSurfaceMap + zernikeSurface
+                
+        mask= np.invert(imaMask)
+        surf= np.ma.masked_array(np.zeros((2*self._pupilXYRadius[2],2*self._pupilXYRadius[2])), mask=mask)               
+        surf[mask]= zernikeSurfaceMap 
+        return surf
     
     
-    def zernikeToDMCommand(self, surfaceZernikeCoeffArrayInNanometer):
+    def zernikeToDMCommand(self, surfaceMap, an):
+        self._an= an
         '''
         @params
-        surfaceZernikeCoeffArrayInNanometer: numpy.array() coefficients in meter
-          Starting from z2
+        surfaceMap: 
+        an: analyzer delle funzioni d'influenza zonali
         
         @return: 
         Command (numpy.array)
         '''
-        surfaceMap=0.0;
-        firstZernModeIndex= 2
-        lastZernModeIndex= 2+len(surfaceZernikeCoeffArrayInNanometer)
-        indexZernModes= np.arange(firstZernModeIndex, lastZernModeIndex)
-        zd= self._zg.getZernikeDict(indexZernModes)
-            
-        for i in indexZernModes:
-            surfaceMap= surfaceMap+ surfaceZernikeCoeffArrayInNanometer[i-2]*zd[i]
-         
-         
-        
         cmask = self._an.getMasterMask()
         zernikeMaskOnIF= CircularMask(
             self._an.getIFShape(),
@@ -74,5 +77,5 @@ class ZernikeOnM4(object):
         
         zernikeCmd= np.dot(rec, surfaceMap.compressed())
 
-        return zernikeCmd, surfaceMap
+        return zernikeCmd
     

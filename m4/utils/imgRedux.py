@@ -5,14 +5,15 @@
 import numpy as np
 from m4.ground.configuration import Configuration
 from m4.utils.roi import ROI
-from m4.ground.zernikeGenerator import ZernikeGenerator
+from m4.utils.zernikeOnM4 import ZernikeOnM4
 
 
 class TipTiltDetrend():
     
     def __init__(self):
         self._pupilXYRadius= Configuration.ParabolaPupilXYRadius
-        self._zg= ZernikeGenerator(2*self._pupilXYRadius[2])
+        self._zOnM4= ZernikeOnM4()
+        self._totalMatList= None
     
     def tipTiltRemover(self, image, roi, finalIndex, analysisInd= None):  
         roiCopy= np.copy(roi) 
@@ -28,8 +29,8 @@ class TipTiltDetrend():
         for r in roi:
             imag= np.ma.masked_array(image.data, mask=r)
             ima= np.ma.MaskedArray.copy(imag)
-            coef= self._zernikeFit(ima, np.array([2,3]))
-            self._totalMatList.append(self._mat)
+            coef, mat= self._zOnM4.zernikeFit(ima, np.array([2,3]))
+            self._totalMatList.append(mat)
             coefList.append(coef)
             
         if analysisInd is None:
@@ -42,7 +43,7 @@ class TipTiltDetrend():
         tip, tilt= np.average(coef_List, axis=0)
         
         surfcoef= np.array([tip, tilt]) 
-        surfaceMap=self._zernikeSurface(surfcoef, roiCopy, finalIndex)
+        surfaceMap=self._zOnM4.zernikeSurface(surfcoef, roiCopy[finalIndex], self._totalMatList[finalIndex])
         
         cx= self._pupilXYRadius[0]
         cy= self._pupilXYRadius[1]
@@ -50,33 +51,10 @@ class TipTiltDetrend():
         imaCut=image[cy-r:cy+r, cx-r:cx+r]
         imageTTR= np.ma.masked_array(imaCut.data - surfaceMap, mask=roi[finalIndex])
             
-        return surfcoef, imageTTR
+        return imageTTR
   
        
-    def _zernikeFit(self, img, zernikeMode):
-        '''
-        zernikeMode= vector of Zernike modes to remove
-        '''
-        #z= self._zg.getZernike(2)
-        mat= np.zeros((img.compressed().shape[0], zernikeMode.size)) 
-        for i in range(0, zernikeMode.size):
-            z=self._zg.getZernike(zernikeMode[i])
-            aa= np.ma.masked_array(z, mask= img.mask)
-            mat.T[i]= aa.compressed()
-            
-        self._mat= mat
-        inv= np.linalg.pinv(mat)   
-        a= np.dot(inv, img.compressed())  
-        return a
     
-    
-    def _zernikeSurface(self, surfaceZernikeCoeffArray, roi, ind):
-        zernikeSurfaceMap= np.dot(self._totalMatList[ind], surfaceZernikeCoeffArray)
-        mask= np.invert(roi[ind])
-        surf= np.ma.masked_array(np.zeros((2*self._pupilXYRadius[2],2*self._pupilXYRadius[2])), mask=mask)               
-        surf[mask]= zernikeSurfaceMap 
-        return surf
-  
     
         
 

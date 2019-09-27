@@ -70,17 +70,37 @@
     
     
 # ZERNIKE
-    cx= self._pupilXYRadius[0]
-        cy= self._pupilXYRadius[1]
-        r= self._pupilXYRadius[2]
-        imaCut=img[cy-r:cy+r, cx-r:cx+r]
-        imaCutM= np.ma.masked_array(imaCut.data, mask=z.mask)
-    
-    mat= np.zeros((z.compressed().shape[0], zernikeMode.size)) 
+
+        self._an = analyzerIFFunctions
+        self._shapeIFs= self._an.getCube()[:,:,0].shape
+        self._nPixelOnDiameter= None
+        self._nActs= self._an.getCube()[:,0,0].shape
+        self._pupilXYRadius= None
+        self._zg= None 
+        
+    def _zernikeFit(self, img, zernikeMode):
+        '''
+        zernikeMode= vector of Zernike modes to remove
+        '''
+        mat= np.zeros((img.compressed().shape[0], zernikeMode.size)) 
         for i in range(0, zernikeMode.size):
             z=self._zg.getZernike(zernikeMode[i])
+            aa= np.ma.masked_array(z, mask= img.mask)
+            mat.T[i]= aa.compressed()
             
-            mat.T[i]= z.compressed()
+        self._mat= mat
+        inv= np.linalg.pinv(mat)   
+        a= np.dot(inv, img.compressed())  
+        return a
+    
+    
+    def _zernikeSurface(self, surfaceZernikeCoeffArray, roi, ind):
+        zernikeSurfaceMap= np.dot(self._totalMatList[ind], surfaceZernikeCoeffArray)
+        mask= np.invert(roi[ind])
+        surf= np.ma.masked_array(np.zeros((2*self._pupilXYRadius[2],2*self._pupilXYRadius[2])), mask=mask)               
+        surf[mask]= zernikeSurfaceMap 
+        return surf
+  
             
             
             
