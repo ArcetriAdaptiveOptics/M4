@@ -346,7 +346,7 @@ def testIFF_tidyMeasureCreator(device, cmdMatrixTag, modeVectTag, ampTag, nPushP
 def testIFF_an(tt, ttD= None):
     from m4.analyzerIFFunctions import AnalyzerIFF
     fileName= os.path.join("/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions", tt)
-    an= AnalyzerIFF.loadMeasureFromFits(fileName)
+    an= AnalyzerIFF.loadTestMeasureFromFits(fileName)
     cube= an.createCube(ttD)
     intMat= an.getInteractionMatrix()
     rec= an.getReconstructor()

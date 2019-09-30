@@ -2,6 +2,7 @@
 @author: cs
 '''
 import os
+from m4.ground.configuration import Configuration
 
 def log(info1, info2, info3, info4= None ):
     import logging
@@ -10,7 +11,7 @@ def log(info1, info2, info3, info4= None ):
         string=" ".join([info1, info2, info3])
     else:
         string=" ".join([info1, info2, info3, info4])
-    dove= '/Users/rm/Desktop/Arcetri/M4/ProvaCodice' 
+    dove= Configuration.LOG_ROOT_FOLDER
     filename= os.path.join(dove, 'example.log')
          
     logging.basicConfig(filename= filename,

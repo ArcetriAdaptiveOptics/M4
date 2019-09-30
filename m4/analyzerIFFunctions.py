@@ -240,7 +240,7 @@ class AnalyzerIFF(object):
         
     
     @staticmethod 
-    def loadMeasureFromFits(tt):
+    def loadTestMeasureFromFits(tt):
         dove= os.path.join("/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions", tt)
         fitsFileName= os.path.join(dove, 'misure.fits')
         header= pyfits.getheader(fitsFileName)
