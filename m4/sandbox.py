@@ -391,11 +391,11 @@ def immaginiprova():
     fitsFileName= os.path.join(fitsRoot, 'mode_0005.fits')
     hduList= pyfits.open(fitsFileName)
     ima= hduList[0].data
-    m4= np.ma.masked_array(ima[0], mask= ima[1])
+    m4= np.ma.masked_array(ima[0], mask= np.invert(ima[1]))
     fitsFileName= os.path.join(fitsRoot, 'mode_0006.fits')
     hduList= pyfits.open(fitsFileName)
     ima= hduList[0].data
-    segment= np.ma.masked_array(ima[0], mask= ima[1])
+    segment= np.ma.masked_array(ima[0], mask= np.invert(ima[1]))
     return m4, segment
 
 def immaginiProvaTTDetrendSeg():
@@ -417,4 +417,28 @@ def immaginiProvaTTDetrendAll():
     pull= objectFromFitsFileName.readImageFromFitsFileName('All/img_0003.fits')
     mode1= np.ma.masked_array(pull.data - push.data, mask= push.mask)
     return mode0, mode1
+
+
+def main1001_align():
+    ampVect= np.ones(5)*5.0e-06 
+    from m4.alignment import Alignment
+    a= Alignment()
+    a._commandAmpVector= ampVect 
+    
+    a.createCube()
+    cub= a.getCube() 
+    ima= cub[:,:,0]
+    from m4.utils.roi import ROI 
+    r= ROI()
+    roi= r.ROIonAlignmentImage(ima)  
+    mask= roi[2] 
+    mat= a.getInteractionMatrix(mask)
+    rec= a.getReconstructor(mask)
+    return mat, rec
+
+
+
+
+
+
     

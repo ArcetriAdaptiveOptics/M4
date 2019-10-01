@@ -3,6 +3,7 @@
 '''
 
 import unittest
+import numpy as np
 
 
 
@@ -52,3 +53,27 @@ class TestCalc(unittest.TestCase):
         else:
             result = False
         self.assertEqual(result, True, "Ohno")
+        
+        
+    def testCalibration(self):
+        #test basato sui dati presenti in 
+        #/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/MixingIntMat/20190930_162714'
+        commandAmpVector=np.ones(5)*5.0e-06
+        nPushPull=3
+        print("Calibration test for PAR + RM")
+        from m4.alignment import Alignment
+        a= Alignment()
+        tt= a.measureCalibrationMatrix(0, commandAmpVector, nPushPull)
+        mat, rec= a.analyzerCalibrationMeasurement(tt)
+        prod= np.dot(rec, mat) 
+        np.fill_diagonal(prod,0) 
+        if prod.sum()<1e-10:
+            result = True
+        else:
+            result = False
+        self.assertEqual(result, True, "Ohno")
+        
+        
+        
+        
+        

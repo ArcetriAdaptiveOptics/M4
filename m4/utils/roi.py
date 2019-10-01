@@ -12,21 +12,34 @@ from skimage.measure import label
 class ROI():
     
     def __init__(self):
-        self._DetectorROI= None
-        self._AnalysisROI= None
-        self._pupilXYRadius= None
-        
+        pass
     
-    def getDetectorROI(self, image):
-        self._DetectorROI= image.mask()
+    def ROIonAlignmentImage(self, ima):
+        labels = label(ima.mask.astype(int))
+        label_im = -np.ones(ima.mask.shape)
+        label_im[ima.mask.astype(int)] = labels
+        
+        markers = ima.mask.astype('int')*0
+        markers[0,0]=1
+        markers[170,86]=2
+        markers[322,166]=3
+        markers[223,252]=4
+        markers[163,442]=5
+        markers[73,229]=6
+        
+        roi_mask = sks.random_walker(ima.mask, markers) 
+        
+        roiList=[]
+        for i in range(2,7):
+            maski=np.zeros(roi_mask.shape, dtype=np.bool)
+            maski[np.where(roi_mask==i)]=1 
+            finalRoi= np.ma.mask_or(np.invert(maski), ima.mask)
+            roiList.append(finalRoi)
+            
+        self._DetectorROI= roiList    
         return self._DetectorROI
-    
-    def getAnalysisROI(self):
-        return self._AnalysisROI 
+                
         
-    def setAnalysisROI(self, analysisMask):
-        self._AnalysisROI= analysisMask
- 
     
     def _ROIonSegment(self, ima):
 #       graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)
