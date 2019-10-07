@@ -419,10 +419,10 @@ def immaginiProvaTTDetrendAll():
     return mode0, mode1
 
 
-def main1001_align():
+def main1001_calib():
     ampVect= np.ones(5)*5.0e-06 
-    from m4.alignment import Alignment
-    a= Alignment()
+    from m4.opticalCalibration import Calibration
+    a= Calibration()
     a._commandAmpVector= ampVect 
     
     a.createCube()

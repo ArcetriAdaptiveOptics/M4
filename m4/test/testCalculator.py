@@ -61,10 +61,10 @@ class TestCalc(unittest.TestCase):
         commandAmpVector=np.ones(5)*5.0e-06
         nPushPull=3
         print("Calibration test for PAR + RM")
-        from m4.alignment import Alignment
-        a= Alignment()
-        tt= a.measureCalibrationMatrix(0, commandAmpVector, nPushPull)
-        mat, rec= a.analyzerCalibrationMeasurement(tt)
+        from m4.opticalCalibration import Calibration
+        cal= Calibration()
+        tt= cal.measureCalibrationMatrix(0, commandAmpVector, nPushPull)
+        mat, rec= cal.analyzerCalibrationMeasurement(tt)
         prod= np.dot(rec, mat) 
         np.fill_diagonal(prod,0) 
         if prod.sum()<1e-10:

@@ -11,7 +11,7 @@ import pyfits
 import os
 
 
-class Alignment():
+class Calibration():
     
     def __init__(self):
         self._zOnM4= ZernikeOnM4()
@@ -21,7 +21,7 @@ class Alignment():
     @staticmethod
     def _storageFolder():
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
-                                       "Alignment")
+                                       "Calibration")
         
         
     def measureCalibrationMatrix(self, who, commandAmpVector, nPushPull):
@@ -38,26 +38,29 @@ class Alignment():
         logger.log('Misure di', 'calibrazione', 'con', 'tt= self._tt')
         
         self._commandMatrix= self._createCommandMatrix(who, self._commandAmpVector, self._nPushPull)
-        self.saveCommandMatrixAsFits(dove)
+        self._saveCommandMatrixAsFits(dove)
         
-        self._applyCommandMatrixToDM(self._commandMatrix)
+        self._applyCommandMatrix(self._commandMatrix)
         return self._tt
     
     def analyzerCalibrationMeasurement(self, tt):
-        a= Alignment.loadCommandMatrixFromFits(tt)
+        a= Calibration.loadCommandMatrixFromFits(tt)
         a.createCube(tt)
         cube= a.getCube()
         ima= cube[:,:,0]
         from m4.utils.roi import ROI 
         r= ROI()
         roi= r.ROIonAlignmentImage(ima)  
-        mask= roi[2] 
-        mat= a.getInteractionMatrix(mask)
-        rec= a.getReconstructor(mask)
-        return mat, rec
+        mask= roi[2]
+        dove= os.path.join(self._storageFolder(), tt)
+        self._saveMask(dove, mask)
+        self._intMat= a.getInteractionMatrix(mask)
+        self._rec= a.getReconstructor(mask)
+        self._saveIntMatAndRec(dove)
+        return self._intMat, self._rec
         
 
-    def _applyCommandMatrixToDM(self, commandMatrix):
+    def _applyCommandMatrix(self, commandMatrix):
         #deve applicare la matrice e salvare gli interferogrammi
         pass   
     
@@ -108,7 +111,7 @@ class Alignment():
         return commandMatrix 
       
     
-    def saveCommandMatrixAsFits(self, dove):   
+    def _saveCommandMatrixAsFits(self, dove):   
         fitsFileName= os.path.join(dove, 'CommandMatrix.fits')
         header= pyfits.Header()
         header['NPUSHPUL']= self._nPushPull
@@ -118,7 +121,7 @@ class Alignment():
         
     @staticmethod
     def loadCommandMatrixFromFits(tt):
-        theObject= Alignment()
+        theObject= Calibration()
         theObject._tt= tt
         dove= os.path.join(theObject._storageFolder(), tt)
         file= os.path.join(dove, 'CommandMatrix.fits')
@@ -130,7 +133,7 @@ class Alignment():
         theObject._commandMatrix= hduList[1].data
         return theObject
     
-    def _testAlignment_createCubeMeasurefromFileFitsMeasure(self):
+    def _testCalibration_createCubeMeasurefromFileFitsMeasure(self):
         cubeMeasure= None 
         fold='/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/MixingIntMat/20190930_162714' 
         for i in range(5):
@@ -147,7 +150,7 @@ class Alignment():
      
     def createCube(self, tt):
         logger.log('Creazione del', 'cubo', 'relativo a', 'tt')
-        cubeFromMeasure= self._testAlignment_createCubeMeasurefromFileFitsMeasure() 
+        cubeFromMeasure= self._testCalibration_createCubeMeasurefromFileFitsMeasure() 
         for i in range(cubeFromMeasure.shape[2]):
             cubeFromMeasure[:,:,i]= cubeFromMeasure[:,:,i] / self._commandAmpVector[i]
         self._cube= cubeFromMeasure
@@ -187,8 +190,16 @@ class Alignment():
         if self._rec is None:
             self._createInteractionMatrixAndReconstructor(mask)
         return self._rec
-       
+    
+    def _saveIntMatAndRec(self, dove):
+        fitsFileName= os.path.join(dove, 'InteractionMatrix.fits')
+        pyfits.writeto(fitsFileName, self._intMat)
+        fitsFileName= os.path.join(dove, 'Reconstructor.fits')
+        pyfits.writeto(fitsFileName, self._rec)
         
+    def _saveMask(self, dove, mask):
+        fitsFileName= os.path.join(dove, 'Mask.fits')
+        pyfits.writeto(fitsFileName, mask.astype(int))
         
         
         
