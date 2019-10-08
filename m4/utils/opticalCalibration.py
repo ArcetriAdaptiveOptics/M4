@@ -11,7 +11,7 @@ import pyfits
 import os
 
 
-class Calibration():
+class Opt_Calibration():
     
     def __init__(self):
         self._zOnM4= ZernikeOnM4()
@@ -29,13 +29,13 @@ class Calibration():
         self._commandAmpVector= commandAmpVector
         '''
             arg:
-                mask= measurement mask (segment mask or RM mask)
+                who= numero che indica l'elemento ottico su cui svolgere la calibrazione
                 commandAmpVector= vettore contenente l'ampiezza dei comandi da dare ai gradi di libertà da calibrare
         '''
         storeInFolder= self._storageFolder()
         save= trackingNumberFolder.TtFolder(storeInFolder)
         dove, self._tt= save._createFolderToStoreMeasurements()
-        logger.log('Misure di', 'calibrazione', 'con', 'tt= self._tt')
+        logger.log('Misure di', 'calibrazione', 'con tt=', self._tt)
         
         self._commandMatrix= self._createCommandMatrix(who, self._commandAmpVector, self._nPushPull)
         self._saveCommandMatrixAsFits(dove)
@@ -44,7 +44,11 @@ class Calibration():
         return self._tt
     
     def analyzerCalibrationMeasurement(self, tt):
-        a= Calibration.loadCommandMatrixFromFits(tt)
+        '''
+        arg:
+             mask?= measurement mask (segment mask or RM mask)
+        '''
+        a= Opt_Calibration.loadCommandMatrixFromFits(tt)
         a.createCube(tt)
         cube= a.getCube()
         ima= cube[:,:,0]
@@ -121,7 +125,7 @@ class Calibration():
         
     @staticmethod
     def loadCommandMatrixFromFits(tt):
-        theObject= Calibration()
+        theObject= Opt_Calibration()
         theObject._tt= tt
         dove= os.path.join(theObject._storageFolder(), tt)
         file= os.path.join(dove, 'CommandMatrix.fits')
@@ -149,7 +153,7 @@ class Calibration():
         return cubeMeasure
      
     def createCube(self, tt):
-        logger.log('Creazione del', 'cubo', 'relativo a', 'tt')
+        logger.log('Creazione del', 'cubo', 'relativo a', self._tt)
         cubeFromMeasure= self._testCalibration_createCubeMeasurefromFileFitsMeasure() 
         for i in range(cubeFromMeasure.shape[2]):
             cubeFromMeasure[:,:,i]= cubeFromMeasure[:,:,i] / self._commandAmpVector[i]

@@ -59,10 +59,11 @@ class TestCalc(unittest.TestCase):
         #test basato sui dati presenti in 
         #/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/MixingIntMat/20190930_162714'
         commandAmpVector=np.ones(5)*5.0e-06
+        commandAmpVector[0]=2.5e-05 
         nPushPull=3
         print("Calibration test for PAR + RM")
-        from m4.opticalCalibration import Calibration
-        cal= Calibration()
+        from m4.utils.opticalCalibration import Opt_Calibration
+        cal= Opt_Calibration()
         tt= cal.measureCalibrationMatrix(0, commandAmpVector, nPushPull)
         mat, rec= cal.analyzerCalibrationMeasurement(tt)
         prod= np.dot(rec, mat) 

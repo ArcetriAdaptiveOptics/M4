@@ -24,7 +24,12 @@ class ZernikeOnM4(object):
     
     def zernikeFit(self, img, zernikeMode):
         '''
-        zernikeMode= vector of Zernike modes to remove
+        arg:
+            img= numpy masked array
+            zernikeMode= vector of Zernike modes to remove
+        return:
+            a= vettore con le ampiezze dei modi di Zernike
+            mat= matrice d'interazione relativa alla zona mascherata
         '''
         mat= np.zeros((img.compressed().shape[0], zernikeMode.size)) 
         for i in range(0, zernikeMode.size):
@@ -38,6 +43,16 @@ class ZernikeOnM4(object):
         return a, mat
     
     def zernikeSurface(self, surfaceZernikeCoeffArray, imaMask, mat, index= None):
+        '''
+        arg: 
+            surfaceZernikeCoeffArray= vettore contenente le ampiezze dei modi di zernike 
+            imaMask= la maschera realativa alla zona in cui vogliamo ricostruire la superficie 
+            mat= matrice d'interazione relativa alla zona mascherata
+            index= vettore contenente il numero degli indici della matrice d'interazione che vogliamo usare
+        retirn:
+            surf= superficie ricostruita
+        
+        '''
         zernikeSurfaceMap= None
         
         if index is None:
