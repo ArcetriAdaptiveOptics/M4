@@ -13,6 +13,8 @@ class Configuration(object):
         
         CALIBRATION_ROOT_FOLDER= "/Users/rm/Desktop/Arcetri/M4/ProvaCodice"
         
+        TEST_IMAGE_ROOT_FOLDER= "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova"
+        
         
     #Interf  
         Lambda= 2

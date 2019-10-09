@@ -1,0 +1,71 @@
+• Acquisizione ed analisi delle Funzioni d'influenza
+
+
+	- Acquisizione
+	
+	  PROCEDIMENTO:
+	  from m4.utils import createDevice 
+      device= createDevice.myDevice("segment") 		#or "m4"
+      from m4.influenceFunctionsMaker import IFFunctionsMaker
+      IFF= IFFunctionsMaker(device) 
+      tt= IFF.acq_IFFunctions(modesVectorFitsFileName, nPushPull, amplitudeFitsFileName,
+      							 cmdMatrixFitsFileName, shuffle=None) 
+      							 
+      RISULTATI:
+      * .../IFFunctions/tt contiene il file 'info.fits' con i dati utilizzati per creare le iff 
+      	e gli interferogrammi acquisiti
+      * .../CommandHistory/tt contiene il file 'info.fits' in cui sono salvati i dati con cui è stata 
+      	creata la matrice con la storia dei comandi
+      	
+      	
+     - Analisi
+     
+       PROCEDIMENTO:
+       from m4.analyzerIFFunctions import AnalyzerIFF 
+       fileName= os.path.join(".../IFFunctions", tt)
+  	   an= AnalyzerIFF.loadInfoFromTtFolder(fileName)
+  	   cube= an.createCube(tiptiltDetrend= None, phaseAmbiguity= None)
+  	   an.saveCubeAsFits(cubeName)	#'Cube.fits' or 'CubeTTD.fits' etc..
+  	   ( intMat= an.getInteractionMatrix()	rec= an.getReconstructor() 	)
+  	   
+  	   RISULTATI:
+  	   * .../IFFunctions/tt contiene il cubo con le funzioni di influenze ridotte nel modo richiesto
+  	   * an è definito tramite le IFF scelte e può essere usato per lo spianemento
+  	   
+  	   
+  	 - Spianamento
+  	 
+  	   PROCEDIMENTO:
+  	   
+  	   RISULTATI:
+  	   
+  	   
+  	   
+• Calibrazione e allineamento delle ottiche 
+
+	
+	- Allineamento dell'OTT (PAR + RM)
+	
+	  PROCEDIMENTO:
+	  from m4.alignment import Alignment 
+	  a=Alignment()
+	  cmd= a.OTT_Alignment(commandAmpVector, nPushPull)
+	  
+	  RISULTATI:
+	  
+	  
+	- Allinemaneto di M4
+	
+	  PROCEDIMENTO:
+	  from m4.alignment import Alignment 
+	  a=Alignment()
+	  ?= a.M4_Alignment(...)
+	  
+	  RISULTATI:
+	  
+	  
+	  
+	  
+	
+	
+	

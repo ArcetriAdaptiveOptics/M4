@@ -6,6 +6,7 @@ from m4.ground.configuration import Configuration
 from m4.utils.zernikeOnM4 import ZernikeOnM4
 from m4.utils.opticalCalibration import Opt_Calibration
 from m4.ground import logger
+from m4.ground import objectFromFitsFileName as obj
 import numpy as np
 import pyfits
 import os
@@ -27,14 +28,15 @@ class Opt_Alignment():
                                        "Alignment")
         
     
-    def opt_align(self):
+    def opt_align(self, piston= None):
         logger.log('Calcolo il comando', 'di allineamento', 'per', self._tt)
         self._intMat, self._rec, self._mask= self._loadAlignmentInfo()
-        imgf, imgt= self._measureOTTPhaseMap()
-        cmdf= self._commandGenerator(imgf)
-        cmdt= self._commandGenerator(imgt)
-        self.saveCommand(cmdf, 2)
-        return cmdf, cmdt
+        img= self._measureOTTPhaseMap()
+        cmd= self._commandGenerator(img)
+#         cmdf= self._commandGenerator(imgf)
+#         cmdt= self._commandGenerator(imgt)
+#         self.saveCommand(cmdf, 1)
+        return cmd
         
     
     def _loadAlignmentInfo(self):
@@ -51,16 +53,26 @@ class Opt_Alignment():
         info= hduList[0].data
         return info
     
-    def _testAlignment_loadMeasureFromFileFits(self):
-        fold='/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Allineamento/20191007_134908/img.fits'
-        hduList= pyfits.open(fold)
-        ima= hduList[0].data
-        imgf= np.ma.masked_array(ima[0], mask= np.invert(ima[1].astype(bool)))
-        fold='/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Allineamento/20191007_135037/img.fits'
-        hduList= pyfits.open(fold)
-        ima= hduList[0].data
-        imgt= np.ma.masked_array(ima[0], mask= np.invert(ima[1].astype(bool)))
-        return imgf, imgt
+    def _testAlignment_loadMeasureFromFileFits(self, test):
+        if test== 0:
+            imgf= obj.readImageFromFitsFileName('Allineamento/20191007_134908/img.fits')
+            imgt= obj.readImageFromFitsFileName('Allineamento/20191007_135037/img.fits')
+            return imgf, imgt
+        elif test== 1:
+            img= obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
+            return img
+        
+    def _testAlignment_loadInfoPositionFromFileFits(self, test):
+        if test== 0:
+            parf= obj.readDataFromFileFits('Allineamento/20191007_134908/parpos.fits')
+            rmf= obj.readDataFromFileFits('Allineamento/20191007_134908/rflatpos.fits')
+            part= obj.readDataFromFileFits('Allineamento/20191007_135037/parpos.fits')
+            rmt= obj.readDataFromFileFits('Allineamento/20191007_135037/rflatpos.fits')
+            return parf, rmf, part, rmt
+        elif test== 1:
+            par= obj.readDataFromFileFits('Allineamento/20191001_081344/parpos.fits')
+            rm= obj.readDataFromFileFits('Allineamento/20191001_081344/rflatpos.fits')
+            return par, rm
     
     def _commandGenerator(self, img):
         image= np.ma.masked_array(img.data, mask= self._mask)
@@ -69,9 +81,10 @@ class Opt_Alignment():
         return cmd
     
     def _measureOTTPhaseMap(self):
-        #salva l'interferogramma
-        imgf, imgt= self._testAlignment_loadMeasureFromFileFits()
-        return imgf, imgt
+        #acquisirà e salverà l'interferogramma
+        imgf, imgt= self._testAlignment_loadMeasureFromFileFits(0)
+        img= self._testAlignment_loadMeasureFromFileFits(1)
+        return img
     
     def _zernikeCoeff(self, img):
         coef, mat= self._zOnM4.zernikeFit(img, np.arange(2,11))

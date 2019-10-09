@@ -60,7 +60,7 @@ class ZernikeOnM4(object):
         else:
             for i in range(len(index)):
                 k= index[i]
-                zernikeSurface= np.dot(mat[:,k], surfaceZernikeCoeffArray[k])
+                zernikeSurface= np.dot(mat[:,k], surfaceZernikeCoeffArray[i])
                 if zernikeSurfaceMap is None:
                     zernikeSurfaceMap= zernikeSurface
                 else:

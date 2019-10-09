@@ -30,16 +30,17 @@ class AnalyzerIFF(object):
         return self._tt
     
     @staticmethod
-    def loadInfoFromh5Folder(h5Folder):
+    def loadInfoFromTtFolder(h5Folder):
         theObject= AnalyzerIFF()
         theObject._h5Folder= h5Folder
         a= IFFunctionsMaker.loadInfoFromFits(h5Folder)
         theObject._who= a[0]
-        theObject._actsVector= a[1]
-        theObject._cmdMatrix= a[2]
-        theObject._cmdAmplitude= a[3]
-        theObject._nPushPull= a[4]
-        theObject._indexingList= a[5]
+        theObject._tt= a[1]
+        theObject._actsVector= a[2]
+        theObject._cmdMatrix= a[3]
+        theObject._cmdAmplitude= a[4]
+        theObject._nPushPull= a[5]
+        theObject._indexingList= a[6]
         return theObject
     
     

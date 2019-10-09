@@ -5,6 +5,7 @@
 from m4.type.modalAmplitude import ModalAmplitude
 from m4.type.modalBase import ModalBase
 from m4.type.modesVector import ModesVector
+from m4.ground.configuration import Configuration
 import os
 import pyfits
 import numpy as np
@@ -30,10 +31,15 @@ def readObjectFitsFileName(amplitudeFitsFileName, modeVectorFitsFileName, cmdMat
         return amplitude, modeVector, cmdMatrix
     
     
-def readImageFromFitsFileName(fitsFileName):
-    fitsRoot= "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova"
-    fileName= os.path.join(fitsRoot, fitsFileName)
+def readImageFromFitsFileName(fitsFilePath):
+    fileName= os.path.join(Configuration.TEST_IMAGE_ROOT_FOLDER, fitsFilePath)
     hduList= pyfits.open(fileName)
     ima= hduList[0].data
-    immagine= np.ma.masked_array(ima[0], mask= ima[1])
+    immagine= np.ma.masked_array(ima[0], mask= np.invert(ima[1].astype(bool)))
     return immagine
+
+def readDataFromFileFits(fitsFilePath):
+    fileName= os.path.join(Configuration.TEST_IMAGE_ROOT_FOLDER, fitsFilePath)
+    hduList= pyfits.open(fileName)
+    data= hduList[0].data
+    return data
