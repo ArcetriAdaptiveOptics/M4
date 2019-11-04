@@ -18,29 +18,47 @@ class Alignment():
         self._zOnM4= ZernikeOnM4()
         
         
-    def OTT_Alignment(self, commandAmpVector, nPushPull):
+    def OTT_Calibration(self, commandAmpVector, nPushPull, maskIndex):
         '''
             arg:
                 commandAmpVector= vettore contenente i valori dei movimenti dei 5 gradi di libertà
-                nPushPull= numero di push pull per ogni grasi di libertà
+                nPushPull= numero di push pull per ogni grado di libertà
+                maskIndex= int (2 per la maschera dell'RM)
         '''
         self._moveRM()
-        tt= self._cal.measureCalibrationMatrix(0, commandAmpVector, nPushPull)
-        intMat, rec= self._cal.analyzerCalibrationMeasurement(tt)
-        a= Opt_Alignment(tt)
+        self._tt= self._cal.measureCalibrationMatrix(0, commandAmpVector, nPushPull)
+        intMat, rec= self._cal.analyzerCalibrationMeasurement(self._tt, maskIndex)
+        return self._tt
+    
+    def OTT_Alignement(self, tt= None):
+        if tt is None:
+            a= Opt_Alignment(self._tt)
+        else:
+            a= Opt_Alignment(tt)
         cmd= a.opt_align()
         self._applyCmd()
         return cmd
+       
     
-    def M4_Alignment(self, commandAmpVector_ForPARRMAlignement, nPushPull_ForPARRMAlignement,
-                        commandAmpVector_ForM4Calibration, nPushPull_ForM4Calibration):
+    def M4_Calibration(self, commandAmpVector_ForPARRMAlignement, nPushPull_ForPARRMAlignement, 
+                       maskIndex_ForPARRMAlignement, commandAmpVector_ForM4Calibration, 
+                       nPushPull_ForM4Calibration, maskIndex_ForM4Alignement):
         self._moveSegmentView()
-        self.OTT_Alignment(commandAmpVector_ForPARRMAlignement, nPushPull_ForPARRMAlignement)
+        tt= self.OTT_Calibration(commandAmpVector_ForPARRMAlignement, 
+                                       nPushPull_ForPARRMAlignement, maskIndex_ForPARRMAlignement)
+        cmd= self.OTT_Alignement(tt)
         self._moveRM()
-        piston= self._measureComaOnSegmentMask()
-        tt= self._cal.measureCalibrationMatrix(3, commandAmpVector_ForM4Calibration, nPushPull_ForM4Calibration)
-        a= Opt_Alignment(tt)
-        cmd= a.opt_align(piston[0])
+        zernikeCoefComa, comaSurface= self._measureComaOnSegmentMask()
+        self._tt= self._cal.measureCalibrationMatrix(3, commandAmpVector_ForM4Calibration, nPushPull_ForM4Calibration)
+        intMat, rec= self._cal.analyzerCalibrationMeasurement(self._tt, maskIndex_ForM4Alignement)
+        return self._tt, zernikeCoefComa, comaSurface
+    
+    def M4_Alignement(self, zernikeCoefComa, tt= None):
+        if tt is None:
+            a= Opt_Alignment(self._tt)
+        else:
+            a= Opt_Alignment(tt)
+        cmd= a.opt_align(zernikeCoefComa)
         return cmd
         
     def _moveRM(self):

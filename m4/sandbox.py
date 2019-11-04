@@ -401,7 +401,7 @@ def immaginiprova():
 def immaginiProvaTTDetrendSeg():
     push= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0000.fits')
     pull= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0001.fits')
-    mode0= np.ma.masked_array(pull.data - push.data, mask= np.invert(push.mask))
+    mode0= np.ma.masked_array(pull.data - push.data, mask= push.mask)
     
 #     push= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0002.fits')
 #     pull= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0003.fits')
@@ -421,8 +421,8 @@ def immaginiProvaTTDetrendAll():
 
 def main1001_calib():
     ampVect= np.ones(5)*5.0e-06 
-    from m4.opticalCalibration import Calibration
-    a= Calibration()
+    from m4.utils.opticalCalibration import Opt_Calibration
+    a= Opt_Calibration()
     a._commandAmpVector= ampVect 
     
     a.createCube()

@@ -14,7 +14,7 @@ class TestCalc(unittest.TestCase):
         from m4.utils import createDevice 
         device= createDevice.myDevice("segment") 
         
-        cmdMatrixTag= 'matShuffleTestIF.fits'
+        cmdMatrixTag= 'matTestIF.fits'
         modeVectTag= 'vectTestIF.fits'
         ampTag= 'ampTestIF.fits'
         nPushPull= 3
@@ -37,7 +37,7 @@ class TestCalc(unittest.TestCase):
         from m4.utils import createDevice 
         device= createDevice.myDevice("segment")
         
-        cmdMatrixTag= 'matTidyTestIF.fits'
+        cmdMatrixTag= 'matTestIF.fits'
         modeVectTag= 'vectTestIF.fits'
         ampTag= 'ampTestIF.fits'
         nPushPull= 3
@@ -67,7 +67,7 @@ class TestCalc(unittest.TestCase):
         from m4.utils.opticalCalibration import Opt_Calibration
         cal= Opt_Calibration()
         tt= cal.measureCalibrationMatrix(0, commandAmpVector, nPushPull)
-        mat, rec= cal.analyzerCalibrationMeasurement(tt)
+        mat, rec= cal.analyzerCalibrationMeasurement(tt, 2)
         print("Alignment test")
         from m4.utils.opticalAlignment import Opt_Alignment 
         al= Opt_Alignment(tt)

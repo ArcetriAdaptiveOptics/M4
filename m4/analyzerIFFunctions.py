@@ -97,7 +97,8 @@ class AnalyzerIFF(object):
     def createCube(self, tiptiltDetrend= None, phaseAmbiguity= None):
         '''
             arg:
-                ttDetrend= 
+                ttDetrend= nella creazione del cubo le immagini vengono ridotte rimuovendo il tip tilt 
+                            sul segmento centrale
                 phaseSolve=
         '''
         cubeAllAct= None
@@ -124,7 +125,7 @@ class AnalyzerIFF(object):
                     r=ROI()
                     roi= r._ROIonSegment(imgIF)
                     tt= TipTiltDetrend()
-                    surfaceMap, imgIF= tt.tipTiltRemover(imgIF, roi)
+                    imgIF= tt.tipTiltRemover(imgIF, roi, 1)
                     
                 ifPushPullKth= imgIF-np.ma.median(imgIF)
                 

@@ -6,7 +6,7 @@ import numpy as np
 #import sklearn.feature_extraction as skf_e
 #import sklearn.cluster as skc
 import skimage.segmentation as sks
-from skimage.measure import label
+#from skimage.measure import label
 
 
 class ROI():
@@ -15,9 +15,6 @@ class ROI():
         pass
     
     def ROIonAlignmentImage(self, ima):
-        labels = label(ima.mask.astype(int))
-        label_im = -np.ones(ima.mask.shape)
-        label_im[ima.mask.astype(int)] = labels
         
         markers = ima.mask.astype('int')*0
         markers[0,0]=1
@@ -38,15 +35,23 @@ class ROI():
             
         self._DetectorROI= roiList    
         return self._DetectorROI
+    
+    def provaRoiSuSegmento(self):
+        from m4.ground import objectFromFitsFileName
+        ima= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0000.fits')
+        from scipy import ndimage as ndi
+        markers = ndi.label(ima.mask)[0]
+        import skimage.morphology as skm 
+        pro= skm.watershed(ima, markers)
                 
         
     
     def _ROIonSegment(self, ima):
 #       graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)
 #       labels = skc.spectral_clustering(graph, n_clusters=4, eigen_solver='arpack')
-        labels = label(ima.mask.astype(int))
-        label_im = -np.ones(ima.mask.shape)
-        label_im[ima.mask.astype(int)] = labels
+#         labels = label(ima.mask.astype(int))
+#         label_im = -np.ones(ima.mask.shape)
+#         label_im[ima.mask.astype(int)] = labels
         
         markers = ima.mask.astype('int')*0
         
@@ -81,10 +86,10 @@ class ROI():
     def _ROIonM4(self, ima):
 #       graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)
 #       labels = skc.spectral_clustering(graph, n_clusters=7, eigen_solver='arpack')
-        
-        labels = label(ima.mask.astype(int))
-        label_im = -np.ones(ima.mask.shape)
-        label_im[ima.mask.astype(int)] = labels
+#         
+#         labels = label(ima.mask.astype(int))
+#         label_im = -np.ones(ima.mask.shape)
+#         label_im[ima.mask.astype(int)] = labels
         
         #per immagini 512x512
         markers = ima.mask.astype('int')*0

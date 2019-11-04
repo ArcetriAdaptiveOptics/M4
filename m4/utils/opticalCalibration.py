@@ -43,10 +43,10 @@ class Opt_Calibration():
         self._applyCommandMatrix(self._commandMatrix)
         return self._tt
     
-    def analyzerCalibrationMeasurement(self, tt):
+    def analyzerCalibrationMeasurement(self, tt, maskIndex):
         '''
         arg:
-             mask?= measurement mask (segment mask or RM mask)
+             maskIndex= int dell'indice della maschera relativo allo specchio di riferimento
         '''
         a= Opt_Calibration.loadCommandMatrixFromFits(tt)
         a.createCube(tt)
@@ -55,7 +55,7 @@ class Opt_Calibration():
         from m4.utils.roi import ROI 
         r= ROI()
         roi= r.ROIonAlignmentImage(ima)  
-        mask= roi[2]
+        mask= roi[maskIndex]
         dove= os.path.join(self._storageFolder(), tt)
         self._saveMask(dove, mask)
         self._intMat= a.getInteractionMatrix(mask)
