@@ -56,12 +56,12 @@ class IFFunctionsMaker(object):
         
         diagonalMat= self._diagonalControll(cmdMatrix)
         if np.count_nonzero(diagonalMat - np.diag(np.diagonal(diagonalMat))) == 0:
-            print ('Misuro IF zonali')
-            logger.log("Misura delle funzioni di influenza zonali", self._who, tt)
+            print ('Measure of zonal IF')
+            logger.log("Measurement of zonal influence functions", self._who, tt)
             
         else:
-            print ('Misuro IF globali')
-            logger.log("Misura delle funzioni di influenza modali", self._who, tt)
+            print ('Measure of global IF')
+            logger.log("Measurement of modal influence functions", self._who, tt)
         
                 
         cmdH= CmdHistory(self._device)

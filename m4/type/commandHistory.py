@@ -60,7 +60,7 @@ class CmdHistory(object):
         matrixToApply= self._cmdHistoryToApply(zipped)
         self._cmdHToApply= matrixToApply
         tt= self.saveAsFits()
-        logger.log('Creazione della commandHistoryMatrix', 'ordinata', tt)
+        logger.log('Creation of the ordered', 'commandHistoryMatrix', tt)
         print(tt)
         
         return matrixToApply, tt
@@ -75,7 +75,7 @@ class CmdHistory(object):
         matrixToApply= self._cmdHistoryToApply(zipped)
         self._cmdHToApply=matrixToApply
         tt= self.saveAsFits()
-        logger.log('Creazione della commandHistoryMatrix', 'casuale', tt)
+        logger.log('Creation of the shuffle', 'commandHistoryMatrix', tt)
         print(tt)
         
         return matrixToApply, tt

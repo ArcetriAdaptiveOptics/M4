@@ -240,7 +240,7 @@ def main1009_tiptiltImage():
     roi= r._ROIonSegment(finalIma)
     from m4.utils.imgRedux import TipTiltDetrend 
     tt= TipTiltDetrend()
-    surfaceMap, imageTTR= tt.tipTiltRemover(finalIma, roi[1])
+    surfaceMap, imageTTR= tt.tipTiltRemover(finalIma, roi[3])
     return finalIma, imageTTR
 
 def main1109_tiptiltZernike(imas):
@@ -252,7 +252,7 @@ def main1109_tiptiltZernike(imas):
     r=ROI()
     roi= r._ROIonSegment(imas)
     
-    surfaceMap, imageTTR= tt.tipTiltRemover(aa, roi)
+    surfaceMap, imageTTR= tt.tipTiltRemover(aa, roi, 3)
     return aa, imageTTR
 
 
@@ -375,7 +375,7 @@ def main1709_ttDetrend(image):
     roi= r._ROIonSegment(image)
     from m4.utils.imgRedux import TipTiltDetrend 
     tt= TipTiltDetrend()
-    surfaceMap, imageTTR= tt.tipTiltRemover(image, roi)
+    surfaceMap, imageTTR= tt.tipTiltRemover(image, roi, 3)
     return surfaceMap, imageTTR
 
 def main2609_ttDetrend(image):
@@ -430,7 +430,7 @@ def main1001_calib():
     ima= cub[:,:,0]
     from m4.utils.roi import ROI 
     r= ROI()
-    roi= r.ROIonAlignmentImage(ima)  
+    roi= r._ROIonAlignmentImage(ima)  
     mask= roi[2] 
     mat= a.getInteractionMatrix(mask)
     rec= a.getReconstructor(mask)

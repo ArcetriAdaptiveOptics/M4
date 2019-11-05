@@ -35,7 +35,7 @@ class Opt_Calibration():
         storeInFolder= self._storageFolder()
         save= trackingNumberFolder.TtFolder(storeInFolder)
         dove, self._tt= save._createFolderToStoreMeasurements()
-        logger.log('Misure di', 'calibrazione', 'con tt=', self._tt)
+        logger.log('Measure of', 'calibration', 'tt=', self._tt)
         
         self._commandMatrix= self._createCommandMatrix(who, self._commandAmpVector, self._nPushPull)
         self._saveCommandMatrixAsFits(dove)
@@ -54,7 +54,7 @@ class Opt_Calibration():
         ima= cube[:,:,0]
         from m4.utils.roi import ROI 
         r= ROI()
-        roi= r.ROIonAlignmentImage(ima)  
+        roi= r.roiGenerator(ima)  
         mask= roi[maskIndex]
         dove= os.path.join(self._storageFolder(), tt)
         self._saveMask(dove, mask)
@@ -93,7 +93,7 @@ class Opt_Calibration():
         else:
             raise OSError('Who= %s doesnt exists' % who)  
         
-        logger.log('Creazione delle matrice', 'dei comandi', 'per', self._who) 
+        logger.log('Creation of the', 'command matrix', 'for', self._who) 
         self._commandMatrix= self._createCommandHistoryMatrix(self._rows, commandAmpVector, nPushPull)   
         return self._commandMatrix
                
@@ -153,7 +153,7 @@ class Opt_Calibration():
         return cubeMeasure
      
     def createCube(self, tt):
-        logger.log('Creazione del', 'cubo', 'relativo a', self._tt)
+        logger.log('Creation of the', 'cube', 'relative to', self._tt)
         cubeFromMeasure= self._testCalibration_createCubeMeasurefromFileFitsMeasure() 
         for i in range(cubeFromMeasure.shape[2]):
             cubeFromMeasure[:,:,i]= cubeFromMeasure[:,:,i] / self._commandAmpVector[i]

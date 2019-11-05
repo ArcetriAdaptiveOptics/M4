@@ -67,7 +67,7 @@ class TestCalc(unittest.TestCase):
         from m4.utils.opticalCalibration import Opt_Calibration
         cal= Opt_Calibration()
         tt= cal.measureCalibrationMatrix(0, commandAmpVector, nPushPull)
-        mat, rec= cal.analyzerCalibrationMeasurement(tt, 2)
+        mat, rec= cal.analyzerCalibrationMeasurement(tt, 3)
         print("Alignment test")
         from m4.utils.opticalAlignment import Opt_Alignment 
         al= Opt_Alignment(tt)

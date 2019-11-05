@@ -123,9 +123,9 @@ class AnalyzerIFF(object):
                     imgIF= imgIF
                 else:
                     r=ROI()
-                    roi= r._ROIonSegment(imgIF)
+                    roi= r.roiGenerator(imgIF)
                     tt= TipTiltDetrend()
-                    imgIF= tt.tipTiltRemover(imgIF, roi, 1)
+                    imgIF= tt.tipTiltRemover(imgIF, roi, 3)
                     
                 ifPushPullKth= imgIF-np.ma.median(imgIF)
                 
@@ -167,13 +167,13 @@ class AnalyzerIFF(object):
     
     def _logCubeCreation(self, tiptiltDetrend= None, phaseAmbiguity= None):
         if (tiptiltDetrend is None and phaseAmbiguity is None):
-            logger.log('Creazione del cubo delle IFF per', self._who, self._tt, '(Tip e tilt= ignorato, Phase ambiguity= ignorata)')
+            logger.log('Creation of the IFF cube for', self._who, self._tt, '(Tip and tilt= ignored, Phase ambiguity= ignored)')
         elif tiptiltDetrend is None:
-            logger.log('Creazione del cubo delle IFF per', self._who, self._tt, '(Tip e tilt= ignorato, Phase ambiguity= risolta)')
+            logger.log('Creation of the IFF cube for', self._who, self._tt, '(Tip and tilt= ignored, Phase ambiguity= resolved)')
         elif phaseAmbiguity is None:
-            logger.log('Creazione del cubo delle IFF per', self._who, self._tt, '(Tip e tilt= rimosso, Phase ambiguity= ignorata)')
+            logger.log('Creation of the IFF cube for', self._who, self._tt, '(Tip and tilt= removed, Phase ambiguity= ignored)')
         else:
-            logger.log('Creazione del cubo delle IFF per', self._who, self._tt, '(Tip e tilt= rimosso, Phase ambiguity= risolta)')
+            logger.log('Creation of the IFF cube for', self._who, self._tt, '(Tip and tilt= removed, Phase ambiguity= resolved)')
     
     
     def saveCubeAsFits(self, cubeName):

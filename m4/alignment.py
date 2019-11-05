@@ -23,7 +23,7 @@ class Alignment():
             arg:
                 commandAmpVector= vettore contenente i valori dei movimenti dei 5 gradi di libertà
                 nPushPull= numero di push pull per ogni grado di libertà
-                maskIndex= int (2 per la maschera dell'RM)
+                maskIndex= int (3 per la maschera dell'RM)
         '''
         self._moveRM()
         self._tt= self._cal.measureCalibrationMatrix(0, commandAmpVector, nPushPull)
@@ -72,8 +72,8 @@ class Alignment():
     
     def _measureComaOnSegmentMask(self):
         ima= obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
-        roi= self._r.ROIonAlignmentImage(ima)
-        segmentIma= np.ma.masked_array(ima.data, mask= roi[1])
+        roi= self._r.roiGenerator(ima)
+        segmentIma= np.ma.masked_array(ima.data, mask= roi[11])
         
         coef, mat= self._zOnM4.zernikeFit(segmentIma, np.arange(2,11))
         coma= coef[5]

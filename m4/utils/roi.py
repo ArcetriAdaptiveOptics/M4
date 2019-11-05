@@ -3,10 +3,12 @@
 '''
 
 import numpy as np
+from m4.ground import logger
 #import sklearn.feature_extraction as skf_e
 #import sklearn.cluster as skc
 import skimage.segmentation as sks
 #from skimage.measure import label
+from scipy import ndimage as ndi
 
 
 class ROI():
@@ -14,7 +16,33 @@ class ROI():
     def __init__(self):
         pass
     
-    def ROIonAlignmentImage(self, ima):
+    def roiGenerator(self, ima):
+        '''
+        arg:
+            ima= np.masked_array 
+        return:
+            roiList= lista delle prime 7 roi trovate nell'immagine
+            
+        NOTA: roiList[3]= RM roi per allineamento
+              roiList[3]= central roi per segmento
+    
+        '''
+        logger.log('Creation', 'of', 'roi', 'list')
+        labels = ndi.label(np.invert(ima.mask))[0]
+        #import skimage.morphology as skm 
+        #pro= skm.watershed(ima, markers)
+        roiList=[]
+        for i in range(1,13):
+            maski=np.zeros(labels.shape, dtype=np.bool)
+            maski[np.where(labels==i)]=1 
+            finalRoi= np.ma.mask_or(np.invert(maski), ima.mask)
+            roiList.append(finalRoi)
+        return roiList
+    
+    
+    
+    
+    def _ROIonAlignmentImage(self, ima):
         
         markers = ima.mask.astype('int')*0
         markers[0,0]=1
@@ -35,16 +63,7 @@ class ROI():
             
         self._DetectorROI= roiList    
         return self._DetectorROI
-    
-    def provaRoiSuSegmento(self):
-        from m4.ground import objectFromFitsFileName
-        ima= objectFromFitsFileName.readImageFromFitsFileName('Seg/img_0000.fits')
-        from scipy import ndimage as ndi
-        markers = ndi.label(ima.mask)[0]
-        import skimage.morphology as skm 
-        pro= skm.watershed(ima, markers)
-                
-        
+       
     
     def _ROIonSegment(self, ima):
 #       graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)

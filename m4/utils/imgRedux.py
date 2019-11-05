@@ -113,9 +113,9 @@ class PhaseSolve():
         
     def masterRoiPhaseSolver(self, segIma, splValue):
         self.n_calculator(splValue)
-        roiList= self._r._ROIonSegment(segIma)
+        roiList= self._r.roiGenerator(segIma)
     
-        imgg= np.ma.masked_array(segIma.data, mask= roiList[1])
+        imgg= np.ma.masked_array(segIma.data, mask= roiList[3])
         
         img_phaseSolve= np.ma.masked_array(imgg.data - self._n, mask= imgg.mask)
         

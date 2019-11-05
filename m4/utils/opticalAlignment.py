@@ -29,7 +29,7 @@ class Opt_Alignment():
         
     
     def opt_align(self, piston= None):
-        logger.log('Calcolo il comando', 'di allineamento', 'per', self._tt)
+        logger.log('Calculation of the ', 'alignment command', 'for', self._tt)
         self._intMat, self._rec, self._mask= self._loadAlignmentInfo()
         img= self._measureOTTPhaseMap()
         cmd= self._commandGenerator(img)
