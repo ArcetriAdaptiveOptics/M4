@@ -67,29 +67,29 @@ class AnalyzerIFF(object):
                 where.append(a)      
         return where
     
-    def _amplitudeReorganization(self, indexingInput, indexingList, 
-                                 amplitude, nPushPull):
+    def _amplitudeReorganization(self, indexing_input, indexing_list, 
+                                 amplitude, n_push_pull):
         '''
             arg:
-                indexingInput= vettore di modi scelti per la realizzazione delle funzioni d'influenza
-                indexingList= tupla che indica come sono stati applicati i modi
+                indexing_input= vettore di modi scelti per la realizzazione delle funzioni d'influenza
+                indexing_list= tupla che indica come sono stati applicati i modi
                 amplitude= ampiezza dei modi applicati
                 
             return:
-                vect= vettore (amp.shape x nPushPull.shape) con le ampiezze ordinate nello stesso modo dell'indexingList
+                vect= vettore (amp.shape x n_push_pull.shape) con le ampiezze ordinate nello stesso modo dell'indexing_list
         '''
         where=[] 
-        for i in indexingInput:           
-            for j in range(nPushPull): 
-                a=np.where(indexingList[j]==i)  
+        for i in indexing_input:           
+            for j in range(n_push_pull): 
+                a=np.where(indexing_list[j]==i)  
                 where.append(a) 
         where=np.array(where)
-        vect=np.zeros(amplitude.shape[0]*nPushPull) 
+        vect=np.zeros(amplitude.shape[0]*n_push_pull) 
           
         for i in range(amplitude.shape[0]): 
-            for k in range(nPushPull): 
-                p= nPushPull * i + k
-                indvect=where[p][0][0]+ indexingInput.shape[0] * k
+            for k in range(n_push_pull): 
+                p= n_push_pull * i + k
+                indvect=where[p][0][0]+ indexing_input.shape[0] * k
                 vect[indvect]=amplitude[i]
         return vect
     

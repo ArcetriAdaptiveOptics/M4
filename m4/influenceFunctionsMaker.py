@@ -3,7 +3,7 @@
 '''
 
 import numpy as np
-from m4.ground import trackingNumberFolder
+from m4.ground import tracking_number_folder
 from m4.ground.configuration import Configuration
 from m4.ground import logger
 import pyfits
@@ -51,7 +51,7 @@ class IFFunctionsMaker(object):
         '''
         storeInFolder= self._storageFolder()
         indexingInput= copy.copy(modesVector)
-        save= trackingNumberFolder.TtFolder(storeInFolder)
+        save= tracking_number_folder.TtFolder(storeInFolder)
         dove, tt= save._createFolderToStoreMeasurements()
         
         diagonalMat= self._diagonalControll(cmdMatrix)

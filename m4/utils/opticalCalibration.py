@@ -4,7 +4,7 @@
 
 from m4.ground.configuration import Configuration
 from m4.utils.zernikeOnM4 import ZernikeOnM4
-from m4.ground import trackingNumberFolder
+from m4.ground import tracking_number_folder
 from m4.ground import logger
 import numpy as np
 import pyfits
@@ -33,7 +33,7 @@ class Opt_Calibration():
                 commandAmpVector= vettore contenente l'ampiezza dei comandi da dare ai gradi di libertà da calibrare
         '''
         storeInFolder= self._storageFolder()
-        save= trackingNumberFolder.TtFolder(storeInFolder)
+        save= tracking_number_folder.TtFolder(storeInFolder)
         dove, self._tt= save._createFolderToStoreMeasurements()
         logger.log('Measure of', 'calibration', 'tt=', self._tt)
         

@@ -13,7 +13,7 @@ import numpy as np
 class Alignment():
     
     def __init__(self):
-        self._cal= Opt_Calibration()
+        self._cal = Opt_Calibration()
         self._r= ROI()
         self._zOnM4= ZernikeOnM4()
         
@@ -27,9 +27,9 @@ class Alignment():
         '''
         self._moveRM()
         self._tt= self._cal.measureCalibrationMatrix(0, commandAmpVector, nPushPull)
-        intMat, rec= self._cal.analyzerCalibrationMeasurement(self._tt, maskIndex)
+        int_mat, rec= self._cal.analyzerCalibrationMeasurement(self._tt, maskIndex)
         return self._tt
-    
+
     def OTT_Alignement(self, tt= None):
         if tt is None:
             a= Opt_Alignment(self._tt)
@@ -63,13 +63,13 @@ class Alignment():
         
     def _moveRM(self):
         pass
-    
+
     def _moveSegmentView(self):
         pass
-    
+
     def _applyCmd(self):
         pass
-    
+
     def _measureComaOnSegmentMask(self):
         ima= obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
         roi= self._r.roiGenerator(ima)

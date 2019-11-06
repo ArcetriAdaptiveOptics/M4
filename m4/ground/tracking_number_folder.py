@@ -5,21 +5,17 @@
 import os
 from m4.ground.timestamp import Timestamp
 
-class TtFolder(object):
-    
+class TtFolder():
+
     def __init__(self, storeInFolder):
-        self._rootStoreFolder= storeInFolder
-        
-    
+        self._rootStoreFolder = storeInFolder
+
+
     def _createFolderToStoreMeasurements(self):
-        self._tt=Timestamp.now()
-        dove= os.path.join(self._rootStoreFolder, self._tt)
+        self._tt = Timestamp.now()
+        dove = os.path.join(self._rootStoreFolder, self._tt)
         if os.path.exists(dove):
             raise OSError('Directory %s exists' % dove)
         else:
             os.makedirs(dove)
         return dove, self._tt
-
-    
-
-    

@@ -1,13 +1,12 @@
-
 import datetime
 
-__version__= "$Id: timestamp.py 25 2018-01-26 19:00:40Z lbusoni $"
+__version__ = "$Id: timestamp.py 25 2018-01-26 19:00:40Z lbusoni $"
 
 
-class Timestamp(object):
+class Timestamp():
 
     def __init__(self):
-        self._now= datetime.datetime.now()
+        self._now = datetime.datetime.now()
 
 
     def asNowString(self):
@@ -30,7 +29,7 @@ class Timestamp(object):
 
     @staticmethod
     def nowUSec():
-        ss= datetime.datetime.now()
+        ss = datetime.datetime.now()
         return ss.strftime('%Y%m%d_%H%M%S')
 
 
