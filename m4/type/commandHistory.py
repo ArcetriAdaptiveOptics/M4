@@ -21,11 +21,11 @@ class CmdHistory():
         self._device = device
         self._who = self._device._who 
         self._nActs = self._device.nActs()
-        self._modeVector = None 
+        self._modeVector = None
         self._nPushPull = None
-        self._cmdMatrix = None 
+        self._cmdMatrix = None
         self._cmdHToApply = None
-        self._ampVect = None 
+        self._ampVect = None
 
     def getCommandHistory(self):
         return self._cmdHToApply
@@ -96,7 +96,7 @@ class CmdHistory():
 
             cmdList = []
             for i in mode_vector:
-                cmd = cmd_matrix[:,i]
+                cmd = cmd_matrix[:, i]
                 cmdList.append(cmd)
 
             for i in range(len(cmdList)):
@@ -116,7 +116,7 @@ class CmdHistory():
         indList = []
         for i in range(n_push_pull):
             indList.append(mode_vector)
-        self._indexingList = np.array(indList)  
+        self._indexingList = np.array(indList)
         #self._indexingList= np.tile(mode_vector, n_push_pull)
 
         n_frame = mode_vector.size * n_push_pull
@@ -124,7 +124,7 @@ class CmdHistory():
 
         cmdList = []
         for i in mode_vector:
-            cmd = cmd_matrix[:,i]
+            cmd = cmd_matrix[:, i]
             cmdList.append(cmd)
 
         for j in range(n_push_pull):
@@ -139,7 +139,7 @@ class CmdHistory():
 
     def _amplitudeReorganization(self, indexing_input, indexing_list,
                                  amplitude, n_push_pull):
-        where = [] 
+        where = []
         for i in indexing_input:
             for j in range(n_push_pull):
                 a = np.where(indexing_list[j] == i)
@@ -160,10 +160,11 @@ class CmdHistory():
 
     def _zippedAmplitude(self, amplitude):
         aa = np.arange(self._cmdHistory.shape[1])
-        reorganized_amplitude = self._amplitudeReorganization(self._modeVector,
-                                                              self._indexingList,
-                                                              amplitude,
-                                                              self._nPushPull)
+        reorganized_amplitude = \
+                self._amplitudeReorganization(self._modeVector,
+                                              self._indexingList,
+                                              amplitude,
+                                              self._nPushPull)
         #zipped= np.dstack((aa, reorganized_amplitude))
         zipped = zip(aa, reorganized_amplitude)
         return zipped
@@ -171,11 +172,12 @@ class CmdHistory():
     def _cmdHistoryToApply(self, zipped):
         matrix_with_amp = self._cmdHistory
         for i, amp in zipped:
-            matrix_with_amp.T[i] = matrix_with_amp.T[i]* amp
+            matrix_with_amp.T[i] = matrix_with_amp.T[i] * amp
 
-        vec_push_pull = np.array((1,-1))
+        vec_push_pull = np.array((1, -1))
         matrix_to_apply = np.zeros((self._nActs,
-                                    self._cmdHistory.shape[1]*vec_push_pull.shape[0]))
+                                    self._cmdHistory.shape[1] *
+                                    vec_push_pull.shape[0]))
 
         for i in range(self._cmdHistory.shape[1]):
             j = 2*i

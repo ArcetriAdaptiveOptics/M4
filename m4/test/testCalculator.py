@@ -1,6 +1,7 @@
 '''
 @author: cs
 '''
+
 import unittest
 import numpy as np
 
@@ -13,8 +14,8 @@ class TestCalc(unittest.TestCase):
     def test_iffunctionsmaker_1(self):
         print("IFFunctionsMaker test: \
             segment, global IF, shuffleCommandHistory")
-        from m4.utils import createDevice
-        device = createDevice.myDevice("segment")
+        from m4.utils import create_device
+        device = create_device.myDevice("segment")
 
         cmd_matrix_tag = 'matTestIF.fits'
         mode_vect_tag = 'vectTestIF.fits'
@@ -38,8 +39,8 @@ class TestCalc(unittest.TestCase):
 
     def test_iffunctionsmaker_2(self):
         print("IFFunctionsMaker test: segment, zonal If, tidy command history")
-        from m4.utils import createDevice
-        device = createDevice.myDevice("segment")
+        from m4.utils import create_device
+        device = create_device.myDevice("segment")
 
         cmd_matrix_tag = 'matTestIF.fits'
         mode_vect_tag = 'vectTestIF.fits'
@@ -70,13 +71,13 @@ class TestCalc(unittest.TestCase):
         command_amp_vector[0] = 2.5e-05
         n_push_pull = 3
         print("Calibration test for PAR + RM")
-        from m4.utils.opticalCalibration import Opt_Calibration
-        cal = Opt_Calibration()
+        from m4.utils.optical_calibration import opt_calibration
+        cal = opt_calibration()
         tt = cal.measureCalibrationMatrix(0, command_amp_vector, n_push_pull)
         mat, rec = cal.analyzerCalibrationMeasurement(tt, 3)
         print("Alignment test")
-        from m4.utils.opticalAlignment import Opt_Alignment
-        al = Opt_Alignment(tt)
+        from m4.utils.optical_alignment import opt_alignment
+        al = opt_alignment(tt)
         cmd = al.opt_align()
         par, rm = al._testAlignment_loadInfoPositionFromFileFits(1)
 

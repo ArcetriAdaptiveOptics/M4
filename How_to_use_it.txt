@@ -4,11 +4,11 @@
 	- Acquisizione
 	
 	  PROCEDIMENTO:
-	  from m4.utils import createDevice 
-      device= createDevice.myDevice("segment") 		#or "m4"
-      from m4.influenceFunctionsMaker import IFFunctionsMaker
-      IFF= IFFunctionsMaker(device) 
-      tt= IFF.acq_IFFunctions(modesVectorFitsFileName, nPushPull, amplitudeFitsFileName,
+	  from m4.utils import create_device
+      device = create_device.myDevice("segment") 		#or "m4"
+      from m4.influence_functions_maker import IFFunctionsMaker
+      IFF = IFFunctionsMaker(device) 
+      tt = IFF.acq_IFFunctions(modesVectorFitsFileName, nPushPull, amplitudeFitsFileName,
       							 cmdMatrixFitsFileName, shuffle=None) 
       							 
       RISULTATI:
@@ -21,10 +21,10 @@
      - Analisi
      
        PROCEDIMENTO:
-       from m4.analyzerIFFunctions import AnalyzerIFF 
-       fileName= os.path.join(".../IFFunctions", tt)
-  	   an= AnalyzerIFF.loadInfoFromTtFolder(fileName)
-  	   cube= an.createCube(tiptiltDetrend= None, phaseAmbiguity= None)
+       from m4.analyzer_iffunctions import AnalyzerIFF 
+       fileName = os.path.join(".../IFFunctions", tt)
+  	   an = AnalyzerIFF.loadInfoFromTtFolder(fileName)
+  	   cube = an.createCube(tiptiltDetrend=None, phaseAmbiguity=None)
   	   an.saveCubeAsFits(cubeName)	#'Cube.fits' or 'CubeTTD.fits' etc..
   	   ( intMat= an.getInteractionMatrix()	rec= an.getReconstructor() 	)
   	   
@@ -48,8 +48,8 @@
 	
 	  PROCEDIMENTO:
 	  from m4.alignment import Alignment 
-	  a=Alignment()
-	  cmd= a.OTT_Alignment(commandAmpVector, nPushPull)
+	  a = Alignment()
+	  cmd = a.OTT_Alignment(commandAmpVector, nPushPull)
 	  
 	  RISULTATI:
 	  
@@ -58,8 +58,8 @@
 	
 	  PROCEDIMENTO:
 	  from m4.alignment import Alignment 
-	  a=Alignment()
-	  ?= a.M4_Alignment(...)
+	  a = Alignment()
+	  ? = a.M4_Alignment(...)
 	  
 	  RISULTATI:
 	  

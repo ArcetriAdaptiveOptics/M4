@@ -36,7 +36,7 @@ def readImageFromFitsFileName(fits_file_path):
                              fits_file_path)
     hduList = pyfits.open(file_name)
     ima = hduList[0].data
-    immagine = np.ma.masked_array(ima[0], mask= np.invert(ima[1].astype(bool)))
+    immagine = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
     return immagine
 
 def readDataFromFileFits(fits_file_path):
