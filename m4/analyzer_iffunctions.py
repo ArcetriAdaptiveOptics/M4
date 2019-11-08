@@ -6,7 +6,7 @@ import os
 import h5py
 import pyfits
 import numpy as np
-from m4.ground import logger
+import logging
 #from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influence_functions_maker import IFFunctionsMaker
 from m4.utils.roi import ROI
@@ -17,6 +17,7 @@ from m4.ground.configuration import Configuration
 class AnalyzerIFF():
 
     def __init__(self):
+        self._logger = logging.getLogger('IFF_ANALYZER:')
         self._indexingList = None
         self._cube = None
         self._rec = None
@@ -174,17 +175,25 @@ class AnalyzerIFF():
 
     def _logCubeCreation(self, tiptilt_detrend=None, phase_ambiguity=None):
         if (tiptilt_detrend is None and phase_ambiguity is None):
-            logger.log('Creation of the IFF cube for', self._who, self._tt,
-                       '(Tip and tilt= ignored, Phase ambiguity= ignored)')
+            self._logger.info('Creation of the IFF cube for %s. Location: %s',
+                              self._who, self._tt)
+            self._logger.debug('(Tip and tilt= ignored, \
+                                    Phase ambiguity= ignored)')
         elif tiptilt_detrend is None:
-            logger.log('Creation of the IFF cube for', self._who, self._tt,
-                       '(Tip and tilt= ignored, Phase ambiguity= resolved)')
+            self._logger.info('Creation of the IFF cube for %s. Location: %s',
+                              self._who, self._tt)
+            self._logger.debug('(Tip and tilt= ignored, \
+                                    Phase ambiguity= resolved)')
         elif phase_ambiguity is None:
-            logger.log('Creation of the IFF cube for', self._who, self._tt,
-                       '(Tip and tilt= removed, Phase ambiguity= ignored)')
+            self._logger.info('Creation of the IFF cube for %s. Location: %s',
+                              self._who, self._tt)
+            self._logger.debug('(Tip and tilt= removed, \
+                                     Phase ambiguity= ignored)')
         else:
-            logger.log('Creation of the IFF cube for', self._who, self._tt,
-                       '(Tip and tilt= removed, Phase ambiguity= resolved)')
+            self._logger.info('Creation of the IFF cube for %s. Location: %s',
+                              self._who, self._tt)
+            self._logger.debug('(Tip and tilt= removed, \
+                                    Phase ambiguity= resolved)')
 
 
     def saveCubeAsFits(self, cubeName):
@@ -264,8 +273,8 @@ class AnalyzerIFF():
         hduList = pyfits.open(fits_file_name)
         theObject = AnalyzerIFF()
         theObject._h5Folder = dove
-        theObject._cubeMeasure = np.ma.masked_array(hduList[4].data,
-                                                    hduList[5].data.astype(bool))
+        theObject._cubeMeasure = \
+            np.ma.masked_array(hduList[4].data, hduList[5].data.astype(bool))
         theObject._actsVector = hduList[0].data
         theObject._cmdMatrix = hduList[1].data
         theObject._cmdAmplitude = hduList[2].data
@@ -304,11 +313,13 @@ class AnalyzerIFF():
         if self._analysisMask is None:
             self.setAnalysisMaskFromMasterMask()
         n_acts_in_cube = self.getCube().shape[2]
-        n_interferometer_pixels_in_mask = self._getMaskedInfluenceFunction(0).compressed().shape[0]
+        n_interferometer_pixels_in_mask = \
+                    self._getMaskedInfluenceFunction(0).compressed().shape[0]
         self._intMat = np.zeros((n_interferometer_pixels_in_mask,
                                  n_acts_in_cube))
         for i in range(n_acts_in_cube):
-            self._intMat[:, i] = self._getMaskedInfluenceFunction(i).compressed()
+            self._intMat[:, i] = \
+                            self._getMaskedInfluenceFunction(i).compressed()
 
     def _createSurfaceReconstructor(self, rCond=1e-15):
         self._rec = self._createRecWithPseudoInverse(rCond)

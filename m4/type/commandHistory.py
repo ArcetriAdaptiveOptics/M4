@@ -3,13 +3,12 @@
 '''
 import os
 import copy
+import logging
 import pyfits
 import h5py
 import numpy as np
 from m4.ground import tracking_number_folder
 from m4.ground.configuration import Configuration
-from m4.ground import logger
-
 
 
 class CmdHistory():
@@ -19,6 +18,7 @@ class CmdHistory():
 
     def __init__(self, device):
         self._device = device
+        self._logger = logging.getLogger('CMD_HISTORY:')
         self._who = self._device._who 
         self._nActs = self._device.nActs()
         self._modeVector = None
@@ -61,7 +61,7 @@ class CmdHistory():
         matrix_to_apply = self._cmdHistoryToApply(zipped)
         self._cmdHToApply = matrix_to_apply
         tt = self.saveAsFits()
-        logger.log('Creation of the ordered', 'commandHistoryMatrix', tt)
+        self._logger.info('Creation of the ordered commandHistoryMatrix %s', tt)
         print(tt)
 
         return matrix_to_apply, tt
@@ -76,7 +76,7 @@ class CmdHistory():
         matrix_to_apply = self._cmdHistoryToApply(zipped)
         self._cmdHToApply = matrix_to_apply
         tt = self.saveAsFits()
-        logger.log('Creation of the shuffle', 'commandHistoryMatrix', tt)
+        self._logger.info('Creation of the shuffle commandHistoryMatrix %s', tt)
         print(tt)
 
         return matrix_to_apply, tt

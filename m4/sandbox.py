@@ -145,11 +145,11 @@ def immaginiprova():
     fits_file_name = os.path.join(fits_root, 'mode_0005.fits')
     hduList = pyfits.open(fits_file_name)
     ima = hduList[0].data
-    m4 = np.ma.masked_array(ima[0], mask=np.invert(ima[1]))
+    m4 = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
     fits_file_name = os.path.join(fits_root, 'mode_0006.fits')
     hduList = pyfits.open(fits_file_name)
     ima = hduList[0].data
-    segment = np.ma.masked_array(ima[0], mask=np.invert(ima[1]))
+    segment = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
     return m4, segment
 
 def immaginiProvaTTDetrendSeg():

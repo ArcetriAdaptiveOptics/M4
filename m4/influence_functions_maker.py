@@ -4,12 +4,12 @@
 
 import os
 import copy
+import logging
 import h5py
 import numpy as np
 import pyfits
 from m4.ground import tracking_number_folder
 from m4.ground.configuration import Configuration
-from m4.ground import logger
 from m4.type.commandHistory import CmdHistory
 from m4.ground import object_from_fits_file_name
 
@@ -20,6 +20,7 @@ class IFFunctionsMaker(object):
         self._device = device
         self._who = self._device._who
         self._nActs = self._device.nActs()
+        self._logger= logging.getLogger('IFF_MAKER:')
 
     @staticmethod
     def _storageFolder():
@@ -62,12 +63,12 @@ class IFFunctionsMaker(object):
         if np.count_nonzero(diagonal_mat -
                             np.diag(np.diagonal(diagonal_mat))) == 0:
             print('Measure of zonal IF')
-            logger.log("Measurement of zonal influence functions",
+            self._logger.info("Measurement of zonal influence functions for %s. Location: %s",
                        self._who, tt)
 
         else:
             print('Measure of global IF')
-            logger.log("Measurement of modal influence functions",
+            self._logger.info("Measurement of modal influence functions for %s. Location: %s",
                        self._who, tt)
 
 

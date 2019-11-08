@@ -2,6 +2,7 @@
 @author: cs
 '''
 
+import logging
 import numpy as np
 from m4.ground.configuration import Configuration
 from m4.utils.roi import ROI
@@ -11,18 +12,22 @@ from m4.utils.zernike_on_m_4 import ZernikeOnM4
 class TipTiltDetrend():
 
     def __init__(self):
+        self._logger = logging.getLogger('TIP_TILT_DETREND:')
         self._pupilXYRadius = Configuration.PARABOLA_PUPIL_XYRADIUS
         self._zOnM4 = ZernikeOnM4()
         self._totalMatList = None
 
     def tipTiltRemover(self, image, roi, final_index, analysis_ind=None):
         roi_copy = np.copy(roi)
+        self._logger.debug('Removal of tip-tilt from roi[%d]',
+                           final_index)
         '''
             arg:
-                image= immagine da analizzare
-                roi= roi dell'immagine
-                final_index= indice della roi finale
-                analysis_ind= indice delle roi da utilizzare per l'analisi
+                image= immagine da analizzare (np.ma-masked_array)
+                roi= roi dell'immagine (list)
+                final_index= indice della roi finale (int)
+                analysis_ind= indice delle roi da utilizzare per
+                                l'analisi (np.array[...])
         '''
         self._totalMatList = []
         coefList = []
@@ -43,9 +48,9 @@ class TipTiltDetrend():
         tip, tilt = np.average(coef_list, axis=0)
 
         surfcoef = np.array([tip, tilt])
-        surface_map = self._zOnM4.zernikeSurface(surfcoef,
-                                                 roi_copy[final_index],
-                                                 self._totalMatList[final_index])
+        surface_map = \
+                    self._zOnM4.zernikeSurface(surfcoef, roi_copy[final_index],
+                                               self._totalMatList[final_index])
 
         cx = self._pupilXYRadius[0]
         cy = self._pupilXYRadius[1]
@@ -98,17 +103,22 @@ class PhaseSolve():
                                                 mask=imgg.mask)
             img_phase_solve_list.append(img_phase_solve)
 
-        img_phase_solve_list[len(img_phase_solve_list)-1] = np.ma.masked_array(imgList[len(imgList)-2].data,
-                                                                           mask= imgList[len(imgList)-2].mask)
+        img_phase_solve_list[len(img_phase_solve_list)-1] = \
+                       np.ma.masked_array(imgList[len(imgList)-2].data, 
+                                          mask= imgList[len(imgList)-2].mask)
 
 
         for j in range(1, len(img_phase_solve_list)):
             if m4_new_image is None:
-                m4_new_image = np.ma.array(img_phase_solve_list[0].filled(1)* img_phase_solve_list[j].filled(1),
-                                         mask=(img_phase_solve_list[0].mask * img_phase_solve_list[j].mask))
+                m4_new_image = np.ma.array(img_phase_solve_list[0].filled(1) * \
+                                           img_phase_solve_list[j].filled(1),
+                                           mask=(img_phase_solve_list[0].mask * \
+                                                 img_phase_solve_list[j].mask))
             else:
-                m4_new_image = np.ma.array(m4_new_image.filled(1) * img_phase_solve_list[j].filled(1),
-                                         mask=(m4_new_image.mask * img_phase_solve_list[j].mask))
+                m4_new_image = np.ma.array(m4_new_image.filled(1) * \
+                                           img_phase_solve_list[j].filled(1),
+                                           mask=(m4_new_image.mask * \
+                                                 img_phase_solve_list[j].mask))
 
         return m4_new_image, img_phase_solve_list, imgList
 

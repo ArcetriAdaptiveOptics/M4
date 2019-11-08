@@ -3,18 +3,19 @@
 '''
 
 import os
+import logging
 import pyfits
 import numpy as np
 from m4.ground.configuration import Configuration
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.utils.optical_calibration import opt_calibration
-from m4.ground import logger
 from m4.ground import object_from_fits_file_name as obj
 
 
 class opt_alignment():
 
     def __init__(self, tt):
+        self._logger = logging.getLogger('OPT_ALIGN:')
         self._tt = tt
         self._cal = opt_calibration()
         self._zOnM4 = ZernikeOnM4()
@@ -29,7 +30,7 @@ class opt_alignment():
 
 
     def opt_align(self, piston=None):
-        logger.log('Calculation of the ', 'alignment command', 'for', self._tt)
+        self._logger.info('Calculation of the alignment command for %s', self._tt)
         self._intMat, self._rec, self._mask = self._loadAlignmentInfo()
         img = self._measureOTTPhaseMap()
         cmd = self._commandGenerator(img)
@@ -82,6 +83,7 @@ class opt_alignment():
 
     def _measureOTTPhaseMap(self):
         #acquisirà e salverà l'interferogramma
+        self._logger.debug('Measure of phase map')
         imgf, imgt = self._testAlignment_loadMeasureFromFileFits(0)
         img = self._testAlignment_loadMeasureFromFileFits(1)
         return img

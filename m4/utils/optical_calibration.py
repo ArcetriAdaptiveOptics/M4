@@ -2,17 +2,18 @@
 @author: cselmi
 '''
 import os
+import logging
 import pyfits
 import numpy as np
 from m4.ground.configuration import Configuration
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.ground import tracking_number_folder
-from m4.ground import logger
 
 
 class opt_calibration():
 
     def __init__(self):
+        self._logger = logging.getLogger('OPT_CALIB:')
         self._zOnM4 = ZernikeOnM4()
         self._rec = None
         self._intMat = None
@@ -36,7 +37,7 @@ class opt_calibration():
         store_in_folder = self._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
         dove, self._tt = save._createFolderToStoreMeasurements()
-        logger.log('Measure of', 'calibration', 'tt=', self._tt)
+        self._logger.info('Measure of calibration. Location: %s', self._tt)
 
         self._commandMatrix = self._createCommandMatrix(who,
                                                         self._commandAmpVector,
@@ -97,7 +98,7 @@ class opt_calibration():
         else:
             raise OSError('Who= %s doesnt exists' % who)
 
-        logger.log('Creation of the', 'command matrix', 'for', self._who)
+        self._logger.info('Creation of the command matrix for %s', self._who)
         self._commandMatrix = self._createCommandHistoryMatrix(self._rows,
                                                                command_amp_vector,
                                                                n_push_pull)
@@ -161,7 +162,7 @@ class opt_calibration():
         return cube_measure
 
     def createCube(self, tt):
-        logger.log('Creation of the', 'cube', 'relative to', tt)
+        self._logger.info('Creation of the cube relative to %s', tt)
         cube_from_measure = self._testCalibration_createCubeMeasurefromFileFitsMeasure()
         for i in range(cube_from_measure.shape[2]):
             cube_from_measure[:,:,i] = cube_from_measure[:,:,i] / self._commandAmpVector[i]

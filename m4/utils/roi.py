@@ -3,17 +3,18 @@
 '''
 
 import numpy as np
+import logging
 #import sklearn.feature_extraction as skf_e
 #import sklearn.cluster as skc
 import skimage.segmentation as sks
 #from skimage.measure import label
 from scipy import ndimage as ndi
-from m4.ground import logger
 
 
 class ROI():
 
     def __init__(self):
+        self._logger = logging.getLogger('ROI:')
         pass
 
     def roiGenerator(self, ima):
@@ -27,7 +28,7 @@ class ROI():
               roiList[3]= central roi per segmento
 
         '''
-        logger.log('Creation', 'of', 'roi', 'list')
+        self._logger.info('Creation of roi list')
         labels = ndi.label(np.invert(ima.mask))[0]
         #import skimage.morphology as skm
         #pro= skm.watershed(ima, markers)
