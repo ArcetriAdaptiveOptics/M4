@@ -14,7 +14,7 @@ from m4.type.commandHistory import CmdHistory
 from m4.ground import object_from_fits_file_name
 
 
-class IFFunctionsMaker(object):
+class IFFunctionsMaker():
 
     def __init__(self, device):
         self._device = device

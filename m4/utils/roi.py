@@ -15,7 +15,7 @@ class ROI():
 
     def __init__(self):
         self._logger = logging.getLogger('ROI:')
-        pass
+
 
     def roiGenerator(self, ima):
         '''

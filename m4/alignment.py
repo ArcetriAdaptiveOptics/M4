@@ -13,7 +13,7 @@ class Alignment():
 
     def __init__(self):
         self._cal = opt_calibration()
-        self._r = ROI()
+        self._roi = ROI()
         self._zOnM4 = ZernikeOnM4()
 
 
@@ -34,10 +34,10 @@ class Alignment():
 
     def ott_alignement(self, tt=None):
         if tt is None:
-            a = opt_alignment(self._tt)
+            al = opt_alignment(self._tt)
         else:
-            a = opt_alignment(tt)
-        cmd = a.opt_align()
+            al = opt_alignment(tt)
+        cmd = al.opt_align()
         self._applyCmd()
         return cmd
 
@@ -61,12 +61,12 @@ class Alignment():
                                                                maskIndex_ForM4Alignement)
         return self._tt, zernike_coef_coma, coma_surface
 
-    def m_4_alignement(self, zernike_coef_coma, tt=None):
+    def m4_alignement(self, zernike_coef_coma, tt=None):
         if tt is None:
-            a = opt_alignment(self._tt)
+            al = opt_alignment(self._tt)
         else:
-            a = opt_alignment(tt)
-        cmd = a.opt_align(zernike_coef_coma)
+            al = opt_alignment(tt)
+        cmd = al.opt_align(zernike_coef_coma)
         return cmd
 
     def _moveRM(self):
@@ -80,7 +80,7 @@ class Alignment():
 
     def _measureComaOnSegmentMask(self):
         ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
-        roi = self._r.roiGenerator(ima)
+        roi = self._roi.roiGenerator(ima)
         segment_ima = np.ma.masked_array(ima.data, mask=roi[11])
 
         coef, mat = self._zOnM4.zernikeFit(segment_ima, np.arange(2, 11))

@@ -69,7 +69,7 @@ class TipTiltDetrend():
 class PhaseSolve():
 
     def __init__(self):
-        self._r = ROI()
+        self._roi = ROI()
         self._lambda = Configuration.LAMBA
         self._n = None
 
@@ -84,7 +84,7 @@ class PhaseSolve():
 
     def m4PhaseSolver(self, m4_ima, spl_values):
         self.n_calculator(spl_values)
-        roiList = self._r._ROIonM4(m4_ima)
+        roiList = self._roi._ROIonM4(m4_ima)
         m4_new_image = None
 
         media = []
@@ -126,7 +126,7 @@ class PhaseSolve():
 
     def masterRoiPhaseSolver(self, seg_ima, spl_value):
         self.n_calculator(spl_value)
-        roiList = self._r.roiGenerator(seg_ima)
+        roiList = self._roi.roiGenerator(seg_ima)
 
         imgg = np.ma.masked_array(seg_ima.data, mask=roiList[3])
 

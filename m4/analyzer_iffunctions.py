@@ -3,10 +3,10 @@
 '''
 
 import os
+import logging
 import h5py
 import pyfits
 import numpy as np
-import logging
 #from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influence_functions_maker import IFFunctionsMaker
 from m4.utils.roi import ROI
@@ -15,8 +15,21 @@ from m4.ground.configuration import Configuration
 
 
 class AnalyzerIFF():
+    '''
+    This class analyzes the measurements made through the IFF class by
+    generating the cube of measurements and calculating interaction matrix
+    and reconstructor.
+
+    HOW TO USE IT:
+    from m4.analyzer_iffunctions import AnalyzerIFF
+    fileName = os.path.join(".../IFFunctions", tt)
+    an = AnalyzerIFF.loadInfoFromTtFolder(fileName)
+    cube = an.createCube(tiptiltDetrend = None, phaseAmbiguity = None)
+    an.saveCubeAsFits(cubeName)
+    '''
 
     def __init__(self):
+        """The constructor """
         self._logger = logging.getLogger('IFF_ANALYZER:')
         self._indexingList = None
         self._cube = None
@@ -26,12 +39,21 @@ class AnalyzerIFF():
         self._cubeMeasure = None
 
     def _ttData(self):
+        """ Allow to obtain the tracking number from the path """
         split = os.path.split(self._h5Folder)
         self._tt = split[1]
         return self._tt
 
     @staticmethod
     def loadInfoFromTtFolder(h5Folder):
+        """ Creates the object using information about path measurements
+
+            Args:
+                h5Folder = measurement folder path
+
+            Return:
+                theObject = analyzerIFF class object
+        """
         theObject = AnalyzerIFF()
         theObject._h5Folder = h5Folder
         a = IFFunctionsMaker.loadInfoFromFits(h5Folder)
@@ -47,12 +69,14 @@ class AnalyzerIFF():
 
 
     def getCube(self):
+        """ Returns the cube of measurements """
         return self._cube
 
     def getIFShape(self):
         return self.getCube()[:,:,0].shape
 
     def getMasterMask(self):
+        """ Returns the mask of the cube """
         aa = np.sum(self._cube.mask.astype(int), axis=2)
         master_mask = np.zeros(aa.shape, dtype=np.bool)
         master_mask[np.where(aa > 0)] = True
@@ -60,6 +84,7 @@ class AnalyzerIFF():
 
 
     def _indexReorganization(self):
+        """ Returns the index position """
         indv = np.array(self._indexingList)
         where = []
         for ind in self._actsVector:
@@ -71,16 +96,18 @@ class AnalyzerIFF():
     def _amplitudeReorganization(self, indexing_input, indexing_list,
                                  amplitude, n_push_pull):
         '''
-            arg:
-                indexing_input= vettore di modi scelti per la realizzazione
-                                delle funzioni d'influenza
-                indexing_list= tupla che indica come sono stati applicati i
-                                 modi
-                amplitude= ampiezza dei modi applicati
+            Args:
+                indexing_input = vector of selected modes for carrying out
+                                 the influence functions
 
-            return:
-                vect= vettore (amp.shape x n_push_pull.shape) con le ampiezze
-                    ordinate nello stesso modo dell'indexing_list
+                indexing_list = tuple indicating how the modes were applied
+
+                amplitude = amplitude of applied modes
+
+            Returns:
+                vect = vector (amp.shape x n_push_pull.shape) with the
+                        amplitudes ordered in the same way as indexing_list
+
         '''
         where = []
         for i in indexing_input:
@@ -100,16 +127,20 @@ class AnalyzerIFF():
 
     def createCube(self, tiptilt_detrend=None, phase_ambiguity=None):
         '''
-            arg:
-                ttDetrend= nella creazione del cubo le immagini vengono ridotte
-                            rimuovendo il tip tilt sul segmento centrale
+            Args:
+                ttDetrend = in the creation of the cube the images are reduced
+                            removing tip tilt on the central segment
+
                 phaseSolve=
+
+            Returns:
+                self._cube = cube
         '''
         cube_all_act = None
         self._ttData()
         self._logCubeCreation(tiptilt_detrend, phase_ambiguity)
         where = self._indexReorganization()
-        misurePos, misureNeg = self._splitMeasureFromFits(self._cubeMeasure)
+        misure_pos, misure_neg = self._splitMeasureFromFits(self._cubeMeasure)
         ampl_reorg = self._amplitudeReorganization(self._actsVector,
                                                    self._indexingList,
                                                    self._cmdAmplitude,
@@ -123,8 +154,8 @@ class AnalyzerIFF():
                 n = where[p][0][0]
                 mis = k* self._indexingList.shape[1] + n
 
-                img_pos = misurePos[:,:,mis]
-                img_neg = misureNeg[:,:,mis]
+                img_pos = misure_pos[:,:,mis]
+                img_neg = misure_neg[:,:,mis]
                 img_if = (img_pos - img_neg) / (2 * ampl_reorg[mis])
                 if tiptilt_detrend is None:
                     img_if = img_if
@@ -152,11 +183,20 @@ class AnalyzerIFF():
             else:
                 cube_all_act = np.ma.dstack((cube_all_act, if_act_jth))
         self._cube = cube_all_act
-    
+
         return self._cube
 
 
     def _splitMeasureFromFits(self, misure):
+        """ divides the cube of measurements into two cubes
+
+            Args:
+                misure= cube of measurements
+
+            Returns:
+                misure_pos = positive measurements
+                misure_neg = negative measurements
+        """
         misure_pos = None
         misure_neg = None
         for j in range(misure.shape[2]):
@@ -174,6 +214,8 @@ class AnalyzerIFF():
         return misure_pos, misure_neg
 
     def _logCubeCreation(self, tiptilt_detrend=None, phase_ambiguity=None):
+        """ Use logging function to keep a record of 
+        how the cube was created """
         if (tiptilt_detrend is None and phase_ambiguity is None):
             self._logger.info('Creation of the IFF cube for %s. Location: %s',
                               self._who, self._tt)
@@ -196,11 +238,16 @@ class AnalyzerIFF():
                                     Phase ambiguity= resolved)')
 
 
-    def saveCubeAsFits(self, cubeName):
+    def saveCubeAsFits(self, cube_name):
+        """
+            Args:
+                cube_name = name to save the cube
+                            example 'Cube.fits'
+        """
         tt = self._ttData()
         dove = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                             'IFFunctions', tt)
-        fits_file_name = os.path.join(dove, cubeName)
+        fits_file_name = os.path.join(dove, cube_name)
         header = pyfits.Header()
         header['NPUSHPUL'] = self._nPushPull
         header['WHO'] = self._who
@@ -210,6 +257,11 @@ class AnalyzerIFF():
         pyfits.append(fits_file_name, self._actsVector)
 
     def saveCubeAsH5(self, cube_name):
+        """
+            Args:
+                cube_name = name to save the cube
+                            example 'Cube.h5'
+        """
         tt = self._ttData()
         dove = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                             'IFFunctions', tt)
@@ -226,6 +278,14 @@ class AnalyzerIFF():
 
     @staticmethod
     def loadCubeFromFits(fits_file_name):
+        """ Creates the object using information contained in Cube
+
+            Args:
+                fits_file_name = cube path
+
+            Return:
+                theObject = analyzerIFF class object
+        """
         header = pyfits.getheader(fits_file_name)
         hduList = pyfits.open(fits_file_name)
         cube = np.ma.masked_array(hduList[0].data,
@@ -248,6 +308,14 @@ class AnalyzerIFF():
 
     @staticmethod
     def loadCubeFromH5(file_name):
+        """ Creates the object using information contained in Cube
+
+            Args:
+                file_name = cube path
+
+            Return:
+                theObject = analyzerIFF class object
+        """
         theObject = AnalyzerIFF()
         hf = h5py.File(file_name, 'r')
         hf.keys()
@@ -267,6 +335,9 @@ class AnalyzerIFF():
 
     @staticmethod
     def loadTestMeasureFromFits(tt):
+        """
+        Creates the AnalyzerIFF object using specific informations
+        """
         dove = os.path.join("/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions", tt)
         fits_file_name = os.path.join(dove, 'misure.fits')
         header = pyfits.getheader(fits_file_name)
