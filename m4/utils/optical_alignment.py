@@ -13,8 +13,16 @@ from m4.ground import object_from_fits_file_name as obj
 
 
 class opt_alignment():
+    """
+    Class for the optical alignment
+
+    HOW TO USE IT:
+    from m4.utils.optical_alignement import opt_alignement
+    al = opt_alignement()
+    """
 
     def __init__(self, tt):
+        """The constructor """
         self._logger = logging.getLogger('OPT_ALIGN:')
         self._tt = tt
         self._cal = opt_calibration()
@@ -25,12 +33,21 @@ class opt_alignment():
 
     @staticmethod
     def _storageFolder():
+        """ Creates the path where to save data"""
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                             "Alignment")
 
 
     def opt_align(self, piston=None):
-        self._logger.info('Calculation of the alignment command for %s', self._tt)
+        """
+        args:
+            piston =
+
+        returns:
+                cmd = final command for the optical alignment
+        """
+        self._logger.info('Calculation of the alignment command for %s',
+                          self._tt)
         self._intMat, self._rec, self._mask = self._loadAlignmentInfo()
         img = self._measureOTTPhaseMap()
         cmd = self._commandGenerator(img)
@@ -41,6 +58,7 @@ class opt_alignment():
 
 
     def _loadAlignmentInfo(self):
+        """ Returns interaction matrix, reconstructor and mask """
         self._intMat = self._readInfo('InteractionMatrix.fits')
         self._rec = self._readInfo('Reconstructor.fits')
         self._mask = self._readInfo('Mask.fits')
@@ -48,6 +66,7 @@ class opt_alignment():
 
 
     def _readInfo(self, fits_name):
+        """ Function for reading fits file"""
         fold = os.path.join(self._cal._storageFolder(), self._tt)
         file = os.path.join(fold, fits_name)
         hduList = pyfits.open(file)
@@ -55,6 +74,7 @@ class opt_alignment():
         return info
 
     def _testAlignment_loadMeasureFromFileFits(self, test):
+        """ Test function """
         if test == 0:
             imgf = obj.readImageFromFitsFileName('Allineamento/20191007_134908/img.fits')
             imgt = obj.readImageFromFitsFileName('Allineamento/20191007_135037/img.fits')
@@ -64,6 +84,7 @@ class opt_alignment():
             return img
 
     def _testAlignment_loadInfoPositionFromFileFits(self, test):
+        """ Test function """
         if test == 0:
             parf = obj.readDataFromFileFits('Allineamento/20191007_134908/parpos.fits')
             rmf = obj.readDataFromFileFits('Allineamento/20191007_134908/rflatpos.fits')
@@ -76,6 +97,13 @@ class opt_alignment():
             return par, rm
 
     def _commandGenerator(self, img):
+        """
+        args:
+            img = image 
+
+        returns:
+                cmd = command for the dof
+        """
         image = np.ma.masked_array(img.data, mask=self._mask)
         zernike_vector = self._zernikeCoeff(image)
         cmd = - np.dot(self._rec, zernike_vector)
@@ -89,6 +117,11 @@ class opt_alignment():
         return img
 
     def _zernikeCoeff(self, img):
+        """
+        Returns:
+                final_coef = zernike coeff on the image
+                            (zernike modes 2,3,4,7,8)
+        """
         coef, mat = self._zOnM4.zernikeFit(img, np.arange(2, 11))
         z = np.array([0, 1, 2, 5, 6])
         final_coef = np.zeros(z.shape[0])
@@ -101,8 +134,8 @@ class opt_alignment():
     def saveCommand(self, cmd, i):
         '''
         arg:
-            cmd= vettore contenente il comando da dare ai gradi di libertà
-            i= numero identificativo con cui salvare il nome del comando
+            cmd = vector containing the command to be given to degrees of freedom
+            i = id number to save the command name
         '''
         dove = os.path.join(self._storageFolder(), self._tt)
         if not os.path.exists(dove):

@@ -13,8 +13,14 @@ from m4.ground.configuration import Configuration
     #a=np.ones(892) b=np.zeros(4460) cmd=np.append(a,b)
 def createActMap(cmd):
     '''
-    Funzione per creare il plot dei valori assegnati agli attuatori
-    nel caso di tutto m4 o di un solo segmento
+    Function to plot values assigned to actuators
+    in the case of all m4 or one segment
+
+    Args:
+        cmd = command for N_ACTS_TOT or N_ACT_SEG actuators
+
+    Returns:
+            graphic plot
     '''
     if cmd.shape[0] == Configuration.N_ACTS_TOT:
         cmd = cmd

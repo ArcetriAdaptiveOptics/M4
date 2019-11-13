@@ -188,7 +188,7 @@ class AnalyzerIFF():
 
 
     def _splitMeasureFromFits(self, misure):
-        """ divides the cube of measurements into two cubes
+        """ Divides the cube of measurements into two cubes
 
             Args:
                 misure= cube of measurements
@@ -214,7 +214,7 @@ class AnalyzerIFF():
         return misure_pos, misure_neg
 
     def _logCubeCreation(self, tiptilt_detrend=None, phase_ambiguity=None):
-        """ Use logging function to keep a record of 
+        """ Use logging function to keep a record of
         how the cube was created """
         if (tiptilt_detrend is None and phase_ambiguity is None):
             self._logger.info('Creation of the IFF cube for %s. Location: %s',

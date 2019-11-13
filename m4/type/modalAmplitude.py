@@ -11,16 +11,22 @@ from m4.ground.configuration import Configuration
 
 class ModalAmplitude():
     '''
-    Classe per creare e gestire l'oggetto modal amplitude
+    Class to create and manage the modal amplitude
+
+    HOW TO USE IT:
+    from m4.type.modalAmplitude import ModalAmplitude
+    ma = ModalAmplitude()
     '''
 
     def __init__(self):
+        """The constructor """
         self._modalAmplitude = None
         self._fitsfilename = None
         self.tag = None
 
     @staticmethod
     def _storageFolder():
+        """ Creates the path where to save data"""
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                             "ModalAmplitude")
 
@@ -35,17 +41,23 @@ class ModalAmplitude():
 
 
     def saveAsFits(self, tag, modal_amplitude):
+        ''' Save the data in fits format
+        args:
+            tag (string) = file name to save
+            modal_amplitude (array) = vector of amplitude
+        '''
         self._tag = tag
-        '''
-            tag (stringa)= nome del file da salvare
-            modal_amplitude (array)= vettore delle ampiezze
-        '''
         store_in_folder = ModalAmplitude._storageFolder()
         filename = tag + '.fits'
         fits_file_name = os.path.join(store_in_folder, filename)
         pyfits.writeto(fits_file_name, modal_amplitude)
 
     def saveAsH5(self, tag, modal_amplitude):
+        ''' Save the data in h5 format
+        args:
+            tag (string) = file name to save
+            modal_amplitude (array) = vector of amplitude
+        '''
         store_in_folder = ModalAmplitude._storageFolder()
         filename = tag + '.h5'
         hf = h5py.File(os.path.join(store_in_folder, filename), 'w')
@@ -54,6 +66,14 @@ class ModalAmplitude():
 
     @staticmethod
     def loadFromFits(fits_file_name):
+        """ Creates the object
+
+            Args:
+                fits_file_name = modal amplitude path
+            
+            Returns:
+                    theObject = ModalAmplitude class object
+        """
         theObject = ModalAmplitude()
         store_in_folder = ModalAmplitude._storageFolder()
         all_fits_file_name = os.path.join(store_in_folder, fits_file_name)
@@ -64,6 +84,14 @@ class ModalAmplitude():
 
     @staticmethod
     def loadFromH5(filename):
+        """ Creates the object
+
+            Args:
+                filename = modal amplitude path
+
+            Returns:
+                    theObject = ModalAmplitude class object
+        """
         store_in_folder = ModalAmplitude._storageFolder()
         hf = h5py.File(os.path.join(store_in_folder, filename), 'r')
         hf.keys()

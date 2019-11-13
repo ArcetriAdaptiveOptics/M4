@@ -15,8 +15,24 @@ from m4.ground import object_from_fits_file_name
 
 
 class IFFunctionsMaker():
+    '''
+    This class is responsible for the application of zonal or global commands
+    to the deformable mirror in order to collect the functions of influence.
+    Data are saving in the folder corresponding to
+    the tracking number generated
+
+    HOW TO USE IT:
+    from m4.utils import create_device
+    device = create_device.myDevice("segment")         #or "m4"
+    from m4.influence_functions_maker import IFFunctionsMaker
+    IFF = IFFunctionsMaker(device)
+    tt = IFF.acq_IFFunctions(modesVectorFitsFileName, nPushPull,
+                            amplitudeFitsFileName, cmdMatrixFitsFileName,
+                            shuffle=None)
+    '''
 
     def __init__(self, device):
+        """The constructor """
         self._device = device
         self._who = self._device._who
         self._nActs = self._device.nActs()
@@ -24,6 +40,7 @@ class IFFunctionsMaker():
 
     @staticmethod
     def _storageFolder():
+        """ Creates the path where to save measurement data"""
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                             "IFFunctions")
 
@@ -31,7 +48,24 @@ class IFFunctionsMaker():
     def acq_IFFunctions(self, modes_vector_fits_file_name, n_push_pull,
                         amplitude_fits_file_name, cmd_matrix_fits_file_name,
                         shuffle=None):
+        '''
+        Performs the process of acquiring interferograms
 
+        Args:
+             modes_vector_fits_file_name = fits file name
+                                         (Example = modes.fits)
+             n_push_pull = number of push pull on the actuator
+                         (int)
+             amplitude_fits_file_name = fits file name
+                                         (Example = amp.fits)
+             cmd_matrix_fits_file_name = fits file name
+                                         (Example = modalBase.fits)
+             shuffle = if not indicated, the function create the tidy command
+                        history matrix
+
+        Returns:
+                tt = tracking number of measurements made
+        '''
         amplitude, modes_vector, cmd_matrix = \
         object_from_fits_file_name.readObjectFitsFileName(amplitude_fits_file_name,
                                                           modes_vector_fits_file_name,
@@ -41,19 +75,7 @@ class IFFunctionsMaker():
         self._modesVectorTag = modes_vector_fits_file_name
         self._amplitudeTag = amplitude_fits_file_name
         self._cmdMatrixTag = cmd_matrix_fits_file_name
-        '''
-         arg:
-             modesVectorTag= fits file name (modes.fits)
-             n_push_pull= numero di push pull consecutivi sull'attuatore
-                         (int)
-             amplitudeTag= fits file name (amp.fits)
-             cmdMatrixTag= fits file name (modalBase.fits)
-             shuffle= se non indicato viene creata la matrice della storia
-                     dei comandi ordinata
 
-        return:
-                tracking number delle misure effettuate
-        '''
         store_in_folder = self._storageFolder()
         indexing_input = copy.copy(modes_vector)
         save = tracking_number_folder.TtFolder(store_in_folder)
@@ -89,13 +111,13 @@ class IFFunctionsMaker():
         self._indexingList = cmdH.getIndexingList()
         self._saveInfoAsFits(dove)
 
-
         self._applyToDM()
 
         return tt
 
 
     def _diagonalControll(self, matrix):
+        """ Prepares the matrix for the diagonal control """
         v = np.zeros((self._nActs, 1))
         reps = matrix.shape[0] - matrix.shape[1]
         vects = np.tile(v, reps)
@@ -108,6 +130,8 @@ class IFFunctionsMaker():
         pass
 
     def _testIFFunctions_createCube25fromFileFitsMeasure(self):
+        """ Test function: create a measurement cube using data
+        generate whit m4 idl softaware"""
         fold = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/OIM_25modes.fits'
         hduList = pyfits.open(fold)
         cube_50 = hduList[0].data
@@ -132,6 +156,12 @@ class IFFunctionsMaker():
 
 
     def _saveInfoAsFits(self, folder):
+        """ Save the fits info file containing the input data for
+        the creation of iff
+
+        Args:
+            folder = path that indicates where to save the info file
+        """
         fits_file_name = os.path.join(folder, 'info.fits')
         header = pyfits.Header()
         header['NPUSHPUL'] = self._nPushPull
@@ -143,6 +173,12 @@ class IFFunctionsMaker():
         pyfits.writeto(fits_file_name, self._indexingList, header)
 
     def _saveInfoAsH5(self, folder):
+        """ Save the h5 info file containing the input data for
+        the creation of iff
+
+        Args:
+            folder = path that indicates where to save the info file
+        """
         fits_file_name = os.path.join(folder, 'info.h5')
         hf = h5py.File(fits_file_name, 'w')
         hf.create_dataset('dataset_1', data=self._indexingList)
@@ -157,6 +193,20 @@ class IFFunctionsMaker():
 
     @staticmethod
     def loadInfoFromFits(folder):
+        """ Reload information contained in fits Info file
+
+            Args:
+                fits_file_name = info file path
+
+            Returns:
+                who = which segment
+                tt_cmdH = CommandHistory tracking number
+                acts_vector = vector of actuators
+                cmd_matrix = modal base
+                cmd_ampl = amplitude vector
+                n_push_pull = number of push pull
+                indexingList = list of index order using in command history
+        """
         additional_info_fits_file_name = os.path.join(folder, 'info.fits')
         header = pyfits.getheader(additional_info_fits_file_name)
         hduList = pyfits.open(additional_info_fits_file_name)
@@ -180,6 +230,20 @@ class IFFunctionsMaker():
 
     @staticmethod
     def loadInfoFromH5(tt):
+        """ Reload information contained in h5 Info file
+
+            Args:
+                fits_file_name = info file path
+
+            Returns:
+                who = which segment
+                tt_cmdH = CommandHistory tracking number
+                acts_vector = vector of actuators
+                cmd_matrix = modal base
+                cmd_ampl = amplitude vector
+                n_push_pull = number of push pull
+                indexingList = list of index order using in command history
+        """
         store_in_folder = IFFunctionsMaker._storageFolder()
         folder = os.path.join(store_in_folder, tt)
         file_name = os.path.join(folder, 'info.h5')

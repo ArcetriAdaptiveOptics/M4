@@ -49,7 +49,8 @@
 	  PROCEDIMENTO:
 	  from m4.alignment import Alignment 
 	  a = Alignment()
-	  cmd = a.OTT_Alignment(commandAmpVector, nPushPull)
+	  tt = a.ott_calibration(commandAmpVector, nPushPull, maskIndex)
+	  cmd = a.ott_alignment(tt)
 	  
 	  RISULTATI:
 	  
@@ -59,7 +60,8 @@
 	  PROCEDIMENTO:
 	  from m4.alignment import Alignment 
 	  a = Alignment()
-	  ? = a.M4_Alignment(...)
+	  tt, zCoefComa, comaSurface = a.m4_calibration(...)
+      cmd = a.m4_alignement(zCoefComa)
 	  
 	  RISULTATI:
 	  

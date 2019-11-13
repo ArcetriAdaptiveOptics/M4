@@ -13,10 +13,15 @@ from m4.ground.configuration import Configuration
 
 class CmdHistory():
     '''
-    Classe per creare e gestire la matrice con la storia dei comandi
+    Class to create and manage the command history matrix
+
+    HOW TO USE IT:
+    from m4.type.commandHistory import CmdHistory
+    cmdH = CmdHistory()
     '''
 
     def __init__(self, device):
+        """The constructor """
         self._device = device
         self._logger = logging.getLogger('CMD_HISTORY:')
         self._who = self._device._who 
@@ -35,24 +40,28 @@ class CmdHistory():
 
     @staticmethod
     def _storageFolder():
+        """ Creates the path where to save data"""
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                             "CommandHistory")
-    '''
-         arg:
-             modesVector= vettore dell'indice dei modi o degli attuatori
-                        da applicare (numpy.array([]))
-             nPushPull= numero di push pull consecutivi sull'attuatore
-                         (int)
-             ampVector= vettore con l'ampiezza dei modi (numpy.array([]))
-             cmdMatrix= matrice dei comandi dei modi 
-                         (nActs x nModes)
-                         matrice diagonale nel caso di comandi zonali
-         return:
-             matrixToApply: command history (nAct, nModes x nPushPusll x 2)
-    '''
+
 
     def tidyCommandHistoryMaker(self, mode_vector, amp_vector,
                                 cmd_matrix, n_push_pull):
+        '''
+         arg:
+            modesVector = Mode or actuator index vector
+                            to apply (numpy.array([]))
+            ampVector = amplitude mode vector (numpy.array([]))
+            cmdMatrix = mode command matrix 
+                         (nActs x nModes)
+                         diagonal matrix in case of zonal commands
+            nPushPull = number of consecutive push pull on the actuator
+                         (int)
+         return:
+             matrixToApply = tidy command history
+                             (nAct, nModes x nPushPusll x 2)
+             tt = tracking number
+        '''
         self._ampVect = amp_vector
         cmd_history = self._tidyCmdHistory(mode_vector, n_push_pull, cmd_matrix)
         aa = np.arange(self._cmdHistory.shape[1])
@@ -69,6 +78,21 @@ class CmdHistory():
 
     def shuffleCommandHistoryMaker(self, mode_vector, amp_vector,
                                    cmd_matrix, n_push_pull):
+        '''
+         arg:
+            modesVector = Mode or actuator index vector
+                            to apply (numpy.array([]))
+            ampVector = amplitude mode vector (numpy.array([]))
+            cmdMatrix = mode command matrix 
+                         (nActs x nModes)
+                         diagonal matrix in case of zonal commands
+            nPushPull = number of consecutive push pull on the actuator
+                         (int)
+         return:
+             matrixToApply = shuffle command history
+                             (nAct, nModes x nPushPusll x 2)
+             tt = tracking number
+        '''
         self._ampVect = amp_vector
         cmd_history, indexing_list = self._shuffleCmdHistory(
             mode_vector, n_push_pull, cmd_matrix)
@@ -188,6 +212,7 @@ class CmdHistory():
 
 
     def saveAsFits(self):
+        """ Save the data in fits format """
         store_in_folder = CmdHistory._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
         dove, tt = save._createFolderToStoreMeasurements()
@@ -204,6 +229,7 @@ class CmdHistory():
         return tt
 
     def saveAsH5(self):
+        """ Save the data in h5 format """
         store_in_folder = CmdHistory._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
         dove, tt = save._createFolderToStoreMeasurements()
@@ -221,6 +247,14 @@ class CmdHistory():
 
     @staticmethod
     def loadFromFits(device, tt):
+        """ Creates the object from the info.fits file located in tt
+
+            Args:
+                tt = tracking number
+
+            Returns:
+                    theObject = CmdHistory class object
+        """
         theObject = CmdHistory(device)
         theObject._tt = tt
         store_in_folder = CmdHistory._storageFolder()
@@ -242,6 +276,14 @@ class CmdHistory():
 
     @staticmethod
     def loadFromH5(device, tt):
+        """ Creates the object from the info.fits file located in tt
+
+            Args:
+                tt = tracking number
+
+            Returns:
+                    theObject = CmdHistory class object
+        """
         theObject = CmdHistory(device)
         theObject._tt = tt
         store_in_folder = CmdHistory._storageFolder()

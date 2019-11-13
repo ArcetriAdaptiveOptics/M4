@@ -11,8 +11,16 @@ from m4.ground import tracking_number_folder
 
 
 class opt_calibration():
+    """
+    Class for the optical calibration
+
+    HOW TO USE IT:
+    from m4.utils.optical_calibration import opt_calibration
+    cal = opt_calibration()
+    """
 
     def __init__(self):
+        """The constructor """
         self._logger = logging.getLogger('OPT_CALIB:')
         self._zOnM4 = ZernikeOnM4()
         self._rec = None
@@ -20,20 +28,31 @@ class opt_calibration():
 
     @staticmethod
     def _storageFolder():
+        """ Creates the path where to save measurement data"""
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                             "Calibration")
 
 
     def measureCalibrationMatrix(self, who, command_amp_vector, n_push_pull):
-        self._nPushPull = n_push_pull
-        self._commandAmpVector = command_amp_vector
         '''
             arg:
-                who= numero che indica l'elemento ottico
-                    su cui svolgere la calibrazione
-                command_amp_vector= vettore contenente l'ampiezza dei comandi
-                                    da dare ai gradi di libertà da calibrare
+                who = number indicating the optical element
+                    on which to perform the calibration
+                    0 per mixing
+                    1 per parable
+                    2 per reference mirror
+                    3 per deformable mirror
+                command_amp_vector = vector containing the amplitude of the
+                                    commands to give degrees of freedom to
+                                    calibrate
+                n_push_pull = number of push pull
+
+            Returns:
+                    tt = tracking number
         '''
+        self._nPushPull = n_push_pull
+        self._commandAmpVector = command_amp_vector
+
         store_in_folder = self._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
         dove, self._tt = save._createFolderToStoreMeasurements()
@@ -49,9 +68,13 @@ class opt_calibration():
 
     def analyzerCalibrationMeasurement(self, tt, mask_index):
         '''
-        arg:
-             mask_index= int dell'indice della maschera relativo
-                         allo specchio di riferimento
+        args:
+            tt = tracking number of the measures to be analysed
+            mask_index = int the reference mirror mask index
+        
+        returns:
+                self_intMat = interation matrix
+                self._rec = reconstructor
         '''
         a = opt_calibration.loadCommandMatrixFromFits(tt)
         a.createCube(tt)
@@ -76,12 +99,17 @@ class opt_calibration():
 
     def _createCommandMatrix(self, who, command_amp_vector, n_push_pull):
         '''
-            arg:
+            args:
                 who=
                     0 per mixing
-                    1 per parabola
-                    2 per specchio di riferimento
-                    3 per specchio deformabile
+                    1 per parable
+                    2 per reference mirror
+                    3 per deformable mirror
+                command_amp_vector = vector of command amplitude
+                n_push_pull = number of push pull
+
+            returns:
+                    self._commandMatrix = command matrix for the dof
         '''
         if who == 0:
             self._who = 'PAR + RM'
@@ -108,8 +136,16 @@ class opt_calibration():
     def _createCommandHistoryMatrix(self, rows, command_amp_vector,
                                     n_push_pull):
         '''
-            crea la matrice dei comandi usando come righe
-            i gradi di libertà scelti in row
+            create the command matrix using as lines
+            the degrees of freedom chosen in rows
+
+        args:
+            rows = int
+            command_amp_vector = vector of command amplitude
+            n_push_pull = number of push pull
+
+            returns:
+                    command_matrix = command matrix for the dof
         '''
         vec_push_pull = np.array((1, -1))
         rows = rows
@@ -125,6 +161,13 @@ class opt_calibration():
 
 
     def _saveCommandMatrixAsFits(self, dove):
+        """
+        Save fits file for the command matrix and the data relating to
+        its creation
+
+        args:
+            dove = path that indicates where to save the command matrix file
+        """
         fits_file_name = os.path.join(dove, 'CommandMatrix.fits')
         header = pyfits.Header()
         header['NPUSHPUL'] = self._nPushPull
@@ -134,6 +177,15 @@ class opt_calibration():
 
     @staticmethod
     def loadCommandMatrixFromFits(tt):
+        """ Creates the object using information contained in command matrix
+            fits file
+
+            Args:
+                tt = tracking number
+
+            Return:
+                theObject = opt_calibration class object
+        """
         theObject = opt_calibration()
         theObject._tt = tt
         dove = os.path.join(theObject._storageFolder(), tt)
@@ -147,6 +199,9 @@ class opt_calibration():
         return theObject
 
     def _testCalibration_createCubeMeasurefromFileFitsMeasure(self):
+        """
+        Test function for the cube measure creation
+        """
         cube_measure = None
         fold = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/MixingIntMat/20190930_162714'
         for i in range(5):
@@ -162,6 +217,10 @@ class opt_calibration():
         return cube_measure
 
     def createCube(self, tt):
+        """
+        args:
+            tt = tracking number
+        """
         self._logger.info('Creation of the cube relative to %s', tt)
         cube_from_measure = self._testCalibration_createCubeMeasurefromFileFitsMeasure()
         for i in range(cube_from_measure.shape[2]):
@@ -205,11 +264,19 @@ class opt_calibration():
         return self._rec
 
     def _saveIntMatAndRec(self, dove):
+        """
+        args:
+            dove = path that indicates where to save the files
+        """
         fits_file_name = os.path.join(dove, 'InteractionMatrix.fits')
         pyfits.writeto(fits_file_name, self._intMat)
         fits_file_name = os.path.join(dove, 'Reconstructor.fits')
         pyfits.writeto(fits_file_name, self._rec)
 
     def _saveMask(self, dove, mask):
+        """
+        args:
+            dove = path that indicates where to save the mask file
+        """
         fits_file_name = os.path.join(dove, 'Mask.fits')
         pyfits.writeto(fits_file_name, mask.astype(int))

@@ -9,8 +9,16 @@ from m4.ground.zernikeMask import CircularMask
 
 
 class ZernikeOnM4():
+    """
+    Class for the generation of Zernike modes in relation to the deformable mirror.
+
+    HOW TO USE IT:
+    from m4.utils.zernike_on_m_4 import ZernikeOnM4
+    zOnM4= ZernikeOnM4()
+    """
 
     def __init__(self):
+        """The constructor """
         self._pupilXYRadius = Configuration.PARABOLA_PUPIL_XYRADIUS
         self._zg = ZernikeGenerator(2*self._pupilXYRadius[2])
 
@@ -25,11 +33,12 @@ class ZernikeOnM4():
     def zernikeFit(self, img, zernike_mode):
         '''
         arg:
-            img= numpy masked array
-            zernike_mode= vector of Zernike modes to remove
+            img = numpy masked array
+            zernike_mode = vector of Zernike modes to remove
+
         return:
-            a= vettore con le ampiezze dei modi di Zernike
-            mat= matrice d'interazione relativa alla zona mascherata
+            a = vector containing Zernike modes amplitudes
+            mat = interaction matrix for the masked area
         '''
         mat = np.zeros((img.compressed().shape[0], zernike_mode.size))
         for i in range(0, zernike_mode.size):
@@ -45,16 +54,16 @@ class ZernikeOnM4():
     def zernikeSurface(self, surface_zernike_coeff_array, ima_mask,
                        mat, index=None):
         '''
-        arg:
-            surface_zernike_coeff_array= vettore contenente le ampiezze
-                                        dei modi di zernike
-            ima_mask= la maschera realativa alla zona in cui vogliamo
-                        ricostruire la superficie
-            mat= matrice d'interazione relativa alla zona mascherata
-            index= vettore contenente il numero degli indici della matrice
-                    d'interazione che vogliamo usare
-        return:
-            surf= superficie ricostruita
+        args:
+            surface_zernike_coeff_array = vector containing the amplitudes
+                                        of the Zernike modes
+            ima_mask = the mask area in which we want to rebuilding
+                    the surfaces
+            mat = interaction matrix for the masked area
+            index = vector containing the index number of interaction matrix
+                    that we want to use
+        returns:
+            surf = reconstructed surface
         '''
         zernike_surface_map = None
 
@@ -79,14 +88,14 @@ class ZernikeOnM4():
 
 
     def zernikeToDMCommand(self, surface_map, an):
+        '''
+        Args:
+            surface_map =
+            an = analyzer delle funzioni d'influenza zonali
+        Returns:
+            zernike_cmd = Command (numpy.array)
+        '''
         self._an = an
-        '''
-        @params
-        surface_map:
-        an: analyzer delle funzioni d'influenza zonali
-        @return:
-        Command (numpy.array)
-        '''
         cmask = self._an.getMasterMask()
         zernike_mask_on_if = CircularMask(self._an.getIFShape(),
                                           self._pupilXYRadius[2],

@@ -5,7 +5,9 @@ from m4.ground.configuration import Configuration
 
 
 class m4():
+    """ Class for m4 definition"""
     def __init__(self):
+        """The constructor """
         self._nActsTot = Configuration.N_ACTS_TOT
         self._who = 'All segments'
 
@@ -14,7 +16,9 @@ class m4():
 
 
 class segment(m4):
+    """ Class for segment definition"""
     def __init__(self, segment_index):
+        """The constructor """
         super().__init__()
 
         if segment_index < 6:

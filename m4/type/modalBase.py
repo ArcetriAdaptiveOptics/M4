@@ -11,16 +11,22 @@ from m4.ground.configuration import Configuration
 
 class ModalBase():
     '''
-    Classe per creare e gestire l'oggetto base modale
+    Class to create and manage the modal base
+
+    HOW TO USE IT:
+    from m4.type.modalBase import ModalBase
+    mb = ModalBase()
     '''
 
     def __init__(self):
+        """The constructor """
         self._modalBase = None
         self._fitsfilename = None
         self._tag = None
 
     @staticmethod
     def _storageFolder():
+        """ Creates the path where to save data"""
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                             "ModalBase")
 
@@ -35,9 +41,10 @@ class ModalBase():
 
     def saveAsFits(self, tag, modal_base):
         self._tag = tag
-        '''
-            tag (stringa)= nome del file da salvare
-            modal_base= matrice dei comandi 
+        ''' Save the data in h5 format
+        args:
+            tag (string) = file name to save
+            modal_base = command matrix
                                 (nActs x nModes)
         '''
         store_in_folder = ModalBase._storageFolder()
@@ -46,6 +53,11 @@ class ModalBase():
         pyfits.writeto(fits_file_name, modal_base)
 
     def saveAsH5(self, tag, modal_base):
+        ''' Save the data in h5 format
+        args:
+            tag (string) = file name to save
+            modes_base = command matrix
+        '''
         store_in_folder = ModalBase._storageFolder()
         filename = tag + '.h5'
         hf = h5py.File(os.path.join(store_in_folder, filename), 'w')
@@ -54,6 +66,14 @@ class ModalBase():
 
     @staticmethod
     def loadFromFits(fits_file_name):
+        """ Creates the object
+
+            Args:
+                fits_file_name = modal base path
+
+            Returns:
+                    theObject = ModalBase class object
+        """
         theObject = ModalBase()
         store_in_folder = ModalBase._storageFolder()
         all_fits_file_name = os.path.join(store_in_folder, fits_file_name)
@@ -64,6 +84,14 @@ class ModalBase():
 
     @staticmethod
     def loadFromH5(filename):
+        """ Creates the object
+
+            Args:
+                filename = modal base path
+
+            Returns:
+                    theObject = ModalBase class object
+        """
         theObject = ModalBase()
         theObject._fitsfilename = filename
         store_in_folder = ModalBase._storageFolder()

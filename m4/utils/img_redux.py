@@ -10,25 +10,41 @@ from m4.utils.zernike_on_m_4 import ZernikeOnM4
 
 
 class TipTiltDetrend():
+    """
+    Class for removal of image's tip and tilt
+
+    HOW TO USE IT:
+    from m4.utils.img_redux import TipTiltDetrend
+    TT = TipTiltDetrend()
+
+    or
+
+    from m4.utils.img_redux import PhaseSolve
+    PS = PhaseSolve()
+    """
 
     def __init__(self):
+        """The constructor """
         self._logger = logging.getLogger('TIP_TILT_DETREND:')
         self._pupilXYRadius = Configuration.PARABOLA_PUPIL_XYRADIUS
         self._zOnM4 = ZernikeOnM4()
         self._totalMatList = None
 
     def tipTiltRemover(self, image, roi, final_index, analysis_ind=None):
+        """
+        args:
+            image = image to be analyzed (np.ma-masked_array)
+            roi = roi of the image (list)
+            final_index = index of final roi (int)
+            analysis_index = index of roi to be used for
+                                the analysis (np.array[...])
+
+        returns:
+                image_ttr = image without tip and tilt
+        """
         roi_copy = np.copy(roi)
         self._logger.debug('Removal of tip-tilt from roi[%d]',
                            final_index)
-        '''
-            arg:
-                image= immagine da analizzare (np.ma-masked_array)
-                roi= roi dell'immagine (list)
-                final_index= indice della roi finale (int)
-                analysis_ind= indice delle roi da utilizzare per
-                                l'analisi (np.array[...])
-        '''
         self._totalMatList = []
         coefList = []
         for r in roi:
@@ -67,8 +83,12 @@ class TipTiltDetrend():
 
 
 class PhaseSolve():
+    """
+    Class...
+    """
 
     def __init__(self):
+        """The constructor """
         self._roi = ROI()
         self._lambda = Configuration.LAMBA
         self._n = None
@@ -84,7 +104,7 @@ class PhaseSolve():
 
     def m4PhaseSolver(self, m4_ima, spl_values):
         self.n_calculator(spl_values)
-        roiList = self._roi._ROIonM4(m4_ima)
+        roiList = self._roi.roiGenerator(m4_ima)
         m4_new_image = None
 
         media = []
