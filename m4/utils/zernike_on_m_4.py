@@ -85,25 +85,3 @@ class ZernikeOnM4():
                                   mask=mask)
         surf[mask] = zernike_surface_map
         return surf
-
-
-    def zernikeToDMCommand(self, surface_map, an):
-        '''
-        Args:
-            surface_map =
-            an = analyzer delle funzioni d'influenza zonali
-        Returns:
-            zernike_cmd = Command (numpy.array)
-        '''
-        self._an = an
-        cmask = self._an.getMasterMask()
-        zernike_mask_on_if = CircularMask(self._an.getIFShape(),
-                                          self._pupilXYRadius[2],
-                                          [self._pupilXYRadius[1],
-                                           self._pupilXYRadius[0]]).zernikeMask()
-        self._an.setDetectorMask(zernike_mask_on_if | cmask)
-        rec = self._an.getReconstructor()
-
-        zernike_cmd = np.dot(rec, surface_map.compressed())
-
-        return zernike_cmd

@@ -24,20 +24,19 @@ class Flattenig():
                             "Flattening")
 
 
-    def flatCommand(self, wf):
+    def flatCommand(self, wf, mask):
         #comando che permette di ottenere la misura del wf dall'interferometro (wf)
-        ampr = np.random.randn(25)
-        wf = np.dot(self._an._cube, ampr)
+        #ampr = np.random.randn(25)
+        #wf = np.dot(self._an._cube, ampr)
 
-        self._an.setDetectorMask(wf.mask | self._an.getMasterMask())
+        self._an.setDetectorMask(mask | self._an.getMasterMask())
         rec = self._an.getReconstructor()
-        wf_masked = np.ma.masked_array(wf.data, 
-                                       mask=np.ma.mask_or(wf.mask,
+        wf_masked = np.ma.masked_array(wf.data,
+                                       mask=np.ma.mask_or(mask,
                                                           self._an.getMasterMask()))
+        amp = -np.dot(rec, wf_masked.compressed())
 
-        self._command = -np.dot(rec, wf_masked.compressed())
-
-        return self._command
+        return amp
 
     def flattening(self, offset):
         #misuro la posizione dello specchio (pos)

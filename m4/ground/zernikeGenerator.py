@@ -3,8 +3,10 @@ from scipy.special.basic import factorial
 
 
 class ZernikeGenerator():
+    """ Generator of zernike modes"""
 
     def __init__(self, nPixelOnDiameter):
+        """The constructor """
         self._nPixel = nPixelOnDiameter
         self._xC, self._yC = self._makeRectGrid(self._nPixel)
         self._rhoMap, self._thetaMap = self._rectToPolar(self._xC, self._yC)

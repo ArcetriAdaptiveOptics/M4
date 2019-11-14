@@ -7,11 +7,13 @@ import numpy as np
 
 class TestCalc(unittest.TestCase):
     '''
-    Contiene funzioni di test che utilizzano dati presenti in
+    Contiene funzioni di test che utilizzano i dati presenti in
     /Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova
     '''
 
     def test_iffunctionsmaker_1(self):
+        """ Test delle funzioni di influenza globali
+        con command history casuale """
         print("IFFunctionsMaker test: \
             segment, global IF, shuffleCommandHistory")
         from m4.utils import create_device
@@ -38,6 +40,8 @@ class TestCalc(unittest.TestCase):
 
 
     def test_iffunctionsmaker_2(self):
+        """ Test delle funzioni di influenza zonali
+        con command history ordinata """
         print("IFFunctionsMaker test: segment, zonal If, tidy command history")
         from m4.utils import create_device
         device = create_device.myDevice("segment")
@@ -63,10 +67,10 @@ class TestCalc(unittest.TestCase):
 
 
     def test_calibration_and_alignement(self):
-#test basato sui dati presenti in
-#/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/MixingIntMat/20190930_162714'
-#l'immagine da allineare e le posizioni degli elementi ottici sono quelle in
-#/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Allineamento/20191001_081344
+        """test basato sui dati presenti in
+        /Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/MixingIntMat/20190930_162714'
+        l'immagine da allineare e le posizioni degli elementi ottici sono quelle in
+        /Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Allineamento/20191001_081344 """
         command_amp_vector = np.ones(5)*5.0e-06
         command_amp_vector[0] = 2.5e-05
         n_push_pull = 3
