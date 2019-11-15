@@ -29,6 +29,8 @@ class segment(m4):
         self._nActSeg = Configuration.N_ACT_SEG
         self._nSeg = Configuration.N_SEG
         self._who = 'Segment number %s' % segment_index
+        self._angle = Configuration.REFERENCE_ANGLE
+        self._distance = Configuration.SEGMENT_DISTANCE_FROM_CENTRE
 
     def nActs(self):
         return self._nActSeg

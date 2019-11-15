@@ -28,10 +28,13 @@ class Configuration():
     PARABOLA_DOF = 3
     RM_DOF = 2
     #DM
+    M4_PUPIL_XYRADIUS = np.array([512, 512, 512])
     N_SEG = 6
     N_ACTS_TOT = 5352
     N_ACT_SEG = 892
     M4_DOF = 6
+    REFERENCE_ANGLE = 60
+    SEGMENT_DISTANCE_FROM_CENTRE = 28
 
     #per l'applicazione
     def set_up_logger(self, file_path, logging_level):
