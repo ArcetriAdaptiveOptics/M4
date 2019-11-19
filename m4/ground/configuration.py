@@ -2,6 +2,7 @@
 @author: cs
 '''
 import numpy as np
+import math
 
 
 class Configuration():
@@ -19,6 +20,9 @@ class Configuration():
     TEST_IMAGE_ROOT_FOLDER = \
         "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova"
 
+    IFFUNCTIONS_ROOT_FOLDER = \
+        "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions"
+
 
     #Interf
     LAMBA = 2
@@ -33,7 +37,7 @@ class Configuration():
     N_ACTS_TOT = 5352
     N_ACT_SEG = 892
     M4_DOF = 6
-    REFERENCE_ANGLE = 60
+    REFERENCE_ANGLE = math.pi / 3
     SEGMENT_DISTANCE_FROM_CENTRE = 28
 
     #per l'applicazione
