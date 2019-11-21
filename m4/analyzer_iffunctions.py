@@ -12,6 +12,7 @@ from m4.influence_functions_maker import IFFunctionsMaker
 from m4.utils.roi import ROI
 from m4.utils.img_redux import TipTiltDetrend
 from m4.ground.configuration import Configuration
+from dask.array.ufunc import imag
 
 
 class AnalyzerIFF():
@@ -361,7 +362,17 @@ class AnalyzerIFF():
         theObject._nPushPull = n_push_pull
         return theObject
 
-
+    @staticmethod
+    def loadCubeFromIFFMeasureToCreateAn(tt):
+        dove = os.path.join("/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions", tt)
+        fits_file_name = os.path.join(dove, 'CubeMeasure.fits')
+        hduList = pyfits.open(fits_file_name)
+        theObject = AnalyzerIFF()
+        cube = np.ma.masked_array(hduList[0].data,
+                                  hduList[1].data.astype(bool))
+        theObject._cube = cube
+        theObject._who = 'Un segmento'
+        return theObject
 
     def setAnalysisMask(self, analysis_mask):
         self._analysisMask = analysis_mask

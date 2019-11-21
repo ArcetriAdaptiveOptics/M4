@@ -2,8 +2,8 @@
 @author: cs
 '''
 
-from scipy import ndimage
 import os
+from scipy import ndimage
 import numpy as np
 import pyfits
 from m4.ground.configuration import Configuration
@@ -56,7 +56,7 @@ class ZernikeCommand():
 
             segment_image = positive_image - negative_image / 2 # * amp
             self._finalSegmentImage.appen(segment_image)
-        return self._finalSegmentImage 
+        return self._finalSegmentImage
 
     def _totalCommandCreator(self):
         for i in range(len(self._commandsList)):
@@ -118,9 +118,9 @@ class ZernikeCommand():
     def _createAnalyzer(self, tt):
         ''' Per ora crea an con il cubo di 25 misure che ho usato per i test
         '''
-        file_name = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
+        #file_name = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
         #fits_file_name = os.path.join(file_name, 'Cube.fits')
-        an = AnalyzerIFF.loadTestMeasureFromFits(tt)
+        an = AnalyzerIFF.loadCubeFromIFFMeasureToCreateAn(tt)
         return an
 
     def _createZernikeModesOnM4(self, zernike_coeff_array):

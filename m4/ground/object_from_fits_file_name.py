@@ -65,3 +65,11 @@ def readDataFromFileFits(fits_file_path):
     hduList = pyfits.open(file_name)
     data = hduList[0].data
     return data
+
+def readImageFromRunaIFFs(fits_file_path):
+    file_name = os.path.join(Configuration.TEST_IMAGE_ROOT_FOLDER,
+                             fits_file_path)
+    hduList = pyfits.open(file_name)
+    cube = hduList[0].data
+    immagine = np.ma.masked_array(cube[0,:,:], mask=np.invert(cube[1,:,:].astype(bool)))
+    return immagine

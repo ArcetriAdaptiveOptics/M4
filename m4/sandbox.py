@@ -177,3 +177,27 @@ def immaginiProvaTTDetrendAll():
             ('All/img_0003.fits')
     mode_1 = np.ma.masked_array(pull.data - push.data, mask=push.mask)
     return mode_0, mode_1
+
+def loadTestCubeFromRunaIFF(tt, n_measure):
+    import m4.ground.object_from_fits_file_name as obj
+    cube = None
+
+    for i in range(n_measure):
+        name = 'mode_%04d.fits' %i
+        file_name = os.path.join(tt, name)
+        ima = obj.readImageFromRunaIFFs(file_name)
+        if cube is None:
+            cube = ima
+        else:
+            cube = np.ma.dstack((cube, ima))
+    return cube
+
+
+def immaginiDaIFFRuna():
+    doveSeg = '20170216_123645/mode_0197.fits'
+    #doveM4 = '20161226_122557/mode_0267.fits'
+
+    seg = object_from_fits_file_name.readImageFromRunaIFFs(doveSeg)
+    #m4 = object_from_fits_file_name.readImageFromRunaIFFs(doveM4)
+    return seg
+    
