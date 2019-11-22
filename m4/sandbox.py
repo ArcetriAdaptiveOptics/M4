@@ -200,4 +200,13 @@ def immaginiDaIFFRuna():
     seg = object_from_fits_file_name.readImageFromRunaIFFs(doveSeg)
     #m4 = object_from_fits_file_name.readImageFromRunaIFFs(doveM4)
     return seg
+
+def provaZernike(seg, zernike_modes_vector_amplitude, tt_list_for_an):
+    from m4.utils.roi import ROI
+    r = ROI()
+    roi = r.roiGenerator(seg)
+    from m4.zernike_command_test import ZernikeCommand
+    zc = ZernikeCommand(roi[3], tt_list_for_an)
+    tt, total_mode_image = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
+    return zc, tt, total_mode_image
     
