@@ -37,7 +37,8 @@ class Configuration():
     N_ACTS_TOT = 5352
     N_ACT_SEG = 892
     M4_DOF = 6
-    REFERENCE_ANGLE = math.pi / 3
+    REFERENCE_ANGLE_RAD = math.pi / 3
+    REFERENCE_ANGLE_DEGREES = 60
     SEGMENT_DISTANCE_FROM_CENTRE = 28
 
     #per l'applicazione

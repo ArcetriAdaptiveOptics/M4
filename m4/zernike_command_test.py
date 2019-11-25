@@ -14,8 +14,15 @@ from m4.ground import tracking_number_folder
 from m4.ground.interferometer_converter import InterferometerConverter
 
 class ZernikeCommand():
+    ''' Class created to control Zernike modes at all m4
+        (6 segments at the same time)
+    '''
 
     def __init__(self, segment_roi, tt_list_for_an):
+        """The constructor:
+            segment_roi: central roi for the segment
+            tt_list_for_an: list of tracking number to use for an creation
+        """
         self._roi = segment_roi
         self._ttListForAn = tt_list_for_an
         self._ic = InterferometerConverter()
@@ -25,10 +32,13 @@ class ZernikeCommand():
         self._measure = None
         self._totalModeCommand = None
         self._anList = []
+        self._zernikeSurfaceCube = None
+        self._m4ImagesCube = None
 
 
     @staticmethod
     def _storageFolder():
+        """ Creates the path where to save measurement data"""
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                             "ZernikeCommandTest")
 
@@ -39,6 +49,7 @@ class ZernikeCommand():
                                             modes to be test, starting from z=2
         '''
         #ci metto tutto il procedimento
+        self._ampVector = zernike_modes_vector_amplitude
         store_in_folder = self._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
         self._dove, self._tt = save._createFolderToStoreMeasurements()
@@ -50,29 +61,69 @@ class ZernikeCommand():
         self._nModes = zernike_modes_vector_amplitude.shape[0]
         for j in range(self._nModes):
             amp = zernike_modes_vector_amplitude[j]
-            zernike_coeff_array = np.zeros(zernike_modes_vector_amplitude.shape[0])
-            zernike_coeff_array[j] = amp
-            number_of_zernike_mode = j + 2
+            if amp == 0:
+                pass
+            else:
+                zernike_coeff_array = np.zeros(zernike_modes_vector_amplitude.shape[0])
+                zernike_coeff_array[j] = amp
+                number_of_zernike_mode = j + 2
 
-            total_mode_command = self.singleZernikeCommandTest(zernike_coeff_array,
-                                                                   self._anList,
-                                                                   number_of_zernike_mode)
-            #single_zernike_cube = self._singleZernikeModeCubeMeasurementCreator(number_of_zernike_mode)
-            single_zernike_cube = self._TESTFUCTIONFORZERNIKECUBE(number_of_zernike_mode)
-            cube_name = 'cube_mode%04d.fits' %number_of_zernike_mode
-            self._saveSingleZernikeCube(single_zernike_cube, cube_name)
+                surface_map, total_mode_command = self.singleZernikeCommandTest(zernike_coeff_array,
+                                                                                self._anList,
+                                                                                number_of_zernike_mode)
+                if self._zernikeSurfaceCube is None:
+                    self._zernikeSurfaceCube = surface_map
+                else:
+                    self._zernikeSurfaceCube = np.dstack((self._zernikeSurfaceCube, surface_map))
+                #single_zernike_cube = self._singleZernikeModeCubeMeasurementCreator(number_of_zernike_mode)
+                single_zernike_cube = self._TESTFUCTIONFORZERNIKECUBE(number_of_zernike_mode, amp)
+                cube_name = 'cube_mode%04d.fits' %number_of_zernike_mode
+                self._saveSingleZernikeCube(single_zernike_cube, cube_name)
 
-            total_mode_image = self.imageReconstructor(single_zernike_cube)
-            self.differentialPistonMeasurement(total_mode_command)
-        return self._tt, total_mode_image
+                total_mode_image = self.imageReconstructor(single_zernike_cube)
+                piston = self.differentialPistonMeasurement(total_mode_command)
+                final_total_mode_image = total_mode_image - piston
+                if self._m4ImagesCube is None:
+                    self._m4ImagesCube = final_total_mode_image
+                else:
+                    self._m4ImagesCube = np.ma.dstack((self._m4ImagesCube, final_total_mode_image))
+
+        return self._tt, self._zernikeSurfaceCube, self._m4ImagesCube
 
 
     def imageReconstructor(self, singleZernikeCube):
-        #vanno rimesse insieme (rotare e attaccare)
-        total_mode_image = 0
-        return total_mode_image
+        #vanno rimesse insieme (rotare e attaccare))
+        final_total_mode_image = np.zeros((2*self._pupilXYRadius[2], 2*self._pupilXYRadius[2]))
+        imaList = []
+        for i in range(Configuration.N_SEG):
+            total_mode_image = np.zeros((2*self._pupilXYRadius[2], 2*self._pupilXYRadius[2]))
+            seg_img = singleZernikeCube[:,:,i]
+            theta = Configuration.REFERENCE_ANGLE_RAD * i
+            theta_degrees = Configuration.REFERENCE_ANGLE_DEGREES * i
+            #r = Configuration.SEGMENT_DISTANCE_FROM_CENTRE
+            r = 100
+            seg_img_rot = ndimage.rotate(seg_img, theta_degrees + 90, reshape=False)
+
+            centerx = np.int(self._pupilXYRadius[0] + r * np.cos(theta))
+            centery = np.int(self._pupilXYRadius[1] + r * np.sin(theta))
+            segment_radius = self._segmentImaDiameter // 2
+            total_mode_image[centery - segment_radius:
+                             centery + segment_radius,
+                             centerx - segment_radius:
+                             centerx + segment_radius] = seg_img_rot
+
+            imaList.append(total_mode_image)
+            final_total_mode_image = final_total_mode_image + total_mode_image
+
+        return final_total_mode_image, imaList
 
     def _readCubes(self):
+        """Reads all the cubes present in the last generated tracking number
+        and puts them in a list.
+
+        returns:
+                cubeList = list of cubes [n_mode][pixels, pixels, segment]
+        """
         cubeList = []
         for i in range(self._nModes):
             j= i+2
@@ -86,10 +137,11 @@ class ZernikeCommand():
 
     def differentialPistonMeasurement(self, total_mode_command):
         #applico questo comando allo specchio (pos e neg) e misuro il pistone
-        pass
+        piston = 0
+        return piston
 
 
-    def _singleZernikeModeCubeMeasurementCreator(self, number_of_zernike_mode):
+    def _singleZernikeModeCubeMeasurementCreator(self, number_of_zernike_mode, amp):
         fits_file_path = os.path.join(self._storageFolder(), self._tt)
         singleZernikeCube = None
         for i in range(Configuration.N_SEG):
@@ -100,7 +152,7 @@ class ZernikeCommand():
                                          'mode%04d_measure_segment%02d_neg.h5' %(number_of_zernike_mode, i))
             negative_image = self._ic.from4D(neg_file_path)
 
-            segment_image = positive_image - negative_image / 2 # * amp
+            segment_image = positive_image - negative_image / (2 * amp)
             if singleZernikeCube is None:
                 singleZernikeCube = segment_image
             else:
@@ -108,10 +160,11 @@ class ZernikeCommand():
 
         return singleZernikeCube
 
-    def _TESTFUCTIONFORZERNIKECUBE(self, number_of_zernike_mode):
+    def _TESTFUCTIONFORZERNIKECUBE(self, number_of_zernike_mode, amp):
         fits_file_path = os.path.join(self._storageFolder(), self._tt)
         singleZernikeCube = None
-        for i in range(2):
+        #for i in range(2):
+        for i in range(Configuration.N_SEG):
             pos_file_path = os.path.join(fits_file_path,
                                          'mode%04d_measure_segment%02d_pos.fits' %(number_of_zernike_mode, i))
             positive_image = self._readImage(pos_file_path)
@@ -119,7 +172,7 @@ class ZernikeCommand():
                                          'mode%04d_measure_segment%02d_neg.fits' %(number_of_zernike_mode, i))
             negative_image = self._readImage(neg_file_path)
 
-            seg_ima = positive_image.data - negative_image.data / 2 # * amp
+            seg_ima = positive_image.data - negative_image.data / (2 * amp)
             segment_image = np.ma.masked_array(seg_ima, mask= positive_image.mask)
             if singleZernikeCube is None:
                 singleZernikeCube = segment_image
@@ -134,15 +187,26 @@ class ZernikeCommand():
 
 ###
     def singleZernikeCommandTest(self, zernike_coeff_array, an_list, number_of_zernike_mode):
-        ''' scelto un solo modo di zernike lo applico a tutti i segmenti e
-        restituisco il tt delle misure
+        ''' Chosen only one mode of Zernike I apply it to all segments and
+        I return the total mode command from the measurement.
+
+        args:
+            zernike_coeff_array = array containing the amplitude of the mode
+                            to create located in the its corresponding position
+                            exemple: np.array([z2, z3, z4....])
+            segment_number = number of the chosen segment
+            an_list = list of the 6 object an
+            number_of_zernike_mode = (int)
+
+        returns:
+                totalModeCommand = array of 5253 elements
         '''
         commandsList = []
         self._totalModeCommand = None
 
-        #for i in range(Configuration.N_SEG):
-        for i in range(2):
-            command_for_segment = self.zernikeCommandForSegment(zernike_coeff_array, i, an_list[i])
+        for i in range(Configuration.N_SEG):
+        #for i in range(2):
+            surface_map, command_for_segment = self.zernikeCommandForSegment(zernike_coeff_array, i, an_list[i])
             commandsList.append(command_for_segment)
             measure_name = 'mode%04d_measure_segment%02d' %(number_of_zernike_mode, i)
             self.applySegmentCommand(command_for_segment, measure_name, self._dove)
@@ -151,9 +215,16 @@ class ZernikeCommand():
         name = 'total_command_mode%04d.fits' %number_of_zernike_mode
         fits_file_name = os.path.join(self._dove, name)
         pyfits.writeto(fits_file_name, totalModeCommand)
-        return totalModeCommand
+        return surface_map, totalModeCommand
 
     def _saveSingleZernikeCube(self, single_zernike_cube, cube_name):
+        """ Function to save the cube of a single zernike mode. It is formed
+        with the 6 mode measurement on the  segments.
+
+        args:
+            single_zernike_cube = cube of 6 masked arrays elements
+            cube_name = fits file name for the cube
+        """
         fits_file_path = os.path.join(self._storageFolder(), self._tt)
         fits_file_name = os.path.join(fits_file_path, cube_name)
         pyfits.writeto(fits_file_name, single_zernike_cube.data)
@@ -162,6 +233,13 @@ class ZernikeCommand():
 ###
 
     def _totalCommandCreator(self, commandsList):
+        """ Use the command list to create the total command for the mirror
+        args:
+            commandsList = list of 6 elements
+
+        returns:
+            _totalModeCommand = array of 5253 elements
+        """
         for i in range(len(commandsList)):
             if self._totalModeCommand is None:
                 self._totalModeCommand = commandsList[i]
@@ -172,18 +250,34 @@ class ZernikeCommand():
         return self._totalModeCommand
 
     def zernikeCommandForSegment(self, zernike_coeff_array, segment_number, an):
-        ''' Calcola il comando del modo scelto da dare al segmento
+        ''' Calculate the command of the chosen mode to give to the segment.
+        args:
+            zernike_coeff_array = array containing the amplitude of the mode
+                            to create located in the its corresponding position
+                            exemple: np.array([z2, z3, z4....])
+            segment_number = number of the chosen segment
+            an = object analyzer
+
+        returns:
+                command_for_segment = vector of 892 element containing the
+                                segment's command
         '''
         surface_map = self._createZernikeModesOnM4(zernike_coeff_array)
-        theta, r = self._moveSegmentView(segment_number)
-        cropped_image, rotate_image, final_image = self._cropImage(theta, r, surface_map)
+        theta, theta_degrees, r = self._moveSegmentView(segment_number)
+        cropped_image, rotate_image, final_image = self._cropImage(theta, theta_degrees, r, surface_map)
         fl = Flattenig(an)
         command_for_segment = - fl.flatCommand(final_image)
-        return command_for_segment
+        return surface_map, command_for_segment
 
     def applySegmentCommand(self, command_for_segment, measure_name, dove):
         ''' Non potendo applicare il comando allo specchio e misurare il wf
         salvo elementi dal cubo di dati in /IFFunctions/20170216_123645
+
+        args:
+            command_for_segment = vector of 892 element containing the
+                                segment's command
+            measure_name = fits file name of the measure
+            dove = fits file path to save
         '''
         #applica al segmento il comando positivo e negativo
         # dm.setShape(command_for_segment)
@@ -197,7 +291,8 @@ class ZernikeCommand():
         return
 
     def _createAnalyzer(self, tt):
-        ''' Per ora crea an con il cubo di 25 misure che ho usato per i test
+        ''' Usavo il cubo di 25 misure che ho usato per i test
+            Ora sto usando 892 oggetti, ma non sono comanzi zonali (sono modi)
         '''
         #file_name = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
         #fits_file_name = os.path.join(file_name, 'Cube.fits')
@@ -205,8 +300,17 @@ class ZernikeCommand():
         return an
 
     def _createZernikeModesOnM4(self, zernike_coeff_array):
-        ''' crea una superficie circolare con il diametro in pixel dello specchio
-            ho scleto 1024x1024
+        ''' Creates the Zernike mode on a circular surface with the diameter,
+            in pixels, of the mirror
+            (I have chosen 1024x1024)
+
+            args:
+            zernike_coeff_array = array containing the amplitude of the mode
+                to create located in the its corresponding position
+                exemple: np.array([z2, z3, z4....])
+
+            returns:
+                    zernike_surface_map = surface map for the zernike mode
         '''
         zernike_surface_map = 0.0
         first_zern_mode_index = 2
@@ -220,32 +324,54 @@ class ZernikeCommand():
 
         return zernike_surface_map
 
-    def _cropImage(self, theta, r, zernike_surface_map):
-        ''' Taglia l'immagine dello zernike grande quanto m4 in un'imagine
-        512x512 centrata nel centro del semento scelto
+    def _cropImage(self, theta, theta_degrees, r, zernike_surface_map):
+        ''' Cut the image of Zernike, as big as m4 pixels dimension, into an image
+        512x512 centered in the center of the chosen segment
+
+        args:
+            theta = theta angle of the segment 
+            r = radial distance of segment's center
+            zernike_surface_map = 1024x1024 surface map for the zernike mode
+
+        returns:
+            cropped_image = image cut around the center of the segment
+            rotate_image = image rotated to obtain the standard view of
+                            the segment, corresponding to the mask used
+                            to create the object
+            final_image = image with its mask
         '''
-        centrex = np.int(self._pupilXYRadius[0] + r * np.cos(theta))
-        centrey = np.int(self._pupilXYRadius[1] + r * np.sin(theta))
+        centerx = np.int(self._pupilXYRadius[0] + r * np.cos(theta))
+        centery = np.int(self._pupilXYRadius[1] + r * np.sin(theta))
         segment_radius = self._segmentImaDiameter // 2
-        cropped_image = zernike_surface_map[centrey - segment_radius:
-                                            centrey + segment_radius,
-                                            centrex - segment_radius:
-                                            centrex + segment_radius]
-        rotate_image = ndimage.rotate(cropped_image, -theta - 90, reshape=False)
+        cropped_image = zernike_surface_map[centery - segment_radius:
+                                            centery + segment_radius,
+                                            centerx - segment_radius:
+                                            centerx + segment_radius]
+        rotate_image = ndimage.rotate(cropped_image, -theta_degrees - 90, reshape=False)
         final_image = np.ma.masked_array(rotate_image.data, mask= self._roi)
 
         return cropped_image, rotate_image, final_image
 
     def _moveSegmentView(self, segment_number):
         ''' Dovrà comandare il movimento della parabola.
-            Per ora restituisce l'angolo e il raggio del centrodel segmento scelto
+            Per ora restituisce l'angolo e il raggio del centro del segmento scelto
             '''
-        tetha = Configuration.REFERENCE_ANGLE * segment_number
+        theta = Configuration.REFERENCE_ANGLE_RAD * segment_number
+        theta_degrees = Configuration.REFERENCE_ANGLE_DEGREES * segment_number
         r = Configuration.SEGMENT_DISTANCE_FROM_CENTRE
-        return tetha, r
+        return theta, theta_degrees, r
 
 
     def _TESTIMAGETOSAVE(self, n_cube_image):
+        """ Test functions: use cube measurements saved in fold
+            to create test image to save
+
+            args:
+                n_cube_image = number of cube image to use
+
+            returns:
+                    test_image = image from the cube
+        """
         fold = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, '20170216_123645')
         cube_path = os.path.join(fold, 'CubeMeasure.fits')
         hduList = pyfits.open(cube_path)
@@ -255,6 +381,11 @@ class ZernikeCommand():
         return test_image
 
     def _saveMeasurement(self, dove, name):
+        """ Save measurement data.
+            args:
+                dove = path where to save the measurement file
+                name = measurement fits file name
+        """
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, self._measure.data)
         pyfits.append(fits_file_name, self._measure.mask.astype(int))

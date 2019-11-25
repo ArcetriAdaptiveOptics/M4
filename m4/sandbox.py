@@ -207,6 +207,22 @@ def provaZernike(seg, zernike_modes_vector_amplitude, tt_list_for_an):
     roi = r.roiGenerator(seg)
     from m4.zernike_command_test import ZernikeCommand
     zc = ZernikeCommand(roi[3], tt_list_for_an)
-    tt, total_mode_image = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
-    return zc, tt, total_mode_image
+    tt, surf_cube, image_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
+    return zc, tt, surf_cube, image_cube
+
+def provaImageReconstructor(seg):
+    from m4.utils.roi import ROI
+    r = ROI()
+    roi = r.roiGenerator(seg)
+    from m4.zernike_command_test import ZernikeCommand
+    tt = '20191125_151528'
+    zc = ZernikeCommand(roi[3], tt)
+    fold = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest'
+    zc._dove = os.path.join(fold, tt)
+    zc._nModes = 1
+    cubeList = zc._readCubes()
+    single_cube = cubeList[0]
+
+    return zc, single_cube
+
     
