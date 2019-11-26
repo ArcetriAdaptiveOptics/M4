@@ -220,7 +220,7 @@ def provaImageReconstructor(seg):
     fold = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest'
     zc._dove = os.path.join(fold, tt)
     zc._nModes = 1
-    cubeList = zc._readCubes()
+    cubeList = zc.readCubes()
     single_cube = cubeList[0]
 
     return zc, single_cube

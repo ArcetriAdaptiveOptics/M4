@@ -2,7 +2,6 @@
 @author: cs
 '''
 import numpy as np
-import math
 
 
 class Configuration():
@@ -37,9 +36,9 @@ class Configuration():
     N_ACTS_TOT = 5352
     N_ACT_SEG = 892
     M4_DOF = 6
-    REFERENCE_ANGLE_RAD = math.pi / 3
+    REFERENCE_ANGLE_RAD = np.pi / 3
     REFERENCE_ANGLE_DEGREES = 60
-    SEGMENT_DISTANCE_FROM_CENTRE = 28
+    SEGMENT_DISTANCE_FROM_CENTRE = 250
 
     #per l'applicazione
     def set_up_logger(self, file_path, logging_level):
