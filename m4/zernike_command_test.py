@@ -28,7 +28,8 @@ class ZernikeCommand():
         self._ic = InterferometerConverter()
         self._pupilXYRadius = Configuration.M4_PUPIL_XYRADIUS
         self._zg = ZernikeGenerator(2*self._pupilXYRadius[2])
-        self._segmentImaDiameter = 512
+        self._diameterInPixelForSegmentImages = 512
+        self._bigDiameter = Configuration.BIG_IMAGE_DIAMETER
         self._measure = None
         self._totalModeCommand = None
         self._anList = []
@@ -105,20 +106,19 @@ class ZernikeCommand():
                 final_total_mode_image = immagine rincollata
         """
         #vanno rimesse insieme (rotare e attaccare))
-        final_total_mode_image = np.zeros((2*self._pupilXYRadius[2], 2*self._pupilXYRadius[2]))
+        final_total_mode_image = np.zeros((self._bigDiameter, self._bigDiameter))
         imaList = []
         for i in range(Configuration.N_SEG):
-            total_mode_image = np.zeros((2*self._pupilXYRadius[2], 2*self._pupilXYRadius[2]))
+            total_mode_image = np.zeros((self._bigDiameter, self._bigDiameter))
             seg_img = singleZernikeCube[:,:,i]
             theta = Configuration.REFERENCE_ANGLE_RAD * i
             theta_degrees = Configuration.REFERENCE_ANGLE_DEGREES * i
             r = Configuration.SEGMENT_DISTANCE_FROM_CENTRE
-            #r = 250
             seg_img_rot = ndimage.rotate(seg_img, - theta_degrees + 90, reshape=False)
 
-            centerx = np.int(self._pupilXYRadius[0] + r * np.cos(theta))
-            centery = np.int(self._pupilXYRadius[1] + r * np.sin(theta))
-            segment_radius = self._segmentImaDiameter // 2
+            centerx = np.int(self._bigDiameter/2 + r * np.cos(theta))
+            centery = np.int(self._bigDiameter/2 + r * np.sin(theta))
+            segment_radius = self._diameterInPixelForSegmentImages // 2
             total_mode_image[centery - segment_radius:
                              centery + segment_radius,
                              centerx - segment_radius:
@@ -230,7 +230,12 @@ class ZernikeCommand():
         '''
         commandsList = []
         self._totalModeCommand = None
-        surface_map = self._createZernikeModesOnM4(zernike_coeff_array) 
+        surface_map = np.zeros((self._bigDiameter, self._bigDiameter))
+        surface_map_on_m4 = self._createZernikeModesOnM4(zernike_coeff_array)
+        center_big_image = int(self._bigDiameter/2)
+        raggio_zer = self._pupilXYRadius[2]
+        surface_map[center_big_image - raggio_zer:center_big_image + raggio_zer,
+                    center_big_image - raggio_zer:center_big_image + raggio_zer] = surface_map_on_m4
 
         for i in range(Configuration.N_SEG):
         #for i in range(2):
@@ -280,7 +285,7 @@ class ZernikeCommand():
     def zernikeCommandForSegment(self, surface_map, segment_number, an):
         ''' Calculate the command of the chosen mode to give to the segment.
         args:
-            surface_map = zernike mode surface map
+            surface_map = zernike mode surface map on big image
             segment_number = number of the chosen segment
             an = object analyzer
 
@@ -335,19 +340,19 @@ class ZernikeCommand():
                 exemple: np.array([z2, z3, z4....])
 
             returns:
-                    zernike_surface_map = surface map for the zernike mode
+                    zernike_surface_map_on_m4 = surface map for the zernike mode
         '''
-        zernike_surface_map = 0.0
+        zernike_surface_map_on_m4 = 0.0
         first_zern_mode_index = 2
         last_zern_mode_index = 2 + len(zernike_coeff_array)
         index_zernike_modes = np.arange(first_zern_mode_index, last_zern_mode_index)
         zd = self._zg.getZernikeDict(index_zernike_modes)
 
         for i in index_zernike_modes:
-            zernike_surface_map = zernike_surface_map + \
+            zernike_surface_map_on_m4 = zernike_surface_map_on_m4 + \
                                     zernike_coeff_array[i-2] * zd[i]
 
-        return zernike_surface_map
+        return zernike_surface_map_on_m4
 
     def _cropImage(self, theta, theta_degrees, r, zernike_surface_map):
         ''' Cut the image of Zernike, as big as m4 pixels dimension, into an image
@@ -365,14 +370,14 @@ class ZernikeCommand():
                             to create the object
             final_image = image with its mask
         '''
-        centerx = np.int(self._pupilXYRadius[0] + r * np.cos(theta))
-        centery = np.int(self._pupilXYRadius[1] + r * np.sin(theta))
-        segment_radius = self._segmentImaDiameter // 2
+        centerx = np.int(self._bigDiameter/2 + r * np.cos(theta))
+        centery = np.int(self._bigDiameter/2 + r * np.sin(theta))
+        segment_radius = self._diameterInPixelForSegmentImages // 2
         cropped_image = zernike_surface_map[centery - segment_radius:
                                             centery + segment_radius,
                                             centerx - segment_radius:
                                             centerx + segment_radius]
-        rotate_image = ndimage.rotate(cropped_image, -theta_degrees - 90, reshape=False)
+        rotate_image = ndimage.rotate(cropped_image, theta_degrees - 90, reshape=False)
         final_image = np.ma.masked_array(rotate_image.data, mask= self._roi)
 
         return cropped_image, rotate_image, final_image

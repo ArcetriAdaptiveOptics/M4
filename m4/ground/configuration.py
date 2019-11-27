@@ -38,8 +38,9 @@ class Configuration():
     M4_DOF = 6
     REFERENCE_ANGLE_RAD = np.pi / 3
     REFERENCE_ANGLE_DEGREES = 60
-    SEGMENT_DISTANCE_FROM_CENTRE = 250
-
+    SEGMENT_DISTANCE_FROM_CENTRE = 330
+    DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES = 512
+    BIG_IMAGE_DIAMETER = 1236
     #per l'applicazione
     def set_up_logger(self, file_path, logging_level):
         """ Set up logger for the application """
