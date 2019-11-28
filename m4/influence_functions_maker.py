@@ -131,7 +131,7 @@ class IFFunctionsMaker():
 
     def _testIFFunctions_createCube25fromFileFitsMeasure(self):
         """ Test function: create a measurement cube using data
-        generate whit m4 idl softaware"""
+        generate whit m4 idl software"""
         fold = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/OIM_25modes.fits'
         hduList = pyfits.open(fold)
         cube_50 = hduList[0].data

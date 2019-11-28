@@ -23,6 +23,12 @@ class Flattenig():
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                             "Flattening")
 
+    def readVMatrix(self):
+        root = Configuration.V_MATRIX_FOR_SEGMENT_ROOT
+        hduList = pyfits.open(root)
+        v_matrix = hduList[0].data
+        v_matrix_cut = v_matrix[:, 0:811]
+        return v_matrix_cut
 
     def flatCommand(self, wf):
         #comando che permette di ottenere la misura del wf dall'interferometro (wf)
@@ -35,8 +41,13 @@ class Flattenig():
                                        mask=np.ma.mask_or(wf.mask,
                                                           self._an.getMasterMask()))
         amp = -np.dot(rec, wf_masked.compressed())
-        return amp
+        v_matrix_cut = self.readVMatrix()
+        self._command = np.dot(v_matrix_cut, amp)
+        return amp, self._command
 
+    def wf_creator(self, amp):
+        wf = np.dot(amp, self._an.getInteractionMatrix())
+        return wf
 
     def flattening(self, offset):
         #misuro la posizione dello specchio (pos)

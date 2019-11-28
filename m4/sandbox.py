@@ -215,7 +215,7 @@ def provaImageReconstructor(seg):
     r = ROI()
     roi = r.roiGenerator(seg)
     from m4.zernike_command_test import ZernikeCommand
-    tt = '20191125_151528'
+    tt = '20191128_102134'
     zc = ZernikeCommand(roi[3], tt)
     fold = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest'
     zc._dove = os.path.join(fold, tt)

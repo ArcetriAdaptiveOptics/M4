@@ -67,7 +67,7 @@ def readDataFromFileFits(fits_file_path):
     return data
 
 def readImageFromRunaIFFs(fits_file_path):
-    file_name = os.path.join(Configuration.TEST_IMAGE_ROOT_FOLDER,
+    file_name = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER,
                              fits_file_path)
     hduList = pyfits.open(file_name)
     cube = hduList[0].data

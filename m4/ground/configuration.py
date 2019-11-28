@@ -22,6 +22,9 @@ class Configuration():
     IFFUNCTIONS_ROOT_FOLDER = \
         "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions"
 
+    V_MATRIX_FOR_SEGMENT_ROOT = \
+        '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170630_105105/modeMatrix.fits'
+
 
     #Interf
     LAMBA = 2

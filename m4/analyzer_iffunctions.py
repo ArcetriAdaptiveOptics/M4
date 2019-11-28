@@ -12,7 +12,6 @@ from m4.influence_functions_maker import IFFunctionsMaker
 from m4.utils.roi import ROI
 from m4.utils.img_redux import TipTiltDetrend
 from m4.ground.configuration import Configuration
-from dask.array.ufunc import imag
 
 
 class AnalyzerIFF():

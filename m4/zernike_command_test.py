@@ -239,10 +239,10 @@ class ZernikeCommand():
 
         for i in range(Configuration.N_SEG):
         #for i in range(2):
-            command_for_segment = self.zernikeCommandForSegment(surface_map, i, an_list[i])
+            amp_mode_zernike, command_for_segment = self.zernikeCommandForSegment(surface_map, i, an_list[i])
             commandsList.append(command_for_segment)
             measure_name = 'mode%04d_measure_segment%02d' %(number_of_zernike_mode, i)
-            self._applySegmentCommand(command_for_segment, measure_name, self._dove)
+            self._applySegmentCommand(amp_mode_zernike, an_list[i], measure_name, self._dove)
 
         totalModeCommand = self._totalCommandCreator(commandsList)
         name = 'total_command_mode%04d.fits' %number_of_zernike_mode
@@ -296,12 +296,12 @@ class ZernikeCommand():
         theta, theta_degrees, r = self._moveSegmentView(segment_number)
         cropped_image, rotate_image, final_image = self._cropImage(theta, theta_degrees, r, surface_map)
         fl = Flattenig(an)
-        command_for_segment = - fl.flatCommand(final_image)
-        return command_for_segment
+        amp_mode_zernike, command_for_segment = - fl.flatCommand(final_image)
+        return amp_mode_zernike, command_for_segment
 
-    def _applySegmentCommand(self, command_for_segment, measure_name, dove):
+    def _applySegmentCommand(self, command_for_segment, an, measure_name, dove):
         ''' Non potendo applicare il comando allo specchio e misurare il wf
-        salvo elementi dal cubo di dati in /IFFunctions/20170216_123645
+        salvo il plot del comando
 
         args:
             command_for_segment = vector of 892 element containing the
@@ -311,18 +311,21 @@ class ZernikeCommand():
         '''
         #applica al segmento il comando positivo e negativo
         # dm.setShape(command_for_segment)
-        self._measure = self._TESTIMAGETOSAVE(17)
+        # passo in argomento le ampiezze invece del comando così
+        #nella funzione test creo il wf sitetico
+        self._measure = self._TESTIMAGESAVEFROMCMD(command_for_segment, an)
         name = measure_name + '_pos.fits'
         self._saveMeasurement(dove, name)
         # dm.setShape(-command_for_segment)
-        self._measure = self._TESTIMAGETOSAVE(36)
+        self._measure = self._TESTIMAGESAVEFROMCMD(-command_for_segment, an)
         name = measure_name + '_neg.fits'
         self._saveMeasurement(dove, name)
         return
 
     def _createAnalyzer(self, tt):
         ''' Usavo il cubo di 25 misure che ho usato per i test
-            Ora sto usando 892 oggetti, ma non sono comanzi zonali (sono modi)
+            Poi usando 892 oggetti modi in tt = 20170216_123645
+            Ora gli 811 modi in tt = 20170630_105105
         '''
         #file_name = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
         #fits_file_name = os.path.join(file_name, 'Cube.fits')
@@ -392,7 +395,7 @@ class ZernikeCommand():
         return theta, theta_degrees, r
 
 
-    def _TESTIMAGETOSAVE(self, n_cube_image):
+    def _TESTIMAGETOSAVEFROMCUBE(self, n_cube_image):
         """ Test functions: use cube measurements saved in fold
             to create test image to save
 
@@ -409,6 +412,12 @@ class ZernikeCommand():
                                   hduList[1].data.astype(bool))
         test_image = cube[:,:,n_cube_image]
         return test_image
+
+    def _TESTIMAGESAVEFROMCMD(self, amp_mode_zernike, an):
+        int_mat = an.getInteractionMatrix()
+        wf = np.dot(amp_mode_zernike, int_mat)
+        #wf_image = np.ma.masked_array(wf.data, mask=self._roi)
+        return wf
 
     def _saveMeasurement(self, dove, name):
         """ Save measurement data.
