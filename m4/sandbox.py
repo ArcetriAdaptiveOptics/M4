@@ -201,6 +201,7 @@ def immaginiDaIFFRuna():
     #m4 = object_from_fits_file_name.readImageFromRunaIFFs(doveM4)
     return seg
 
+# Per fare la tt list sto usando sempre tt = '20170630_105105'
 def provaZernike(seg, zernike_modes_vector_amplitude, tt_list_for_an):
     from m4.utils.roi import ROI
     r = ROI()
@@ -210,19 +211,56 @@ def provaZernike(seg, zernike_modes_vector_amplitude, tt_list_for_an):
     tt, surf_cube, image_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
     return zc, tt, surf_cube, image_cube
 
+def saveResults(surf_cube, image_cube, tt):
+    zc_path = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest'
+    dove = os.path.join(zc_path, tt)
+
+    fits_file_name = os.path.join(dove, 'surfCube.fits')
+    pyfits.writeto(fits_file_name, surf_cube)
+    fits_file_name = os.path.join(dove, 'm4ImageCube.fits')
+    pyfits.writeto(fits_file_name, image_cube.data)
+    pyfits.append(fits_file_name, image_cube.mask.astype(int))
+    return
+
+def readResults(tt):
+    zc_path = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest'
+    dove = os.path.join(zc_path, tt)
+
+    fits_file_name = os.path.join(dove, 'surfCube.fits')
+    hduList = pyfits.open(fits_file_name)
+    surf_cube = hduList[0].data
+    fits_file_name = os.path.join(dove, 'm4ImageCube.fits')
+    hduList = pyfits.open(fits_file_name)
+    image_cube = np.ma.masked_array(hduList[0].data,
+                              hduList[1].data.astype(bool))
+    return surf_cube, image_cube
+
+def provaConfronto(surf_cube, image_cube):
+    diff_list = []
+    rms_list = []
+    a=image_cube[0][2].shape
+    for i in range(a[0]):
+        diff = image_cube[:,:,i] - surf_cube[:,:,i]
+        rms = diff.std()
+        diff_list.append(diff)
+        rms_list.append(rms)
+    rms = np.array(rms_list)
+    return diff_list, rms
+
 def provaImageReconstructor(seg):
     from m4.utils.roi import ROI
     r = ROI()
     roi = r.roiGenerator(seg)
     from m4.zernike_command_test import ZernikeCommand
-    tt = '20191128_102134'
-    zc = ZernikeCommand(roi[3], tt)
+    tt_1modo = '20191129_123529'
+    tt_2modi = '20191129_130448'
+    tt_3modi = '20191129_150243'
+    zc = ZernikeCommand(roi[3], tt_2modi)
     fold = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest'
-    zc._dove = os.path.join(fold, tt)
-    zc._nModes = 1
+    zc._dove = os.path.join(fold, tt_2modi)
+    zc._nModes = 3
     cubeList = zc.readCubes()
-    single_cube = cubeList[0]
 
-    return zc, single_cube
+    return zc, cubeList
 
     

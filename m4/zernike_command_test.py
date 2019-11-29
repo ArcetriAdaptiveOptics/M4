@@ -142,10 +142,13 @@ class ZernikeCommand():
             dove = os.path.join(self._storageFolder(), tt)
 
         cubeList = []
-        for i in range(self._nModes):
-            j= i+2
-            cube_name = 'cube_mode%04d.fits' %j
-            fits_file_name = os.path.join(dove, cube_name)
+        list= os.listdir(dove)
+        list.sort()
+        cube_name = list[0:2]
+        for i in range(len(cube_name)):
+            #j= i+2
+            #cube_name = 'cube_mode%04d.fits' %j
+            fits_file_name = os.path.join(dove, cube_name[i])
             hduList = pyfits.open(fits_file_name)
             cube = np.ma.masked_array(hduList[0].data,
                                       hduList[1].data.astype(bool))
@@ -239,10 +242,10 @@ class ZernikeCommand():
 
         for i in range(Configuration.N_SEG):
         #for i in range(2):
-            amp_mode_zernike, command_for_segment = self.zernikeCommandForSegment(surface_map, i, an_list[i])
+            command_for_segment = self.zernikeCommandForSegment(surface_map, i, an_list[i])
             commandsList.append(command_for_segment)
             measure_name = 'mode%04d_measure_segment%02d' %(number_of_zernike_mode, i)
-            self._applySegmentCommand(amp_mode_zernike, an_list[i], measure_name, self._dove)
+            self._applySegmentCommand(command_for_segment, an_list[i], measure_name, self._dove)
 
         totalModeCommand = self._totalCommandCreator(commandsList)
         name = 'total_command_mode%04d.fits' %number_of_zernike_mode
@@ -296,8 +299,8 @@ class ZernikeCommand():
         theta, theta_degrees, r = self._moveSegmentView(segment_number)
         cropped_image, rotate_image, final_image = self._cropImage(theta, theta_degrees, r, surface_map)
         fl = Flattenig(an)
-        amp_mode_zernike, command_for_segment = - fl.flatCommand(final_image)
-        return amp_mode_zernike, command_for_segment
+        command_for_segment = - fl.flatCommand(final_image)
+        return command_for_segment
 
     def _applySegmentCommand(self, command_for_segment, an, measure_name, dove):
         ''' Non potendo applicare il comando allo specchio e misurare il wf
@@ -413,10 +416,9 @@ class ZernikeCommand():
         test_image = cube[:,:,n_cube_image]
         return test_image
 
-    def _TESTIMAGESAVEFROMCMD(self, amp_mode_zernike, an):
-        int_mat = an.getInteractionMatrix()
-        wf = np.dot(amp_mode_zernike, int_mat)
-        #wf_image = np.ma.masked_array(wf.data, mask=self._roi)
+    def _TESTIMAGESAVEFROMCMD(self, segment_command, an):
+        fl = Flattenig(an)
+        wf = fl.sinteticWfCreator(self._roi, segment_command)
         return wf
 
     def _saveMeasurement(self, dove, name):

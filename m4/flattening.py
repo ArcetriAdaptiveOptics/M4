@@ -43,11 +43,20 @@ class Flattenig():
         amp = -np.dot(rec, wf_masked.compressed())
         v_matrix_cut = self.readVMatrix()
         self._command = np.dot(v_matrix_cut, amp)
-        return amp, self._command
+        return self._command
 
-    def wf_creator(self, amp):
-        wf = np.dot(amp, self._an.getInteractionMatrix())
-        return wf
+    def sinteticWfCreator(self, wf_mask, command):
+        v_matrix_cut = self.readVMatrix()
+        v_pinv = np.linalg.pinv(v_matrix_cut)
+        amp = np.dot(v_pinv, command)
+        sintetic_wf = np.dot(self._an.getInteractionMatrix(), amp)
+
+        mm = np.ma.mask_or(wf_mask, self._an.getMasterMask())
+        final_wf_data = np.zeros((Configuration.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES,
+                             Configuration.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES))
+        final_wf_data[np.where(mm==False)]= sintetic_wf
+        final_wf = np.ma.masked_array(final_wf_data, mask=mm)
+        return final_wf
 
     def flattening(self, offset):
         #misuro la posizione dello specchio (pos)
