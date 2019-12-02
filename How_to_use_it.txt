@@ -33,9 +33,14 @@
   	   * an è definito tramite le IFF scelte e può essere usato per lo spianemento
   	   
   	   
-  	 - Spianamento
+• Spianamento
   	 
   	   PROCEDIMENTO:
+  	   from m4.analyzer_iffunctions import AnalyzerIFF
+  	   an = AnalyzerIFF.loadInfoFromTtFolder(fileName)
+  	   from m4.flattening import Flattenig
+  	   fl = Flattening(an)
+  	   cmd = fl.flatCommand(wf)
   	   
   	   RISULTATI:
   	   
@@ -65,9 +70,28 @@
 	  
 	  RISULTATI:
 	  
+	 
+
 	  
+• Ricostruzione degli zernike su tutto m4
+
+	  PROCEDIMENTO:
+	  from m4 import sandbox
+	  seg = sandbox.immaginiDaIFFRuna()
+	  from m4.utils.roi import ROI
+      r = ROI()
+	  roi = r.roiGenerator(seg)
+	  from m4.zernike_command_test import ZernikeCommand
+      zc = ZernikeCommand(roi[3], tt_list_for_an)
+      tt, surf_cube, image_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
+      		
 	  
-	  
-	
+	  RISULTATI:	  
+	  * .../ZernikeCommandTest/tt contiene
+	  tutte le misure effettuate (mode000i_measure_segment0i_neg(pos).fits),
+	  il comando totale relativo al modo (total_command_mode0002.fits),
+	  il cubo del modo, cioè le immagini dei 6 segmenti, (cube_mode0004.fits)
+	  il cubo delle superficie di zernike usate (surfCube.fits),
+	  il cubo delle immagini totali su m4 (m4ImageCube.fits).
 	
 	

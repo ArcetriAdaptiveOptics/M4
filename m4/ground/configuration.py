@@ -22,9 +22,11 @@ class Configuration():
     IFFUNCTIONS_ROOT_FOLDER = \
         "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions"
 
-    V_MATRIX_FOR_SEGMENT_ROOT = \
+    V_MATRIX_FOR_SEGMENT_ROOT_811= \
         '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170630_105105/modeMatrix.fits'
 
+    V_MATRIX_FOR_SEGMENT_ROOT_892= \
+        '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170216_123645/modeMatrix.fits'
 
     #Interf
     LAMBA = 2
@@ -44,6 +46,7 @@ class Configuration():
     SEGMENT_DISTANCE_FROM_CENTRE = 300
     DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES = 512
     BIG_IMAGE_DIAMETER = 1236
+
     #per l'applicazione
     def set_up_logger(self, file_path, logging_level):
         """ Set up logger for the application """

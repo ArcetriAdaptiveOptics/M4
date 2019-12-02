@@ -212,6 +212,7 @@ def provaZernike(seg, zernike_modes_vector_amplitude, tt_list_for_an):
     return zc, tt, surf_cube, image_cube
 
 def saveResults(surf_cube, image_cube, tt):
+    #l'ho messo nel codice
     zc_path = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest'
     dove = os.path.join(zc_path, tt)
 
@@ -223,6 +224,7 @@ def saveResults(surf_cube, image_cube, tt):
     return
 
 def readResults(tt):
+    #anche questo nel codice
     zc_path = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest'
     dove = os.path.join(zc_path, tt)
 
