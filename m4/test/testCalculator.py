@@ -4,6 +4,7 @@
 
 import unittest
 import numpy as np
+from m4.ground import object_from_fits_file_name 
 
 class TestCalc(unittest.TestCase):
     '''
@@ -102,3 +103,21 @@ class TestCalc(unittest.TestCase):
         else:
             result = False
         self.assertEqual(result, True, "Ohno")
+
+
+    def test_zernike_command_on_M4(self):
+        doveSeg = '20170216_123645/mode_0197.fits'
+        seg = object_from_fits_file_name.readImageFromRunaIFFs(doveSeg)
+
+        zernike_modes_vector_amplitude = np.array([0, 0, 30])
+        tt = '20170630_105105'
+        tt_list_for_an= [] 
+        for i in range(6):
+            tt_list_for_an.append(tt)
+
+        from m4.utils.roi import ROI
+        r = ROI()
+        roi = r.roiGenerator(seg)
+        from m4.zernike_command_test import ZernikeCommand
+        zc = ZernikeCommand(roi[3], tt_list_for_an)
+        tt, surf_cube, image_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
