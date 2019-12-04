@@ -208,10 +208,10 @@ def provaZernike(seg, zernike_modes_vector_amplitude, tt_list_for_an):
     roi = r.roiGenerator(seg)
     from m4.zernike_command_test import ZernikeCommand
     zc = ZernikeCommand(roi[3], tt_list_for_an)
-    tt, surf_cube, image_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
-    return zc, tt, surf_cube, image_cube
+    tt, surf_cube, m4_images_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
+    return zc, tt, surf_cube, m4_images_cube
 
-def saveResults(surf_cube, image_cube, tt):
+def saveResults(surf_cube, m4_images_cube, tt):
     #l'ho messo nel codice
     zc_path = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest'
     dove = os.path.join(zc_path, tt)
@@ -219,8 +219,8 @@ def saveResults(surf_cube, image_cube, tt):
     fits_file_name = os.path.join(dove, 'surfCube.fits')
     pyfits.writeto(fits_file_name, surf_cube)
     fits_file_name = os.path.join(dove, 'm4ImageCube.fits')
-    pyfits.writeto(fits_file_name, image_cube.data)
-    pyfits.append(fits_file_name, image_cube.mask.astype(int))
+    pyfits.writeto(fits_file_name, m4_images_cube.data)
+    pyfits.append(fits_file_name, m4_images_cube.mask.astype(int))
     return
 
 def readResults(tt):
@@ -233,16 +233,16 @@ def readResults(tt):
     surf_cube = hduList[0].data
     fits_file_name = os.path.join(dove, 'm4ImageCube.fits')
     hduList = pyfits.open(fits_file_name)
-    image_cube = np.ma.masked_array(hduList[0].data,
+    m4_images_cube = np.ma.masked_array(hduList[0].data,
                               hduList[1].data.astype(bool))
-    return surf_cube, image_cube
+    return surf_cube, m4_images_cube
 
-def provaConfronto(surf_cube, image_cube):
+def provaConfronto(surf_cube, m4_images_cube):
     diff_list = []
     rms_list = []
-    a=image_cube[0][2].shape
+    a=m4_images_cube[0][2].shape
     for i in range(a[0]):
-        diff = image_cube[:,:,i] - surf_cube[:,:,i]
+        diff = m4_images_cube[:,:,i] - surf_cube[:,:,i]
         rms = diff.std()
         diff_list.append(diff)
         rms_list.append(rms)

@@ -120,4 +120,4 @@ class TestCalc(unittest.TestCase):
         roi = r.roiGenerator(seg)
         from m4.zernike_command_test import ZernikeCommand
         zc = ZernikeCommand(roi[3], tt_list_for_an)
-        tt, surf_cube, image_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
+        tt, surf_cube, m4_images_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)

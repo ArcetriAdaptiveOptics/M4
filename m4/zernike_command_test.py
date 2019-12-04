@@ -114,6 +114,18 @@ class ZernikeCommand():
         self._m4ImagesCube = hduList[0].data
         return self._zernikeSurfaceCube, self._m4ImagesCube
 
+    def analyzerResults(self, tt):
+        surf_cube, m4_images_cube = self.readSurfM4ImageCubes(tt)
+        diff_list = []
+        rms_list = []
+        a = m4_images_cube[0][2].shape
+        for i in range(a[0]):
+            diff = m4_images_cube[: , :, i] - surf_cube[:, :, i]
+            rms = diff.std()
+            diff_list.append(diff)
+            rms_list.append(rms)
+        rms = np.array(rms_list)
+        return diff_list, rms
 
 
     def imageReconstructor(self, singleZernikeCube):
