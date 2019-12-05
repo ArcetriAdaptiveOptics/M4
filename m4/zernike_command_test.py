@@ -88,19 +88,20 @@ class ZernikeCommand():
                 cube_name = 'cube_mode%04d.fits' %number_of_zernike_mode
                 self._saveSingleZernikeCube(single_zernike_cube, cube_name)
 
-                total_mode_image, imaList = self.imageReconstructor(single_zernike_cube)
+                total_mode_image = self.imageReconstructor(single_zernike_cube)
                 piston = self._differentialPistonMeasurement(total_mode_command)
                 final_total_mode_image = total_mode_image - piston
                 if self._m4ImagesCube is None:
                     self._m4ImagesCube = final_total_mode_image
                 else:
-                    self._m4ImagesCube = np.dstack((self._m4ImagesCube, final_total_mode_image))
+                    self._m4ImagesCube = np.ma.dstack((self._m4ImagesCube, final_total_mode_image))
 
 
         fits_file_name = os.path.join(self._dove, 'surfCube.fits')
         pyfits.writeto(fits_file_name, self._zernikeSurfaceCube)
         fits_file_name = os.path.join(self._dove, 'm4ImageCube.fits')
-        pyfits.writeto(fits_file_name, self._m4ImagesCube)
+        pyfits.writeto(fits_file_name, self._m4ImagesCube.data)
+        pyfits.append(fits_file_name, self._m4ImagesCube.mask.astype(int))
         return self._tt, self._zernikeSurfaceCube, self._m4ImagesCube
 
     def readSurfM4ImageCubes(self, tt):
@@ -140,14 +141,19 @@ class ZernikeCommand():
         """
         #vanno rimesse insieme (rotare e attaccare))
         final_total_mode_image = np.zeros((self._bigDiameter, self._bigDiameter))
+        final_total_mask = np.ones((self._bigDiameter, self._bigDiameter))
         imaList = []
+        maskList = []
         for i in range(Configuration.N_SEG):
             total_mode_image = np.zeros((self._bigDiameter, self._bigDiameter))
+            total_image_masks = np.ones((self._bigDiameter, self._bigDiameter))
             seg_img = singleZernikeCube[:, :, i]
+            seg_mask = singleZernikeCube[:, :, i].mask.astype(int)
             theta = Configuration.REFERENCE_ANGLE_RAD * i
             theta_degrees = Configuration.REFERENCE_ANGLE_DEGREES * i
             r = Configuration.SEGMENT_DISTANCE_FROM_CENTRE
             seg_img_rot = ndimage.rotate(seg_img, - theta_degrees + 90, reshape=False)
+            seg_mask_rot = ndimage.rotate(seg_mask, - theta_degrees + 90, reshape=False, cval=1)
 
             centerx = np.int(self._bigDiameter/2 + r * np.cos(theta))
             centery = np.int(self._bigDiameter/2 + r * np.sin(theta))
@@ -157,10 +163,22 @@ class ZernikeCommand():
                              centerx - segment_radius:
                              centerx + segment_radius] = seg_img_rot
 
+            total_image_masks[centery - segment_radius:
+                             centery + segment_radius,
+                             centerx - segment_radius:
+                             centerx + segment_radius] = seg_mask_rot
+
             imaList.append(total_mode_image)
             final_total_mode_image = final_total_mode_image + total_mode_image
+            final_total_mask = final_total_mask + total_image_masks
+            maskList.append(total_image_masks)
 
-        return final_total_mode_image, imaList
+        mask = np.zeros(final_total_mask.shape, dtype=np.bool)
+        mask[np.where(final_total_mask == final_total_mask.max())] = 1
+
+        true_final_image = np.ma.masked_array(final_total_mode_image, mask=mask)
+
+        return true_final_image
 
     def readCubes(self, tt=None):
         """Reads all the cubes present in the last generated tracking number

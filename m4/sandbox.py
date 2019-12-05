@@ -265,4 +265,10 @@ def provaImageReconstructor(seg):
 
     return zc, cubeList
 
-    
+def bordino(seg):
+    giu = np.roll(seg.mask, -28, 0)
+    diff = seg.mask.astype(int)-giu.astype(int)
+
+    pp = np.zeros((512,512))
+    pp[np.where(diff==-1)]= 1
+    return pp.astype(bool)

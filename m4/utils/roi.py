@@ -4,6 +4,7 @@
 
 import logging
 import numpy as np
+import skimage
 from scipy import ndimage as ndi
 
 
@@ -44,3 +45,9 @@ class ROI():
             final_roi = np.ma.mask_or(np.invert(maski), ima.mask)
             roiList.append(final_roi)
         return roiList
+
+    def create_circular_mask(self, center_y, center_x, radius, shape):
+        mask = np.ones((512, 512), dtype= bool)
+        rr, cc = skimage.draw.circle(center_y, center_x, radius, shape)
+        mask[rr,cc] = 0
+        return mask
