@@ -6,6 +6,7 @@ import os
 import logging
 import numpy as np
 import pyfits
+from m4.utils.roi import ROI
 from m4.ground.configuration import Configuration
 from m4.ground.tracking_number_folder import TtFolder
 from m4.utils.img_redux import TipTiltDetrend
@@ -23,6 +24,7 @@ class Flattenig():
         self._logger = logging.getLogger('FLATTENING:')
         self._an = analyzerIFFunctions
         self._who = self._an._who
+        self._roi = ROI()
         self._command = None
         self._flatteningWf = None
 
@@ -50,11 +52,16 @@ class Flattenig():
         the wf considered
         """
         self._logger.info('Calculation of the flat command')
-        self._an.setDetectorMask(wf.mask | self._an.getMasterMask())
+        circular_mask = self._roi.circularMaskForSegmentCreator()
+        mask_no_edge_actuators = np.ma.mask_or(wf.mask, circular_mask)
+
+        normal_mask = np.ma.mask_or(wf.mask, self._an.getMasterMask())
+        super_mask = np.ma.mask_or(mask_no_edge_actuators, self._an.getMasterMask())
+        wf_masked = np.ma.masked_array(wf.data, mask=super_mask)
+
+        self._an.setDetectorMask(wf_masked.mask | self._an.getMasterMask())
         rec = self._an.getReconstructor()
-        wf_masked = np.ma.masked_array(wf.data,
-                                       mask=np.ma.mask_or(wf.mask,
-                                                          self._an.getMasterMask()))
+
         amp = -np.dot(rec, wf_masked.compressed())
         v_matrix_cut = self.readVMatrix()
         self._command = np.dot(v_matrix_cut, amp)

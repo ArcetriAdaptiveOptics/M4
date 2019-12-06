@@ -28,9 +28,9 @@ class ZernikeCommand():
         self._roi = segment_roi
         self._ttListForAn = tt_list_for_an
         self._ic = InterferometerConverter()
-        self._pupilXYRadius = Configuration.M4_PUPIL_XYRADIUS
+        self._pupilXYRadius = Configuration.M4_MECHANICAL_PUPIL_XYRADIUS
         self._zg = ZernikeGenerator(2*self._pupilXYRadius[2])
-        self._diameterInPixelForSegmentImages = 512
+        self._diameterInPixelForSegmentImages = Configuration.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES
         self._bigDiameter = Configuration.BIG_IMAGE_DIAMETER
         self._measure = None
         self._totalModeCommand = None
