@@ -16,6 +16,6 @@ setup(name='m4',
       packages=['m4',
                 'm4.utils'],
       install_requires=["numpy",
-                        "pyfits"],
+                        "astropy"],
       test_suite='test',
       )

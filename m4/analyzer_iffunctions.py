@@ -5,7 +5,7 @@
 import os
 import logging
 import h5py
-import pyfits
+from astropy.io import fits as pyfits
 import numpy as np
 #from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influence_functions_maker import IFFunctionsMaker

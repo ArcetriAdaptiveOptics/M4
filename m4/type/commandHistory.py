@@ -4,7 +4,7 @@
 import os
 import copy
 import logging
-import pyfits
+from astropy.io import fits as pyfits
 import h5py
 import numpy as np
 from m4.ground import tracking_number_folder

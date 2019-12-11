@@ -2,7 +2,7 @@
 @author: cs
 '''
 
-import pyfits
+from astropy.io import fits as pyfits
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import ion

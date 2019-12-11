@@ -3,7 +3,7 @@
 '''
 
 import os
-import pyfits
+from astropy.io import fits as pyfits
 import h5py
 import numpy as np
 from m4.ground.configuration import Configuration

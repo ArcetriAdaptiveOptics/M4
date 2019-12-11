@@ -5,7 +5,7 @@
 import os
 import logging
 import numpy as np
-import pyfits
+from astropy.io import fits as pyfits
 from m4.utils.roi import ROI
 from m4.ground.configuration import Configuration
 from m4.ground.tracking_number_folder import TtFolder

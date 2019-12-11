@@ -4,7 +4,7 @@
 
 import os
 import logging
-import pyfits
+from astropy.io import fits as pyfits
 import numpy as np
 from m4.ground.configuration import Configuration
 from m4.utils.zernike_on_m_4 import ZernikeOnM4

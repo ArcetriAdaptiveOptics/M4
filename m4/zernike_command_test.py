@@ -6,7 +6,7 @@ import os
 import logging
 from scipy import ndimage
 import numpy as np
-import pyfits
+from astropy.io import fits as pyfits
 from m4.ground.configuration import Configuration
 from m4.ground.zernikeGenerator import ZernikeGenerator
 from m4.flattening import Flattenig

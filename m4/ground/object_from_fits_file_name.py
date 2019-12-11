@@ -2,7 +2,7 @@
 @author: cs
 '''
 import os
-import pyfits
+from astropy.io import fits as pyfits
 import numpy as np
 from m4.type.modalAmplitude import ModalAmplitude
 from m4.type.modalBase import ModalBase
