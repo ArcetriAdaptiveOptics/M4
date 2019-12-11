@@ -8,25 +8,39 @@ class Configuration():
     '''
     Constants of system configuration
     '''
-    #ROOT
-    LOG_ROOT_FOLDER = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice'
+    #ROOT IN MY PERSONAL PC
+#     LOG_ROOT_FOLDER = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice'
+# 
+#     M4COORDINATE_ROOT_FOLDER = \
+#         '/Users/rm/Desktop/Arcetri/M4/ActuatorCoordinates.fits'
+# 
+#     CALIBRATION_ROOT_FOLDER = "/Users/rm/Desktop/Arcetri/M4/ProvaCodice"
+# 
+#     TEST_IMAGE_ROOT_FOLDER = \
+#         "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova"
+# 
+#     IFFUNCTIONS_ROOT_FOLDER = \
+#         "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions"
+# 
+#     V_MATRIX_FOR_SEGMENT_ROOT_811= \
+#         '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170630_105105/modeMatrix.fits'
+# 
+#     V_MATRIX_FOR_SEGMENT_ROOT_892= \
+#         '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170216_123645/modeMatrix.fits'
+
+    #ROOT IN M4 PC
+    CALIBRATION_ROOT_FOLDER = '/mnt/shared/M4Data/OPTData'
+
+    LOG_ROOT_FOLDER = '/mnt/shared/M4Data/LOGData/mylog'
 
     M4COORDINATE_ROOT_FOLDER = \
-        '/Users/rm/Desktop/Arcetri/M4/ActuatorCoordinates.fits'
-
-    CALIBRATION_ROOT_FOLDER = "/Users/rm/Desktop/Arcetri/M4/ProvaCodice"
-
-    TEST_IMAGE_ROOT_FOLDER = \
-        "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova"
-
-    IFFUNCTIONS_ROOT_FOLDER = \
-        "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions"
+        '/mnt/shared/M4Data/CONFData/20191210_144400/ActuatorCoordinates.fits'
 
     V_MATRIX_FOR_SEGMENT_ROOT_811= \
-        '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170630_105105/modeMatrix.fits'
+        '/mnt/shared/M4Data/CONFData/20191210_144400/ff_v_matrix.fits'
 
-    V_MATRIX_FOR_SEGMENT_ROOT_892= \
-        '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170216_123645/modeMatrix.fits'
+    IFFUNCTIONS_ROOT_FOLDER = \
+        '/mnt/shared/M4Data/OPTData/IFFunctions'
 
     #Interf
     LAMBA = 2
