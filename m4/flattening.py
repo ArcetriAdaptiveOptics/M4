@@ -76,11 +76,14 @@ class Flattenig():
         amp = np.dot(v_pinv, command)
         sintetic_wf = np.dot(self._an.getInteractionMatrix(), amp)
 
-        mm = np.ma.mask_or(wf_mask, self._an.getMasterMask())
+        circular_mask = self._roi.circularMaskForSegmentCreator()
+        mask_no_edge_actuators = np.ma.mask_or(wf_mask, circular_mask)
+        normal_mm = np.ma.mask_or(wf_mask, self._an.getMasterMask())
+        super_mm = np.ma.mask_or(mask_no_edge_actuators, self._an.getMasterMask())
         final_wf_data = np.zeros((Configuration.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES,
                                   Configuration.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES))
-        final_wf_data[np.where(mm == False)] = sintetic_wf
-        final_wf = np.ma.masked_array(final_wf_data, mask=mm)
+        final_wf_data[np.where(super_mm == False)] = sintetic_wf
+        final_wf = np.ma.masked_array(final_wf_data, mask=super_mm)
         return final_wf
 
     def flattening(self, offset):

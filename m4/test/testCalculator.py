@@ -111,7 +111,7 @@ class TestCalc(unittest.TestCase):
 
         zernike_modes_vector_amplitude = np.array([0, 0, 30])
         tt = '20170630_105105'
-        tt_list_for_an= [] 
+        tt_list_for_an= []
         for i in range(6):
             tt_list_for_an.append(tt)
 

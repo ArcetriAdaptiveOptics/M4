@@ -37,8 +37,8 @@ class Configuration():
     RM_DOF = 2
     PIXEL_SCALE = 360.5 #PIXEL/METRI
     #DM
-    M4_MECHANICAL_PUPIL_XYRADIUS = np.array([483, 483, 483]) #np.array([512, 512, 512])
-    M4_OPTICAL_DIAMETER = 856
+    M4_MECHANICAL_PUPIL_XYRADIUS = np.array([458, 458, 458]) #np.array([512, 512, 512])
+    M4_OPTICAL_DIAMETER = 858
     N_SEG = 6
     N_ACTS_TOT = 5352
     N_ACT_SEG = 892

@@ -380,8 +380,9 @@ class AnalyzerIFF():
         self._analysisMask = self.getMasterMask()
 
     def setDetectorMask(self, mask_from_ima):
-        self._analysisMask = mask_from_ima
+        self._analysisMask = None
         self._rec = None
+        self._analysisMask = mask_from_ima
 
     def getAnalysisMask(self):
         return self._analysisMask
