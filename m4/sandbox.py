@@ -115,9 +115,10 @@ def testIFF_tidyMeasureCreator(device, cmd_matrix_tag, mode_vect_tag,
 def testIFF_an(tt, ttD=None):
     from m4.analyzer_iffunctions import AnalyzerIFF
     file_name = os.path.join \
-                ("/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions", tt)
+                (Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
     an = AnalyzerIFF.loadTestMeasureFromFits(file_name)
     cube = an.createCube(ttD)
+    an.saveCubeAsFits('Cube.fits')
     int_mat = an.getInteractionMatrix()
     rec = an.getReconstructor()
     prod = np.dot(rec, int_mat)

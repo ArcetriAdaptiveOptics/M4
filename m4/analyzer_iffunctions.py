@@ -245,8 +245,7 @@ class AnalyzerIFF():
                             example 'Cube.fits'
         """
         tt = self._ttData()
-        dove = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
-                            'IFFunctions', tt)
+        dove = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
         fits_file_name = os.path.join(dove, cube_name)
         header = pyfits.Header()
         header['NPUSHPUL'] = self._nPushPull
@@ -263,8 +262,7 @@ class AnalyzerIFF():
                             example 'Cube.h5'
         """
         tt = self._ttData()
-        dove = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
-                            'IFFunctions', tt)
+        dove = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
         fits_file_name = os.path.join(dove, cube_name)
         hf = h5py.File(fits_file_name, 'w')
         hf.create_dataset('dataset_1', data=self._cube.data)
@@ -338,7 +336,7 @@ class AnalyzerIFF():
         """
         Creates the AnalyzerIFF object using specific informations
         """
-        dove = os.path.join("/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions", tt)
+        dove = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
         fits_file_name = os.path.join(dove, 'misure.fits')
         header = pyfits.getheader(fits_file_name)
         hduList = pyfits.open(fits_file_name)
@@ -363,7 +361,7 @@ class AnalyzerIFF():
 
     @staticmethod
     def loadCubeFromIFFMeasureToCreateAn(tt):
-        dove = os.path.join("/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions", tt)
+        dove = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
         fits_file_name = os.path.join(dove, 'CubeMeasure.fits')
         hduList = pyfits.open(fits_file_name)
         theObject = AnalyzerIFF()

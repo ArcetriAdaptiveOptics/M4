@@ -76,24 +76,41 @@ class opt_alignment():
     def _testAlignment_loadMeasureFromFileFits(self, test):
         """ Test function """
         if test == 0:
-            imgf = obj.readImageFromFitsFileName('Allineamento/20191007_134908/img.fits')
-            imgt = obj.readImageFromFitsFileName('Allineamento/20191007_135037/img.fits')
+            # my pc
+#             imgf = obj.readImageFromFitsFileName('Immagini_prova/Allineamento/20191007_134908/img.fits')
+#             imgt = obj.readImageFromFitsFileName('Immagini_prova/Allineamento/20191007_135037/img.fits')
+            # m4 pc
+            imgf = obj.readImageFromFitsFileName('TestData/Allineamento/20191007_134908/img.fits')
+            imgt = obj.readImageFromFitsFileName('TestData/Allineamento/20191007_135037/img.fits')
             return imgf, imgt
         elif test == 1:
-            img = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
+            # my pc
+#             img = obj.readImageFromFitsFileName('Immagini_prova/Allineamento/20191001_081344/img.fits')
+            # m4 pc
+            img = obj.readImageFromFitsFileName('TestData/Allineamento/20191001_081344/img.fits')
             return img
 
     def _testAlignment_loadInfoPositionFromFileFits(self, test):
         """ Test function """
         if test == 0:
-            parf = obj.readDataFromFileFits('Allineamento/20191007_134908/parpos.fits')
-            rmf = obj.readDataFromFileFits('Allineamento/20191007_134908/rflatpos.fits')
-            part = obj.readDataFromFileFits('Allineamento/20191007_135037/parpos.fits')
-            rmt = obj.readDataFromFileFits('Allineamento/20191007_135037/rflatpos.fits')
+            # my pc
+#             parf = obj.readDataFromFileFits('Immagini_prova/Allineamento/20191007_134908/parpos.fits')
+#             rmf = obj.readDataFromFileFits('Immagini_prova/Allineamento/20191007_134908/rflatpos.fits')
+#             part = obj.readDataFromFileFits('Immagini_prova/Allineamento/20191007_135037/parpos.fits')
+#             rmt = obj.readDataFromFileFits('Immagini_prova/Allineamento/20191007_135037/rflatpos.fits')
+            # m4 pc
+            parf = obj.readDataFromFileFits('TestData/Allineamento/20191007_134908/parpos.fits')
+            rmf = obj.readDataFromFileFits('TestData/Allineamento/20191007_134908/rflatpos.fits')
+            part = obj.readDataFromFileFits('TestData/Allineamento/20191007_135037/parpos.fits')
+            rmt = obj.readDataFromFileFits('TestData/Allineamento/20191007_135037/rflatpos.fits')
             return parf, rmf, part, rmt
         elif test == 1:
-            par = obj.readDataFromFileFits('Allineamento/20191001_081344/parpos.fits')
-            rm = obj.readDataFromFileFits('Allineamento/20191001_081344/rflatpos.fits')
+            # my pc
+#             par = obj.readDataFromFileFits('Immagini_prova/Allineamento/20191001_081344/parpos.fits')
+#             rm = obj.readDataFromFileFits('Immagini_prova/Allineamento/20191001_081344/rflatpos.fits')
+            # m4 pc
+            par = obj.readDataFromFileFits('TestData/Allineamento/20191001_081344/parpos.fits')
+            rm = obj.readDataFromFileFits('TestData/Allineamento/20191001_081344/rflatpos.fits')
             return par, rm
 
     def _commandGenerator(self, img):

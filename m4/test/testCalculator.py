@@ -10,6 +10,9 @@ class TestCalc(unittest.TestCase):
     '''
     Contiene funzioni di test che utilizzano i dati presenti in
     /Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova
+    
+    Oppure 
+    /mnt/shared/M4Data/OPTData/TestData
     '''
 
     def test_iffunctionsmaker_1(self):
@@ -71,7 +74,11 @@ class TestCalc(unittest.TestCase):
         """test basato sui dati presenti in
         /Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/MixingIntMat/20190930_162714'
         l'immagine da allineare e le posizioni degli elementi ottici sono quelle in
-        /Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Allineamento/20191001_081344 """
+        /Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Allineamento/20191001_081344 
+        
+        Oppure basato sui dati presenti in
+        /mnt/shared/M4Data/OPTData/TestData/MixingIntMat...
+        /mnt/shared/M4Data/OPTData/TestData/Allineamento.. """
         command_amp_vector = np.ones(5)*5.0e-06
         command_amp_vector[0] = 2.5e-05
         n_push_pull = 3
@@ -106,7 +113,7 @@ class TestCalc(unittest.TestCase):
 
 
     def test_zernike_command_on_M4(self):
-        doveSeg = '20170216_123645/mode_0197.fits'
+        doveSeg = '20170630_105105/mode_0197.fits'
         seg = object_from_fits_file_name.readImageFromRunaIFFs(doveSeg)
 
         zernike_modes_vector_amplitude = np.array([0, 0, 30])
