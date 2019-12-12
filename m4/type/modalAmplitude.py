@@ -70,7 +70,7 @@ class ModalAmplitude():
 
             Args:
                 fits_file_name = modal amplitude path
-            
+
             Returns:
                     theObject = ModalAmplitude class object
         """

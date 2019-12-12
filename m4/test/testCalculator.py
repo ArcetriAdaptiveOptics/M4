@@ -116,7 +116,7 @@ class TestCalc(unittest.TestCase):
         doveSeg = '20170630_105105/mode_0197.fits'
         seg = object_from_fits_file_name.readImageFromRunaIFFs(doveSeg)
 
-        zernike_modes_vector_amplitude = np.array([0, 0, 30])
+        zernike_modes_vector_amplitude = np.array([20, 30, 40])
         tt = '20170630_105105'
         tt_list_for_an= []
         for i in range(6):

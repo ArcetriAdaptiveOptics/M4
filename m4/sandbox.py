@@ -195,7 +195,7 @@ def loadTestCubeFromRunaIFF(tt, n_measure):
 
 
 def immaginiDaIFFRuna():
-    doveSeg = '20170216_123645/mode_0197.fits'
+    doveSeg = '20170630_105105/mode_0197.fits'
     #doveM4 = '20161226_122557/mode_0267.fits'
 
     seg = object_from_fits_file_name.readImageFromRunaIFFs(doveSeg)

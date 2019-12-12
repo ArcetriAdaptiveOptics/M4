@@ -4,7 +4,7 @@
 
 import logging
 import numpy as np
-import skimage
+from skimage.draw import circle
 from scipy import ndimage as ndi
 from m4.ground.configuration import Configuration
 
@@ -55,7 +55,7 @@ class ROI():
         else:
             imagePixels = imagePixels
         mask = np.ones((imagePixels, imagePixels), dtype= bool)
-        rr, cc = skimage.draw.circle(center_y, center_x, radius)
+        rr, cc = circle(center_y, center_x, radius)
         mask[rr,cc] = 0
         return mask
 
