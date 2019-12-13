@@ -141,6 +141,26 @@ def testIFF_spiano(an):
 ### FINE FUNZIONI TEST IFF ###
 
 
+### Code test for data: /mnt/shared/M4Data/OPTData/OPDImages/20191210_143625/hdf5 ###
+
+    def testOPDImages_TestFormat():
+        ''' In questo modo sto portando tutti i dati che sono in OPDImages nella forma
+            che servono a me per far girare la funzione di creazione cubo fatta per il test
+        '''
+        from m4.analyzer_iffunctions import AnalyzerIFF
+        an = AnalyzerIFF()
+        cubeMeasure = createTestCubeMeasure() #meglio se lo leggo che ci mette una vita
+        cube = an.createCube()
+        return cube
+    
+    def testOPDImages_madeToOrder():
+        from m4.analyzer_iffunctions import AnalyzerIFF
+        an = AnalyzerIFF()
+        cube = an.createCube_forTestDataInOpdImages()
+        return cube
+    
+### Fine test ###
+
 def immaginiprova():
     fits_root = "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova"
     fits_file_name = os.path.join(fits_root, 'mode_0005.fits')

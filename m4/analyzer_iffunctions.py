@@ -7,7 +7,7 @@ import logging
 import h5py
 from astropy.io import fits as pyfits
 import numpy as np
-#from m4.ground.interferometer_converter import InterferometerConverter
+from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influence_functions_maker import IFFunctionsMaker
 from m4.utils.roi import ROI
 from m4.utils.img_redux import TipTiltDetrend
@@ -31,6 +31,7 @@ class AnalyzerIFF():
     def __init__(self):
         """The constructor """
         self._logger = logging.getLogger('IFF_ANALYZER:')
+        self._ic = InterferometerConverter()
         self._indexingList = None
         self._cube = None
         self._rec = None
@@ -124,6 +125,39 @@ class AnalyzerIFF():
                 vect[indvect] = amplitude[i]
         return vect
 
+    def createTestCubeMeasure_forTestDataInOpdImages(self):
+        tt = '20191210_143625'
+        fold = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, 'OPDImages', tt, 'hdf5')
+
+        hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
+        self._cmdAmplitude = hduList[0].data
+        hduList = pyfits.open(os.path.join(fold, 'modeRange.fits'))
+        self._actsVector = hduList[0].data
+        self._nPushPull = 1 #per runa sarebbe il vettore array([ 1, -1,  1]), ossia 1.5 per me!
+        indList = []
+        for i in range(self._nPushPull):
+            indList.append(self._actsVector)
+        self._indexingList = np.array(indList)
+        
+        self._h5Folder = fold
+        self._who = 'Bho'
+#         for i in range(2675):
+#             file_name = os.path.join(fold, 'img_%04d.h5') %i
+#             ima = self._ic.from4D(file_name)
+#             if self._cubeMeasure is None:
+#                 self._cubeMeasure = ima
+#             else:
+#                 self._cubeMeasure = np.ma.dstack((self._cubeMeasure, ima))
+# 
+#         cube_name= 'CubeMeasure.fits'
+#         fits_file_name = os.path.join(fold, cube_name)
+#         hduList = pyfits.open(fits_file_name)
+#         cube_measure = np.ma.masked_array(hduList[0].data,
+#                                   hduList[1].data.astype(bool))
+#         self._cubeMeasure = cube_measure
+        return self._cubeMeasure
+
+        
 
     def createCube(self, tiptilt_detrend=None, phase_ambiguity=None):
         '''
@@ -185,6 +219,38 @@ class AnalyzerIFF():
         self._cube = cube_all_act
 
         return self._cube
+    
+    def createCube_forTestDataInOpdImages(self):
+        tt = '20191210_143625'
+        fold = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, 'OPDImages', tt, 'hdf5')
+
+        hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
+        self._cmdAmplitude = hduList[0].data
+        hduList = pyfits.open(os.path.join(fold, 'modeRange.fits'))
+        self._actsVector = hduList[0].data
+        hduList = pyfits.open(os.path.join(fold, 'template.fits'))
+        vector_of_push_pull = hduList[0].data
+
+        cube = None
+        #for i in range(self._actsVector.shape[0]):
+        for i in range(3):
+            k = i * vector_of_push_pull.shape[0]
+            imaList = []
+            for j in range(vector_of_push_pull.shape[0]):
+                l = k + j
+                file_name = os.path.join(fold, 'img_%04d.h5') %l
+                ima = self._ic.from4D(file_name)
+                imaList.append(ima)
+
+            image = imaList[0] - imaList[1] + imaList[2]
+
+            if cube is None:
+                cube = image 
+            else:
+                cube = np.ma.dstack((cube, image))
+
+                
+        return cube
 
 
     def _splitMeasureFromFits(self, misure):
