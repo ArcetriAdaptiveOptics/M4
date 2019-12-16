@@ -45,6 +45,18 @@ class ZernikeCommand():
         return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                             "ZernikeCommandTest")
 
+    def _saveMeasurementInfo(self):
+        fits_file_name = os.path.join(self._dove, 'info.fits')
+        header = pyfits.Header()
+        header['ANTTSEG0'] = self._ttListForAn[0]
+        header['ANTTSEG1'] = self._ttListForAn[1]
+        header['ANTTSEG2'] = self._ttListForAn[2]
+        header['ANTTSEG3'] = self._ttListForAn[3]
+        header['ANTTSEG4'] = self._ttListForAn[4]
+        header['ANTTSEG5'] = self._ttListForAn[5]
+        pyfits.writeto(fits_file_name, self._ampVector, header)
+        pyfits.append(fits_file_name, self._roi.astype(int))
+
     def zernikeCommandTest(self, zernike_modes_vector_amplitude):
         '''
         args:
@@ -60,6 +72,9 @@ class ZernikeCommand():
         store_in_folder = self._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
         self._dove, self._tt = save._createFolderToStoreMeasurements()
+
+        self._saveMeasurementInfo()
+        self._logger.debug('Info file creation')
 
         self._logger.info('Creation of an list')
         for tt in self._ttListForAn:

@@ -232,8 +232,7 @@ class AnalyzerIFF():
         vector_of_push_pull = hduList[0].data
 
         cube = None
-        #for i in range(self._actsVector.shape[0]):
-        for i in range(3):
+        for i in range(self._actsVector.shape[0]):
             k = i * vector_of_push_pull.shape[0]
             imaList = []
             for j in range(vector_of_push_pull.shape[0]):
@@ -242,7 +241,7 @@ class AnalyzerIFF():
                 ima = self._ic.from4D(file_name)
                 imaList.append(ima)
 
-            image = imaList[0] - imaList[1] + imaList[2]
+            image = imaList[0] + imaList[1] - imaList[2]
 
             if cube is None:
                 cube = image 

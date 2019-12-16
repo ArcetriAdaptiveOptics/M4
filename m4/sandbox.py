@@ -149,7 +149,7 @@ def testIFF_spiano(an):
         '''
         from m4.analyzer_iffunctions import AnalyzerIFF
         an = AnalyzerIFF()
-        cubeMeasure = createTestCubeMeasure() #meglio se lo leggo che ci mette una vita
+        cubeMeasure = an.createTestCubeMeasure() #meglio se lo leggo che ci mette una vita
         cube = an.createCube()
         return cube
     
