@@ -127,7 +127,8 @@ class AnalyzerIFF():
 
     def createTestCubeMeasure_forTestDataInOpdImages(self):
         tt = '20191210_143625'
-        fold = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, 'OPDImages', tt, 'hdf5')
+        fold = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+                            'OPDImages', tt, 'hdf5')
 
         hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
         self._cmdAmplitude = hduList[0].data
@@ -138,7 +139,7 @@ class AnalyzerIFF():
         for i in range(self._nPushPull):
             indList.append(self._actsVector)
         self._indexingList = np.array(indList)
-        
+
         self._h5Folder = fold
         self._who = 'Bho'
 #         for i in range(2675):
@@ -157,7 +158,6 @@ class AnalyzerIFF():
 #         self._cubeMeasure = cube_measure
         return self._cubeMeasure
 
-        
 
     def createCube(self, tiptilt_detrend=None, phase_ambiguity=None):
         '''
@@ -219,10 +219,11 @@ class AnalyzerIFF():
         self._cube = cube_all_act
 
         return self._cube
-    
+
     def createCube_forTestDataInOpdImages(self):
         tt = '20191210_143625'
-        fold = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, 'OPDImages', tt, 'hdf5')
+        fold = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+                            'OPDImages', tt, 'hdf5')
 
         hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
         self._cmdAmplitude = hduList[0].data
@@ -248,7 +249,7 @@ class AnalyzerIFF():
             else:
                 cube = np.ma.dstack((cube, image))
 
-                
+
         return cube
 
 

@@ -10,21 +10,21 @@ class Configuration():
     '''
     #ROOT IN MY PERSONAL PC
 #     LOG_ROOT_FOLDER = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice'
-# 
+#
 #     M4COORDINATE_ROOT_FOLDER = \
 #         '/Users/rm/Desktop/Arcetri/M4/ActuatorCoordinates.fits'
-# 
+#
 #     CALIBRATION_ROOT_FOLDER = "/Users/rm/Desktop/Arcetri/M4/ProvaCodice"
-# 
+#
 #     TEST_IMAGE_ROOT_FOLDER = \
 #         "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova"
-# 
+#
 #     IFFUNCTIONS_ROOT_FOLDER = \
 #         "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions"
-# 
+#
 #     V_MATRIX_FOR_SEGMENT_ROOT_811= \
 #         '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170630_105105/modeMatrix.fits'
-# 
+#
 #     V_MATRIX_FOR_SEGMENT_ROOT_892= \
 #         '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170216_123645/modeMatrix.fits'
 
