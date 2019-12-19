@@ -29,9 +29,11 @@ class Configuration():
 #         '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170216_123645/modeMatrix.fits'
 
     #ROOT IN M4 PC
-    CALIBRATION_ROOT_FOLDER = '/mnt/shared/M4Data/OPTData'
+    CALIBRATION_ROOT_FOLDER = '/mnt/shared/M4Data'
+    
+    OPD_DATA_FOLDER = os.path.join(CALIBRATION_ROOT_FOLDER, 'OPTData')
 
-    LOG_ROOT_FOLDER = '/mnt/shared/M4Data/LOGData/mylog'
+    LOG_ROOT_FOLDER = os.path.join(CALIBRATION_ROOT_FOLDER,  'LOGData/mylog')
 
     M4COORDINATE_ROOT_FOLDER = \
         '/mnt/shared/M4Data/CONFData/20191210_144400/ActuatorCoordinates.fits'
@@ -43,7 +45,7 @@ class Configuration():
         '/mnt/shared/M4Data/OPTData/IFFunctions'
 
     #Interf
-    LAMBA = 2
+    LAMBDA = 2
     #Ott
     #ParabolaPupilXYRadius= np.array([128, 128, 128]) #centerX, centerY, radius
     PARABOLA_PUPIL_XYRADIUS = np.array([256, 256, 256])

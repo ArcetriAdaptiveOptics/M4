@@ -150,12 +150,12 @@ class AnalyzerIFF():
 #             else:
 #                 self._cubeMeasure = np.ma.dstack((self._cubeMeasure, ima))
 # 
-#         cube_name= 'CubeMeasure.fits'
-#         fits_file_name = os.path.join(fold, cube_name)
-#         hduList = pyfits.open(fits_file_name)
-#         cube_measure = np.ma.masked_array(hduList[0].data,
-#                                   hduList[1].data.astype(bool))
-#         self._cubeMeasure = cube_measure
+        cube_name= 'CubeMeasure.fits'
+        fits_file_name = os.path.join(fold, cube_name)
+        hduList = pyfits.open(fits_file_name)
+        cube_measure = np.ma.masked_array(hduList[0].data,
+                                  hduList[1].data.astype(bool))
+        self._cubeMeasure = cube_measure
         return self._cubeMeasure
 
 
@@ -233,14 +233,19 @@ class AnalyzerIFF():
         vector_of_push_pull = hduList[0].data
 
         cube = None
-        for i in range(self._actsVector.shape[0]):
+        tip_til_det = TipTiltDetrend()
+        r = ROI()
+#         for i in range(self._actsVector.shape[0]):
+        for i in range(7):
             k = i * vector_of_push_pull.shape[0]
             imaList = []
             for j in range(vector_of_push_pull.shape[0]):
                 l = k + j
                 file_name = os.path.join(fold, 'img_%04d.h5') %l
-                ima = self._ic.from4D(file_name)
-                imaList.append(ima)
+                img = self._ic.from4D(file_name)
+                roi = r.roiGenerator(img)
+                ima_tt = tip_til_det.tipTiltRemover(img, roi, 3)
+                imaList.append(ima_tt)
 
             image = imaList[0] + imaList[1] - imaList[2]
 
@@ -248,7 +253,6 @@ class AnalyzerIFF():
                 cube = image 
             else:
                 cube = np.ma.dstack((cube, image))
-
 
         return cube
 
