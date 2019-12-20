@@ -51,7 +51,9 @@ class SPL():
         counts, bin_edges = np.histogram(image)
         thr = 5 * bin_edges(counts == max(counts))
         idx = np.where(image < thr)
-        image(idx) = 0
+        image[idx] = 0
+        #Calcolo del baricentro
+        
 
 
     def analyzer(self):
