@@ -231,3 +231,22 @@ def provaZernike(seg, zernike_modes_vector_amplitude, tt_list_for_an):
     zc = ZernikeCommand(roi[3], tt_list_for_an)
     tt, surf_cube, m4_images_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
     return zc, tt, surf_cube, m4_images_cube
+
+
+# test SPL
+def lambda_image():
+    dove = '20181128_180848/image_530nm.fits'
+    file_name = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', dove)
+    hduList = pyfits.open(file_name)
+    data530 = hduList[0].data
+
+    dove = '20181128_180848/image_600nm.fits'
+    file_name = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', dove)
+    hduList = pyfits.open(file_name)
+    data600 = hduList[0].data
+    return data530, data600
+
+
+
+
+
