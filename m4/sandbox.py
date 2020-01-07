@@ -152,13 +152,13 @@ def testIFF_spiano(an):
         cubeMeasure = an.createTestCubeMeasure() #meglio se lo leggo che ci mette una vita
         cube = an.createCube()
         return cube
-    
+
     def testOPDImages_madeToOrder():
         from m4.analyzer_iffunctions import AnalyzerIFF
         an = AnalyzerIFF()
         cube = an.createCube_forTestDataInOpdImages()
         return cube
-    
+
 ### Fine test ###
 
 def immaginiprova():
@@ -246,7 +246,45 @@ def lambda_image():
     data600 = hduList[0].data
     return data530, data600
 
+def SPL_loadImages():
+    tt = '20181128_180848'
+    lambda_vector = np.arange(530,730,10)
+    cube_image = None
 
+    for i in range(lambda_vector.shape[0]):
+        image_name = os.path.join(tt, 'image_%dnm.fits' %lambda_vector[i])
+        file_name = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', image_name)
+        hduList = pyfits.open(file_name)
+        image = hduList[0].data
+        if cube_image is None:
+            cube_image = image
+        else:
+            cube_image = np.dstack((cube_image, image))
+    return cube_image
+
+def test_spl(cube_image):
+    reference_image = cube_image[:,:,7]
+    from m4.SPL_controller import SPL
+    spl = SPL(0,0)
+    import scipy.ndimage as scin
+
+    spl._baricenterCalculator(reference_image)
+
+    crop_cube = None
+    crop_cube_normalized = None
+    for i in range(cube_image.shape[2]):
+        crop = spl._preProcessing(cube_image[:,:,i])
+        crop_normalized = crop / np.sum(crop)
+        if crop_cube is None:
+            crop_cube = crop
+        else:
+            crop_cube = np.dstack((crop_cube, crop))
+        if crop_cube_normalized is None:
+            crop_cube_normalized = crop_normalized
+        else:
+            crop_cube_normalized = np.dstack((crop_cube_normalized, crop_normalized))
+
+    return crop_cube, crop_cube_normalized
 
 
 
