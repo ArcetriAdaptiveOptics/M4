@@ -31,7 +31,7 @@ class SPL():
         if (acq4d is None and an is None):
             self._exptime, self._acq4d, self._an = self._setParameters(0.7, 1, 1)
             self.acquire(lambda_vector)
-            self.analyzer()
+            self.analyzer(lambda_vector)
 
         elif (acq4d==1 and an==0):
             self._exptime, self._acq4d, self._an = self._setParameters(0.7, 1, 0)
@@ -62,6 +62,8 @@ class SPL():
         store_in_folder = self._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
         self._dove, self._tt = save._createFolderToStoreMeasurements()
+        fits_file_name = os.path.join(self._dove, 'lambda_vector.fits')
+        pyfits.writeto(fits_file_name, lambda_vector)
 
         ## find PSF position ##
         self._filter.setWavelength(600)
@@ -83,28 +85,16 @@ class SPL():
         expgain[np.where(lambda_vector >= 720)] = 9
 
 
-        crop_cube = None
-        crop_cube_normalized = None
         for i in range(lambda_vector.shape[0]):
             self._filter.setWavelength(lambda_vector[i])
             self._camera.ExposureTime = self._exptime * expgain(i) * 1e6
             image = self._camera.acquireFrame()
             crop = self._preProcessing(image)
-            crop_normalized = crop / np.sum(crop)
 
             file_name = 'image_%dnm.fits' %lambda_vector[i]
             self._saveCameraFrame(file_name, crop)
 
-            if crop_cube is None:
-                crop_cube = crop
-            else:
-                crop_cube = np.dstack((crop_cube, crop))
-            if crop_cube_normalized is None:
-                crop_cube_normalized = crop_normalized
-            else:
-                crop_cube_normalized = np.dstack((crop_cube_normalized, crop_normalized))
-
-        return crop_cube, crop_cube_normalized
+        return self._tt
 
     def _baricenterCalculator(self, reference_image):
         ''' Calcola le coordinate del baricentro dell'immagine
@@ -145,12 +135,8 @@ class SPL():
 
 
 
-    def analyzer(self):
+    def analyzer(self, lambda_vector, tt=None):
         ''' Analizza i dati e li confronta con quelli sintetici
-        '''
-
-    def _readCameraFrames(self, tt=None):
-        ''' Legge le immagini in un determinato tracking number e ne restituisce il cubo
         '''
         if tt is None:
             tt = self._tt
@@ -159,12 +145,56 @@ class SPL():
             tt = tt
             dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', tt)
 
+#         lambda_path = os.path.join(dove, 'lambda_vector.fits')
+#         hduList = pyfits.open(lambda_path)
+#         lambda_vector = hduList[0].data
+
+        cube, cube_normalized = self._readCameraFrames(tt)
+        img = np.sum(cube_normalized, 2)
+        pick = self._newThr(img)
+        matrix = np.zeros((pick[1]-pick[0], lambda_vector.shape[0])) # 50 pixel
+        matrix_smooth = np.zeros((pick[1]-pick[0] + 1, lambda_vector.shape[0]))
+        crop_frame_cube = None
+        for i in range(lambda_vector.shape[0]):
+            frame = cube[:,:,i]
+            crop_frame = frame[pick[0]:pick[1], pick[2]:pick[3]]
+            if np.max(crop_frame) > 4000:
+                print("**************** WARNING: saturation detected!")
+            if crop_frame_cube is None:
+                crop_frame_cube = crop_frame
+            else:
+                crop_frame_cube = np.dstack((crop_frame_cube, crop_frame))
+
+            y = np.sum(crop_frame, 1)
+            area = np.sum(y[:])
+            y_norm = y / area
+            if i == 0:
+                mm = 1.2 * np.max(y_norm)
+                matrix[:,i] = mm
+            else:
+                matrix[:,i] = y_norm
+
+            w = self._smooth(y_norm, 4)
+            matrix_smooth[:, i] = w
+
+        piston = self.templateComparison(matrix, lambda_vector)
+
+        return crop_frame_cube, matrix, matrix_smooth
+
+
+
+    def _readCameraFrames(self, tt):
+        ''' Legge le immagini in un determinato tracking number e ne restituisce il cubo
+        '''
+        dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', tt)
+
         path_list = []
         for f in  glob.iglob(os.path.join(dove, 'image_*.fits')): 
             path_list.append(f)
 
         path_list.sort()
         cube = None
+        cube_normalized = None
         for i in range(len(path_list)):
             hduList = pyfits.open(path_list[i])
             image = hduList[0].data
@@ -172,6 +202,57 @@ class SPL():
                 cube = image
             else:
                 cube = np.dstack((cube, image))
-        return cube
+            image_normalized = image / np.sum(image)
+            if cube_normalized is None:
+                cube_normalized = image_normalized
+            else:
+                cube_normalized = np.dstack((cube_normalized, image_normalized))
+        return cube, cube_normalized
+
+    def _newThr(self, img):
+        counts, bin_edges = np.histogram(img)
+        edges = (bin_edges[2:] - bin_edges[1:len(bin_edges)-1]) / 2
+        thr = 5 * edges[np.where(counts == max(counts))]
+        idx = np.where(img < thr)
+        img[idx] = 0
+        cy, cx = scin.measurements.center_of_mass(img)
+        baricenterCoord = [np.int(cy), np.int(cx)]
+        pick = [baricenterCoord[0]-25, baricenterCoord[0]+25,
+                baricenterCoord[1]-75, baricenterCoord[1]+75]
+        return pick
 
 
+### FUNZIONE PER SMOOTH ###
+
+    def _smooth(self, a, WSZ):
+        ''''
+        args:
+            a = NumPy 1-D array containing the data to be smoothed
+            WSZ = smoothing window size needs, which must be odd number,
+                 as in the original MATLAB implementation '''
+        out0 = np.convolve(a,np.ones(WSZ,dtype=int),'valid')/WSZ
+        r = np.arange(1,WSZ-1,2)
+        start = np.cumsum(a[:WSZ-1])[::2]/r
+        stop = (np.cumsum(a[:-WSZ:-1])[::2]/r)[::-1]
+        return np.concatenate((  start , out0, stop  ))
+
+### FINE ###
+
+
+    def templateComparison(self, matrix, lambda_vector):
+        Qm = matrix - np.mean(matrix)
+        #creare la matrice di Giorgio della giusta dimenzione
+        F = 0
+        Qt = F - np.mean(F)
+        #creare la lista di valori di pistone relativi ai dati sintetici usati
+        piston_list = ['ciao', 'lalala', 7]
+
+        R = np.zeros(lambda_vector.shape[0])
+        for i in range(lambda_vector.shape[0]):
+            R[i] = np.sum(np.sum(Qm*Qt)) / ((np.sum(np.sum(Qm**2)))**5
+                                                * (np.sum(np.sum(Qt**2)))**5)
+
+        idp = np.where(R== max(R))
+        piston = piston_list[idp]
+
+        return piston
