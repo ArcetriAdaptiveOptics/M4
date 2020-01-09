@@ -30,12 +30,12 @@ class SPL():
         '''
         if (acq4d is None and an is None):
             self._exptime, self._acq4d, self._an = self._setParameters(0.7, 1, 1)
-            self.acquire(lambda_vector)
-            self.analyzer(lambda_vector)
+            tt = self.acquire(lambda_vector)
+            self.analyzer(tt)
 
         elif (acq4d==1 and an==0):
             self._exptime, self._acq4d, self._an = self._setParameters(0.7, 1, 0)
-            self.acquire(lambda_vector)
+            tt = self.acquire(lambda_vector)
 
         else:
             raise OSError('Combination not permitted')
@@ -84,7 +84,7 @@ class SPL():
         expgain[np.where(lambda_vector > 700)] = 8
         expgain[np.where(lambda_vector >= 720)] = 9
 
-
+        self._logger.info('Acquisition of frames')
         for i in range(lambda_vector.shape[0]):
             self._filter.setWavelength(lambda_vector[i])
             self._camera.ExposureTime = self._exptime * expgain(i) * 1e6
@@ -135,7 +135,7 @@ class SPL():
 
 
 
-    def analyzer(self, lambda_vector, tt=None):
+    def analyzer(self, tt=None):
         ''' Analizza i dati e li confronta con quelli sintetici
         '''
         if tt is None:
@@ -145,15 +145,17 @@ class SPL():
             tt = tt
             dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', tt)
 
-#         lambda_path = os.path.join(dove, 'lambda_vector.fits')
-#         hduList = pyfits.open(lambda_path)
-#         lambda_vector = hduList[0].data
+        self._logger.info('Analysis of tt = %s', tt)
+
+        lambda_path = os.path.join(dove, 'lambda_vector.fits')
+        hduList = pyfits.open(lambda_path)
+        lambda_vector = hduList[0].data
 
         cube, cube_normalized = self._readCameraFrames(tt)
         img = np.sum(cube_normalized, 2)
         pick = self._newThr(img)
-        matrix = np.zeros((pick[1]-pick[0], lambda_vector.shape[0])) # 50 pixel
-        matrix_smooth = np.zeros((pick[1]-pick[0] + 1, lambda_vector.shape[0]))
+        matrix = np.zeros((pick[3]-pick[2], lambda_vector.shape[0])) # 150 pixel
+        matrix_smooth = np.zeros((pick[3]-pick[2] + 1, lambda_vector.shape[0]))
         crop_frame_cube = None
         for i in range(lambda_vector.shape[0]):
             frame = cube[:,:,i]
@@ -165,7 +167,7 @@ class SPL():
             else:
                 crop_frame_cube = np.dstack((crop_frame_cube, crop_frame))
 
-            y = np.sum(crop_frame, 1)
+            y = np.sum(crop_frame, 0)
             area = np.sum(y[:])
             y_norm = y / area
             if i == 0:
@@ -176,10 +178,13 @@ class SPL():
 
             w = self._smooth(y_norm, 4)
             matrix_smooth[:, i] = w
+        # per ora non tornano le dimensioni quindi aggiungo una riga a matrix
+        aa = np.zeros(lambda_vector.shape[0])
+        matrix_151= np.vstack((aa, matrix))
 
-        piston = self.templateComparison(matrix, lambda_vector)
+        piston = self.templateComparison(matrix_151, lambda_vector)
 
-        return crop_frame_cube, matrix, matrix_smooth
+        return piston
 
 
 
@@ -216,7 +221,7 @@ class SPL():
         idx = np.where(img < thr)
         img[idx] = 0
         cy, cx = scin.measurements.center_of_mass(img)
-        baricenterCoord = [np.int(cy), np.int(cx)]
+        baricenterCoord = [np.int(round(cy)), np.int(round(cx))]
         pick = [baricenterCoord[0]-25, baricenterCoord[0]+25,
                 baricenterCoord[1]-75, baricenterCoord[1]+75]
         return pick
@@ -240,19 +245,46 @@ class SPL():
 
 
     def templateComparison(self, matrix, lambda_vector):
+        tn_fringes = '20181026'
+        self._logger.debug('Template Comparison with data in tn_fringes = %s', tn_fringes)
+        dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', tn_fringes)
+        dove_delta = os.path.join(dove, 'Differential_piston.fits')
+        hduList = pyfits.open(dove_delta)
+        delta = hduList[0].data
+        dove_lambda_synth = os.path.join(dove, 'Lambda.fits')
+        hduList = pyfits.open(dove_lambda_synth)
+        lambda_synth_from_data = hduList[0].data * 1e9
+        lambda_synth = self._myLambaSynth(lambda_synth_from_data)
+
+        idx = np.isin(lambda_synth, lambda_vector)
+
         Qm = matrix - np.mean(matrix)
         #creare la matrice di Giorgio della giusta dimenzione
-        F = 0
+        F = None
+        for i in range(1, delta.shape[0]):
+            file_name = os.path.join(dove, 'Fringe_%05d.fits' %i)
+            hduList = pyfits.open(file_name)
+            fringe = hduList[0].data
+            fringe_selected = fringe[:,idx]
+            if F is None:
+                F = fringe_selected
+            else:
+                F = np.dstack((F, fringe_selected))
         Qt = F - np.mean(F)
-        #creare la lista di valori di pistone relativi ai dati sintetici usati
-        piston_list = ['ciao', 'lalala', 7]
 
-        R = np.zeros(lambda_vector.shape[0])
-        for i in range(lambda_vector.shape[0]):
-            R[i] = np.sum(np.sum(Qm*Qt)) / ((np.sum(np.sum(Qm**2)))**5
-                                                * (np.sum(np.sum(Qt**2)))**5)
+        R = np.zeros(delta.shape[0]-1)
+        for i in range(delta.shape[0]-1):
+            R[i] = np.sum(np.sum(Qm[:,:]*Qt[:,:,i])) / ((np.sum(np.sum(Qm[:,:]**2)))**5
+                                                    * (np.sum(np.sum(Qt[:,:,i]**2)))**5)
 
         idp = np.where(R== max(R))
-        piston = piston_list[idp]
+        piston = delta[idp]
 
         return piston
+
+    def _myLambaSynth(self, lambda_synth_from_data):
+        my_lambda = np.zeros(lambda_synth_from_data.shape[0])
+        for j in range(lambda_synth_from_data.shape[0]):
+            bb = np.int(round(lambda_synth_from_data[j]))
+            my_lambda[j] = bb
+        return my_lambda
