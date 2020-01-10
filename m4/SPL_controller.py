@@ -26,19 +26,36 @@ class SPL():
                             "SPL")
 
     def measurement(self, lambda_vector, acq4d=None, an=None):
-        ''' Deve contenere tutta la procedura di acquisizione ed analisi dei dati
+        '''
+        args:
+            lambda_vector = vector of wavelengths (between 400/700 nm)
+                            [np.array]
+            acqu4d = 1 to perform the data acquisition process
+                     0 to skip data acquisition
+            an = 1 to perform the data analysis process
+                 0 to skip data analysis
+
+        returns:
+                piston = piston value
         '''
         if (acq4d is None and an is None):
             self._exptime, self._acq4d, self._an = self._setParameters(0.7, 1, 1)
             tt = self.acquire(lambda_vector)
-            self.analyzer(tt)
+            piston = self.analyzer(tt)
 
         elif (acq4d==1 and an==0):
             self._exptime, self._acq4d, self._an = self._setParameters(0.7, 1, 0)
             tt = self.acquire(lambda_vector)
 
+        elif (acq4d==0 and an==1):
+            self._exptime, self._acq4d, self._an = self._setParameters(0.7, 0, 1)
+            tt = input('Tracking number of measurement to analyze:')
+            piston = self.analyzer(tt)
+
         else:
             raise OSError('Combination not permitted')
+
+        return piston
 
     def _setParameters(self, exptime, acq4d, an):
         '''
@@ -55,9 +72,12 @@ class SPL():
 
 # lambda_vector = np.arange(530,730,10)
     def acquire(self, lambda_vector):
-        ''' Acquisizione dati
+        '''
         arg:
             lambda_vector = vector of wavelengths (between 400/700 nm)
+
+        returns:
+                tt = tracking number of measurements
         '''
         store_in_folder = self._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
@@ -97,7 +117,9 @@ class SPL():
         return self._tt
 
     def _baricenterCalculator(self, reference_image):
-        ''' Calcola le coordinate del baricentro dell'immagine
+        ''' Calculate the peak position of the image
+        args:
+            reference_image = camera frame
         '''
         counts, bin_edges = np.histogram(reference_image)
         thr = 5 * bin_edges[np.where(counts == max(counts))]
@@ -108,7 +130,12 @@ class SPL():
 
 
     def _preProcessing(self, image):
-        ''' Prepara i dati acquisiti per essere analizzati
+        ''' Cut the images around the pick position
+        args:
+            image = camera frame
+
+        returns:
+            crop = cut camera frame
         '''
         xcrop = 145 #150
         ycrop = 95 #100
@@ -128,7 +155,7 @@ class SPL():
         return crop
 
     def _saveCameraFrame(self, file_name, frame):
-        ''' Salva le immagini acquisite dalla telecamera
+        ''' Save camera frames in SPL/TrackingNumber
         '''
         fits_file_name = os.path.join(self._dove, file_name)
         pyfits.writeto(fits_file_name, frame.data)
@@ -136,7 +163,12 @@ class SPL():
 
 
     def analyzer(self, tt=None):
-        ''' Analizza i dati e li confronta con quelli sintetici
+        ''' Analyze measurement data and compare it with synthetic data
+        args:
+            tt = tracking number of the measurement data
+
+        returns:
+            piston = piston value
         '''
         if tt is None:
             tt = self._tt
@@ -189,7 +221,14 @@ class SPL():
 
 
     def _readCameraFrames(self, tt):
-        ''' Legge le immagini in un determinato tracking number e ne restituisce il cubo
+        ''' Read images in a specific tracking number and return the cube
+        args:
+            tt = tracking number
+
+        returns:
+            cube = [pixels, pixels, n_frames=lambda]
+            cube_normalized = creating with normalized images,
+                                [pixels, pixels, n_frames=lambda]
         '''
         dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', tt)
 
@@ -215,6 +254,7 @@ class SPL():
         return cube, cube_normalized
 
     def _newThr(self, img):
+        ''' Calculate the peak position of the image '''
         counts, bin_edges = np.histogram(img)
         edges = (bin_edges[2:] - bin_edges[1:len(bin_edges)-1]) / 2
         thr = 5 * edges[np.where(counts == max(counts))]
@@ -245,9 +285,21 @@ class SPL():
 
 
     def templateComparison(self, matrix, lambda_vector):
-        tn_fringes = '20181026'
-        self._logger.debug('Template Comparison with data in tn_fringes = %s', tn_fringes)
-        dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', tn_fringes)
+        ''' Compare the matrix obtained from the measurements with
+            the one recreated with the synthetic data in tn_fringes
+        args:
+            matrix = [pixels, lambda]
+            lambda_vector = vector of wavelengths
+
+        returns:
+            piston = piston value
+        '''
+        tn_fringes = '20181108_1'
+        #tn_fringes = '20181026'
+        self._logger.debug('Template Comparison with data in tn_fringes = %s',
+                           tn_fringes)
+        dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL/Fringes',
+                            tn_fringes)
         dove_delta = os.path.join(dove, 'Differential_piston.fits')
         hduList = pyfits.open(dove_delta)
         delta = hduList[0].data
@@ -283,6 +335,8 @@ class SPL():
         return piston
 
     def _myLambaSynth(self, lambda_synth_from_data):
+        ''' Transforms its values into integers
+        '''
         my_lambda = np.zeros(lambda_synth_from_data.shape[0])
         for j in range(lambda_synth_from_data.shape[0]):
             bb = np.int(round(lambda_synth_from_data[j]))
