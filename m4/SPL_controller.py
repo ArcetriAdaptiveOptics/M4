@@ -1,10 +1,11 @@
 '''
-@author: cselmi
+@author: cs
 '''
 
 import os
 import logging
 import glob
+import time
 import numpy as np
 import scipy.ndimage as scin
 from m4.ground import tracking_number_folder
@@ -90,7 +91,8 @@ class SPL():
         ExposureTimeAbs = 1.5 * self._exptime * 1e6
         self._camera.setExposureTime(ExposureTimeAbs)
         self._camera.Timeout = 30
-        reference_image = self._camera.acquireFrame() #mettergli la maschera gpixmask
+        reference_image = self._camera.acquireFrame() #double snapshot
+        #mettergli la maschera gpixmask
         if np.max(reference_image) > 4000:
             print("**************** WARNING: saturation detected!")
         # calcolo il baricentro
@@ -107,8 +109,10 @@ class SPL():
         self._logger.info('Acquisition of frames')
         for i in range(lambda_vector.shape[0]):
             self._filter.setWavelength(lambda_vector[i])
-            self._camera.ExposureTime = self._exptime * expgain(i) * 1e6
-            image = self._camera.acquireFrame()
+            self._camera.ExposureTime = self._exptime * expgain[i] * 1e6
+            time.sleep(3 * ExposureTimeAbs / 1e6)
+            image = self._camera.acquireFrame() #single snapshot
+            #mettergli la maschera gpixmask
             crop = self._preProcessing(image)
 
             file_name = 'image_%dnm.fits' %lambda_vector[i]
@@ -147,7 +151,7 @@ class SPL():
             self._baricenterCoord[1]+xcrop] = 1
         id_bkg = np.where(tmp == 0)
         bkg = np.ma.mean(image[id_bkg])
-        img = image - bkg #va mascherata
+        img = image - bkg #va mascherata con gpixmask
         crop = img[self._baricenterCoord[0]-ycrop:
                    self._baricenterCoord[0]+ycrop,
                    self._baricenterCoord[1]-xcrop:
@@ -186,12 +190,12 @@ class SPL():
         cube, cube_normalized = self._readCameraFrames(tt)
         img = np.sum(cube_normalized, 2)
         pick = self._newThr(img)
-        matrix = np.zeros((pick[3]-pick[2], lambda_vector.shape[0])) # 150 pixel
-        matrix_smooth = np.zeros((pick[3]-pick[2] + 1, lambda_vector.shape[0]))
+        matrix = np.zeros((pick[3]-pick[2] + 1, lambda_vector.shape[0])) # 150 pixel
+        matrix_smooth = np.zeros((pick[3]-pick[2] + 2, lambda_vector.shape[0]))
         crop_frame_cube = None
         for i in range(lambda_vector.shape[0]):
             frame = cube[:,:,i]
-            crop_frame = frame[pick[0]:pick[1], pick[2]:pick[3]]
+            crop_frame = frame[pick[0]:pick[1], pick[2]:pick[3] + 1]
             if np.max(crop_frame) > 4000:
                 print("**************** WARNING: saturation detected!")
             if crop_frame_cube is None:
@@ -210,11 +214,8 @@ class SPL():
 
             w = self._smooth(y_norm, 4)
             matrix_smooth[:, i] = w
-        # per ora non tornano le dimensioni quindi aggiungo una riga a matrix
-        aa = np.zeros(lambda_vector.shape[0])
-        matrix_151= np.vstack((aa, matrix))
 
-        piston = self.templateComparison(matrix_151, lambda_vector)
+        piston = self.templateComparison(matrix, lambda_vector)
 
         return piston
 
@@ -256,7 +257,7 @@ class SPL():
     def _newThr(self, img):
         ''' Calculate the peak position of the image '''
         counts, bin_edges = np.histogram(img)
-        edges = (bin_edges[2:] - bin_edges[1:len(bin_edges)-1]) / 2
+        edges = (bin_edges[2:] + bin_edges[1:len(bin_edges)-1]) / 2
         thr = 5 * edges[np.where(counts == max(counts))]
         idx = np.where(img < thr)
         img[idx] = 0
@@ -329,7 +330,7 @@ class SPL():
             R[i] = np.sum(np.sum(Qm[:,:]*Qt[:,:,i])) / ((np.sum(np.sum(Qm[:,:]**2)))**5
                                                     * (np.sum(np.sum(Qt[:,:,i]**2)))**5)
 
-        idp = np.where(R== max(R))
+        idp = np.where(R==max(R))
         piston = delta[idp]
 
         return piston
