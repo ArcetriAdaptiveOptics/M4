@@ -29,6 +29,7 @@ class Configuration():
     V_MATRIX_FOR_SEGMENT_ROOT_892= \
         '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170216_123645/modeMatrix.fits'
 
+
     #ROOT IN M4 PC
 #     CALIBRATION_ROOT_FOLDER = '/mnt/shared/M4Data'
 # 
@@ -45,6 +46,8 @@ class Configuration():
 #     IFFUNCTIONS_ROOT_FOLDER = \
 #         os.path.join(OPD_DATA_FOLDER, 'IFFunctions')
 
+    #SPL
+    TN_FRINGES = '20181108_1'
     #Interf
     LAMBDA = 2
     #Ott

@@ -190,7 +190,7 @@ class SPL():
         cube, cube_normalized = self._readCameraFrames(tt)
         img = np.sum(cube_normalized, 2)
         pick = self._newThr(img)
-        matrix = np.zeros((pick[3]-pick[2] + 1, lambda_vector.shape[0])) # 150 pixel
+        matrix = np.zeros((pick[3]-pick[2] + 1, lambda_vector.shape[0])) # 150 + 1 pixel
         matrix_smooth = np.zeros((pick[3]-pick[2] + 2, lambda_vector.shape[0]))
         crop_frame_cube = None
         for i in range(lambda_vector.shape[0]):
@@ -215,6 +215,7 @@ class SPL():
             w = self._smooth(y_norm, 4)
             matrix_smooth[:, i] = w
 
+        matrix[np.where(matrix == np.nan)] = 0
         piston = self.templateComparison(matrix, lambda_vector)
 
         return piston
@@ -295,7 +296,7 @@ class SPL():
         returns:
             piston = piston value
         '''
-        tn_fringes = '20181108_1'
+        tn_fringes = Configuration.TN_FRINGES
         #tn_fringes = '20181026'
         self._logger.debug('Template Comparison with data in tn_fringes = %s',
                            tn_fringes)
@@ -312,6 +313,7 @@ class SPL():
         idx = np.isin(lambda_synth, lambda_vector)
 
         Qm = matrix - np.mean(matrix)
+        self._Qm = Qm
         #creare la matrice di Giorgio della giusta dimenzione
         F = None
         for i in range(1, delta.shape[0]):
@@ -324,6 +326,7 @@ class SPL():
             else:
                 F = np.dstack((F, fringe_selected))
         Qt = F - np.mean(F)
+        self._Qt = Qt
 
         R = np.zeros(delta.shape[0]-1)
         for i in range(delta.shape[0]-1):
