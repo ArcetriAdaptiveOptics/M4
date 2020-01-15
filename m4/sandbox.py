@@ -149,6 +149,7 @@ def testIFF_spiano(an):
         '''
         from m4.analyzer_iffunctions import AnalyzerIFF
         an = AnalyzerIFF()
+        # metterci an.createTestCubeMeasure_forTestDataInOpdImages ma dal pc giù
         cubeMeasure = an.createTestCubeMeasure() #meglio se lo leggo che ci mette una vita
         cube = an.createCube()
         return cube
@@ -231,60 +232,3 @@ def provaZernike(seg, zernike_modes_vector_amplitude, tt_list_for_an):
     zc = ZernikeCommand(roi[3], tt_list_for_an)
     tt, surf_cube, m4_images_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
     return zc, tt, surf_cube, m4_images_cube
-
-
-# test SPL
-def lambda_image():
-    dove = '20181128_180848/image_530nm.fits'
-    file_name = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', dove)
-    hduList = pyfits.open(file_name)
-    data530 = hduList[0].data
-
-    dove = '20181128_180848/image_600nm.fits'
-    file_name = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', dove)
-    hduList = pyfits.open(file_name)
-    data600 = hduList[0].data
-    return data530, data600
-
-def SPL_loadImages():
-    tt = '20181128_180848'
-    lambda_vector = np.arange(530,730,10)
-    cube_image = None
-
-    for i in range(lambda_vector.shape[0]):
-        image_name = os.path.join(tt, 'image_%dnm.fits' %lambda_vector[i])
-        file_name = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', image_name)
-        hduList = pyfits.open(file_name)
-        image = hduList[0].data
-        if cube_image is None:
-            cube_image = image
-        else:
-            cube_image = np.dstack((cube_image, image))
-    return cube_image
-
-def test_spl(cube_image):
-    reference_image = cube_image[:,:,7]
-    from m4.SPL_controller import SPL
-    spl = SPL(0,0)
-    import scipy.ndimage as scin
-
-    spl._baricenterCalculator(reference_image)
-
-    crop_cube = None
-    crop_cube_normalized = None
-    for i in range(cube_image.shape[2]):
-        crop = spl._preProcessing(cube_image[:,:,i])
-        crop_normalized = crop / np.sum(crop)
-        if crop_cube is None:
-            crop_cube = crop
-        else:
-            crop_cube = np.dstack((crop_cube, crop))
-        if crop_cube_normalized is None:
-            crop_cube_normalized = crop_normalized
-        else:
-            crop_cube_normalized = np.dstack((crop_cube_normalized, crop_normalized))
-
-    return crop_cube, crop_cube_normalized
-
-
-

@@ -125,39 +125,6 @@ class AnalyzerIFF():
                 vect[indvect] = amplitude[i]
         return vect
 
-    def createTestCubeMeasure_forTestDataInOpdImages(self):
-        tt = '20191210_143625'
-        fold = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
-                            'OPDImages', tt, 'hdf5')
-
-        hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
-        self._cmdAmplitude = hduList[0].data
-        hduList = pyfits.open(os.path.join(fold, 'modeRange.fits'))
-        self._actsVector = hduList[0].data
-        self._nPushPull = 1 #per runa sarebbe il vettore array([ 1, -1,  1]), ossia 1.5 per me!
-        indList = []
-        for i in range(self._nPushPull):
-            indList.append(self._actsVector)
-        self._indexingList = np.array(indList)
-
-        self._h5Folder = fold
-        self._who = 'Bho'
-#         for i in range(2675):
-#             file_name = os.path.join(fold, 'img_%04d.h5') %i
-#             ima = self._ic.from4D(file_name)
-#             if self._cubeMeasure is None:
-#                 self._cubeMeasure = ima
-#             else:
-#                 self._cubeMeasure = np.ma.dstack((self._cubeMeasure, ima))
-# 
-        cube_name= 'CubeMeasure.fits'
-        fits_file_name = os.path.join(fold, cube_name)
-        hduList = pyfits.open(fits_file_name)
-        cube_measure = np.ma.masked_array(hduList[0].data,
-                                  hduList[1].data.astype(bool))
-        self._cubeMeasure = cube_measure
-        return self._cubeMeasure
-
 
     def createCube(self, tiptilt_detrend=None, phase_ambiguity=None):
         '''
@@ -219,42 +186,6 @@ class AnalyzerIFF():
         self._cube = cube_all_act
 
         return self._cube
-
-    def createCube_forTestDataInOpdImages(self):
-        tt = '20191210_143625'
-        fold = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
-                            'OPDImages', tt, 'hdf5')
-
-        hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
-        self._cmdAmplitude = hduList[0].data
-        hduList = pyfits.open(os.path.join(fold, 'modeRange.fits'))
-        self._actsVector = hduList[0].data
-        hduList = pyfits.open(os.path.join(fold, 'template.fits'))
-        vector_of_push_pull = hduList[0].data
-
-        cube = None
-        tip_til_det = TipTiltDetrend()
-        r = ROI()
-#         for i in range(self._actsVector.shape[0]):
-        for i in range(7):
-            k = i * vector_of_push_pull.shape[0]
-            imaList = []
-            for j in range(vector_of_push_pull.shape[0]):
-                l = k + j
-                file_name = os.path.join(fold, 'img_%04d.h5') %l
-                img = self._ic.from4D(file_name)
-                roi = r.roiGenerator(img)
-                ima_tt = tip_til_det.tipTiltRemover(img, roi, 3)
-                imaList.append(ima_tt)
-
-            image = imaList[0] + imaList[1] - imaList[2]
-
-            if cube is None:
-                cube = image 
-            else:
-                cube = np.ma.dstack((cube, image))
-
-        return cube
 
 
     def _splitMeasureFromFits(self, misure):
@@ -400,7 +331,7 @@ class AnalyzerIFF():
         hf.close()
         return theObject
 
-
+### FUNZIONI STATICHE PER CREARE AN PER I TEST ###
     @staticmethod
     def loadTestMeasureFromFits(tt):
         """
@@ -440,6 +371,7 @@ class AnalyzerIFF():
         theObject._cube = cube
         theObject._who = 'Un segmento'
         return theObject
+### FINE ###
 
     def setAnalysisMask(self, analysis_mask):
         self._analysisMask = analysis_mask
@@ -486,3 +418,75 @@ class AnalyzerIFF():
         if self._rec is None:
             self._createSurfaceReconstructor()
         return self._rec
+
+
+#### FUNZIONI PER TEST ###
+
+    def createTestCubeMeasure_forTestDataInOpdImages(self):
+        tt = '20191210_143625'
+        fold = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+                            'OPDImages', tt, 'hdf5')
+
+        hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
+        self._cmdAmplitude = hduList[0].data
+        hduList = pyfits.open(os.path.join(fold, 'modeRange.fits'))
+        self._actsVector = hduList[0].data
+        self._nPushPull = 1 #per runa sarebbe il vettore array([ 1, -1,  1]), ossia 1.5 per me!
+        indList = []
+        for i in range(self._nPushPull):
+            indList.append(self._actsVector)
+        self._indexingList = np.array(indList)
+
+        self._h5Folder = fold
+        self._who = 'Bho'
+#         for i in range(2675):
+#             file_name = os.path.join(fold, 'img_%04d.h5') %i
+#             ima = self._ic.from4D(file_name)
+#             if self._cubeMeasure is None:
+#                 self._cubeMeasure = ima
+#             else:
+#                 self._cubeMeasure = np.ma.dstack((self._cubeMeasure, ima))
+# 
+        cube_name= 'CubeMeasure.fits'
+        fits_file_name = os.path.join(fold, cube_name)
+        hduList = pyfits.open(fits_file_name)
+        cube_measure = np.ma.masked_array(hduList[0].data,
+                                  hduList[1].data.astype(bool))
+        self._cubeMeasure = cube_measure
+        return self._cubeMeasure
+
+    def createCube_forTestDataInOpdImages(self):
+        tt = '20191210_143625'
+        fold = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+                            'OPDImages', tt, 'hdf5')
+
+        hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
+        self._cmdAmplitude = hduList[0].data
+        hduList = pyfits.open(os.path.join(fold, 'modeRange.fits'))
+        self._actsVector = hduList[0].data
+        hduList = pyfits.open(os.path.join(fold, 'template.fits'))
+        vector_of_push_pull = hduList[0].data
+
+        cube = None
+        tip_til_det = TipTiltDetrend()
+        r = ROI()
+#         for i in range(self._actsVector.shape[0]):
+        for i in range(7):
+            k = i * vector_of_push_pull.shape[0]
+            imaList = []
+            for j in range(vector_of_push_pull.shape[0]):
+                l = k + j
+                file_name = os.path.join(fold, 'img_%04d.h5') %l
+                img = self._ic.from4D(file_name)
+                roi = r.roiGenerator(img)
+                ima_tt = tip_til_det.tipTiltRemover(img, roi, 3)
+                imaList.append(ima_tt)
+
+            image = imaList[0] + imaList[1] - imaList[2]
+
+            if cube is None:
+                cube = image 
+            else:
+                cube = np.ma.dstack((cube, image))
+
+        return cube

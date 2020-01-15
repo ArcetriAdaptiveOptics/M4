@@ -111,7 +111,10 @@ class IFFunctionsMaker():
         self._indexingList = cmdH.getIndexingList()
         self._saveInfoAsFits(dove)
 
-        self._applyToDM()
+        for i in range(command_history_matrix_to_apply.shape[1]):
+            self._applyToDM(command_history_matrix_to_apply[:,i])
+            #acquisizione immagine con 4d
+            #salvataggio immagine 
 
         return tt
 
@@ -126,7 +129,9 @@ class IFFunctionsMaker():
         return new_matrix
 
 
-    def _applyToDM(self):
+    def _applyToDM(self, vector_to_apply):
+        ''' Deve applicare i comandi della command history matrix allo specchio
+        '''
         pass
 
     def _testIFFunctions_createCube25fromFileFitsMeasure(self):

@@ -235,7 +235,7 @@ class SPL():
         dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', tt)
 
         path_list = []
-        for f in  glob.iglob(os.path.join(dove, 'image_*.fits')): 
+        for f in  glob.iglob(os.path.join(dove, 'image_*.fits')):
             path_list.append(f)
 
         path_list.sort()
