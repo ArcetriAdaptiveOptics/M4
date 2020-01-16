@@ -71,7 +71,7 @@ class opt_calibration():
         args:
             tt = tracking number of the measures to be analysed
             mask_index = int the reference mirror mask index
-        
+
         returns:
                 self_intMat = interation matrix
                 self._rec = reconstructor

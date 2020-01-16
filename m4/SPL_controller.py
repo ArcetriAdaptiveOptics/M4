@@ -13,6 +13,15 @@ from astropy.io import fits as pyfits
 from m4.ground.configuration import Configuration
 
 class SPL():
+    ''' Class used to obtain the piston value for two segments
+
+    HOW TO USE IT:
+    from m4.SPL_controller import SPL
+    #definizione dell'oggetto filtro e dell'oggetto camera
+    spl = SPL(filtro, camera)
+    lambda_vector = np.arange(530,730,10)
+    piston = spl.measurement(lambda_vector, acq4d=None, an=None)
+    '''
 
     def __init__(self, filter_obj, camera_obj):
         """The constructor """
@@ -218,6 +227,8 @@ class SPL():
         matrix[np.where(matrix == np.nan)] = 0
         piston = self.templateComparison(matrix, lambda_vector)
 
+        self._savePistonResult(tt, piston)
+
         return piston
 
 
@@ -346,3 +357,10 @@ class SPL():
             bb = np.int(round(lambda_synth_from_data[j]))
             my_lambda[j] = bb
         return my_lambda
+
+    def _savePistonResult(self, tt, piston):
+        dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', tt,
+                            'piston_result_prova.txt')
+        file = open(dove, 'w+')
+        file.write('%e' %piston[0])
+        file.close()

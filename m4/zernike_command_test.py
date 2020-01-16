@@ -120,6 +120,14 @@ class ZernikeCommand():
         return self._tt, self._zernikeSurfaceCube, self._m4ImagesCube
 
     def readSurfM4ImageCubes(self, tt):
+        ''' 
+        args:
+            tt = tracking number of measurement
+
+        returns:
+            zernikeSurfaceCube = [_bigDiameter, _bigDiameter, n_modes]
+            _m4ImagesCube = [_bigDiameter, _bigDiameter, n_modes]
+        '''
         dove = os.path.join(self._storageFolder(), tt)
 
         fits_file_name = os.path.join(dove, 'surfCube.fits')
@@ -131,6 +139,15 @@ class ZernikeCommand():
         return self._zernikeSurfaceCube, self._m4ImagesCube
 
     def analyzerResults(self, tt):
+        '''
+        Compare the images obtained from the Zernike generator
+        with those created on the segments through the function itself.
+
+    returns:
+        diff_list = list of images obtained by subtracting zernike modes
+                    from m4 images
+        rms = vector of rms value calculated on the difference images
+        '''
         surf_cube, m4_images_cube = self.readSurfM4ImageCubes(tt)
         diff_list = []
         rms_list = []
@@ -230,6 +247,8 @@ class ZernikeCommand():
                 piston = piston value measured with SPL
         """
         #applico questo comando allo specchio (pos e neg) e misuro il pistone
+        #credo si faccia misurando tutti i valori tra i 6 segmenti e usando 
+        # img_redux per ottenere la nuova immagine di m4
         piston = 0
         return piston
 
@@ -265,6 +284,8 @@ class ZernikeCommand():
         return singleZernikeCube
 
     def _TESTFUCTIONFORZERNIKECUBE(self, number_of_zernike_mode, amp):
+        ''' Uguale a quella sopra che sarà quella vera
+        '''
         fits_file_path = os.path.join(self._storageFolder(), self._tt)
         singleZernikeCube = None
         #for i in range(2):

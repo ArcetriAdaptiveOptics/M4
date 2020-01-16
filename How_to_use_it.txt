@@ -93,5 +93,23 @@
 	  il cubo del modo, cioè le immagini dei 6 segmenti, (cube_mode0004.fits)
 	  il cubo delle superficie di zernike usate (surfCube.fits),
 	  il cubo delle immagini totali su m4 (m4ImageCube.fits).
+
+
+
+• SW per gli SPL
+
+	  PROCEDIMENTO:
+	  from m4.SPL_controller import SPL
+	  #definizione dell'oggetto filtro e dell'oggetto camera
+	  spl = SPL(filtro, camera)
+	  lambda_vector = np.arange(530,730,10)
+	  piston = spl.measurement(lambda_vector, acq4d=None, an=None)
+
+
+	  RISULTATI:
+	  * .../SPL/ tt contiene
+	  tutte le misure effettuate (image_530nm.fits),
+	  lambda_vector.fits
+	  piston_result.txt
 	
 	

@@ -90,7 +90,7 @@ class PhaseSolve():
     def __init__(self):
         """The constructor """
         self._roi = ROI()
-        self._lambda = Configuration.LAMBA
+        self._lambda = Configuration.LAMBDA
         self._n = None
 
 
