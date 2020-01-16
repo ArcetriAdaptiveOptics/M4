@@ -10,41 +10,43 @@ class Configuration():
     Constants of system configuration
     '''
     #ROOT IN MY PERSONAL PC
-    LOG_ROOT_FOLDER = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice'
-
-    M4COORDINATE_ROOT_FOLDER = \
-        '/Users/rm/Desktop/Arcetri/M4/ActuatorCoordinates.fits'
-
-    CALIBRATION_ROOT_FOLDER = "/Users/rm/Desktop/Arcetri/M4/ProvaCodice"
-
-    TEST_IMAGE_ROOT_FOLDER = \
-        "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova"
-
-    IFFUNCTIONS_ROOT_FOLDER = \
-        "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions"
-
-    V_MATRIX_FOR_SEGMENT_ROOT_811= \
-        '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170630_105105/modeMatrix.fits'
-
-    V_MATRIX_FOR_SEGMENT_ROOT_892= \
-        '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170216_123645/modeMatrix.fits'
+#     LOG_ROOT_FOLDER = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice'
+# 
+#     M4COORDINATE_ROOT_FOLDER = \
+#         '/Users/rm/Desktop/Arcetri/M4/ActuatorCoordinates.fits'
+#
+#     CALIBRATION_ROOT_FOLDER = "/Users/rm/Desktop/Arcetri/M4"
+# 
+#     OPD_DATA_FOLDER = "/Users/rm/Desktop/Arcetri/M4/ProvaCodice"
+# 
+#     TEST_IMAGE_ROOT_FOLDER = \
+#         "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova"
+# 
+#     IFFUNCTIONS_ROOT_FOLDER = \
+#         "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions"
+# 
+#     V_MATRIX_FOR_SEGMENT_ROOT_811= \
+#         '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170630_105105/modeMatrix.fits'
+# 
+#     V_MATRIX_FOR_SEGMENT_ROOT_892= \
+#         '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170216_123645/modeMatrix.fits'
 
 
     #ROOT IN M4 PC
-#     CALIBRATION_ROOT_FOLDER = '/mnt/shared/M4Data'
-# 
-#     OPD_DATA_FOLDER = os.path.join(CALIBRATION_ROOT_FOLDER, 'OPTData')
-# 
-#     LOG_ROOT_FOLDER = os.path.join(CALIBRATION_ROOT_FOLDER,  'LOGData/mylog')
-# 
-#     M4COORDINATE_ROOT_FOLDER = \
-#         os.path.join(CALIBRATION_ROOT_FOLDER, 'CONFData/20191210_144400/ActuatorCoordinates.fits')
-# 
-#     V_MATRIX_FOR_SEGMENT_ROOT_811= \
-#         os.path.join(CALIBRATION_ROOT_FOLDER, 'CONFData/20191210_144400/ff_v_matrix.fits')
-# 
-#     IFFUNCTIONS_ROOT_FOLDER = \
-#         os.path.join(OPD_DATA_FOLDER, 'IFFunctions')
+    CALIBRATION_ROOT_FOLDER = '/mnt/shared/M4Data'
+ 
+    OPD_DATA_FOLDER = os.path.join(CALIBRATION_ROOT_FOLDER, 'OPTData')
+ 
+    LOG_ROOT_FOLDER = os.path.join(CALIBRATION_ROOT_FOLDER,  'LOGData/mylog')
+ 
+    M4COORDINATE_ROOT_FOLDER = \
+        os.path.join(CALIBRATION_ROOT_FOLDER, 'CONFData/20191210_144400/ActuatorCoordinates.fits')
+ 
+    V_MATRIX_FOR_SEGMENT_ROOT_811= \
+        os.path.join(CALIBRATION_ROOT_FOLDER, 'CONFData/20191210_144400/ff_v_matrix.fits')
+ 
+    IFFUNCTIONS_ROOT_FOLDER = \
+        os.path.join(OPD_DATA_FOLDER, 'IFFunctions')
 
     #SPL
     TN_FRINGES = '20181108_1'

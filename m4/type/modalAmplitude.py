@@ -27,7 +27,7 @@ class ModalAmplitude():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save data"""
-        return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+        return os.path.join(Configuration.OPD_DATA_FOLDER,
                             "ModalAmplitude")
 
     def getModalAmplitude(self):

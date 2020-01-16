@@ -104,6 +104,8 @@
 	  spl = SPL(filtro, camera)
 	  lambda_vector = np.arange(530,730,10)
 	  piston = spl.measurement(lambda_vector, acq4d=None, an=None)
+	  
+	  oppure solo: piston = spl.analyzer(tt)
 
 
 	  RISULTATI:

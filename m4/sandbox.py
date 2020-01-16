@@ -21,8 +21,7 @@ def testIFF_shuffleMeasureCreator(device, cmd_matrix_tag, mode_vect_tag,
     tt = IF.acq_IFFunctions(mode_vect_tag, n_push_pull, \
                             amp_tag, cmd_matrix_tag, 1)
 
-    folder = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
-                          "IFFunctions", tt)
+    folder = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
     who, tt_cmdH, acts_vector, cmd_matrix, \
     amplitude, n_push_pull, indexingList = IF.loadInfoFromFits(folder)
 
@@ -71,8 +70,7 @@ def testIFF_tidyMeasureCreator(device, cmd_matrix_tag, mode_vect_tag,
 
     tt = IF.acq_IFFunctions(mode_vect_tag, n_push_pull, amp_tag, cmd_matrix_tag)
 
-    folder = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, "IFFunctions",
-                          tt)
+    folder = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
     who, tt_cmdH, acts_vector, cmd_matrix, \
             amplitude, n_push_pull, indexingList = IF.loadInfoFromFits(folder)
 
@@ -150,7 +148,7 @@ def testOPDImages_TestFormat():
     from m4.analyzer_iffunctions import AnalyzerIFF
     an = AnalyzerIFF()
     # metterci an.createTestCubeMeasure_forTestDataInOpdImages ma dal pc giù
-    cubeMeasure = an.createTestCubeMeasure() #meglio se lo leggo che ci mette una vita
+    cubeMeasure = an.createTestCubeMeasure_forTestDataInOpdImages() #meglio se lo leggo che ci mette una vita
     cube = an.createCube()
     return cube
 

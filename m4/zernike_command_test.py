@@ -42,7 +42,7 @@ class ZernikeCommand():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+        return os.path.join(Configuration.OPD_DATA_FOLDER,
                             "ZernikeCommandTest")
 
     def _saveMeasurementInfo(self):

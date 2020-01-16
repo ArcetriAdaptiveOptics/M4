@@ -41,7 +41,7 @@ class IFFunctionsMaker():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+        return os.path.join(Configuration.OPD_DATA_FOLDER,
                             "IFFunctions")
 
 
@@ -138,7 +138,7 @@ class IFFunctionsMaker():
         """ Test function: create a measurement cube using data
         generate whit m4 idl software"""
         fold_my_pc = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/OIM_25modes.fits'
-        fold_m4_pc = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, 'TestData', 'OIM_25modes.fits')
+        fold_m4_pc = os.path.join(Configuration.OPD_DATA_FOLDER, 'TestData', 'OIM_25modes.fits')
         hduList = pyfits.open(fold_m4_pc)
         cube_50 = hduList[0].data
 

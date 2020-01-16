@@ -32,7 +32,7 @@ class SPL():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+        return os.path.join(Configuration.OPD_DATA_FOLDER,
                             "SPL")
 
     def measurement(self, lambda_vector, acq4d=None, an=None):
@@ -188,7 +188,7 @@ class SPL():
             dove = self._dove
         else:
             tt = tt
-            dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', tt)
+            dove = os.path.join(self._storageFolder(), tt)
 
         self._logger.info('Analysis of tt = %s', tt)
 
@@ -243,7 +243,7 @@ class SPL():
             cube_normalized = creating with normalized images,
                                 [pixels, pixels, n_frames=lambda]
         '''
-        dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', tt)
+        dove = os.path.join(self._storageFolder(), tt)
 
         path_list = []
         for f in  glob.iglob(os.path.join(dove, 'image_*.fits')):
@@ -311,7 +311,7 @@ class SPL():
         #tn_fringes = '20181026'
         self._logger.debug('Template Comparison with data in tn_fringes = %s',
                            tn_fringes)
-        dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL/Fringes',
+        dove = os.path.join(self._storageFolder(), 'Fringes',
                             tn_fringes)
         dove_delta = os.path.join(dove, 'Differential_piston.fits')
         hduList = pyfits.open(dove_delta)
@@ -359,7 +359,7 @@ class SPL():
         return my_lambda
 
     def _savePistonResult(self, tt, piston):
-        dove = os.path.join(Configuration.LOG_ROOT_FOLDER, 'SPL', tt,
+        dove = os.path.join(self._storageFolder(), tt,
                             'piston_result_prova.txt')
         file = open(dove, 'w+')
         file.write('%e' %piston[0])
