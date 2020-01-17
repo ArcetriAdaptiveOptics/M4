@@ -10,7 +10,7 @@ class TestCalc(unittest.TestCase):
     '''
     Contiene funzioni di test che utilizzano i dati presenti in
     /Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova
-    
+
     Oppure 
     /mnt/shared/M4Data/OPTData/TestData
     '''
@@ -129,3 +129,17 @@ class TestCalc(unittest.TestCase):
         zc = ZernikeCommand(roi[3], tt_list_for_an)
         tt, surf_cube, m4_images_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
         diff_list, rms = zc.analyzerResults(tt)
+
+
+    def test_SPL(self):
+        tt = '20181129_134845'
+        real_piston_value = -8.750000e-07
+        from m4.SPL_controller import SPL
+        spl= SPL(0, 0)
+        piston = spl.analyzer(tt)
+
+        if (real_piston_value - 1e-07 < piston[0] < real_piston_value + 1e-07):
+            result = True
+        else:
+            result = False
+        self.assertEqual(result, True, "Ohno")

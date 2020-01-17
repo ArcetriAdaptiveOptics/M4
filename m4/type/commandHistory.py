@@ -52,7 +52,7 @@ class CmdHistory():
             modesVector = Mode or actuator index vector
                             to apply (numpy.array([]))
             ampVector = amplitude mode vector (numpy.array([]))
-            cmdMatrix = mode command matrix 
+            cmdMatrix = mode command matrix
                          (nActs x nModes)
                          diagonal matrix in case of zonal commands
             nPushPull = number of consecutive push pull on the actuator
@@ -83,7 +83,7 @@ class CmdHistory():
             modesVector = Mode or actuator index vector
                             to apply (numpy.array([]))
             ampVector = amplitude mode vector (numpy.array([]))
-            cmdMatrix = mode command matrix 
+            cmdMatrix = mode command matrix
                          (nActs x nModes)
                          diagonal matrix in case of zonal commands
             nPushPull = number of consecutive push pull on the actuator
