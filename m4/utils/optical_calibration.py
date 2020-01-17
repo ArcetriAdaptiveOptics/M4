@@ -29,7 +29,7 @@ class opt_calibration():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+        return os.path.join(Configuration.OPD_DATA_FOLDER,
                             "Calibration")
 
 
@@ -204,7 +204,7 @@ class opt_calibration():
         """
         cube_measure = None
         fold_my_pc = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/MixingIntMat/20190930_162714'
-        fold_m4_pc = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER, 'TestData', 'MixingIntMat')
+        fold_m4_pc = os.path.join(Configuration.OPD_DATA_FOLDER, 'TestData', 'MixingIntMat')
         for i in range(5):
             name = 'Frame_%04d.fits' %i
             file = os.path.join(fold_m4_pc, name)

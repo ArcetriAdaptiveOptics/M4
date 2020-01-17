@@ -60,7 +60,7 @@ def readDataFromFileFits(fits_file_path):
     returns:
             data = data included in file path
     """
-    file_name = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+    file_name = os.path.join(Configuration.OPD_DATA_FOLDER,
                              fits_file_path)
     hduList = pyfits.open(file_name)
     data = hduList[0].data
