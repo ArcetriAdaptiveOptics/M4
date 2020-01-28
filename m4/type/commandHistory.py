@@ -46,7 +46,7 @@ class CmdHistory():
 
 
     def tidyCommandHistoryMaker(self, mode_vector, amp_vector,
-                                cmd_matrix, n_push_pull):
+                                cmd_matrix, temp_nPushPull):
         '''
          arg:
             modesVector = Mode or actuator index vector
@@ -55,17 +55,17 @@ class CmdHistory():
             cmdMatrix = mode command matrix
                          (nActs x nModes)
                          diagonal matrix in case of zonal commands
-            nPushPull = number of consecutive push pull on the actuator
-                         (int)
+            temp_nPushPull = vector of push pull on the actuator
+                             (es. np.array([1, -1, 1]))
          return:
              matrixToApply = tidy command history
                              (nAct, nModes x nPushPusll x 2)
              tt = tracking number
         '''
         self._ampVect = amp_vector
-        cmd_history = self._tidyCmdHistory(mode_vector, n_push_pull, cmd_matrix)
+        cmd_history = self._tidyCmdHistory(mode_vector, temp_nPushPull, cmd_matrix)
         aa = np.arange(self._cmdHistory.shape[1])
-        bb = np.tile(amp_vector, n_push_pull)
+        bb = np.tile(amp_vector, temp_nPushPull.shape[0])
         zipped = zip(aa, bb)
         matrix_to_apply = self._cmdHistoryToApply(zipped)
         self._cmdHToApply = matrix_to_apply
@@ -77,7 +77,7 @@ class CmdHistory():
 
 
     def shuffleCommandHistoryMaker(self, mode_vector, amp_vector,
-                                   cmd_matrix, n_push_pull):
+                                   cmd_matrix, temp_nPushPull):
         '''
          arg:
             modesVector = Mode or actuator index vector
@@ -95,7 +95,7 @@ class CmdHistory():
         '''
         self._ampVect = amp_vector
         cmd_history, indexing_list = self._shuffleCmdHistory(
-            mode_vector, n_push_pull, cmd_matrix)
+            mode_vector, temp_nPushPull, cmd_matrix)
         zipped = self._zippedAmplitude(amp_vector)
         matrix_to_apply = self._cmdHistoryToApply(zipped)
         self._cmdHToApply = matrix_to_apply
@@ -105,16 +105,17 @@ class CmdHistory():
 
         return matrix_to_apply, tt
 
-    def _shuffleCmdHistory(self, mode_vector, n_push_pull, cmd_matrix):
+    def _shuffleCmdHistory(self, mode_vector, temp_nPushPull, cmd_matrix):
         self._modeVector = copy.copy(mode_vector)
-        self._nPushPull = n_push_pull
+        self._nPushPull = temp_nPushPull.shape[0]
+        self._template = temp_nPushPull
         self._cmdMatrix = cmd_matrix
 
-        n_frame = mode_vector.size * n_push_pull
+        n_frame = mode_vector.size * temp_nPushPull.shape[0]
         matrix_to_apply = np.zeros((self._nActs, n_frame))
 
         indexingList = []
-        for j in range(n_push_pull):
+        for j in range(temp_nPushPull.shape[0]):
             np.random.shuffle(mode_vector)
             indexingList.append(list(mode_vector))
 
@@ -133,17 +134,18 @@ class CmdHistory():
         return self._cmdHistory, self._indexingList
 
 
-    def _tidyCmdHistory(self, mode_vector, n_push_pull, cmd_matrix):
+    def _tidyCmdHistory(self, mode_vector, temp_nPushPull, cmd_matrix):
         self._modeVector = copy.copy(mode_vector)
-        self._nPushPull = n_push_pull
+        self._nPushPull = temp_nPushPull.shape[0]
+        self._template = temp_nPushPull
         self._cmdMatrix = cmd_matrix
         indList = []
-        for i in range(n_push_pull):
+        for i in range(temp_nPushPull.shape[0]):
             indList.append(mode_vector)
         self._indexingList = np.array(indList)
-        #self._indexingList= np.tile(mode_vector, n_push_pull)
+        #self._indexingList= np.tile(mode_vector, temp_nPushPull)
 
-        n_frame = mode_vector.size * n_push_pull
+        n_frame = mode_vector.size * temp_nPushPull.shape[0]
         matrix_to_apply = np.zeros((self._nActs, n_frame))
 
         cmdList = []
@@ -151,7 +153,7 @@ class CmdHistory():
             cmd = cmd_matrix[:, i]
             cmdList.append(cmd)
 
-        for j in range(n_push_pull):
+        for j in range(temp_nPushPull.shape[0]):
             for i in range(len(cmdList)):
                 k = len(cmdList)*j + i
                 matrix_to_apply.T[k] = cmdList[i]
@@ -162,20 +164,20 @@ class CmdHistory():
 
 
     def _amplitudeReorganization(self, indexing_input, indexing_list,
-                                 amplitude, n_push_pull):
+                                 amplitude, temp_nPushPull):
         where = []
         for i in indexing_input:
-            for j in range(n_push_pull):
+            for j in range(temp_nPushPull.shape[0]):
                 a = np.where(indexing_list[j] == i)
                 where.append(a)
 
 
         where = np.array(where)
-        vect = np.zeros(amplitude.shape[0]*n_push_pull)
+        vect = np.zeros(amplitude.shape[0]*temp_nPushPull.shape[0])
 
         for i in range(amplitude.shape[0]):
-            for k in range(n_push_pull):
-                p = n_push_pull * i + k
+            for k in range(temp_nPushPull.shape[0]):
+                p = temp_nPushPull.shape[0] * i + k
                 indvect = where[p][0][0]+ indexing_input.shape[0] * k
                 vect[indvect] = amplitude[i]
 
@@ -188,7 +190,7 @@ class CmdHistory():
                 self._amplitudeReorganization(self._modeVector,
                                               self._indexingList,
                                               amplitude,
-                                              self._nPushPull)
+                                              self._template)
         #zipped= np.dstack((aa, reorganized_amplitude))
         zipped = zip(aa, reorganized_amplitude)
         return zipped

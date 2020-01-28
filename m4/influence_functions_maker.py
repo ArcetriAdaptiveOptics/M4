@@ -45,7 +45,7 @@ class IFFunctionsMaker():
                             "IFFunctions")
 
 
-    def acq_IFFunctions(self, modes_vector_fits_file_name, n_push_pull,
+    def acq_IFFunctions(self, modes_vector_fits_file_name, template,
                         amplitude_fits_file_name, cmd_matrix_fits_file_name,
                         shuffle=None):
         '''
@@ -54,6 +54,7 @@ class IFFunctionsMaker():
         Args:
              modes_vector_fits_file_name = fits file name
                                          (Example = modes.fits)
+             template = np.array([1, -1, 1])
              n_push_pull = number of push pull on the actuator
                          (int)
              amplitude_fits_file_name = fits file name
@@ -70,7 +71,8 @@ class IFFunctionsMaker():
         object_from_fits_file_name.readObjectFitsFileName(amplitude_fits_file_name,
                                                           modes_vector_fits_file_name,
                                                           cmd_matrix_fits_file_name)
-        self._nPushPull = n_push_pull
+        self._nPushPull = template.shape[0]
+        self._template = template
 
         self._modesVectorTag = modes_vector_fits_file_name
         self._amplitudeTag = amplitude_fits_file_name
@@ -101,13 +103,13 @@ class IFFunctionsMaker():
                     cmdH.tidyCommandHistoryMaker(modes_vector,
                                                  amplitude,
                                                  cmd_matrix,
-                                                 n_push_pull)
+                                                 template)
         else:
             command_history_matrix_to_apply, self._tt_cmdH = \
                     cmdH.shuffleCommandHistoryMaker(modes_vector,
                                                     amplitude,
                                                     cmd_matrix,
-                                                    n_push_pull)
+                                                    template)
         self._indexingList = cmdH.getIndexingList()
         self._saveInfoAsFits(dove)
 
@@ -177,6 +179,7 @@ class IFFunctionsMaker():
         header['CMDMAT'] = self._cmdMatrixTag
         header['AMP'] = self._amplitudeTag
         pyfits.writeto(fits_file_name, self._indexingList, header)
+        pyfits.append(fits_file_name, self._template, header)
 
     def _saveInfoAsH5(self, folder):
         """ Save the h5 info file containing the input data for
@@ -220,6 +223,7 @@ class IFFunctionsMaker():
         cmd_matrix_tag = header['CMDMAT']
         cmd_ampl_tag = header['AMP']
         indexingList = hduList[0].data
+        template = hduList[1].data
         who = header['WHO']
         tt_cmdH = header['TT_CMDH']
         try:
@@ -232,7 +236,7 @@ class IFFunctionsMaker():
                                                           acts_vector_tag,
                                                           cmd_matrix_tag)
         return (who, tt_cmdH, acts_vector, cmd_matrix, cmd_ampl,
-                n_push_pull, indexingList)
+                n_push_pull, indexingList, template)
 
     @staticmethod
     def loadInfoFromH5(tt):

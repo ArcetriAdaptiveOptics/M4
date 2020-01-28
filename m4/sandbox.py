@@ -11,25 +11,27 @@ from m4.ground import object_from_fits_file_name
 
 ### FUNZIONI PER TEST IFF ###
 def testIFF_shuffleMeasureCreator(device, cmd_matrix_tag, mode_vect_tag,
-                                  amp_tag, n_push_pull):
+                                  amp_tag, template):
+    ''' Al posto di n_push_pull passo in argomento il template
+    '''
     from m4.type.modesVector import ModesVector
     mv = ModesVector.loadFromFits(mode_vect_tag)
     mode_vect_input = mv.getModesVector()
     from m4.influence_functions_maker import IFFunctionsMaker
     IF = IFFunctionsMaker(device)
 
-    tt = IF.acq_IFFunctions(mode_vect_tag, n_push_pull, \
+    tt = IF.acq_IFFunctions(mode_vect_tag, template, \
                             amp_tag, cmd_matrix_tag, 1)
 
     folder = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
     who, tt_cmdH, acts_vector, cmd_matrix, \
-    amplitude, n_push_pull, indexingList = IF.loadInfoFromFits(folder)
+    amplitude, n_push_pull, indexingList, template = IF.loadInfoFromFits(folder)
 
     cube = IF._testIFFunctions_createCube25fromFileFitsMeasure()
     from m4.type.commandHistory import CmdHistory
     cmdH = CmdHistory(device)
     ampl_reorg = cmdH._amplitudeReorganization(mode_vect_input, indexingList,
-                                               amplitude, n_push_pull)
+                                               amplitude, template)
 
     misure = None
     for i in range(indexingList.shape[0]):
@@ -61,18 +63,19 @@ def testIFF_shuffleMeasureCreator(device, cmd_matrix_tag, mode_vect_tag,
     pyfits.append(fits_file_name, indexingList, header)
     pyfits.append(fits_file_name, misure.data, header)
     pyfits.append(fits_file_name, misure.mask.astype(int), header)
+    pyfits.append(fits_file_name, template, header)
     return tt
 
 def testIFF_tidyMeasureCreator(device, cmd_matrix_tag, mode_vect_tag,
-                               amp_tag, n_push_pull):
+                               amp_tag, template):
     from m4.influence_functions_maker import IFFunctionsMaker
     IF = IFFunctionsMaker(device)
 
-    tt = IF.acq_IFFunctions(mode_vect_tag, n_push_pull, amp_tag, cmd_matrix_tag)
+    tt = IF.acq_IFFunctions(mode_vect_tag, template, amp_tag, cmd_matrix_tag)
 
     folder = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
     who, tt_cmdH, acts_vector, cmd_matrix, \
-            amplitude, n_push_pull, indexingList = IF.loadInfoFromFits(folder)
+            amplitude, n_push_pull, indexingList, template = IF.loadInfoFromFits(folder)
 
     cube = IF._testIFFunctions_createCube25fromFileFitsMeasure()
     ampl = np.tile(amplitude, n_push_pull)
@@ -107,6 +110,7 @@ def testIFF_tidyMeasureCreator(device, cmd_matrix_tag, mode_vect_tag,
     pyfits.append(fits_file_name, indexingList, header)
     pyfits.append(fits_file_name, misure.data, header)
     pyfits.append(fits_file_name, misure.mask.astype(int), header)
+    pyfits.append(fits_file_name, template, header)
     return tt
 
 
