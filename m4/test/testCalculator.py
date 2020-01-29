@@ -26,13 +26,13 @@ class TestCalc(unittest.TestCase):
         cmd_matrix_tag = 'matTestIF.fits'
         mode_vect_tag = 'vectTestIF.fits'
         amp_tag = 'ampTestIF.fits'
-        #n_push_pull = 3
-        template = np.array([1, -1, 1])
+        n_push_pull = 3
+        #template = np.array([1, -1, 1])
 
         from m4 import sandbox
         tt = sandbox.testIFF_shuffleMeasureCreator(device, cmd_matrix_tag,
                                                    mode_vect_tag, amp_tag,
-                                                   template)
+                                                   n_push_pull)
         an, prod, cube = sandbox.testIFF_an(tt)
         amp, sp_wf = sandbox.testIFF_spiano(an)
         aa = sp_wf.std()
@@ -54,13 +54,13 @@ class TestCalc(unittest.TestCase):
         cmd_matrix_tag = 'matTestIF.fits'
         mode_vect_tag = 'vectTestIF.fits'
         amp_tag = 'ampTestIF.fits'
-        #n_push_pull = 3
+        n_push_pull = 3
         template = np.array([1, -1, 1])
 
         from m4 import sandbox
         tt = sandbox.testIFF_tidyMeasureCreator(device, cmd_matrix_tag,
                                                 mode_vect_tag, amp_tag,
-                                                template)
+                                                n_push_pull, template)
         an, prod, cube = sandbox.testIFF_an(tt)
         amp, sp_wf = sandbox.testIFF_spiano(an)
         aa = sp_wf.std()
@@ -77,7 +77,7 @@ class TestCalc(unittest.TestCase):
         /Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/MixingIntMat/20190930_162714'
         l'immagine da allineare e le posizioni degli elementi ottici sono quelle in
         /Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Allineamento/20191001_081344 
-        
+
         Oppure basato sui dati presenti in
         /mnt/shared/M4Data/OPTData/TestData/MixingIntMat...
         /mnt/shared/M4Data/OPTData/TestData/Allineamento.. """

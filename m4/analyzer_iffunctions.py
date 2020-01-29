@@ -95,7 +95,7 @@ class AnalyzerIFF():
         return where
 
     def _amplitudeReorganization(self, indexing_input, indexing_list,
-                                 amplitude, temp_nPushPull):
+                                 amplitude, n_push_pull):
         '''
             Args:
                 indexing_input = vector of selected modes for carrying out
@@ -106,21 +106,21 @@ class AnalyzerIFF():
                 amplitude = amplitude of applied modes
 
             Returns:
-                vect = vector (amp.shape x temp_nPushPull.shape) with the
+                vect = vector (amp.shape x n_push_pull.shape) with the
                         amplitudes ordered in the same way as indexing_list
 
         '''
         where = []
         for i in indexing_input:
-            for j in range(temp_nPushPull):
+            for j in range(n_push_pull):
                 a = np.where(indexing_list[j] == i)
                 where.append(a)
         where = np.array(where)
-        vect = np.zeros(amplitude.shape[0]*temp_nPushPull)
+        vect = np.zeros(amplitude.shape[0]*n_push_pull)
 
         for i in range(amplitude.shape[0]):
-            for k in range(temp_nPushPull):
-                p = temp_nPushPull * i + k
+            for k in range(n_push_pull):
+                p = n_push_pull * i + k
                 indvect = where[p][0][0]+ indexing_input.shape[0] * k
                 vect[indvect] = amplitude[i]
         return vect
@@ -349,7 +349,7 @@ class AnalyzerIFF():
         theObject._cmdMatrix = hduList[1].data
         theObject._cmdAmplitude = hduList[2].data
         theObject._indexingList = hduList[3].data
-        theObject._template = hduList[6]
+        theObject._template = hduList[6].data
         who = header['WHO']
         tt_cmdH = header['TT_CMDH']
         try:
