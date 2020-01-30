@@ -141,7 +141,7 @@ class AnalyzerIFF():
         self._ttData()
         self._logCubeCreation(tiptilt_detrend, phase_ambiguity)
         where = self._indexReorganization()
-        misure_pos, misure_neg = self._splitMeasureFromFits(self._cubeMeasure)
+        #misure_pos, misure_neg = self._splitMeasureFromFits(self._cubeMeasure)
         ampl_reorg = self._amplitudeReorganization(self._actsVector,
                                                    self._indexingList,
                                                    self._cmdAmplitude,
@@ -151,13 +151,16 @@ class AnalyzerIFF():
         for i in range(self._actsVector.shape[0]):
             for k in range(self._nPushPull):
                 p = self._nPushPull * i + k
-                #where= self._indexReorganization()
                 n = where[p][0][0]
-                mis = k* self._indexingList.shape[1] + n
+                mis_amp = k* self._indexingList.shape[1] + n
+                mis = k* self._indexingList.shape[1] + n * self._nPushPull
 
-                img_pos = misure_pos[:,:,mis]
-                img_neg = misure_neg[:,:,mis]
-                img_if = (img_pos - img_neg) / (2 * ampl_reorg[mis])
+                #img_pos = misure_pos[:,:,mis]
+                #img_neg = misure_neg[:,:,mis]
+                image = self._cubeMeasure[:,:, mis] * self._template[0]
+                for l in range(1, self._template.shape[0]):
+                    image = image + self._cubeMeasure[:,:, mis+l] * self._template[l]
+                img_if = image / (2 * ampl_reorg[mis_amp])
                 if tiptilt_detrend is None:
                     img_if = img_if
                 else:
