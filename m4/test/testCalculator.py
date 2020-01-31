@@ -27,12 +27,12 @@ class TestCalc(unittest.TestCase):
         mode_vect_tag = 'vectTestIF.fits'
         amp_tag = 'ampTestIF.fits'
         n_push_pull = 3
-        #template = np.array([1, -1, 1])
+        template = np.array([1, -1, 1])
 
         from m4 import sandbox
         tt = sandbox.testIFF_shuffleMeasureCreator(device, cmd_matrix_tag,
                                                    mode_vect_tag, amp_tag,
-                                                   n_push_pull)
+                                                   n_push_pull, template)
         an, prod, cube = sandbox.testIFF_an(tt)
         amp, sp_wf = sandbox.testIFF_spiano(an)
         aa = sp_wf.std()

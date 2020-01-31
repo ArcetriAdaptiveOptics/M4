@@ -153,7 +153,8 @@ class AnalyzerIFF():
                 p = self._nPushPull * i + k
                 n = where[p][0][0]
                 mis_amp = k* self._indexingList.shape[1] + n
-                mis = k* self._indexingList.shape[1] + n * self._nPushPull
+                mis = k * self._indexingList.shape[1] * self._template.shape[0] \
+                        + n * self._template.shape[0]
 
                 #img_pos = misure_pos[:,:,mis]
                 #img_neg = misure_neg[:,:,mis]
