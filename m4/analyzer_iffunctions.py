@@ -158,10 +158,11 @@ class AnalyzerIFF():
 
                 #img_pos = misure_pos[:,:,mis]
                 #img_neg = misure_neg[:,:,mis]
-                image = self._cubeMeasure[:,:, mis] * self._template[0]
+                image_sum = np.zeros((self._cubeMeasure.shape[0],
+                                     self._cubeMeasure.shape[1]))
                 for l in range(1, self._template.shape[0]):
-                    image = image + self._cubeMeasure[:,:, mis+l] * self._template[l]
-                img_if = image / (2 * ampl_reorg[mis_amp])
+                    image = image_sum + self._cubeMeasure[:,:, mis+l] * self._template[l]
+                img_if = image / (2 * ampl_reorg[mis_amp] * (self._template.shape[0] - 1))
                 if tiptilt_detrend is None:
                     img_if = img_if
                 else:
