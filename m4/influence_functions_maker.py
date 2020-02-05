@@ -71,6 +71,10 @@ class IFFunctionsMaker():
                                                           modes_vector_fits_file_name,
                                                           cmd_matrix_fits_file_name)
         self._nPushPull = n_push_pull
+        if template is None:
+            self._template = np.array([1, -1])
+        else:
+            self._template = template
 
         self._modesVectorTag = modes_vector_fits_file_name
         self._amplitudeTag = amplitude_fits_file_name
@@ -179,6 +183,7 @@ class IFFunctionsMaker():
         header['CMDMAT'] = self._cmdMatrixTag
         header['AMP'] = self._amplitudeTag
         pyfits.writeto(fits_file_name, self._indexingList, header)
+        pyfits.append(fits_file_name, self._template)
 
     def _saveInfoAsH5(self, folder):
         """ Save the h5 info file containing the input data for
@@ -222,6 +227,7 @@ class IFFunctionsMaker():
         cmd_matrix_tag = header['CMDMAT']
         cmd_ampl_tag = header['AMP']
         indexingList = hduList[0].data
+        template = hduList[1].data
         who = header['WHO']
         tt_cmdH = header['TT_CMDH']
         try:
@@ -234,7 +240,7 @@ class IFFunctionsMaker():
                                                           acts_vector_tag,
                                                           cmd_matrix_tag)
         return (who, tt_cmdH, acts_vector, cmd_matrix, cmd_ampl,
-                n_push_pull, indexingList)
+                n_push_pull, indexingList, template)
 
     @staticmethod
     def loadInfoFromH5(tt):

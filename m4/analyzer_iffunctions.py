@@ -338,11 +338,11 @@ class AnalyzerIFF():
 
 ### FUNZIONI STATICHE PER CREARE AN PER I TEST ###
     @staticmethod
-    def loadTestMeasureFromFits(tt):
+    def loadTestMeasureFromFits(dove):
         """
         Creates the AnalyzerIFF object using specific informations
         """
-        dove = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
+        #dove = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
         fits_file_name = os.path.join(dove, 'misure.fits')
         header = pyfits.getheader(fits_file_name)
         hduList = pyfits.open(fits_file_name)

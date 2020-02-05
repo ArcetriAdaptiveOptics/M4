@@ -3,6 +3,7 @@
 '''
 
 import os
+import shutil
 from astropy.io import fits as pyfits
 import numpy as np
 from m4.ground.configuration import Configuration
@@ -25,7 +26,7 @@ def testIFF_shuffleMeasureCreator(device, cmd_matrix_tag, mode_vect_tag,
 
     folder = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
     who, tt_cmdH, acts_vector, cmd_matrix, \
-    amplitude, n_push_pull, indexingList = IF.loadInfoFromFits(folder)
+    amplitude, n_push_pull, indexingList, template = IF.loadInfoFromFits(folder)
 
     cube = IF._testIFFunctions_createCube25fromFileFitsMeasure()
     from m4.type.commandHistory import CmdHistory
@@ -77,7 +78,7 @@ def testIFF_tidyMeasureCreator(device, cmd_matrix_tag, mode_vect_tag,
 
     folder = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
     who, tt_cmdH, acts_vector, cmd_matrix, \
-            amplitude, n_push_pull, indexingList = IF.loadInfoFromFits(folder)
+            amplitude, n_push_pull, indexingList, template = IF.loadInfoFromFits(folder)
 
     cube = IF._testIFFunctions_createCube25fromFileFitsMeasure()
     ampl = np.tile(amplitude, n_push_pull)
@@ -237,3 +238,30 @@ def provaZernike(seg, zernike_modes_vector_amplitude, tt_list_for_an):
     zc = ZernikeCommand(roi[3], tt_list_for_an)
     tt, surf_cube, m4_images_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
     return zc, tt, surf_cube, m4_images_cube
+
+# TEST noise #
+def provaAcquisitionNoise():
+    cmd_matrix_tag = 'matTestIF.fits'
+    mode_vect_tag = 'vectTestIF.fits'
+    amp_tag = 'ZerosAmp.fits'
+    n_push_pull = 3
+    template = np.array([1, -1, 1])
+    from m4.utils import create_device
+    device = create_device.myDevice("segment")
+
+    from m4.influence_functions_maker import IFFunctionsMaker
+    IF = IFFunctionsMaker(device)
+
+    tt = IF.acq_IFFunctions(mode_vect_tag, n_push_pull, amp_tag, cmd_matrix_tag,
+                            None, template)
+    source = os.path.join('/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions', tt)
+    destination = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Noise'
+    destination_file_path = shutil.move(source, destination)
+
+    from m4.noise_functions import Noise
+    n = Noise()
+    destination_file_path = os.path.join(destination, tt)
+    data_file_path = os.path.join(destination, 'hdf5')
+    cube_measure = n._createAndSaveCubeFromH5Data(data_file_path, destination_file_path, device)
+
+    return destination_file_path
