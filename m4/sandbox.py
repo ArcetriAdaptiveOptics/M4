@@ -243,7 +243,8 @@ def provaZernike(seg, zernike_modes_vector_amplitude, tt_list_for_an):
 def provaAcquisitionNoise():
     cmd_matrix_tag = 'matTestIF.fits'
     mode_vect_tag = 'vectTestIF.fits'
-    amp_tag = 'ZerosAmp.fits'
+    #amp_tag = 'ZerosAmp.fits'
+    amp_tag = 'OnesAmp.fits'
     n_push_pull = 3
     template = np.array([1, -1, 1])
     from m4.utils import create_device

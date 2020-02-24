@@ -10,6 +10,8 @@ from astropy.io import fits as pyfits
 from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influence_functions_maker import IFFunctionsMaker
 from m4.analyzer_iffunctions import AnalyzerIFF
+from m4.utils.zernike_on_m_4 import ZernikeOnM4
+
 
 class Noise():
     '''
@@ -19,14 +21,15 @@ class Noise():
         """The constructor """
         self._logger = logging.getLogger('NOISE:')
         self._ic = InterferometerConverter()
+        self._zOnM4 = ZernikeOnM4()
 
 
 
     def noise_acquisition_and_analysis(self,):
         destination_file_path = self._acquisition()
         self._cubeFromAnalysis = self._analysis(destination_file_path)
-        rms_vector = self.rmsFromCube(self._cubeFromAnalysis)
-        return rms_vector
+        rms_mean = self.rmsFromCube(self._cubeFromAnalysis)
+        return rms_mean
 
     def _acquisition(self):
         from m4 import sandbox
@@ -35,11 +38,17 @@ class Noise():
 
     def rmsFromCube(self, cube_to_process):
         rms_list = []
+        coef_list = []
         for i in range(cube_to_process.shape[2]):
             rms = cube_to_process[:,:,i].std()
+            coef, mat = self._zOnM4.zernikeFit(cube_to_process[:,:,i],
+                                               np.array([2, 3])) #non tornano i punti
             rms_list.append(rms)
+            coef_list.append(coef)
         rms_vector = np.array(rms_list)
-        return rms_vector
+        coef_vector = np.array(coef_list)
+        rms_mean = np.mean(rms_vector)
+        return rms_mean
 
     def _createAndSaveCubeFromH5Data(self, data_file_path, destination_file_path, device):
         IF = IFFunctionsMaker(device)
