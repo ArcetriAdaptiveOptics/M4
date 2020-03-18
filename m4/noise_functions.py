@@ -28,7 +28,7 @@ class Noise():
     def noise_acquisition_and_analysis(self,):
         destination_file_path = self._acquisition()
         self._cubeFromAnalysis = self._analysis(destination_file_path)
-        rms_mean = self.rmsFromCube(self._cubeFromAnalysis)
+        rms_mean, tip, tilt = self.rmsFromCube(self._cubeFromAnalysis)
         return rms_mean
 
     def _acquisition(self):
@@ -38,17 +38,28 @@ class Noise():
 
     def rmsFromCube(self, cube_to_process):
         rms_list = []
-        coef_list = []
+        coef_tilt_list = []
+        coef_tip_list = []
         for i in range(cube_to_process.shape[2]):
             rms = cube_to_process[:,:,i].std()
-            coef, mat = self._zOnM4.zernikeFit(cube_to_process[:,:,i],
+            image = self._imageExtender(cube_to_process[:,:,i])
+            coef, mat = self._zOnM4.zernikeFit(image,
                                                np.array([2, 3])) #non tornano i punti
             rms_list.append(rms)
-            coef_list.append(coef)
+            coef_tip_list.append(coef[0])
+            coef_tilt_list.append(coef[1])
         rms_vector = np.array(rms_list)
-        coef_vector = np.array(coef_list)
+        tip = np.array(coef_tip_list).mean()
+        tilt = np.array(coef_tilt_list).mean()
         rms_mean = np.mean(rms_vector)
-        return rms_mean
+        return rms_mean, tip, tilt
+
+    def _imageExtender(self, cube_element):
+        vv = np.ma.masked_array(np.zeros((12, 496)), mask=np.ones((12, 496)).astype(bool))
+        vv2 = np.ma.masked_array(np.zeros((512, 16)), mask=np.ones((512, 16)).astype(bool))
+        pp = np.ma.append(cube_element, vv, axis=0)
+        image = np.ma.append(pp, vv2, axis=1)
+        return image
 
     def _createAndSaveCubeFromH5Data(self, data_file_path, destination_file_path, device):
         IF = IFFunctionsMaker(device)
