@@ -7,6 +7,7 @@ import logging
 import h5py
 import numpy as np
 from astropy.io import fits as pyfits
+from m4.ground.configuration import Configuration
 from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influence_functions_maker import IFFunctionsMaker
 from m4.analyzer_iffunctions import AnalyzerIFF
@@ -23,7 +24,11 @@ class Noise():
         self._ic = InterferometerConverter()
         self._zOnM4 = ZernikeOnM4()
 
-
+    @staticmethod
+    def _storageFolder():
+        """ Creates the path where to save measurement data"""
+        return os.path.join(Configuration.OPD_DATA_FOLDER,
+                            "Noise")
 
     def noise_acquisition_and_analysis(self,):
         destination_file_path = self._acquisition()
@@ -64,7 +69,7 @@ class Noise():
     def _createAndSaveCubeFromH5Data(self, data_file_path, destination_file_path, device):
         IF = IFFunctionsMaker(device)
         self._cubeNoise = None
-        for i in range(0, 500):
+        for i in range(0, 1876):
             name = 'img_%04d.h5' %i
             file_name = os.path.join(data_file_path, name)
             image = self._ic.from4D(file_name)
@@ -90,7 +95,9 @@ class Noise():
         pyfits.append(fits_file_name, template, header)
         return self._cubeNoise
 
-    def _readCube(self, file_path):
+    def _readCube(self, tt):
+        store_in_folder = Noise._storageFolder()
+        file_path = os.path.join(store_in_folder, tt)
         fits_file_name = os.path.join(file_path, 'Cube.fits')
         hduList = pyfits.open(fits_file_name)
         self._cubeFromAnalysis = np.ma.masked_array(hduList[0].data,
@@ -105,3 +112,31 @@ class Noise():
         pyfits.writeto(fits_file_name, self._cubeFromAnalysis.data)
         pyfits.append(fits_file_name, self._cubeFromAnalysis.mask.astype(int))
         return self._cubeFromAnalysis
+
+    def _readTempFromInfoFile(self, tt):
+        store_in_folder = Noise._storageFolder()
+        file_path = os.path.join(store_in_folder, tt)
+        fits_file_name = os.path.join(file_path, 'Info.fits')
+        hduList= pyfits.open(fits_file_name)
+        n_temp = hduList[1].data.shape[0]
+        return n_temp
+
+    def different_template_analyzer(self, tt_list):
+        rms_list = []
+        n_temp_list = []
+        for tt in tt_list:
+            cube = self._readCube(tt)
+            n_temp = self._readTempFromInfoFile(tt)
+            rms, tip, tilt = self.rmsFromCube(cube)
+            rms_list.append(rms)
+            n_temp_list.append(n_temp)
+
+        rms_medio = np.array(rms_list)
+        n_temp = np.array(n_temp_list)
+        return rms_medio, n_temp
+    ### tt_list ###
+    # measurementFolder ='/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Noise'
+    # list= os.listdir(measurementFolder); list.sort()
+    # tt_list = list[1:len(list)-1]
+    ### PLOT ###
+    # plot(n_temp, rms, '-o'); plt.xlabel('n_temp'); plt.ylabel('rms_medio')

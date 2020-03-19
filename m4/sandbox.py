@@ -246,7 +246,7 @@ def provaAcquisitionNoise():
     #amp_tag = 'ZerosAmp.fits'
     amp_tag = 'OnesAmp.fits'
     n_push_pull = 3
-    template = np.array([1, -1, 1])
+    template = np.array([1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1])
     from m4.utils import create_device
     device = create_device.myDevice("segment")
 
