@@ -113,5 +113,22 @@
 	  tutte le misure effettuate (image_530nm.fits),
 	  lambda_vector.fits
 	  piston_result.txt
+	  fringe_result.fits (la mia matrice totale 151xn_lambda)
+
+• Noise
+	 PROCEDIMENTO:
+	 from m4.noise_functions import Noise
+	 n = Noise()
+	 #acquisizione dati e analisi (es: template=np.array([1,-1,1]) numberOfNoiseIma=3*3*25=225)
+	 destination_file_path, rms_mean = n.noise_acquisition_and_analysis(numberOfNoiseIma, template)
+	 #analisi di più carrtelle di dati
+	 rms_medio, n_temp = n.different_template_analyzer(tt_list)
+
+	 RISULTATI:
+	 rms_medio, n_temp = vettore degli rms medi e lunghezza dei template ustai per poter farci il plot
+	 * .../Noise/ tt contiene
+	 il file con le info usate per fare le iff (info.fits)
+	 il cubo di misure prese con le iff (misere.fits)
+	 il cubo che viene dall'analisi delle iff con l'analyzer (Cube.fits)
 	
 	

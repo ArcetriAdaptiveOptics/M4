@@ -240,13 +240,13 @@ def provaZernike(seg, zernike_modes_vector_amplitude, tt_list_for_an):
     return zc, tt, surf_cube, m4_images_cube
 
 # TEST noise #
-def provaAcquisitionNoise():
+def provaAcquisitionNoise(template):
     cmd_matrix_tag = 'matTestIF.fits'
     mode_vect_tag = 'vectTestIF.fits'
     #amp_tag = 'ZerosAmp.fits'
     amp_tag = 'OnesAmp.fits'
     n_push_pull = 3
-    template = np.array([1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1])
+    #template = np.array([1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1])
     from m4.utils import create_device
     device = create_device.myDevice("segment")
 

@@ -120,7 +120,7 @@ class IFFunctionsMaker():
         for i in range(command_history_matrix_to_apply.shape[1]):
             self._applyToDM(command_history_matrix_to_apply[:,i])
             #acquisizione immagine con 4d
-            #salvataggio immagine 
+            #salvataggio immagine
 
         return tt
 

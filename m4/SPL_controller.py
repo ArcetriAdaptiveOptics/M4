@@ -225,12 +225,18 @@ class SPL():
             matrix_smooth[:, i] = w
 
         matrix[np.where(matrix == np.nan)] = 0
+        self._matrix = matrix
+        #self._saveMatrix(matrix)
         piston = self.templateComparison(matrix, lambda_vector)
 
         self._savePistonResult(tt, piston)
 
         return piston
 
+    def _saveMatrix(self, matrix, tt):
+        destination_file_path = SPL._storageFolder()
+        fits_file_name = os.path.join(destination_file_path, 'fringe_result.fits', tt)
+        pyfits.writeto(fits_file_name, matrix)
 
 
     def _readCameraFrames(self, tt):
