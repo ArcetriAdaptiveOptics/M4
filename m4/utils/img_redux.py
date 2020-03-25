@@ -55,12 +55,15 @@ class TipTiltDetrend():
             coefList.append(coef)
 
         if analysis_ind is None:
-            coef_list = coefList
-            del coef_list[final_index]
+            analysis_ind = np.array([1, 2]) #from roi
+            #coef_list = coefList
+            #del coef_list[final_index]
         else:
-            coef_list = []
-            for i in range(len(analysis_ind)):
-                coef_list.append(coefList[analysis_ind[i]])
+            analysis_ind = analysis_ind
+        coef_list = []
+        for i in range(len(analysis_ind)):
+            coef_list.append(coefList[analysis_ind[i]])
+
         tip, tilt = np.average(coef_list, axis=0)
 
         surfcoef = np.array([tip, tilt])

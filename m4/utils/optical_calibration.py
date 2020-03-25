@@ -204,10 +204,10 @@ class opt_calibration():
         """
         cube_measure = None
         fold_my_pc = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/MixingIntMat/20190930_162714'
-        fold_m4_pc = os.path.join(Configuration.OPD_DATA_FOLDER, 'TestData', 'MixingIntMat')
+        #fold_m4_pc = os.path.join(Configuration.OPD_DATA_FOLDER, 'TestData', 'MixingIntMat')
         for i in range(5):
             name = 'Frame_%04d.fits' %i
-            file = os.path.join(fold_m4_pc, name)
+            file = os.path.join(fold_my_pc, name)
             hduList = pyfits.open(file)
             aa = hduList[0].data
             mode = np.ma.masked_array(aa[0,:,:], mask=np.invert(aa[1,:,:].astype(bool)))

@@ -58,7 +58,11 @@
 	  cmd = a.ott_alignment(tt)
 	  
 	  RISULTATI:
-	  
+	  * .../Calibration/tt contiene
+	  (per ora no) misure all'applicazione di ogni comando al grado di libertà
+	  la matrice dei comandi utilizzate per le misure (CommandMatrix.fits)
+	  la maschera della misura (Mask.fits)
+	  matrice d'interazione e ricostruttore
 	  
 	- Allinemaneto di M4
 	
