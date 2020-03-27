@@ -8,6 +8,7 @@ import glob
 import time
 import numpy as np
 import scipy.ndimage as scin
+from m4.ground import smooth_function as sf
 from m4.ground import tracking_number_folder
 from astropy.io import fits as pyfits
 from m4.ground.configuration import Configuration
@@ -28,6 +29,7 @@ class SPL():
         self._logger = logging.getLogger('SPL_CONTROLLER:')
         self._filter = filter_obj
         self._camera = camera_obj
+        self._pix2um = 3.75
 
     @staticmethod
     def _storageFolder():
@@ -200,7 +202,7 @@ class SPL():
         img = np.sum(cube_normalized, 2)
         pick = self._newThr(img)
         matrix = np.zeros((pick[3]-pick[2] + 1, lambda_vector.shape[0])) # 150 + 1 pixel
-        matrix_smooth = np.zeros((pick[3]-pick[2] + 2, lambda_vector.shape[0]))
+        matrix_smooth = np.zeros((pick[3]-pick[2] + 1, lambda_vector.shape[0]))
         crop_frame_cube = None
         for i in range(lambda_vector.shape[0]):
             frame = cube[:,:,i]
@@ -221,17 +223,23 @@ class SPL():
             else:
                 matrix[:,i] = y_norm
 
-            w = self._smooth(y_norm, 4)
+            w = sf.smooth(y_norm, 4)
+            w = w[:pick[3]-pick[2] + 1]
             matrix_smooth[:, i] = w
 
         matrix[np.where(matrix == np.nan)] = 0
         self._matrix = matrix
+        self._matrixSmooth = matrix_smooth
         #self._saveMatrix(matrix)
-        piston = self.templateComparison(matrix, lambda_vector)
+        piston, piston_smooth = self.templateComparison(matrix, matrix_smooth, lambda_vector)
 
-        self._savePistonResult(tt, piston)
+        self._savePistonResult(tt, piston, piston_smooth)
 
-        return piston
+        return piston, piston_smooth
+    ### PLOT MATRIX ###
+    # x = lambda_vector
+    # y = np.arange(151)* spl._pix2um
+    # imshow(spl._matrix, extent = [x[0],x[19],y[0], y[150]], origin= 'lower'); colorbar(); plt.xlabel('lambda [nm]'); plt.ylabel('position [um]'); plt.title('TN = %s' %tt)
 
     def _saveMatrix(self, matrix, tt):
         destination_file_path = SPL._storageFolder()
@@ -287,23 +295,11 @@ class SPL():
 
 
 ### FUNZIONE PER SMOOTH ###
-
-    def _smooth(self, a, WSZ):
-        ''''
-        args:
-            a = NumPy 1-D array containing the data to be smoothed
-            WSZ = smoothing window size needs, which must be odd number,
-                 as in the original MATLAB implementation '''
-        out0 = np.convolve(a,np.ones(WSZ,dtype=int),'valid')/WSZ
-        r = np.arange(1,WSZ-1,2)
-        start = np.cumsum(a[:WSZ-1])[::2]/r
-        stop = (np.cumsum(a[:-WSZ:-1])[::2]/r)[::-1]
-        return np.concatenate((  start , out0, stop  ))
-
+    #spostata in ground
 ### FINE ###
 
 
-    def templateComparison(self, matrix, lambda_vector):
+    def templateComparison(self, matrix, matrix_smooth, lambda_vector):
         ''' Compare the matrix obtained from the measurements with
             the one recreated with the synthetic data in tn_fringes
         args:
@@ -331,6 +327,8 @@ class SPL():
 
         Qm = matrix - np.mean(matrix)
         self._Qm = Qm
+        Qm_smooth = matrix_smooth - np.mean(matrix_smooth)
+        self._QmSmooth = Qm_smooth
         #creare la matrice di Giorgio della giusta dimenzione
         F = None
         for i in range(1, delta.shape[0]):
@@ -346,14 +344,20 @@ class SPL():
         self._Qt = Qt
 
         R = np.zeros(delta.shape[0]-1)
+        R_smooth = np.zeros(delta.shape[0]-1)
         for i in range(delta.shape[0]-1):
             R[i] = np.sum(np.sum(Qm[:,:]*Qt[:,:,i])) / ((np.sum(np.sum(Qm[:,:]**2)))**5
                                                     * (np.sum(np.sum(Qt[:,:,i]**2)))**5)
+            R_smooth[i] = np.sum(np.sum(Qm_smooth[:,:]*Qt[:,:,i])) / \
+                                                    ((np.sum(np.sum(Qm_smooth[:,:]**2)))**5
+                                                    * (np.sum(np.sum(Qt[:,:,i]**2)))**5)
 
         idp = np.where(R==max(R))
+        idp_smooth = np.where(R_smooth==max(R_smooth))
         piston = delta[idp]
+        piston_smooth = delta[idp_smooth]
 
-        return piston
+        return piston, piston_smooth
 
     def _myLambaSynth(self, lambda_synth_from_data):
         ''' Transforms its values into integers
@@ -364,9 +368,9 @@ class SPL():
             my_lambda[j] = bb
         return my_lambda
 
-    def _savePistonResult(self, tt, piston):
+    def _savePistonResult(self, tt, piston, piston_smooth):
         dove = os.path.join(self._storageFolder(), tt,
                             'piston_result_prova.txt')
         file = open(dove, 'w+')
-        file.write('%e' %piston[0])
+        file.write('%e, %e' %(piston[0], piston_smooth[0]))
         file.close()
