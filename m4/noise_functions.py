@@ -3,10 +3,12 @@
 '''
 
 import os
+import copy
 import logging
 import h5py
 import numpy as np
 from astropy.io import fits as pyfits
+from m4.ground import tracking_number_folder
 from m4.ground.configuration import Configuration
 from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influence_functions_maker import IFFunctionsMaker
@@ -33,11 +35,14 @@ class Noise():
 
     def noise_acquisition_and_analysis(self, numberOfNoiseIma, template=None):
         '''
+        Funzione per la simulazione dell'acquisizione dati: una cartella per
+        ogni template.
+
         args:
             template = np.array composed by 1 and -1
             numberOfNoiseIma = numero di immagini di rumore
                                 (dalla cartella Noise/hdf5) da usare
-                                NOTA: dipende dal sandbox.provaAcquisitionNoise ed è pari a 
+                                NOTA: dipende dal sandbox.provaAcquisitionNoise ed è pari a
                                         n_temp * n_pushPull * n_modes
 
         returns:
@@ -51,7 +56,8 @@ class Noise():
         destination_file_path = self._acquisition(template)
         self._cubeFromAnalysis = self._analysis(destination_file_path)
         rms_mean, tip, tilt = self.rmsFromCube(self._cubeFromAnalysis)
-        return destination_file_path, rms_mean
+        self._saveResults(rms_mean, tip, tilt, destination_file_path)
+        return destination_file_path
 
     def _acquisition(self, template):
         '''
@@ -64,6 +70,68 @@ class Noise():
         from m4 import sandbox
         destination_file_path = sandbox.provaAcquisitionNoise(template)
         return destination_file_path
+
+    def _analysis(self, destination_file_path):
+        '''
+        args:
+            destination_file_path = dove prendere le info per far partire l'analisi
+
+        returns:
+            _cubeFromAnalysis = cubo ottenuto dopo l'analisi delle iff
+        '''
+        an = AnalyzerIFF.loadTestMeasureFromFits(destination_file_path)
+        self._cubeFromAnalysis = an.createCube()
+
+        fits_file_name = os.path.join(destination_file_path, 'Cube.fits')
+        pyfits.writeto(fits_file_name, self._cubeFromAnalysis.data)
+        pyfits.append(fits_file_name, self._cubeFromAnalysis.mask.astype(int))
+        return self._cubeFromAnalysis
+
+    ###
+
+    def noise_analysis_from_hdf5_folder(self, tidy_or_shuffle, template, actsVector=None, n_push_pull=None):
+        '''
+        arg:
+            tidy_or_shuffle = (int) 0 per tidy, 1 per shuffle
+        '''
+        data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
+        an = AnalyzerIFF()
+        if n_push_pull is None:
+            an._nPushPull = 3
+        else:
+            an._nPushPull = n_push_pull
+        an._template = template
+        if actsVector is None:
+            an._actsVector = np.arange(25)
+            an._modeVector = copy.copy(an._actsVector)
+        else:
+            an._actsVector = actsVector
+        an._cmdAmplitude = np.ones(an._actsVector.shape[0])
+
+        indexingList = []
+        if tidy_or_shuffle == 0:
+            for i in range(an._nPushPull):
+                indexingList.append(an._modeVector)
+        elif tidy_or_shuffle == 1:
+            for j in range(an._nPushPull):
+                np.random.shuffle(an._modeVector)
+                indexingList.append(list(an._modeVector))
+        an._indexingList = np.array(indexingList)
+
+        store_in_folder = self._storageFolder()
+        save = tracking_number_folder.TtFolder(store_in_folder)
+        dove, tt = save._createFolderToStoreMeasurements()
+        self._cubeFromAnalysis = an.createCubeFromImageFolder(data_file_path)
+        fits_file_name = os.path.join(dove, 'Cube.fits')
+        pyfits.writeto(fits_file_name, self._cubeFromAnalysis.data)
+        pyfits.append(fits_file_name, self._cubeFromAnalysis.mask.astype(int))
+        fits_file_name = os.path.join(dove, 'template.fits')
+        pyfits.writeto(fits_file_name, an._template)
+
+        rms_mean, tip, tilt = self.rmsFromCube(self._cubeFromAnalysis)
+        self._saveResults(rms_mean, tip, tilt, dove)
+
+        return tt
 
     def rmsFromCube(self, cube_to_process):
         '''
@@ -92,6 +160,12 @@ class Noise():
         rms_mean = np.mean(rms_vector)
         return rms_mean, tip, tilt
 
+    def _saveResults(self, rms_mean, tip, tilt, destination_file_path):
+        fits_file_name = os.path.join(destination_file_path, 'results.txt')
+        file = open(fits_file_name, 'w+')
+        file.write('%e %e %e' %(rms_mean, tip, tilt))
+        file.close()
+
     def _imageExtender(self, cube_element):
         ''' Funzione usata per estendere le dimenzioni delle immagini acquisite a
         quelle della pupilla su cui costruisco gli zernike
@@ -108,7 +182,7 @@ class Noise():
             data_file_path = cartella delle immagini di rumore
             destination_file_path = dove vengono messe le iff 
             device = quale segmento
-    
+
         return:
             _cubeNoise = cubo di immagini delle iff
         '''
@@ -156,22 +230,6 @@ class Noise():
                                   hduList[1].data.astype(bool))
         return self._cubeFromAnalysis
 
-    def _analysis(self, destination_file_path):
-        '''
-        args:
-            destination_file_path = dove prendere le info per far partire l'analisi
-
-        returns:
-            _cubeFromAnalysis = cubo ottenuto dopo l'analisi delle iff
-        '''
-        an = AnalyzerIFF.loadTestMeasureFromFits(destination_file_path)
-        self._cubeFromAnalysis = an.createCube()
-
-        fits_file_name = os.path.join(destination_file_path, 'Cube.fits')
-        pyfits.writeto(fits_file_name, self._cubeFromAnalysis.data)
-        pyfits.append(fits_file_name, self._cubeFromAnalysis.mask.astype(int))
-        return self._cubeFromAnalysis
-
     def _readTempFromInfoFile(self, tt):
         '''
         args:
@@ -187,6 +245,14 @@ class Noise():
         n_temp = hduList[1].data.shape[0]
         return n_temp
 
+    def _readTempFromFits(self, tt):
+        store_in_folder = Noise._storageFolder()
+        file_path = os.path.join(store_in_folder, tt)
+        fits_file_name = os.path.join(file_path, 'template.fits')
+        hduList= pyfits.open(fits_file_name)
+        n_temp = hduList[0].data.shape[0]
+        return n_temp
+
     def different_template_analyzer(self, tt_list):
         '''
         args:
@@ -200,7 +266,8 @@ class Noise():
         n_temp_list = []
         for tt in tt_list:
             cube = self._readCube(tt)
-            n_temp = self._readTempFromInfoFile(tt)
+            n_temp = self._readTempFromFits(tt)
+            #n_temp = self._readTempFromInfoFile(tt)
             rms, tip, tilt = self.rmsFromCube(cube)
             rms_list.append(rms)
             n_temp_list.append(n_temp)
