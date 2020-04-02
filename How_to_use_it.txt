@@ -123,16 +123,19 @@
 	 PROCEDIMENTO:
 	 from m4.noise_functions import Noise
 	 n = Noise()
-	 #acquisizione dati e analisi (es: template=np.array([1,-1,1]) numberOfNoiseIma=3*3*25=225)
-	 destination_file_path, rms_mean = n.noise_acquisition_and_analysis(numberOfNoiseIma, template)
-	 #analisi di più carrtelle di dati
-	 rms_medio, n_temp = n.different_template_analyzer(tt_list)
+	 #acquisizione dati e analisi con il metodo delle IFF(es: template=np.array([1,-1,1]) numberOfNoiseIma=3*3*25=225)
+	 destination_file_path = n.noise_acquisition_and_analysis(numberOfNoiseIma, template)
+	 #acquisizione dati e analisi dalla cartella hdf5
+	 tt = n.noise_analysis_from_hdf5_folder(tidy_or_shuffle, template) 
+	 #analisi di più cartelle di dati
+	 rms_medio, tip, tilt, n_temp = n.different_template_analyzer(tt_list)
 
 	 RISULTATI:
-	 rms_medio, n_temp = vettore degli rms medi e lunghezza dei template ustai per poter farci il plot
+	 rms_medio, n_temp = vettore degli rms medi e lunghezza dei template usatii per poter farci il plot
 	 * .../Noise/ tt contiene
-	 il file con le info usate per fare le iff (info.fits)
-	 il cubo di misure prese con le iff (misere.fits)
+	 il file con le info usate per fare le iff (info.fits) #caso IFF
+	 il cubo di misure prese con le iff (misere.fits) #caso IFF
 	 il cubo che viene dall'analisi delle iff con l'analyzer (Cube.fits)
+	 il file di testo con scritti i valori medi (result.txt)
 	
 	

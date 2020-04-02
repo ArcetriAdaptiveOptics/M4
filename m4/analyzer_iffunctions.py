@@ -546,7 +546,7 @@ class AnalyzerIFF():
             image = imaList[0] + imaList[1] - imaList[2]
 
             if cube is None:
-                cube = image 
+                cube = image
             else:
                 cube = np.ma.dstack((cube, image))
 
