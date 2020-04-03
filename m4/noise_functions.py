@@ -351,14 +351,17 @@ class Noise():
     ### FUNZIONE DI STRUTTURA ###
     def analysis_whit_structure_function(self, tau_vector):
         data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
-        #tau_vector = np.array([3, 7, 9, 10, 15, 20, 25])
+        #tau_vector = np.array([3, 4, 5, 6, 7, 9, 10, 13, 15, 18, 19])
+        i_max = np.int((4000 - tau_vector[tau_vector.shape[0]-1]) /
+                       (tau_vector[tau_vector.shape[0]-1] * 2))
+        if i_max <= 20:
+            raise OSError('tau = %s too large' %tau_vector[tau_vector.shape[0]-1])
         rms_medio_list = []
         for j in range(tau_vector.shape[0]):
             dist = tau_vector[j]
             rms_list = []
-            for i in range(150):
-                #k = i * separazione
-                k = i * (dist+1)
+            for i in range(i_max):
+                k = i * dist * 2
                 name = 'img_%04d.h5' %k
                 file_name = os.path.join(data_file_path, name)
                 image_k = self._ic.from4D(file_name)
@@ -366,7 +369,7 @@ class Noise():
                 file_name = os.path.join(data_file_path, name)
                 image_dist = self._ic.from4D(file_name)
 
-                image_diff = image_dist - image_k
+                image_diff = image_k - image_dist
                 rms = image_diff.std()
                 rms_list.append(rms)
             rms_vector = np.array(rms_list)
@@ -375,5 +378,5 @@ class Noise():
         rms_medio = np.array(rms_medio_list)
 
         return rms_medio
-    # plot(tau_vector, rms, '-o')
+    # plot(tau_vector, rms, '-o'); plt.xlabel('tau'); plt.ylabel('rms_medio')
     
