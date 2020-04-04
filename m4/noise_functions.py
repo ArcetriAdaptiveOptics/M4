@@ -10,6 +10,7 @@ import numpy as np
 from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
 from m4.ground.configuration import Configuration
+from m4.utils.img_redux import TipTiltDetrend
 from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influence_functions_maker import IFFunctionsMaker
 from m4.analyzer_iffunctions import AnalyzerIFF
@@ -34,6 +35,7 @@ class Noise():
         self._logger = logging.getLogger('NOISE:')
         self._ic = InterferometerConverter()
         self._zOnM4 = ZernikeOnM4()
+        self._ttd = TipTiltDetrend()
         self._numberOfNoiseIma = None
 
     @staticmethod
@@ -351,7 +353,7 @@ class Noise():
     ### FUNZIONE DI STRUTTURA ###
     def analysis_whit_structure_function(self, tau_vector):
         data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
-        #tau_vector = np.array([3, 4, 5, 6, 7, 9, 10, 13, 15, 18, 19])
+        #tau_vector = np.arange(80)+1
         i_max = np.int((4000 - tau_vector[tau_vector.shape[0]-1]) /
                        (tau_vector[tau_vector.shape[0]-1] * 2))
         if i_max <= 20:
@@ -370,10 +372,15 @@ class Noise():
                 image_dist = self._ic.from4D(file_name)
 
                 image_diff = image_k - image_dist
-                rms = image_diff.std()
+                image = self._imageExtender(image_diff)
+                zernike_coeff_array, mat = self._zOnM4.zernikeFit(image,
+                                                                  np.array([2, 3]))
+                image_ttr = self._ttd.ttRemoverFromCoeff(zernike_coeff_array, image)
+
+                rms = image_ttr.std()
                 rms_list.append(rms)
             rms_vector = np.array(rms_list)
-            aa = rms_vector.std()
+            aa = rms_vector.mean()
             rms_medio_list.append(aa)
         rms_medio = np.array(rms_medio_list)
 

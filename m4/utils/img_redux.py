@@ -7,6 +7,7 @@ import numpy as np
 from m4.ground.configuration import Configuration
 from m4.utils.roi import ROI
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
+from m4.ground.zernikeGenerator import ZernikeGenerator
 
 
 class TipTiltDetrend():
@@ -80,7 +81,39 @@ class TipTiltDetrend():
 
         return image_ttr
 
+    def ttRemoverFromCoeff(self, zernike_coeff_array, image):
+        '''
+        args:
+            zernike_coeff_array = np.array([coeff_Z2, coeff_Z3])
+            image = masked array
+        '''
+        self._zg = ZernikeGenerator(image.shape[1])
+        zernike_surface_map = self._createZernikeSurface(zernike_coeff_array)
+        image_ttr = image - zernike_surface_map
+        return image_ttr
 
+    def _createZernikeSurface(self, zernike_coeff_array):
+        ''' Creates the Zernike mode on a circular surface with the diameter...
+
+            args:
+            zernike_coeff_array = array containing the amplitude of the mode
+                to create located in the its corresponding position
+                exemple: np.array([z2, z3, z4....])
+
+            returns:
+                    zernike_surface = surface map for the zernike mode
+        '''
+        zernike_surface_map = 0.0
+        first_zern_mode_index = 2
+        last_zern_mode_index = 2 + len(zernike_coeff_array)
+        index_zernike_modes = np.arange(first_zern_mode_index, last_zern_mode_index)
+        zd = self._zg.getZernikeDict(index_zernike_modes)
+
+        for i in index_zernike_modes:
+            zernike_surface_map = zernike_surface_map + \
+                                    zernike_coeff_array[i-2] * zd[i]
+
+        return zernike_surface_map
 
 
 
