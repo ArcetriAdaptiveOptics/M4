@@ -352,9 +352,19 @@ class Noise():
 
     ### FUNZIONE DI STRUTTURA ###
     def analysis_whit_structure_function(self, tau_vector):
+        '''
+        args:
+            tau_vector = vector of tau to use
+            4000 = total number of image in hdf5
+
+        returns:
+            rms_medio =
+        '''
         data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
+        list = os.listdir(data_file_path)
+        image_number = len(list) -1
         #tau_vector = np.arange(80)+1
-        i_max = np.int((4000 - tau_vector[tau_vector.shape[0]-1]) /
+        i_max = np.int((image_number - tau_vector[tau_vector.shape[0]-1]) /
                        (tau_vector[tau_vector.shape[0]-1] * 2))
         if i_max <= 20:
             raise OSError('tau = %s too large' %tau_vector[tau_vector.shape[0]-1])
