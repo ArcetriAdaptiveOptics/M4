@@ -121,6 +121,14 @@ class TipTiltDetrend():
 class PhaseSolve():
     """
     Class...
+    una immagine dell'interferemotro che mette un lamba mezzi tra due superfici se non ho pistone
+    se ho il pistone seguo la variazione di pistone (tipo 2 nanometri, pi+ piccolo di lamba mezzi)
+    quindi le due immagini possono essere rimesse insieme usando questa condizione. 
+    Devo riportare a fare differenziale zero le due immagini
+    deve lavorare su una coppia di immagini e confrontarle con una soglia
+    
+    terzo caso: ho una misura e nessuna condizione, cioè la misura delle spl. 
+    Vince la misura di interferometro se sono vicini, se sono lontani.
     """
 
     def __init__(self):
@@ -160,7 +168,7 @@ class PhaseSolve():
             img_phase_solve_list.append(img_phase_solve)
 
         img_phase_solve_list[len(img_phase_solve_list)-1] = \
-                       np.ma.masked_array(imgList[len(imgList)-2].data, 
+                       np.ma.masked_array(imgList[len(imgList)-2].data,
                                           mask= imgList[len(imgList)-2].mask)
 
 

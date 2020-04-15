@@ -201,8 +201,8 @@ class Noise():
         fits_file_name = os.path.join(dove, 'template.fits')
         pyfits.writeto(fits_file_name, an._template)
 
-        rms_mean, tip, tilt = self.rmsFromCube(self._cubeFromAnalysis)
-        self._saveResults(rms_mean, tip, tilt, dove)
+        rms_mean, quad_mean = self.rmsFromCube(self._cubeFromAnalysis)
+        self._saveResults(rms_mean, quad_mean, dove)
         return tt
 
     def rmsFromCube(self, cube_to_process):
@@ -218,6 +218,7 @@ class Noise():
         rms_list = []
         coef_tilt_list = []
         coef_tip_list = []
+        quad_list = []
         for i in range(cube_to_process.shape[2]):
             rms = cube_to_process[:,:,i].std()
             image = self._imageExtender(cube_to_process[:,:,i])
@@ -226,11 +227,14 @@ class Noise():
             rms_list.append(rms)
             coef_tip_list.append(coef[0])
             coef_tilt_list.append(coef[1])
+            quad = np.sqrt(coef[0]**2 + coef[1]**2)
+            quad_list.append(quad)
         rms_vector = np.array(rms_list)
         tip = np.array(coef_tip_list).mean()
         tilt = np.array(coef_tilt_list).mean()
+        quad_tt = np.array(quad_list).mean()
         rms_mean = np.mean(rms_vector)
-        return rms_mean, tip, tilt
+        return rms_mean, quad_tt
 
     def _imageExtender(self, cube_element):
         ''' Funzione usata per estendere le dimenzioni delle immagini acquisite a
@@ -251,12 +255,12 @@ class Noise():
         image = np.ma.append(pp, vv2, axis=1)
         return image
 
-    def _saveResults(self, rms_mean, tip, tilt, destination_file_path):
+    def _saveResults(self, rms_mean, quad_mean, destination_file_path):
         ''' Save results as text file
         '''
         fits_file_name = os.path.join(destination_file_path, 'results.txt')
         file = open(fits_file_name, 'w+')
-        file.write('%e %e %e' %(rms_mean, tip, tilt))
+        file.write('%e %e' %(rms_mean, quad_mean))
         file.close()
 
     def _readResultsFromTxt(self, tt):
@@ -325,24 +329,21 @@ class Noise():
             n_tempo = vettore delle lunghezza dei template usati
         '''
         rms_list = []
-        tip_list = []
-        tilt_list = []
+        quad_list = []
         n_temp_list = []
         for tt in tt_list:
             cube = self._readCube(tt)
             n_temp = self._readTempFromFits(tt)
             #n_temp = self._readTempFromInfoFile(tt)
-            rms, tip, tilt = self.rmsFromCube(cube)
+            rms, quad = self.rmsFromCube(cube)
             rms_list.append(rms)
-            tip_list.append(tip)
-            tilt_list.append(tilt)
+            quad_list.append(quad)
             n_temp_list.append(n_temp)
 
         rms_medio = np.array(rms_list)
-        tip = np.array(tip_list)
-        tilt = np.array(tilt_list)
+        quad = np.array(quad_list)
         n_temp = np.array(n_temp_list)
-        return rms_medio, tip, tilt, n_temp
+        return rms_medio, quad, n_temp
     ### tt_list ###
     # measurementFolder ='/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Noise'
     # list= os.listdir(measurementFolder); list.sort()
@@ -369,9 +370,11 @@ class Noise():
         if i_max <= 20:
             raise OSError('tau = %s too large' %tau_vector[tau_vector.shape[0]-1])
         rms_medio_list = []
+        quad_med_list = []
         for j in range(tau_vector.shape[0]):
             dist = tau_vector[j]
             rms_list = []
+            quad_list = []
             for i in range(i_max):
                 k = i * dist * 2
                 name = 'img_%04d.h5' %k
@@ -386,14 +389,18 @@ class Noise():
                 zernike_coeff_array, mat = self._zOnM4.zernikeFit(image,
                                                                   np.array([2, 3]))
                 image_ttr = self._ttd.ttRemoverFromCoeff(zernike_coeff_array, image)
+                quad = np.sqrt(zernike_coeff_array[0]**2 + zernike_coeff_array[1]**2)
 
                 rms = image_ttr.std()
                 rms_list.append(rms)
+                quad_list.append(quad)
             rms_vector = np.array(rms_list)
             aa = rms_vector.mean()
             rms_medio_list.append(aa)
+            quad_med_list.append(np.array(quad_list).mean())
         rms_medio = np.array(rms_medio_list)
+        quad_med = np.array(quad_med_list)
 
-        return rms_medio
+        return rms_medio, quad_med
     # plot(tau_vector, rms, '-o'); plt.xlabel('tau'); plt.ylabel('rms_medio')
     
