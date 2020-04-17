@@ -67,8 +67,8 @@ class Noise():
         self._numberOfNoiseIma = numberOfNoiseIma
         destination_file_path = self._acquisitionWithIFF(template)
         self._cubeFromAnalysis = self._analysisFromIFF(destination_file_path)
-        rms_mean, tip, tilt = self.rmsFromCube(self._cubeFromAnalysis)
-        self._saveResults(rms_mean, tip, tilt, destination_file_path)
+        rms_mean, quad_tt = self.rmsFromCube(self._cubeFromAnalysis)
+        self._saveResults(rms_mean, quad_tt, destination_file_path)
         return destination_file_path
 
     def _acquisitionWithIFF(self, template):
@@ -158,7 +158,7 @@ class Noise():
         an._template = template
         if actsVector is None:
             an._actsVector = np.arange(25)
-            an._modeVector = copy.copy(an._actsVector)
+            an._modeVector = np.copy(an._actsVector)
         else:
             an._actsVector = actsVector
         an._cmdAmplitude = np.ones(an._actsVector.shape[0])
@@ -170,7 +170,7 @@ class Noise():
         elif tidy_or_shuffle == 1:
             for j in range(an._nPushPull):
                 np.random.shuffle(an._modeVector)
-                indexingList.append(list(an._modeVector))
+                indexingList.append(an._modeVector)
         an._indexingList = np.array(indexingList)
         return an
 
@@ -220,10 +220,11 @@ class Noise():
         coef_tip_list = []
         quad_list = []
         for i in range(cube_to_process.shape[2]):
-            rms = cube_to_process[:,:,i].std()
             image = self._imageExtender(cube_to_process[:,:,i])
             coef, mat = self._zOnM4.zernikeFit(image,
                                                np.array([2, 3]))
+            image_ttr = self._ttd.ttRemoverFromCoeff(coef, image)
+            rms = image_ttr.std()
             rms_list.append(rms)
             coef_tip_list.append(coef[0])
             coef_tilt_list.append(coef[1])

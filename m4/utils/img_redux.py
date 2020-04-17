@@ -4,6 +4,7 @@
 
 import logging
 import numpy as np
+from matplotlib.mlab import find
 from m4.ground.configuration import Configuration
 from m4.utils.roi import ROI
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
@@ -126,7 +127,7 @@ class PhaseSolve():
     quindi le due immagini possono essere rimesse insieme usando questa condizione. 
     Devo riportare a fare differenziale zero le due immagini
     deve lavorare su una coppia di immagini e confrontarle con una soglia
-    
+
     terzo caso: ho una misura e nessuna condizione, cioè la misura delle spl. 
     Vince la misura di interferometro se sono vicini, se sono lontani.
     """
@@ -198,3 +199,50 @@ class PhaseSolve():
                                             mask=imgg.mask)
 
         return img_phase_solve
+
+
+
+class SignalUnwrap():
+
+    def __init__(self):
+        """The constructor """
+
+    def signal_unwrap(self, x, phase, threshold=None, show=None, mask=None,
+                      sample=None, silent=None):
+
+        thresh = phase/2
+        if threshold != None:
+            thresh = threshold
+
+        if mask != None:
+            idx = find(mask)
+            mm = np.mean(x[idx])
+            x1 = x.copy()
+            if mm > thresh:
+                x1[idx] = x[idx]-abs(phase*(round(mm/phase)))
+            else:
+                x1[idx] = x[idx]+abs(phase*(round(mm/phase)))
+
+        else:
+            if sample != None:
+                x1   = x.copy()
+                nx   = x.size
+                ivec = np.arange(nx)
+                for i in ivec:
+                    if x1[i] > thresh:
+                        x1[i] =  x1[i]-abs(phase*(round(x1[i]/phase)))
+                    else:
+                        x1[i] = x1[i]+abs(phase*(round(x1[i]/phase)))
+            else:
+                nx = x.size
+                x1 = x.copy()
+                x1 = x1 - x1[0]
+                ivec = np.arange(nx-1)+1
+                for i in ivec:
+                    dx = x1[i]-x1[i-1]
+                    if dx > thresh:
+                        x1[i] -= abs(phase*(round(dx/phase)))
+                    else:
+                        x1[i] += abs(phase*(round(dx/phase)))
+
+        return x1
