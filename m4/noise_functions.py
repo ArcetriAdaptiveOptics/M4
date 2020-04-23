@@ -25,7 +25,7 @@ class Noise():
     from m4.noise_functions import Noise
     n = Noise()
     #acquisizione dati e analisi dalla cartella hdf5
-    tt = n.noise_analysis_from_hdf5_folder(tidy_or_shuffle, template) 
+    tt = n.noise_analysis_from_hdf5_folder(tidy_or_shuffle, template)
     #analisi di più cartelle di dati
     rms_medio, tip, tilt, n_temp = n.different_template_analyzer(tt_list)
     '''
@@ -361,6 +361,7 @@ class Noise():
 
         returns:
             rms_medio =
+            quad_med =
         '''
         data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
         list = os.listdir(data_file_path)
