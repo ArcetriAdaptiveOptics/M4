@@ -32,7 +32,7 @@ class TipTiltDetrend():
         self._zOnM4 = ZernikeOnM4()
         self._totalMatList = None
 
-    def tipTiltRemover(self, image, roi, final_index, analysis_ind=None):
+    def tipTiltDetrend(self, image, roi, final_index, analysis_ind=None):
         """
         args:
             image = image to be analyzed (np.ma-masked_array)

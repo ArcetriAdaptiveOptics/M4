@@ -169,7 +169,7 @@ class AnalyzerIFF():
                     r = ROI()
                     roi = r.roiGenerator(img_if)
                     tt = TipTiltDetrend()
-                    img_if = tt.tipTiltRemover(img_if, roi, 3)
+                    img_if = tt.tipTiltDetrend(img_if, roi, 3)
 
                 if_push_pull_kth = img_if-np.ma.median(img_if)
 
