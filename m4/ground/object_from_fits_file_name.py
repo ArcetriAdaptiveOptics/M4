@@ -9,6 +9,34 @@ from m4.type.modalBase import ModalBase
 from m4.type.modesVector import ModesVector
 from m4.ground.configuration import Configuration
 
+### Generiche
+def readFits_object(fits_file_path):
+    hduList = pyfits.open(fits_file_path)
+    obj = hduList[0].data
+    return obj
+
+def readFits_maskedImage(fits_file_path):
+    hduList = pyfits.open(fits_file_path)
+    ima = hduList[0].data
+    immagine = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
+    return immagine
+###
+
+def readImageFromFitsFileName(fits_file_path):
+    """
+    args:
+        fits_file_path = file path of the image.fits to read
+
+    returns:
+            immagine = masked array of the image
+    """
+    file_name = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+                             fits_file_path)
+    hduList = pyfits.open(file_name)
+    ima = hduList[0].data
+    immagine = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
+    return immagine
+
 def readObjectFitsFileName(amplitude_fits_file_name,
                            mode_vector_fits_file_name,
                            cmd_matrix_fits_file_name):
@@ -36,21 +64,6 @@ def readObjectFitsFileName(amplitude_fits_file_name,
     mb = ModalBase.loadFromFits(cmd_matrix_fits_file_name)
     cmd_matrix = mb.getModalBase()
     return amplitude, mode_vector, cmd_matrix
-
-def readImageFromFitsFileName(fits_file_path):
-    """
-    args:
-        fits_file_path = file path of the image.fits to read
-
-    returns:
-            immagine = masked array of the image
-    """
-    file_name = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
-                             fits_file_path)
-    hduList = pyfits.open(file_name)
-    ima = hduList[0].data
-    immagine = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
-    return immagine
 
 def readDataFromFileFits(fits_file_path):
     """
