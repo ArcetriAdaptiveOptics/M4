@@ -5,39 +5,92 @@
 import numpy as np
 #import cv2
 from numpy.linalg import eig, inv
-from m4.ground import fit_ellipse
+#from m4.ground import fit_ellipse
 from skimage.draw import circle as draw_circle
-from m4.utils.roi import ROI
 from skimage.draw import ellipse as draw_ellipse
+from skimage.measure import label
 from astropy.io import fits as pyfits
+import sklearn.feature_extraction as skf_e
+import sklearn.cluster as skc
+from m4.ground.configuration import Configuration
 
 class ParabolIdent():
-    '''
+    ''' Class to be used to determine the position of the parable
     '''
 
     def __init__(self):
         """The constructor """
-        self._r = ROI()
+        self._rFiducialPoint = Configuration.RADIUS_FIDUCIAL_POINT
 
     def parable(self, image):
+        '''
+        args:
+            image = masked array 
+
+        returns:
+            circle = circumference of 1 to be plotted
+            centro = coordinates of the center
+            axs = major and minor axis coming from the fit of the ellipse
+            raggio = radius of the parabola circumference
+        '''
         x, y = self._fiduciali(image)
         centro, axs, raggio = self._fitEllipse(x, y)
-        ellipse = self._drawEllipse(centro, axs, image)
+        #ellipse = self._drawEllipse(centro, axs, image)
         circle = self._drawCircle(centro, raggio, image)
-        return ellipse, circle, centro, axs, raggio
+        return circle, centro, axs, raggio
 
-    def _fiduciali(self, image):
-        roiList = self._r.roiGenerator(image)
+    def _fiducialiAMano(self):
+        ''' Guardati da imshow di image
+        '''
         x = np.array([512, 359, 512, 665])
         y = np.array([359, 512, 665, 512])
         return x, y
 
-    def prova(self, image, centro, raggio):
+    def _fiduciali(self, ima):
+        ''' Calculates the coordinates of the fiducial points of the parabola and
+            return it in a single vector of x and y
+        args: 
+            image = np.ma.masked_array
+
+        returns:
+            x = vector of x coordinates of fiducial points
+            y = vector of y coordinates of fiducial points
+        '''
+        graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)
+        labels = skc.spectral_clustering(graph, n_clusters=4, eigen_solver='arpack')
+        labels = label(ima.mask.astype(int))
+        roiList = []
+        for i in range(1, 13):
+            maski = np.zeros(labels.shape, dtype=np.bool)
+            maski[np.where(labels == i)] = 1
+            roiList.append(maski)
+        x_list = []
+        y_list = []
+        for i in np.array([4,6,7,8]):
+            aa = np.where(roiList[i]==1)
+            x = aa[1].mean()
+            y = aa[0].mean()
+            x_list.append(x)
+            y_list.append(y)
+        return np.array(x_list), np.array(y_list)
+
+    def coord(self, image, centro, raggio):
+        '''
+        args:
+            image = masked array
+            centro = coordinates of the center
+            raggio = radius of the parabola circumference
+
+        returns:
+            xx = coordinate x della parabola
+            yy = coordinate y della parabola
+        '''
+        raggio = raggio / self._rFiducialPoint
         size = np.array([image.shape[0], image.shape[1]])
         ima_x = np.arange(size[0], dtype = float)
         ima_y = np.arange(size[1], dtype = float)
-        xx = np.tile(ima_x, (size[0], 1))-centro[0] / raggio
-        yy = np.tile(ima_y, (size[1], 1)).T-centro[1] / raggio
+        xx = (np.tile(ima_x, (size[0], 1))-centro[0]) / raggio
+        yy = (np.tile(ima_y, (size[1], 1)).T-centro[1]) / raggio
         return xx, yy
 
 #     def ellipse(self, punti_fiduciali):
@@ -63,6 +116,16 @@ class ParabolIdent():
 #         return aa
 
     def _fitEllipse(self, x, y):
+        '''
+        args:
+            x = vector of the x coordinates of the points to be used in the fit
+            y = vector of the y coordinates of the points to be used in the fit
+
+        returns:
+            centro = coordinates of the center
+            axs = major and minor axis coming from the fit of the ellipse
+            raggio = radius of the parabola circumference
+        '''
         #fit ellipse
         x = x[:,np.newaxis]
         y = y[:,np.newaxis]
@@ -90,14 +153,32 @@ class ParabolIdent():
         return centro, axs, raggio
 
     def _drawEllipse(self, centro, axs, image):
+        '''
+        args:
+            centro = coordinates of the center
+            axs = major and minor axis coming from the fit of the ellipse
+            image = masked array
+
+        returns:
+            ellipse = ellipse of one to display
+        '''
         ellipse = np.zeros((image.shape[0],image.shape[1]))
         rr, cc = draw_ellipse(centro[1], centro[0], axs[1], axs[0])
         ellipse[rr, cc]=1
         return ellipse
 
     def _drawCircle(self, centro, raggio, image):
+        '''
+        args:
+            centro = coordinates of the center
+            raggio = radius of the parabola circumference
+            image = masked array
+
+        returns:
+            circle = circle of one to display
+        '''
         circle = np.zeros((image.shape[0],image.shape[1]))
-        rr, cc = draw_circle(centro[1], centro[0], raggio)
+        rr, cc = draw_circle(centro[1], centro[0], raggio/self._rFiducialPoint)
         circle[rr, cc]=1
         return circle
 

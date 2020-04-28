@@ -58,6 +58,7 @@ class Configuration():
     PARABOLA_DOF = 3
     RM_DOF = 2
     PIXEL_SCALE = 360.5 #PIXEL/METRI
+    RADIUS_FIDUCIAL_POINT = 0.3
     #DM
     M4_MECHANICAL_PUPIL_XYRADIUS = np.array([458, 458, 458]) #np.array([512, 512, 512])
     M4_OPTICAL_DIAMETER = 858
