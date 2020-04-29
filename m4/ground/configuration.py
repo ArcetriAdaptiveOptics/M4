@@ -31,6 +31,9 @@ class Configuration():
     V_MATRIX_FOR_SEGMENT_ROOT_892= \
         '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170216_123645/modeMatrix.fits'
 
+    CONFIGURATION_ROOT_FOLDER = os.path.join(OPD_DATA_FOLDER, 'SYSCONFData')
+    curr_conffolder = os.path.join(CONFIGURATION_ROOT_FOLDER, 'tnconf_mirror')
+
 
     #ROOT IN M4 PC
 #     CALIBRATION_ROOT_FOLDER = '/mnt/shared/M4Data'

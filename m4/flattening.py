@@ -7,6 +7,7 @@ import logging
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.utils.roi import ROI
+from m4.type.deformable_mirror import Mirror
 from m4.ground.configuration import Configuration
 from m4.ground.tracking_number_folder import TtFolder
 from m4.utils.img_redux import TipTiltDetrend
@@ -25,6 +26,7 @@ class Flattenig():
         self._an = analyzerIFFunctions
         self._who = self._an._who
         self._roi = ROI()
+        self._mirror = Mirror()
         self._command = None
         self._flatteningWf = None
 
@@ -86,16 +88,14 @@ class Flattenig():
         final_wf = np.ma.masked_array(final_wf_data, mask=super_mm)
         return final_wf
 
-    def flattening(self, offset):
+    def flattening(self, command, seg):
         """ Function for flat command application
         """
         self._logger.info('Application of the flat command')
-        #misuro la posizione dello specchio (pos)
-        pos = np.zeros(7)
-
-        cmd = pos + self._command
+        #dentro delta command misura già la posizione dello specchio (pos)
+        delta_command = self._mirror.mirror_command(command, seg)
         #la applico e misuro il nuovo wf
-        pass
+        return delta_command
 
 
 
