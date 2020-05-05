@@ -185,6 +185,28 @@ class IFFunctionsMaker():
         pyfits.writeto(fits_file_name, self._indexingList, header)
         pyfits.append(fits_file_name, self._template)
 
+    def _saveInfoSeparately(self, folder):
+        """ Save the input data for the creation of iff
+
+        Args:
+            folder = path that indicates where to save
+        """
+        fits_file_name = os.path.join(folder, 'indexingList.fits')
+        pyfits.writeto(fits_file_name, self._indexingList)
+        fits_file_name = os.path.join(folder, 'template.fits')
+        pyfits.writeto(fits_file_name, self._template)
+        fits_file_name = os.path.join(folder, 'more_info.txt')
+        file = open(fits_file_name, 'w+')
+        file.write('Who = %e, tt_cmdH = %e' %(self._who, self._tt_cmdH))
+        file.close()
+        fits_file_name = os.path.join(folder, 'tag_info.txt')
+        file.write('Modes_vector_tag = %e, Cmd_matrix_tag = %e, Amplitude_tag = %e' \
+                   %(self._modesVectorTag, self._cmdMatrixTag, self._amplitudeTag))
+        file.close()
+        fits_file_name = os.path.join(folder, 'n_push_pull.txt')
+        file.write('N_push_pull = %e', self._nPushPull)
+        file.close()
+
     def _saveInfoAsH5(self, folder):
         """ Save the h5 info file containing the input data for
         the creation of iff
