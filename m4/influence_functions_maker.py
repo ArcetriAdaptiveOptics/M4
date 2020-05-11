@@ -116,6 +116,7 @@ class IFFunctionsMaker():
                                                     template)
         self._indexingList = cmdH.getIndexingList()
         self._saveInfoAsFits(dove)
+        self._saveInfoSeparately(dove)
 
         for i in range(command_history_matrix_to_apply.shape[1]):
             self._applyToDM(command_history_matrix_to_apply[:,i])
@@ -197,14 +198,16 @@ class IFFunctionsMaker():
         pyfits.writeto(fits_file_name, self._template)
         fits_file_name = os.path.join(folder, 'more_info.txt')
         file = open(fits_file_name, 'w+')
-        file.write('Who = %e, tt_cmdH = %e' %(self._who, self._tt_cmdH))
+        file.write('Who = %s, tt_cmdH = %s' %(self._who, self._tt_cmdH))
         file.close()
         fits_file_name = os.path.join(folder, 'tag_info.txt')
-        file.write('Modes_vector_tag = %e, Cmd_matrix_tag = %e, Amplitude_tag = %e' \
+        file = open(fits_file_name, 'w+')
+        file.write('Modes_vector_tag = %s, Cmd_matrix_tag = %s, Amplitude_tag = %s' \
                    %(self._modesVectorTag, self._cmdMatrixTag, self._amplitudeTag))
         file.close()
         fits_file_name = os.path.join(folder, 'n_push_pull.txt')
-        file.write('N_push_pull = %e', self._nPushPull)
+        file = open(fits_file_name, 'w+')
+        file.write('N_push_pull = %e' %(self._nPushPull))
         file.close()
 
     def _saveInfoAsH5(self, folder):

@@ -139,6 +139,10 @@ class Noise():
         return self._cubeNoise
     ### Fine IFF ###
 
+    def FrameAcquisition(self):
+        data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
+        return data_file_path
+
     def _defAnalyzer(self, tidy_or_shuffle, template, actsVector=None, n_push_pull=None):
         '''
         arg:
@@ -175,7 +179,8 @@ class Noise():
         return an
 
 
-    def noise_analysis_from_hdf5_folder(self, tidy_or_shuffle, template, actsVector=None, n_push_pull=None):
+    def noise_analysis_from_hdf5_folder(self, data_file_path, tidy_or_shuffle, template,
+                                        actsVector=None, n_push_pull=None):
         '''
         arg:
             tidy_or_shuffle = (int) 0 per tidy, 1 per shuffle
@@ -186,7 +191,7 @@ class Noise():
         returns:
             tt = tracking number of measurement
         '''
-        data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
+        #data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
 
         an = self._defAnalyzer(tidy_or_shuffle, template, actsVector, n_push_pull)
 
