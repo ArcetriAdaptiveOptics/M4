@@ -3,11 +3,15 @@
 '''
 import os
 import numpy as np
+from scipy import ndimage 
 from astropy.io import fits as pyfits
 from photutils.centroids import fit_2dgaussian
 from m4.ground.configuration import Configuration
 
 class GeomTransf():
+    ''' Classe per ottenere letrasformazione che manda le coordinate dei punti
+        fiduciali dell'immagine x0 in quelli di x1
+    '''
 
     def __init__(self):
         """The constructor """
@@ -19,16 +23,34 @@ class GeomTransf():
         return os.path.join(Configuration.OPD_DATA_FOLDER,
                             "GeomTransf")
 
-    def principal_main(self, point_to_use):
-        im0, im1 = self._readMeasure()
+    def principal_main(self, im0, im1, point_to_use):
+        '''
+        args:
+            point_to_use = (int) number of fiducial point tu use (1 or 5)
+
+        returns:
+            nc = position of fiducial point obteined whit the transformation
+            x0 = fiducial point of first image
+            x1 = fiducial point of second image
+        '''
+        #im0, im1 = self._readMeasure()
         if point_to_use == 1:
-            k, xx0, xx1 = self.main_one_point(im0, im1)
-            return k, xx0, xx1
+            nc, x0, x1 = self.main_one_point(im0, im1)
+            return nc, x0, x1
         elif point_to_use == 5:
             nc, x0, x1 = self.main_five_points(im0, im1)
             return nc, x0, x1
 
-    def fiduciali(self, ima, point_to_use):
+    def fiduciali(self, image, point_to_use):
+        '''
+        args:
+            ima = image from which to derive the location of the fiducial points
+            point_to_use = (int) number of fiducial point tu use (1 or 5)
+
+        returns:
+            par_list = list of x, y coord (number of points X 2)
+        '''
+        ima = np.copy(image)
         par_ima_list = []
         for i in range(point_to_use):
             ima_cut, y_min, x_min = self._imaCutter(ima, self._pixelCut)
@@ -44,6 +66,16 @@ class GeomTransf():
     #ha scambiato gli ultimi due punti
 
     def _imaCutter(self, image, px):
+        '''
+        args:
+            image = np.masked_array of image
+            px = number of pixel with which to cut the image
+
+        returns:
+            image_cut = cut image
+            y_min = y min used for the cut
+            x_min = x min udes for the cut
+        '''
         y_peak, x_peak = np.where(image == np.max(image))
         y_min = y_peak[0]-px
         x_min = x_peak[0]-px
@@ -51,6 +83,16 @@ class GeomTransf():
         return image_cut, y_min, x_min
 
     def main_five_points(self, im0, im1):
+        '''
+        args:
+            im0 = first image
+            im1 = secondo image
+
+        returns:
+            nc = position of fiducial point obteined whit the transformation
+            x0 = fiducial point of first image
+            x1 = fiducial point of second image
+        '''
         point_to_use = 5
         x1_no = self.fiduciali(im1, point_to_use)
         x1 = self._invertRighe(x1_no).T
@@ -59,23 +101,43 @@ class GeomTransf():
         mat = self._grid_five_points(par_x0)
         cmat = self._calc_cmat_five_points(x1)
         rec = np.linalg.pinv(mat)
-        tran = np.dot(x0, rec)
+        tran = np.dot(x0, rec) #prima c'era x1-sbagliato!-
         nc = np.dot(tran, cmat)
         return nc, x0, x1
 
     def _invertRighe(self, par):
+        ''' Scanbia le ultime due righe delle coordinate trovate sull'
+        immagine perchè il sitema di identifificazione dei fiducilai sbaglia
+        '''
         new_par = np.copy(par)
         new_par[3,:] = par[4,:]
         new_par[4,:] = par[3,:]
         return new_par
 
     def _grid_five_points(self, par_list):
+        '''
+        args:
+            par_list = x, y coord to use
+
+        returns:
+            mat = matrix (6 X number of fiducial point) create using
+                  the development cost+x+y+x^2+y^2+x*y
+        '''
         x = par_list.T[0]
         y = par_list.T[1]
         mat = self._calc_mat_five_points(x, y)
         return mat
 
     def _calc_mat_five_points(self, x, y):
+        '''
+        args:
+            x = x coord (1 X number of points)
+            y = y coord (1 X number of points)
+
+        returns:
+            mat = matrix (6 X number of fiducial point) create using
+                  the development cost+x+y+x^2+y^2+x*y
+        '''
         mat = np.zeros((6, x.shape[0]))
         for i in range(x.shape[0]):
             mat[0,i]  = x[i]
@@ -87,6 +149,14 @@ class GeomTransf():
         return mat
 
     def _calc_cmat_five_points(self, x1):
+        '''
+        args:
+            x1 = x, y coord use to calculate the matrix
+
+        returns:
+            cmat = matrix (6 X number of fiducial point) create using
+                  the development cost+x+y+x^2+y^2+x*y
+        '''
         cmat = np.zeros((6, x1.shape[1]))
         thex = x1[0] #non facendo il reshape non cambia nulla da x
         they = x1[1]
@@ -98,9 +168,10 @@ class GeomTransf():
         cmat[5,:] = np.ones(thex.shape[0])
         return cmat
 
-
-
+###
     def _readMeasure(self):
+        ''' Legge le due immagini usate per prova
+        '''
         tt1 = '20200511_134609'
         tt2 = '20200511_134613'
         file_path1 = os.path.join(GeomTransf._storageFolder(), tt1, 'act-marker.fits')
@@ -113,7 +184,6 @@ class GeomTransf():
         immagine2 = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
         return immagine1, immagine2
 
-###
     def prova(self):
         x0 = np.zeros((5,2))
         x0[0,0] = 115 ; x0[0,1] = 322
@@ -132,29 +202,29 @@ class GeomTransf():
         x0_inv = np.linalg.pinv(x0)
         k = np.dot(x1,x0_inv)
         return x0, x1, k
+
+    def ima_shift(self, ima):
+        aa = ndimage.shift(ima, 3) #shift di 3 pixel in x e y
+        new_ima = np.ma.masked_array(aa, mask=ima.mask)
+        return new_ima
 ###
 
-    def _calc_grid_one_point(self, ima, xy_coord):
-        x_coord = xy_coord[0]
-        y_coord = xy_coord[1]
-        size = np.array([ima.shape[0], ima.shape[1]])
-        ima_x = np.arange(size[0], dtype = float)
-        ima_y = np.arange(size[1], dtype = float)
-        xx = np.tile(ima_x, (size[0], 1))-x_coord
-        yy = np.tile(ima_y, (size[1], 1)).T-y_coord
-        return xx, yy
-
-    def _grid_one_point(self, ima, point_to_use):
-        par_list = self.fiduciali(ima, point_to_use)
-        xy_coord = par_list[0]
-        xx, yy = self._calc_grid_one_point(ima, xy_coord)
-        return xx, yy
+    def _calc_mat_one_points(self, coord):
+        x = coord[0][0]
+        y = coord[0][1]
+        mat = np.zeros((3, 1))
+        mat[0,0]  = x
+        mat[1,0]  = y
+        mat[2, 0] = 1.
+        return mat
 
     def main_one_point(self, im0, im1):
         point_to_use = 1
-        xx0, yy0 = self._grid_one_point(im0, point_to_use)
-        xx1, yy1 = self._grid_one_point(im1,point_to_use)
-
-        xx0_inv = np.linalg.pinv(xx0)
-        k = np.dot(xx1, xx0_inv)
-        return k, xx0, xx1
+        x1_coord = self.fiduciali(im1, point_to_use)
+        x0_coord = self.fiduciali(im0, point_to_use)
+        mat = self._calc_mat_one_points(x0_coord)
+        cmat = self._calc_mat_one_points(x1_coord)
+        rec = np.linalg.pinv(mat)
+        tran = np.dot(x0_coord.T, rec)
+        nc = np.dot(tran, cmat)
+        return nc.T, x0_coord, x1_coord
