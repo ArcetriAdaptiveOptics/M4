@@ -228,3 +228,13 @@ class GeomTransf():
         tran = np.dot(x0_coord.T, rec)
         nc = np.dot(tran, cmat)
         return nc.T, x0_coord, x1_coord
+
+
+## test per sandbox Alpao
+    def gtTest(self):
+        c = test()
+        return c
+
+def test():
+    c = 1+1
+    return c

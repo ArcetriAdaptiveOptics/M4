@@ -183,7 +183,7 @@ class Noise():
                                         actsVector=None, n_push_pull=None):
         '''
         arg:
-            tidy_or_shuffle = (int) 0 per tidy, 1 per shuffle
+            tidy_or_shuffle = (int) 0 for tidy, 1 for shuffle
             template = np.array composed by 1 and -1
             actsVector = vector of actuators or modes
             n_push_pull = (int) number of push pull
@@ -347,7 +347,7 @@ class Noise():
     # plot(n_temp, rms, '-o'); plt.xlabel('n_temp'); plt.ylabel('rms_medio')
 
     ### FUNZIONE DI STRUTTURA ###
-    def analysis_whit_structure_function(self, tau_vector):
+    def analysis_whit_structure_function(self, data_file_path, tau_vector):
         '''
         args:
             tau_vector = vector of tau to use
@@ -358,7 +358,7 @@ class Noise():
             quad_med = squaring sum of tip and tilt calculated on the difference
                         of the images
         '''
-        data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
+        #data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
         list = os.listdir(data_file_path)
         image_number = len(list) -1
         #tau_vector = np.arange(80)+1
@@ -398,6 +398,9 @@ class Noise():
         rms_medio = np.array(rms_medio_list)
         quad_med = np.array(quad_med_list)
 
-        return rms_medio, quad_med
+        # per calcolo statistical amplitude of convention
+        n_meas = rms_vector.shape[0] * 2 * tau_vector.shape[0]
+
+        return rms_medio, quad_med, n_meas
     # plot(tau_vector, rms, '-o'); plt.xlabel('tau'); plt.ylabel('rms_medio')
     
