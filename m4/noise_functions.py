@@ -140,6 +140,8 @@ class Noise():
     ### Fine IFF ###
 
     def FrameAcquisition(self):
+        #move flat
+        #switch on fans or not 
         data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
         return data_file_path
 

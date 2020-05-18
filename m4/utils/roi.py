@@ -49,6 +49,22 @@ class ROI():
             roiList.append(final_roi)
         return roiList
 
+    def automatical_roi_selection(self, segment_or_central_view, ref_mirror_in_or_out):
+        '''
+        segment_or_central_view = 0 for segment, 1 for central
+        ref_mirror_in_or_out = 0 for in, 1 for out
+        '''
+        if segment_or_central_view == 0:
+            if ref_mirror_in_or_out == 0:
+                pass
+            elif ref_mirror_in_or_out == 1:
+                pass
+        elif segment_or_central_view == 1:
+            if ref_mirror_in_or_out == 0:
+                pass
+            elif ref_mirror_in_or_out == 1:
+                pass
+
     def create_circular_mask(self, center_y, center_x, radius, imagePixels=None):
         if imagePixels is None:
             imagePixels = 512

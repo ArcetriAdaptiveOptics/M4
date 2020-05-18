@@ -19,7 +19,7 @@ class Alignment():
     a = Alignment()
     #for the optical tower
     tt = a.ott_calibration(commandAmpVector, nPushPull, maskIndex)
-    cmd = a.ott_alignment(tt)
+    cmd = a.ott_alignement(tt)
     #for deformable mirror
     tt, zCoefComa, comaSurface = a.m4_calibration(...)
     cmd = a.m4_alignement(zCoefComa)

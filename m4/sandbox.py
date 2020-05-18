@@ -8,6 +8,7 @@ from astropy.io import fits as pyfits
 import numpy as np
 from m4.ground.configuration import Configuration
 from m4.ground import object_from_fits_file_name
+from m4.ground import object_from_fits_file_name as obj
 
 
 ### FUNZIONI PER TEST IFF ###
@@ -266,3 +267,13 @@ def provaAcquisitionNoise(template):
     cube_measure = n._createAndSaveCubeFromH5Data(data_file_path, destination_file_path, device)
 
     return destination_file_path
+
+### prova ROI ###
+def provaAutRoi():
+    file_name = 'ProvaCodice/Immagini_prova/mode_0005.fits' 
+    central_view = obj.readImageFromFitsFileName(file_name)
+    file_name = 'ProvaCodice/Immagini_prova/mode_0006.fits'
+    segment_view = obj.readImageFromFitsFileName(file_name)
+    file_name = 'ProvaCodice/Immagini_prova/Allineamento/20191007_134908/img.fits'
+    rm_in = obj.readImageFromFitsFileName(file_name) #for seg
+    
