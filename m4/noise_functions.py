@@ -405,4 +405,21 @@ class Noise():
 
         return rms_medio, quad_med, n_meas
     # plot(tau_vector, rms, '-o'); plt.xlabel('tau'); plt.ylabel('rms_medio')
-    
+
+    def piston_noise(self, data_file_path):
+        list = os.listdir(data_file_path)
+        image_number = len(list) - 2
+        time = np.arange(image_number) * (1/27.58)
+
+        mean_list = []
+        for j in range(image_number):
+            name = 'img_%04d.h5' %j
+            file_name = os.path.join(data_file_path, name)
+            image = self._ic.from4D(file_name)
+            image_ex = self._imageExtender(image)
+            zernike_coeff_array, mat = self._zOnM4.zernikeFit(image_ex,
+                                                              np.array([2, 3]))
+            image_ttr = self._ttd.ttRemoverFromCoeff(zernike_coeff_array, image_ex)
+            mean = image_ttr.mean()
+            mean_list.append(mean)
+        return np.array(mean_list), time

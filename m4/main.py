@@ -74,11 +74,14 @@ def convection_noise(data_file_path, tau_vector):
 def piston_noise(data_file_path):
     #togliere il tip e til dalle immagini e plottare la media
     #dovrei vedere una variazione nel tempo
-    pass
+    n = Noise()
+    mean, time = n.piston_noise(data_file_path)
+    plt.plot(time, mean); plt.xlabel('time[s]'); plt.ylabel('mean_image')
 
 #PROCEDURE OTT#
 def caliball():
     pass
 
+# prendere ispirazione dal sito adoptica
 def acquire_IFFunction():
     pass

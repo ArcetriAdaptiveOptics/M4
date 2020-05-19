@@ -49,16 +49,48 @@ class ROI():
             roiList.append(final_roi)
         return roiList
 
-    def automatical_roi_selection(self, segment_or_central_view, ref_mirror_in_or_out):
+    def automatical_roi_selection(self, image, segment_or_central_view, ref_mirror_in_or_out):
         '''
+        image = np.ma.masked_array
         segment_or_central_view = 0 for segment, 1 for central
         ref_mirror_in_or_out = 0 for in, 1 for out
         '''
         if segment_or_central_view == 0:
             if ref_mirror_in_or_out == 0:
-                pass
+                roiList = self.roiGenerator(image)
+                sx = np.zeros(np.array(roiList).shape[0])
+                reference_mirror = np.zeros(np.array(roiList).shape[0])
+                dx = np.zeros(np.array(roiList).shape[0])
+                for i in range(np.array(roiList).shape[0]):
+                    sx[i] = roiList[i][200, 100].astype(int)
+                    reference_mirror[i] = roiList[i][200, 200].astype(int)
+                    dx[i] = roiList[i][150, 450].astype(int)
+                s = np.where(sx==0)[0][0]
+                c = np.where(reference_mirror==0)[0][0]
+                d = np.where(dx==0)[0][0]
+
+                roi_sx = roiList[s]
+                roi_rm = roiList[c]
+                roi_dx = roiList[d]
+                return roi_sx, roi_rm, roi_dx
             elif ref_mirror_in_or_out == 1:
-                pass
+                roiList = self.roiGenerator(image)
+                sx = np.zeros(np.array(roiList).shape[0])
+                central = np.zeros(np.array(roiList).shape[0])
+                dx = np.zeros(np.array(roiList).shape[0])
+                for i in range(np.array(roiList).shape[0]):
+                    sx[i] = roiList[i][200, 100].astype(int)
+                    central[i] = roiList[i][300, 300].astype(int)
+                    dx[i] = roiList[i][200, 400].astype(int)
+                s = np.where(sx==0)[0][0]
+                c = np.where(central==0)[0][0]
+                d = np.where(dx==0)[0][0]
+
+                roi_sx = roiList[s]
+                roi_central = roiList[c]
+                roi_dx = roiList[d]
+                return roi_sx, roi_central, roi_dx
+
         elif segment_or_central_view == 1:
             if ref_mirror_in_or_out == 0:
                 pass

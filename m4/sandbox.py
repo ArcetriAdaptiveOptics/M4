@@ -270,10 +270,10 @@ def provaAcquisitionNoise(template):
 
 ### prova ROI ###
 def provaAutRoi():
-    file_name = 'ProvaCodice/Immagini_prova/mode_0005.fits' 
+    file_name = 'ProvaCodice/Immagini_prova/mode_0005.fits'
     central_view = obj.readImageFromFitsFileName(file_name)
     file_name = 'ProvaCodice/Immagini_prova/mode_0006.fits'
     segment_view = obj.readImageFromFitsFileName(file_name)
     file_name = 'ProvaCodice/Immagini_prova/Allineamento/20191007_134908/img.fits'
     rm_in = obj.readImageFromFitsFileName(file_name) #for seg
-    
+    return central_view, segment_view, rm_in
