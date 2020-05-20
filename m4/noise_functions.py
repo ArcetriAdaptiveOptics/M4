@@ -3,16 +3,13 @@
 '''
 
 import os
-import copy
 import logging
-import h5py
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
 from m4.ground.configuration import Configuration
 from m4.utils.img_redux import TipTiltDetrend
 from m4.ground.interferometer_converter import InterferometerConverter
-from m4.influence_functions_maker import IFFunctionsMaker
 from m4.analyzer_iffunctions import AnalyzerIFF
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 
@@ -44,106 +41,7 @@ class Noise():
         return os.path.join(Configuration.OPD_DATA_FOLDER,
                             "Noise")
 
-    ### IFF ##
-    def noise_acquisition_and_analysis(self, numberOfNoiseIma, template=None):
-        '''
-        Funzione per la simulazione dell'acquisizione dati: una cartella per
-        ogni template.
-
-        args:
-            template = np.array composed by 1 and -1
-            numberOfNoiseIma = number of noise images
-                                (dalla cartella Noise/hdf5) da usare
-                                NOTA: dipende dal sandbox.provaAcquisitionNoise ed è pari a
-                                        n_temp * n_pushPull * n_modes
-
-        returns:
-            rms_mean = rms averaged on the number of modes used in the iff's acquisition
-        '''
-        if template is None:
-            template = np.array([1, -1, 1])
-        else:
-            template = template
-        self._numberOfNoiseIma = numberOfNoiseIma
-        destination_file_path = self._acquisitionWithIFF(template)
-        self._cubeFromAnalysis = self._analysisFromIFF(destination_file_path)
-        rms_mean, quad_tt = self.rmsFromCube(self._cubeFromAnalysis)
-        self._saveResults(rms_mean, quad_tt, destination_file_path)
-        return destination_file_path
-
-    def _acquisitionWithIFF(self, template):
-        '''
-        args:
-            template = np.array composed by 1 and -1
-
-        returns:
-            destination_file_path = location of data
-        '''
-        # Aggiungere un'acquisizione consecutiva di tot misure in una sola cartella
-        from m4 import sandbox
-        destination_file_path = sandbox.provaAcquisitionNoise(template)
-        return destination_file_path
-
-    def _analysisFromIFF(self, destination_file_path):
-        '''
-        args:
-            destination_file_path = where to get the info to start the analysis
-
-        returns:
-            _cubeFromAnalysis = cube obtained after iff analysis
-        '''
-        an = AnalyzerIFF.loadTestMeasureFromFits(destination_file_path)
-        self._cubeFromAnalysis = an.createCube()
-
-        fits_file_name = os.path.join(destination_file_path, 'Cube.fits')
-        pyfits.writeto(fits_file_name, self._cubeFromAnalysis.data)
-        pyfits.append(fits_file_name, self._cubeFromAnalysis.mask.astype(int))
-        return self._cubeFromAnalysis
-
-    def _createAndSaveCubeFromH5Data(self, data_file_path, destination_file_path, device):
-        ''' Funzione che usa il procedimento di acquisizione dati delle iff
-        args:
-            data_file_path = noise image folder
-            destination_file_path = iff location
-            device = number of segment
-
-        return:
-            _cubeNoise = iff cube images
-        '''
-        IF = IFFunctionsMaker(device)
-        self._cubeNoise = None
-        for i in range(0, self._numberOfNoiseIma):
-            name = 'img_%04d.h5' %i
-            file_name = os.path.join(data_file_path, name)
-            image = self._ic.from4D(file_name)
-            if self._cubeNoise is None:
-                self._cubeNoise = image
-            else:
-                self._cubeNoise = np.ma.dstack((self._cubeNoise, image))
-
-        who, tt_cmdH, acts_vector, cmd_matrix, \
-            amplitude, n_push_pull, indexingList, template = IF.loadInfoFromFits(destination_file_path)
-
-        fits_file_name = os.path.join(destination_file_path, 'misure.fits')
-        header = pyfits.Header()
-        header['NPUSHPUL'] = n_push_pull
-        header['WHO'] = who
-        header['TT_CMDH'] = tt_cmdH
-        pyfits.writeto(fits_file_name, acts_vector, header)
-        pyfits.append(fits_file_name, cmd_matrix, header)
-        pyfits.append(fits_file_name, amplitude, header)
-        pyfits.append(fits_file_name, indexingList, header)
-        pyfits.append(fits_file_name, self._cubeNoise.data, header)
-        pyfits.append(fits_file_name, self._cubeNoise.mask.astype(int), header)
-        pyfits.append(fits_file_name, template, header)
-        return self._cubeNoise
-    ### Fine IFF ###
-
-    def FrameAcquisition(self):
-        #move flat
-        #switch on fans or not 
-        data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
-        return data_file_path
+### IFF spostate in C_noise dell'altro m4
 
     def _defAnalyzer(self, tidy_or_shuffle, template, actsVector=None, n_push_pull=None):
         '''
@@ -185,6 +83,7 @@ class Noise():
                                         actsVector=None, n_push_pull=None):
         '''
         arg:
+            data_file_path = measurement data folder
             tidy_or_shuffle = (int) 0 for tidy, 1 for shuffle
             template = np.array composed by 1 and -1
             actsVector = vector of actuators or modes
@@ -352,6 +251,7 @@ class Noise():
     def analysis_whit_structure_function(self, data_file_path, tau_vector):
         '''
         args:
+            data_file_path = measurement data folder
             tau_vector = vector of tau to use
             4000 = total number of image in hdf5
 
@@ -407,6 +307,15 @@ class Noise():
     # plot(tau_vector, rms, '-o'); plt.xlabel('tau'); plt.ylabel('rms_medio')
 
     def piston_noise(self, data_file_path):
+        ''' Toglie il tip e tilt dalle immagini e fa la media
+            #dovrei vedere una variazione nel tempo
+        args:
+            data_file_path = measurement data folder
+
+        returns:
+            mean = np.array containing images's mean
+            time = vector of the time at which the image were taken
+        '''
         list = os.listdir(data_file_path)
         image_number = len(list) - 2
         time = np.arange(image_number) * (1/27.58)

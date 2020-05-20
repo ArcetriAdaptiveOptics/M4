@@ -1,6 +1,7 @@
 '''
 @author: cs
 '''
+import os
 import numpy as np
 from matplotlib import pyplot as plt
 from m4.ground.configuration import Configuration
@@ -31,8 +32,7 @@ def total_alignement(commandAmpVector, nPushPull, maskIndex,
 def opto_mech_disturbances():
     #acquisizione di immagini con un certo criterio
     #definire una serie di intervalli per prendere misure
-    n = Noise()
-    data_file_path = n.FrameAcquisition()
+    data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
     return data_file_path
 
 def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
@@ -41,7 +41,7 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
         template_list = list of template to use in the analysis
         tidy_or_shuffle = (int)  0 for tidy, 1 for shuffle
 
-    retirns:
+    returns:
     '''
     n = Noise()
 
@@ -55,7 +55,6 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
     plt.plot(n_temp, rms_medio, '-o', label= 'rms_medio'); plt.xlabel('n_temp')
     plt.plot(n_temp, quad_medio, '-o', label= 'tip_tilt'); plt.xlabel('n_temp')
     plt.legend()
-    return tt
 
 def convection_noise(data_file_path, tau_vector):
     n = Noise()
@@ -72,14 +71,25 @@ def convection_noise(data_file_path, tau_vector):
     return epsilon_c
 
 def piston_noise(data_file_path):
-    #togliere il tip e til dalle immagini e plottare la media
-    #dovrei vedere una variazione nel tempo
     n = Noise()
     mean, time = n.piston_noise(data_file_path)
     plt.plot(time, mean); plt.xlabel('time[s]'); plt.ylabel('mean_image')
 
 #PROCEDURE OTT#
-def caliball():
+def RS_verification():
+    #caliball
+    pass
+
+def PAR_verification():
+    pass
+
+def LAI_verification():
+    pass
+
+def SAI_verification():
+    pass
+
+def SPL_verification():
     pass
 
 # prendere ispirazione dal sito adoptica
