@@ -14,7 +14,7 @@ tnconf = ''
 class Interferometer():
     '''
     '''
-    N_PIXEL = 2048
+    N_PIXEL = np.array([512,512]) #2048
     BIN_PIX = 1
     HORIZ_CROP = 100
     VERT_CROP = 100

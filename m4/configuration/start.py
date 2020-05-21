@@ -3,6 +3,7 @@
 from m4.configuration.create_ott import *
 
 def create_ott():
-    mirror = Mirror()
-    parabola = Parabola()
-    return mirror, parabola
+    ott = OTT()
+#     dm_mirror = DMmirror()
+#     parabola = Parabola()
+    return ott
