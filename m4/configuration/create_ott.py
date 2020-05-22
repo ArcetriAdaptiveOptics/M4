@@ -1,5 +1,6 @@
 from m4.configuration.config import *
 from m4.configuration.ott_parameters import *
+from astropy.io import fits as pyfits
 from m4.ground import object_from_fits_file_name as obj
 from m4.utils.roi import ROI
 from m4.ground.zernikeGenerator import ZernikeGenerator
@@ -45,12 +46,16 @@ class OTT():
             self._angle = rot_ring_angle
         return self._angle
 # Elements alignment
-    def parb(self, start_position=None):
+    def parab(self, start_position=None):
+        '''
+        args:
+            start_position = np.array() six position
+        '''
         if start_position is None:
-            parb = self.start_position
+            parab = self.start_position
         else:
-            parb = start_position
-        return parb
+            parab = start_position
+        return parab
 
     def refflat(self, start_position=None):
         if start_position is None:
@@ -75,45 +80,44 @@ class OTT():
         mat = x.reshape(11, 6)
         return mat.astype(float)
 
-    def zmx_parpos2z(self, file_name):
+    def zmx_parpos2z(self):
+#         conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER, tnconf)
+#         file_name =  os.path.join(conffolder, 'ZST_PAR_pos2z.txt')
         file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_PAR_pos2z.txt'
         mat = self._readMatFromTxt(file_name)
         return mat
 
-    def zmx_refflatpos2z(self, file_name):
+    def zmx_refflatpos2z(self):
+#         conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER, tnconf)
+#         file_name =  os.path.join(conffolder, 'ZST_FM_pos2z.txt')
         file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_FM_pos2z.txt'
         mat = self._readMatFromTxt(file_name)
         return mat
 
-    def zmx_m4pos2z(self, file_name):
+    def zmx_m4pos2z(self):
+#         conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER, tnconf)
+#         file_name =  os.path.join(conffolder, 'ZST_M4_pos2z.txt')
         file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_M4_pos2z.txt'
         mat = self._readMatFromTxt(file_name)
         return mat
 # Zmat
-    def zmat(self, final_mask):
-#         mask_par = self._r.create_circular_mask(Interferometer.N_PIXEL[0]/2,
-#                                                Interferometer.N_PIXEL[1]/2,
-#                                                OttParameters.parab_radius*OttParameters.pscale-2,
-#                                                self.smap.shape[0])
-#         mask_fold = self._r.create_circular_mask(Interferometer.N_PIXEL[0]/2,
-#                                                Interferometer.N_PIXEL[1]/2,
-#                                                OttParameters.pscale*OttParameters.fold_radius,
-#                                                self.smap.shape[0])
-#         mask = np.ma.mask_or(mask_par, mask_fold)
-#         rmask = self._r.create_circular_mask(OttParameters.rflat_radius*OttParameters.pscale,
-#                                             OttParameters.rflat_radius*OttParameters.pscale,
-#                                             OttParameters.rflat_radius*OttParameters.pscale-1,
-#                                             self.rmap.shape[0])
-# 
+    def zmat(self):
+        file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ott_mask.fits'
+        hduList = pyfits.open(file_name)
+        final_mask = np.invert(hduList[0].data.astype(bool))
+
         prova = np.ma.masked_array(np.ones(((2*OttParameters.parab_radius*OttParameters.pscale).astype(int),
                                             (2*OttParameters.parab_radius*OttParameters.pscale).astype(int))),
                                             mask=final_mask)
-        zernike_mode = np.arange(2, 13) #dovrebbe essere 12 dato che non ho il pistone
-        zmat = np.zeros((prova.compressed().shape[0], zernike_mode.size))
+        zernike_mode = np.arange(2, 12)
+        zmat_nopist = np.zeros((prova.compressed().shape[0], zernike_mode.size))
         for i in range(0, zernike_mode.size):
             z = self._zg.getZernike(zernike_mode[i])
             aa = np.ma.masked_array(z, mask=final_mask)
-            zmat.T[i] = aa.compressed()
+            zmat_nopist.T[i] = aa.compressed()
+        zmat = np.ones((zmat_nopist.shape[0], zmat_nopist.shape[1]+1))
+        for j in range(1, zmat_nopist.shape[1]):
+            zmat[:, j] = zmat_nopist[:, j-1]
         return zmat
 
 class DMmirror():
