@@ -2,15 +2,20 @@ from m4.configuration.config import *
 from m4.configuration.ott_parameters import *
 from m4.ground import object_from_fits_file_name as obj
 from m4.utils.roi import ROI
+from m4.ground.zernikeGenerator import ZernikeGenerator
 
 class OTT():
     def __init__(self):
         """The constructor """
         self._r = ROI()
+        self._zg = ZernikeGenerator(2*OttParameters.parab_radius*OttParameters.pscale)
         self._slide = 0
         self._rslide = 0
         self._angle = 0
         self.start_position = np.zeros(6)
+        self.smap = np.zeros((Interferometer.N_PIXEL[0], Interferometer.N_PIXEL[1]))
+        self.rmap = np.zeros(((2*OttParameters.rflat_radius*OttParameters.pscale).astype(int),
+                              (2*OttParameters.rflat_radius*OttParameters.pscale).astype(int)))
 
 # Elements position
     def slide(self, par_trans=None):
@@ -68,7 +73,7 @@ class OTT():
         triplets=file.read().split()
         x = np.array(triplets)
         mat = x.reshape(11, 6)
-        return mat
+        return mat.astype(float)
 
     def zmx_parpos2z(self, file_name):
         file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_PAR_pos2z.txt'
@@ -85,19 +90,31 @@ class OTT():
         mat = self._readMatFromTxt(file_name)
         return mat
 # Zmat
-    def zmat(self):
-        smap = np.zeros((Interferometer.N_PIXEL[0], Interferometer.N_PIXEL[1]))
-        mask_par    = self._r.create_circular_mask(Interferometer.N_PIXEL[0]/2,
-                                               Interferometer.N_PIXEL[1]/2,
-                                               OttParameters.parab_radius*OttParameters.PIXEL_SCALE-2)
-        mask    = self._r.create_circular_mask(Interferometer.N_PIXEL[0]/2,
-                                               Interferometer.N_PIXEL[1]/2,
-                                               OttParameters.parab_radius*OttParameters.fold_radius)
-        rmask   = self._r.create_circular_mask(OttParameters.rflat_radius*OttParameters.PIXEL_SCALE,
-                                               OttParameters.rflat_radius*OttParameters.PIXEL_SCALE,
-                                               OttParameters.rflat_radius*OttParameters.PIXEL_SCALE-1)
-
-        return mask_par, mask, rmask
+    def zmat(self, final_mask):
+#         mask_par = self._r.create_circular_mask(Interferometer.N_PIXEL[0]/2,
+#                                                Interferometer.N_PIXEL[1]/2,
+#                                                OttParameters.parab_radius*OttParameters.pscale-2,
+#                                                self.smap.shape[0])
+#         mask_fold = self._r.create_circular_mask(Interferometer.N_PIXEL[0]/2,
+#                                                Interferometer.N_PIXEL[1]/2,
+#                                                OttParameters.pscale*OttParameters.fold_radius,
+#                                                self.smap.shape[0])
+#         mask = np.ma.mask_or(mask_par, mask_fold)
+#         rmask = self._r.create_circular_mask(OttParameters.rflat_radius*OttParameters.pscale,
+#                                             OttParameters.rflat_radius*OttParameters.pscale,
+#                                             OttParameters.rflat_radius*OttParameters.pscale-1,
+#                                             self.rmap.shape[0])
+# 
+        prova = np.ma.masked_array(np.ones(((2*OttParameters.parab_radius*OttParameters.pscale).astype(int),
+                                            (2*OttParameters.parab_radius*OttParameters.pscale).astype(int))),
+                                            mask=final_mask)
+        zernike_mode = np.arange(2, 13) #dovrebbe essere 12 dato che non ho il pistone
+        zmat = np.zeros((prova.compressed().shape[0], zernike_mode.size))
+        for i in range(0, zernike_mode.size):
+            z = self._zg.getZernike(zernike_mode[i])
+            aa = np.ma.masked_array(z, mask=final_mask)
+            zmat.T[i] = aa.compressed()
+        return zmat
 
 class DMmirror():
     def __init__(self):

@@ -38,6 +38,7 @@ class OttParameters():
     outarea         = 4
     fullrslide      = 0.85
     segment_angle   = 60
+    pscale  = Interferometer.N_PIXEL[0]/2/parab_radius
 
 
     PARABOLA_PUPIL_XYRADIUS = np.array([256, 256, 256])
