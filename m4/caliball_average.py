@@ -6,6 +6,10 @@ import os
 import logging
 import numpy as np
 from astropy.io import fits as pyfits
+from matplotlib import pyplot as plt
+from m4.utils import image_extender
+from m4.utils.img_redux import TipTiltDetrend
+from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.ground.configuration import Configuration
 from m4.ground.interferometer_converter import InterferometerConverter
 
@@ -16,6 +20,8 @@ class Caliball():
         self._maskthreshold = 5
         self._logger = logging.getLogger('CALIBALL:')
         self._ic = InterferometerConverter()
+        self._zOnM4 = ZernikeOnM4()
+        self._ttd = TipTiltDetrend()
 
 
     @staticmethod
@@ -23,6 +29,33 @@ class Caliball():
         """ Creates the path for measurement data"""
         return os.path.join(Configuration.OPD_DATA_FOLDER,
                             "Caliball")
+
+    def doStart(self):
+        cube = self._readCube()
+        cube_ttr = self._readCube(1)
+        rs_img = self._readRsImg()
+        mask_point = np.zeros(cube.shape[2])
+        for i in range(mask_point.shape[0]):
+            mask_point[i] = np.sum(np.invert(cube[:,:,i].mask))
+        mask_ord = np.sort(mask_point)
+        aa = np.where(mask_point == min(mask_point))[0][0]
+        bad_dataset = cube[:, :, aa]
+        bad_mask = cube[:, :, aa].mask
+
+        plt.plot(np.arange(3000), mask_ord, 'o'); plt.xscale('log')
+        plt.ylabel('# valid points'); plt.xlabel('# frames')
+        plt.title('Cumulative plot of mask valid points')
+
+        rs = image_extender._imageExtender(rs_img)
+        coef, mat = self._zOnM4.zernikeFit(rs, np.array([2, 3]))
+        rs_ttr = self._ttd.ttRemoverFromCoeff(coef, rs)
+        r0 = rs_ttr.std()
+        rs_vect = np.zeros(cube_ttr.shape[2])
+        for j in range(cube_ttr.shape[2]):
+            rs_vect[j] = cube_ttr[:,:,j].std()
+
+        return bad_dataset, bad_mask, r0, rs_vect
+    #plot(x, mask_ord, 'o'); pyplot.xscale('log'); plt.ylabel('# valid points'); plt.xlabel('# frames'); plt.title('Cumulative plot of mask valid points')
 
     def createImgCubeFile(self):
         path = Caliball._storageFolder()
@@ -34,8 +67,37 @@ class Caliball():
                 total_cube = cube
             else:
                 total_cube = np.ma.dstack((total_cube, cube))
-        self._saveCube(total_cube)
+        self._saveCube(total_cube, 'Total_Cube.fits')
         return total_cube
+
+    def createCubeTTrFromCube(self):
+        # ci mette un'eternità a fare l'estenzione dell'immagine
+        cube = self._readCube()
+        cube_ttr = None
+        for i in range(cube.shape[2]):
+            image = image_extender._imageExtender(cube[:,:,i])
+            coef, mat = self._zOnM4.zernikeFit(image, np.array([2, 3]))
+            image_ttr = self._ttd.ttRemoverFromCoeff(coef, image)
+            if cube_ttr is None:
+                cube_ttr = image_ttr
+            else:
+                cube_ttr = np.ma.dstack((cube_ttr, image_ttr))
+        self._saveCube(cube_ttr, 'Total_Cube_ttr.fits')
+        return cube_ttr
+
+    def createCubeTTrFromRuna(self):
+        file_name = '/Users/rm/imgcubefit.fits'
+        hduList = pyfits.open(file_name)
+        cube_runa = hduList[0].data #(3000, 500, 496)
+        cube = self._readCube()
+        cube_ttr = None
+        for i in range(cube_runa.shape[0]):
+            image = np.ma.masked_array(cube_runa[i, :, :], mask=cube.mask[:,:,i])
+            if cube_ttr is None:
+                cube_ttr = image
+            else:
+                cube_ttr = np.ma.dstack((cube_ttr, image))
+        return cube_ttr
 
     def createRsImgFile(self):
         cube = self._readCube()
@@ -66,14 +128,25 @@ class Caliball():
                 cube = np.ma.dstack((cube, ima))
         return cube
 
-    def _saveCube(self, total_cube):
-        fits_file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube.fits')
+    def _saveCube(self, total_cube, name):
+        fits_file_name = os.path.join(Caliball._storageFolder(), name)
         pyfits.writeto(fits_file_name, total_cube.data)
         pyfits.append(fits_file_name, total_cube.mask.astype(int))
 
-    def _readCube(self):
-        file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube.fits')
+    def _readCube(self, ttr=None):
+        if ttr is None:
+            file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube.fits')
+        else:
+            file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube_ttr_runa.fits')
+            #file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube_ttr.fits')
         hduList = pyfits.open(file_name)
         cube = np.ma.masked_array(hduList[0].data,
                                   hduList[1].data.astype(bool))
         return cube
+
+    def _readRsImg(self):
+        file_name = os.path.join(Caliball._storageFolder(), 'rs_img.fits')
+        hduList = pyfits.open(file_name)
+        rs_img = np.ma.masked_array(hduList[0].data,
+                                    hduList[1].data.astype(bool))
+        return rs_img
