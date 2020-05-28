@@ -30,9 +30,9 @@ class Caliball():
         return os.path.join(Configuration.OPD_DATA_FOLDER,
                             "Caliball")
 
-    def doStart(self):
+    def doStat(self):
         cube = self._readCube()
-        cube_ttr = self._readCube(1)
+        #cube_ttr = self._readCube(1)
         rs_img = self._readRsImg()
         mask_point = np.zeros(cube.shape[2])
         for i in range(mask_point.shape[0]):
@@ -42,7 +42,7 @@ class Caliball():
         bad_dataset = cube[:, :, aa]
         bad_mask = cube[:, :, aa].mask
 
-        plt.plot(np.arange(3000), mask_ord, 'o'); plt.xscale('log')
+        plt.plot(np.arange(mask_point.shape[0]), mask_ord, 'o'); plt.xscale('log')
         plt.ylabel('# valid points'); plt.xlabel('# frames')
         plt.title('Cumulative plot of mask valid points')
 
@@ -50,13 +50,31 @@ class Caliball():
         coef, mat = self._zOnM4.zernikeFit(rs, np.array([2, 3]))
         rs_ttr = self._ttd.ttRemoverFromCoeff(coef, rs)
         r0 = rs_ttr.std()
-        rs_vect = np.zeros(cube_ttr.shape[2])
-        for j in range(cube_ttr.shape[2]):
-            rs_vect[j] = cube_ttr[:,:,j].std()
 
-        return bad_dataset, bad_mask, r0, rs_vect
+        file_name = '/Users/rm/imgcubefit.fits'
+        #file_name = '/mnt/cargo/data/M4/OTT-Review/CaliBallTest/imgcubefit.fits'
+        hduList = pyfits.open(file_name)
+        cube_ttr = hduList[0].data #(3000, 500, 496)
+        rs_vect = np.zeros(cube_ttr.shape[0])
+        for j in range(cube_ttr.shape[0]):
+            rs_vect[j] = cube_ttr[j,:,:].std()
+
+        plt.figure()
+        plt.plot(np.arange(cube_ttr.shape[0]), rs_vect, label='Data'); plt.yscale('log')
+        plt.plot(np.zeros(cube_ttr.shape[0]) + r0, label='Average')
+        plt.ylabel('m RMS'); plt.xlabel('# frames')
+        plt.title('Images WFE'); plt.legend()
+        return bad_dataset, bad_mask
     #plot(x, mask_ord, 'o'); pyplot.xscale('log'); plt.ylabel('# valid points'); plt.xlabel('# frames'); plt.title('Cumulative plot of mask valid points')
 
+    def getMasterMask(self, cube):
+        """ Returns the mask of the cube """
+        aa = np.sum(cube.mask.astype(int), axis=2)
+        master_mask = np.zeros(aa.shape, dtype=np.bool)
+        master_mask[np.where(aa > 0)] = True
+        return master_mask
+
+###
     def createImgCubeFile(self):
         path = Caliball._storageFolder()
         total_cube = None
@@ -146,6 +164,7 @@ class Caliball():
 
     def _readRsImg(self):
         file_name = os.path.join(Caliball._storageFolder(), 'rs_img.fits')
+        #file_name = '/mnt/cargo/data/M4/OTT-Review/CaliBallTest/RS-img.fits'
         hduList = pyfits.open(file_name)
         rs_img = np.ma.masked_array(hduList[0].data,
                                     hduList[1].data.astype(bool))
