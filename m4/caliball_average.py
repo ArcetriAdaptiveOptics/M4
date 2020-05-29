@@ -18,6 +18,7 @@ class Caliball():
     def __init__(self):
         """The constructor """
         self._maskthreshold = 5
+        self._rmsthreshold = 3
         self._logger = logging.getLogger('CALIBALL:')
         self._ic = InterferometerConverter()
         self._zOnM4 = ZernikeOnM4()
@@ -51,10 +52,7 @@ class Caliball():
         rs_ttr = self._ttd.ttRemoverFromCoeff(coef, rs)
         r0 = rs_ttr.std()
 
-        file_name = '/Users/rm/imgcubefit.fits'
-        #file_name = '/mnt/cargo/data/M4/OTT-Review/CaliBallTest/imgcubefit.fits'
-        hduList = pyfits.open(file_name)
-        cube_ttr = hduList[0].data #(3000, 500, 496)
+        cube_ttr = self.readCubeTTR()
         rs_vect = np.zeros(cube_ttr.shape[0])
         for j in range(cube_ttr.shape[0]):
             rs_vect[j] = cube_ttr[j,:,:].std()
@@ -67,12 +65,43 @@ class Caliball():
         return bad_dataset, bad_mask
     #plot(x, mask_ord, 'o'); pyplot.xscale('log'); plt.ylabel('# valid points'); plt.xlabel('# frames'); plt.title('Cumulative plot of mask valid points')
 
-    def getMasterMask(self, cube):
-        """ Returns the mask of the cube """
-        aa = np.sum(cube.mask.astype(int), axis=2)
-        master_mask = np.zeros(aa.shape, dtype=np.bool)
-        master_mask[np.where(aa > 0)] = True
-        return master_mask
+    def pixel_std(self):
+        cube_ttr = self._readCube(1)
+        std_image = cube_ttr.std(axis=2)
+        mean_image = cube_ttr.mean(axis=2)
+
+        plt.imshow(std_image, origin='lower'); plt.colorbar()
+        plt.title('Pixel StDev')
+        plt.figure()
+        plt.imshow(mean_image, origin='lower'); plt.colorbar()
+        plt.title('RS average value')
+        return std_image, mean_image
+
+    def doselaverage(self):
+        cube_ttr = self._readCube(1)
+        mask_point = np.zeros(cube_ttr.shape[2])
+        for i in range(mask_point.shape[0]):
+            mask_point[i] = np.sum(cube_ttr[:,:,i].mask)
+        idx = np.where(mask_point <= (min(mask_point) + self._maskthreshold))
+
+        rs_std = np.zeros(idx[0].shape[0])
+        for i in range(idx[0].shape[0]):
+            rs_std[i] = np.std(cube_ttr[:,:,idx[0][i]])
+
+        rthresh = np.mean(rs_std)+self._rmsthreshold*np.std(rs_std)
+        idr = np.where(rs_std < rthresh)
+        r_img = np.mean(cube_ttr[:,:,idr], axis=3)
+        std_img = np.std(cube_ttr[:,:,idr], axis=3)
+        r_image = r_img[:,:,0]
+        std_image = std_img[:,:,0]
+
+        plt.imshow(r_image, origin='lower'); plt.colorbar()
+        plt.title('RS measurement error')
+        plt.figure()
+        plt.imshow(std_image, origin='lower'); plt.colorbar()
+        plt.title('Pixel StDev, thresh = %d' %self._rmsthreshold)
+        return r_image, std_image
+    # non deve starci idr ma gli idx[idr]
 
 ###
     def createImgCubeFile(self):
@@ -155,12 +184,19 @@ class Caliball():
         if ttr is None:
             file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube.fits')
         else:
-            file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube_ttr_runa.fits')
-            #file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube_ttr.fits')
+            #file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube_ttr_runa.fits')
+            file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube_ttr.fits')
         hduList = pyfits.open(file_name)
         cube = np.ma.masked_array(hduList[0].data,
                                   hduList[1].data.astype(bool))
         return cube
+
+    def readCubeTTR(self):
+        file_name = '/Users/rm/imgcubefit.fits'
+        #file_name = '/mnt/cargo/data/M4/OTT-Review/CaliBallTest/imgcubefit.fits'
+        hduList = pyfits.open(file_name)
+        cube_ttr = hduList[0].data #(3000, 500, 496)
+        return cube_ttr
 
     def _readRsImg(self):
         file_name = os.path.join(Caliball._storageFolder(), 'rs_img.fits')
