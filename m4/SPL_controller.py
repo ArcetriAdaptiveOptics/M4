@@ -39,16 +39,24 @@ class SPL():
 
     def measurement(self, lambda_vector, acq4d=None, an=None):
         '''
-        args:
-            lambda_vector = vector of wavelengths (between 400/700 nm)
-                            [np.array]
-            acqu4d = 1 to perform the data acquisition process
-                     0 to skip data acquisition
-            an = 1 to perform the data analysis process
-                 0 to skip data analysis
+        Parameters
+        ----------
+        lambda_vector: numpy array
+                        vector of wavelengths (between 400/700 nm)
 
-        returns:
-                piston = piston value
+        Other Parameters
+        ----------------
+        acqu4d: int, optional
+                1 to perform the data acquisition process
+                0 to skip data acquisition
+        an: int, optional
+            1 to perform the data analysis process
+            0 to skip data analysis
+
+        Returns
+        -------
+        piston: int
+                piston value
         '''
         if (acq4d is None and an is None):
             self._exptime, self._acq4d, self._an = self._setParameters(0.7, 1, 1)
@@ -85,11 +93,15 @@ class SPL():
 # lambda_vector = np.arange(530,730,10)
     def acquire(self, lambda_vector):
         '''
-        arg:
-            lambda_vector = vector of wavelengths (between 400/700 nm)
+        Parameters
+        ----------
+        lambda_vector: numpy array
+                        vector of wavelengths (between 400/700 nm)
 
-        returns:
-                tt = tracking number of measurements
+        Returns
+        -------
+        tt: string
+            tracking number of measurements
         '''
         store_in_folder = self._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
@@ -178,12 +190,18 @@ class SPL():
 
 
     def analyzer(self, tt=None):
-        ''' Analyze measurement data and compare it with synthetic data
-        args:
-            tt = tracking number of the measurement data
+        '''
+        Analyze measurement data and compare it with synthetic data.
 
-        returns:
-            piston = piston value
+        Parameters
+        ----------
+            tt: string
+                tracking number of the measurement data
+
+        Returns
+        -------
+        piston: int
+                piston value
         '''
         if tt is None:
             tt = self._tt
@@ -300,14 +318,22 @@ class SPL():
 
 
     def templateComparison(self, matrix, matrix_smooth, lambda_vector):
-        ''' Compare the matrix obtained from the measurements with
-            the one recreated with the synthetic data in tn_fringes
-        args:
-            matrix = [pixels, lambda]
-            lambda_vector = vector of wavelengths
+        '''
+        Compare the matrix obtained from the measurements with the one recreated with the synthetic data in tn_fringes.
 
-        returns:
-            piston = piston value
+        Parameters
+        ----------
+        matrix: [pixels, lambda]
+                measured matrix
+        matrix_smooth: [pixels, lambda]
+                        measured matrix smooth
+        lambda_vector: numpy array
+                        vector of wavelengths (between 400/700 nm)
+
+        Returns
+        -------
+        piston: int
+                piston value
         '''
         tn_fringes = Configuration.TN_FRINGES
         #tn_fringes = '20181026'
