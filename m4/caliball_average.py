@@ -1,5 +1,7 @@
 '''
-@author: cselmi
+Autors
+  - G. Pariani, R.Briguglio: written in 2016
+  - C. Selmi: ported to Python in 2020
 '''
 
 import os

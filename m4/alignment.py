@@ -1,5 +1,6 @@
 '''
-@author: cs
+Autors
+  - C. Selmi:  written in 2019
 '''
 
 import numpy as np
@@ -14,15 +15,16 @@ class Alignment():
     Class to be used for alignment of the optical tower
     and the deformable mirror
 
-    HOW TO USE IT:
-    from m4.alignment import Alignment
-    a = Alignment()
-    #for the optical tower
-    tt = a.ott_calibration(commandAmpVector, nPushPull, maskIndex)
-    cmd = a.ott_alignement(tt)
-    #for deformable mirror
-    tt, zCoefComa, comaSurface = a.m4_calibration(...)
-    cmd = a.m4_alignement(zCoefComa)
+    HOW TO USE IT::
+
+        from m4.alignment import Alignment
+        a = Alignment()
+        #for the optical tower
+        tt = a.ott_calibration(commandAmpVector, nPushPull, maskIndex)
+        cmd = a.ott_alignement(tt)
+        #for deformable mirror
+        tt, zCoefComa, comaSurface = a.m4_calibration(...)
+        cmd = a.m4_alignement(zCoefComa)
     """
 
     def __init__(self):
@@ -33,16 +35,22 @@ class Alignment():
 
 
     def ott_calibration(self, command_amp_vector, n_push_pull, mask_index):
-        '''
-            Calibration of the optical tower
-            args:
-                command_amp_vector = vector containing the movement values
-                                    of the 5 degrees of freedom
-                n_push_pull = number of push pull for each degree of freedom
-                mask_index = int (3 for the RM mask)
+        '''Calibration of the optical tower
 
-            returns:
-                    tt = tracking number of measurement
+        Parameters
+        ----------
+                command_amp_vector: numpy array
+                                  vector containing the movement values
+                                  of the 5 degrees of freedom
+                n_push_pull: int
+                            number of push pull for each degree of freedom
+                mask_index: int
+                            3 for the RM mask
+
+        Returns
+        -------
+                tt: string
+                    tracking number of measurements made
         '''
         self._moveRM()
         self._tt = self._cal.measureCalibrationMatrix(0, command_amp_vector,
@@ -53,12 +61,16 @@ class Alignment():
 
     def ott_alignement(self, tt=None):
         """
-        Args:
-            tt = tracking number of measurement of which you want to use the
+        Parameters
+        ----------
+            tt: string, None
+                tracking number of measurement of which you want to use the
                 interaction matrix and reconstructor
                 None for the last measurement made
-        Returns:
-                cmd = vector of command to apply to PAR+RM dof
+        Returns
+        -------
+                cmd: numpy array
+                    vector of command to apply to PAR+RM dof
         """
         if tt is None:
             al = opt_alignment(self._tt)
@@ -74,21 +86,30 @@ class Alignment():
                        maskIndex_ForParRmAlignement,
                        commandAmpVector_ForM4Calibration,
                        nPushPull_ForM4Calibration, maskIndex_ForM4Alignement):
-        """
-        Calibration of the deformable mirror
+        """ Calibration of the deformable mirror
 
-        Args:
-            commandAmpVector_ForParRmAlignement = amplitude to be applied to par+rm
-            nPushPull_ForParRmAlignemen = number of push pull for par+rm dof
-            maskIndex_ForParRmAlignement = number of mask index to use
-            commandAmpVector_ForM4Calibration = amplitude to be applied to m4
-            nPushPull_ForM4Calibration = number of push pull for m4 dof
-            maskIndex_ForM4Alignement = number of mask index to use
+        Parameters
+        ----------
+            commandAmpVector_ForParRmAlignement: numpy array
+                                            amplitude to be applied to par+rm
+            nPushPull_ForParRmAlignemen: int
+                                        number of push pull for par+rm dof
+            maskIndex_ForParRmAlignement: int
+                                        number of mask index to use
+            commandAmpVector_ForM4Calibration: numpy array
+                                            amplitude to be applied to m4
+            nPushPull_ForM4Calibration: int
+                                        number of push pull for m4 dof
+            maskIndex_ForM4Alignement: int
+                                        number of mask index to use
 
-        Returns:
-            zernike_coef_coma = zernike coefficient value for coma calculated
+        Returns
+        -------
+            zernike_coef_coma: int
+                                zernike coefficient value for coma calculated
                                 by the function _measureComaOnSegmentMask
-            coma_surface = reconstructed surface
+            coma_surface: numpy array
+                            reconstructed surface
         """
         self._moveSegmentView()
         tt = self.ott_calibration(commandAmpVector_ForParRmAlignement,
@@ -106,13 +127,18 @@ class Alignment():
 
     def m4_alignement(self, zernike_coef_coma, tt=None):
         """
-        Args:
-            zernike_coef_coma = zernike coefficient value for coma
-            tt = tracking number of measurement of which you want to use the
+        Parameters
+        ----------
+            zernike_coef_coma: int
+                                zernike coefficient value for coma
+            tt: string, None
+                tracking number of measurement of which you want to use the
                 interaction matrix and reconstructor
                 None for the last measurement made
-        Returns:
-                cmd = vector of command to apply to M4 dof
+        Returns
+        -------
+                cmd: numpy array
+                    vector of command to apply to M4 dof
         """
         if tt is None:
             al = opt_alignment(self._tt)

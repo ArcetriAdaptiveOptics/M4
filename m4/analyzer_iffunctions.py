@@ -1,5 +1,6 @@
 '''
-@author: cs
+Autors
+  - C. Selmi: written in 2019
 '''
 
 import os
@@ -20,12 +21,13 @@ class AnalyzerIFF():
     generating the cube of measurements and calculating interaction matrix
     and reconstructor.
 
-    HOW TO USE IT:
-    from m4.analyzer_iffunctions import AnalyzerIFF
-    fileName = os.path.join(".../IFFunctions", tt)
-    an = AnalyzerIFF.loadInfoFromTtFolder(fileName)
-    cube = an.createCube(tiptiltDetrend = None, phaseAmbiguity = None)
-    an.saveCubeAsFits(cubeName)
+    HOW TO USE IT::
+
+        from m4.analyzer_iffunctions import AnalyzerIFF
+        fileName = os.path.join(".../IFFunctions", tt)
+        an = AnalyzerIFF.loadInfoFromTtFolder(fileName)
+        cube = an.createCube(tiptiltDetrend = None, phaseAmbiguity = None)
+        an.saveCubeAsFits(cubeName)
     '''
 
     def __init__(self):
@@ -49,11 +51,15 @@ class AnalyzerIFF():
     def loadInfoFromTtFolder(h5Folder):
         """ Creates the object using information about path measurements
 
-            Args:
-                h5Folder = measurement folder path
+        Parameters
+        ----------
+                h5Folder: string
+                        measurement folder path
 
-            Return:
-                theObject = analyzerIFF class object
+        Returns
+        -------
+                theObject: object
+                        analyzerIFF class object
         """
         theObject = AnalyzerIFF()
         theObject._h5Folder = h5Folder
@@ -70,14 +76,30 @@ class AnalyzerIFF():
 
 
     def getCube(self):
-        """ Returns the cube of measurements """
+        '''
+        Returns
+        -------
+                cube: masked array [pixels, pixels, number of images]
+                    cube from analysis
+        '''
         return self._cube
 
     def getIFShape(self):
+        '''
+        Returns
+        -------
+                shape: int
+                    number of images
+        '''
         return self.getCube()[:,:,0].shape
 
     def getMasterMask(self):
-        """ Returns the mask of the cube """
+        '''
+        Returns
+        -------
+                master_mask: [pixels, pixels]
+                            product of the masks of the cube
+        '''
         aa = np.sum(self._cube.mask.astype(int), axis=2)
         master_mask = np.zeros(aa.shape, dtype=np.bool)
         master_mask[np.where(aa > 0)] = True
@@ -128,14 +150,18 @@ class AnalyzerIFF():
 
     def createCube(self, tiptilt_detrend=None, phase_ambiguity=None):
         '''
-            Args:
-                ttDetrend = in the creation of the cube the images are reduced
+        Other Parameters
+        ----------
+                ttDetrend: optional
+                            in the creation of the cube the images are reduced
                             removing tip tilt on the central segment
 
-                phaseSolve=
+                phaseSolve: optional
 
-            Returns:
-                self._cube = cube
+        Returns
+        -------
+                cube = masked array [pixels, pixels, number of images]
+                        cube from analysis
         '''
         cube_all_act = None
         self._ttData()
@@ -193,6 +219,25 @@ class AnalyzerIFF():
         return self._cube
 
     def createCubeFromImageFolder(self, data_file_path, tiptilt_detrend=None, phase_ambiguity=None):
+        '''
+        Parameters
+        ----------
+                data_file_path: string
+                                measurement data file path
+
+        Other Parameters
+        ----------
+                ttDetrend: optional
+                            in the creation of the cube the images are reduced
+                            removing tip tilt on the central segment
+
+                phaseSolve: optional
+
+        Returns
+        -------
+                cube = masked array [pixels, pixels, number of images]
+                        cube from analysis
+        '''
         cube_all_act = None
         where = self._indexReorganization()
         ampl_reorg = self._amplitudeReorganization(self._actsVector,
@@ -225,7 +270,7 @@ class AnalyzerIFF():
                     r = ROI()
                     roi = r.roiGenerator(img_if)
                     tt = TipTiltDetrend()
-                    img_if = tt.tipTiltRemover(img_if, roi, 3)
+                    img_if = tt.tipTiltDetrend(img_if, roi, 3)
 
                 if_push_pull_kth = img_if-np.ma.median(img_if)
 
@@ -301,8 +346,10 @@ class AnalyzerIFF():
 
     def saveCubeAsFits(self, cube_name):
         """
-            Args:
-                cube_name = name to save the cube
+        Parameters
+        ----------
+                cube_name: string
+                            name to save the cube
                             example 'Cube.fits'
         """
         tt = self._ttData()
@@ -318,8 +365,10 @@ class AnalyzerIFF():
 
     def saveCubeAsH5(self, cube_name):
         """
-            Args:
-                cube_name = name to save the cube
+        Parameters
+        ----------
+                cube_name: string
+                            name to save the cube
                             example 'Cube.h5'
         """
         tt = self._ttData()
@@ -339,11 +388,15 @@ class AnalyzerIFF():
     def loadCubeFromFits(fits_file_name):
         """ Creates the object using information contained in Cube
 
-            Args:
-                fits_file_name = cube path
+        Parameters
+        ----------
+                fits_file_name: string
+                                cube file name path
 
-            Return:
-                theObject = analyzerIFF class object
+        Returns
+        -------
+                theObject: object
+                            analyzerIFF class object
         """
         header = pyfits.getheader(fits_file_name)
         hduList = pyfits.open(fits_file_name)
@@ -369,11 +422,15 @@ class AnalyzerIFF():
     def loadCubeFromH5(file_name):
         """ Creates the object using information contained in Cube
 
-            Args:
-                file_name = cube path
+        Parameters
+        ----------
+                file_name: string
+                            cube file name path
 
-            Return:
-                theObject = analyzerIFF class object
+        Returns
+        -------
+                theObject: object
+                            analyzerIFF class object
         """
         theObject = AnalyzerIFF()
         hf = h5py.File(file_name, 'r')
@@ -435,17 +492,36 @@ class AnalyzerIFF():
 ### FINE ###
 
     def setAnalysisMask(self, analysis_mask):
+        ''' Set the analysis mask chosen
+
+        Parameters
+        ----------
+                analysis_mask: numpy array [pixels, pixels]
+        '''
         self._analysisMask = analysis_mask
 
     def setAnalysisMaskFromMasterMask(self):
+        ''' Set the analysis mask using the master mask of analysis cube
+        '''
         self._analysisMask = self.getMasterMask()
 
     def setDetectorMask(self, mask_from_ima):
+        ''' Set the detector mask chosen
+
+        Parameters
+        ----------
+                    detector_mask: numpy array [pixels, pixels]
+        '''
         self._analysisMask = None
         self._rec = None
         self._analysisMask = mask_from_ima
 
     def getAnalysisMask(self):
+        '''
+        Returns
+        -------
+            analysis_mask: numpy array [pixels, pixels]
+        '''
         return self._analysisMask
 
     def _getMaskedInfluenceFunction(self, idx_influence_function):
@@ -471,11 +547,23 @@ class AnalyzerIFF():
         return np.linalg.pinv(self.getInteractionMatrix(), rcond=rCond)
 
     def getInteractionMatrix(self):
+        '''
+        Returns
+        -------
+                intMat: numpy array
+                        interaction matrix from cube
+        '''
         if self._intMat is None:
             self._createInteractionMatrix()
         return self._intMat
 
     def getReconstructor(self):
+        '''
+        Returns
+        -------
+                rec = numpy array
+                    reconstructor calculated as pseudo inverse of the interaction matrix
+        '''
         if self._rec is None:
             self._createSurfaceReconstructor()
         return self._rec
@@ -540,7 +628,7 @@ class AnalyzerIFF():
                 file_name = os.path.join(fold, 'img_%04d.h5') %l
                 img = self._ic.from4D(file_name)
                 roi = r.roiGenerator(img)
-                ima_tt = tip_til_det.tipTiltRemover(img, roi, 3)
+                ima_tt = tip_til_det.tipTiltDetrend(img, roi, 3)
                 imaList.append(ima_tt)
 
             image = imaList[0] + imaList[1] - imaList[2]

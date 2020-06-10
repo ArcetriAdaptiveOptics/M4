@@ -1,5 +1,7 @@
 '''
-@author: cs
+Autors
+  - G. Pariani, R.Briguglio: written in 2016
+  - C. Selmi: ported to Python in 2020
 '''
 
 import os
@@ -16,12 +18,13 @@ from m4.ground.configuration import Configuration
 class SPL():
     ''' Class used to obtain the piston value for two segments
 
-    HOW TO USE IT:
-    from m4.SPL_controller import SPL
-    #definizione dell'oggetto filtro e dell'oggetto camera
-    spl = SPL(filtro, camera)
-    lambda_vector = np.arange(530,730,10)
-    piston = spl.measurement(lambda_vector, acq4d=None, an=None)
+    HOW TO USE IT::
+
+        from m4.SPL_controller import SPL
+        #definizione dell'oggetto filtro e dell'oggetto camera
+        spl = SPL(filtro, camera)
+        lambda_vector = np.arange(530,730,10)
+        piston = spl.measurement(lambda_vector, acq4d=None, an=None)
     '''
 
     def __init__(self, filter_obj, camera_obj):

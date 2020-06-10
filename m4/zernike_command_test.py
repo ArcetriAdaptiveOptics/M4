@@ -1,5 +1,6 @@
 '''
-@author: cs
+Autors
+  - C. Selmi:  written in 2020
 '''
 
 import os
@@ -17,6 +18,12 @@ from m4.ground.interferometer_converter import InterferometerConverter
 class ZernikeCommand():
     ''' Class created to control Zernike modes at all m4
         (6 segments at the same time)
+
+    HOW TO USE IT::
+
+        from m4.zernike_command_test import ZernikeCommand
+        zc = ZernikeCommand(roi[3], tt_list_for_an)
+        tt, surf_cube, image_cube = zc.zernikeCommandTest(zernike_modes_vector_amplitude)
     '''
 
     def __init__(self, segment_roi, tt_list_for_an):
@@ -59,14 +66,21 @@ class ZernikeCommand():
 
     def zernikeCommandTest(self, zernike_modes_vector_amplitude):
         '''
-        args:
-            zernike_modes_vector_amplitude = vector of amplitude of zernike
+
+        Parameters
+        ----------
+            zernike_modes_vector_amplitude: numpy array
+                                            vector of amplitude of zernike
                                             modes to be test, starting from z=2
 
-        returns:
-                tt = tracking number for the measurement
-                zernikeSurfaceCube = all zernike surface generated on M4 [512, 512, n_modes]
-                m4ImagesCube = cube consisting of the 6 images of the segments [512, 512, n_modes]
+        Returns
+        -------
+                tt: string
+                    tracking number for the measurement
+                zernikeSurfaceCube: numpy array [512, 512, n_modes]
+                    all zernike surface generated on M4
+                m4ImagesCube: numpy array [512, 512, n_modes]
+                    cube consisting of the 6 images of the segments
         '''
         self._ampVector = zernike_modes_vector_amplitude
         store_in_folder = self._storageFolder()
@@ -120,13 +134,17 @@ class ZernikeCommand():
         return self._tt, self._zernikeSurfaceCube, self._m4ImagesCube
 
     def readSurfM4ImageCubes(self, tt):
-        ''' 
-        args:
-            tt = tracking number of measurement
+        '''
 
-        returns:
-            zernikeSurfaceCube = [_bigDiameter, _bigDiameter, n_modes]
-            _m4ImagesCube = [_bigDiameter, _bigDiameter, n_modes]
+        Parameters
+        ----------
+            tt: string
+                tracking number of measurement
+
+        Returns
+        -------
+            zernikeSurfaceCube: numpy array [_bigDiameter, _bigDiameter, n_modes]
+            m4ImagesCube: numpy array [_bigDiameter, _bigDiameter, n_modes]
         '''
         dove = os.path.join(self._storageFolder(), tt)
 
@@ -143,7 +161,11 @@ class ZernikeCommand():
         Compare the images obtained from the Zernike generator
         with those created on the segments through the function itself.
 
-    returns:
+        Parameters
+        ----------
+
+        Returns
+        -------
         diff_list = list of images obtained by subtracting zernike modes
                     from m4 images
         rms = vector of rms value calculated on the difference images
@@ -163,11 +185,14 @@ class ZernikeCommand():
 
     def imageReconstructor(self, singleZernikeCube):
         """
-        args:
+
+        Parameters
+        ----------
             singleZernikeCube = cube of one zernike mode
                                 (shape [pixels, pixels, number of segments measured])
 
-        returns:
+        Returns
+        -------
                 final_total_mode_image = reconstructed image joining the six segments
                 imaList = image list of the six segments
         """
@@ -216,7 +241,11 @@ class ZernikeCommand():
         """Reads all the cubes present in the last generated tracking number
         and puts them in a list.
 
-        returns:
+        Other Parameters
+        ----------
+
+        Returns
+        -------
                 cubeList = list of cubes [n_mode][pixels, pixels, segment]
         """
         if tt is None:
@@ -315,14 +344,16 @@ class ZernikeCommand():
         ''' Chosen only one mode of Zernike I apply it to all segments and
         I return the total mode command from the measurement.
 
-        args:
+        Parameters
+        ----------
             zernike_coeff_array = array containing the amplitude of the mode
                             to create located in the its corresponding position
                             exemple: np.array([z2, z3, z4....])
             an_list = list of the 6 object an
             number_of_zernike_mode = (int) zernike mode to measure
 
-        returns:
+        Returns
+        -------
                 surface_map = zernike mode surface map
                 totalModeCommand = array of 5253 elements
         '''
@@ -384,12 +415,15 @@ class ZernikeCommand():
 
     def zernikeCommandForSegment(self, surface_map, segment_number, an):
         ''' Calculate the command of the chosen mode to give to the segment.
-        args:
+
+        Parameters
+        ----------
             surface_map = zernike mode surface map on big image
             segment_number = number of the chosen segment
             an = object analyzer
 
-        returns:
+        Returns
+        -------
                 command_for_segment = vector of 892 element containing the
                                 segment's command
         '''

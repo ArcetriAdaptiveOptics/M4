@@ -29,12 +29,12 @@ class TestCalc(unittest.TestCase):
         n_push_pull = 3
         template = np.array([1, -1, 1])
 
-        from m4 import sandbox
-        tt = sandbox.testIFF_shuffleMeasureCreator(device, cmd_matrix_tag,
+        from m4 import _sandbox
+        tt = _sandbox.testIFF_shuffleMeasureCreator(device, cmd_matrix_tag,
                                                    mode_vect_tag, amp_tag,
                                                    n_push_pull, template)
-        an, prod, cube = sandbox.testIFF_an(tt)
-        amp, sp_wf = sandbox.testIFF_spiano(an)
+        an, prod, cube = _sandbox.testIFF_an(tt)
+        amp, sp_wf = _sandbox.testIFF_spiano(an)
         aa = sp_wf.std()
 
         if aa < 1e-6:
@@ -57,12 +57,12 @@ class TestCalc(unittest.TestCase):
         n_push_pull = 3
         template = np.array([1, -1, 1])
 
-        from m4 import sandbox
-        tt = sandbox.testIFF_tidyMeasureCreator(device, cmd_matrix_tag,
+        from m4 import _sandbox
+        tt = _sandbox.testIFF_tidyMeasureCreator(device, cmd_matrix_tag,
                                                 mode_vect_tag, amp_tag,
                                                 n_push_pull, template)
-        an, prod, cube = sandbox.testIFF_an(tt)
-        amp, sp_wf = sandbox.testIFF_spiano(an)
+        an, prod, cube = _sandbox.testIFF_an(tt)
+        amp, sp_wf = _sandbox.testIFF_spiano(an)
         aa = sp_wf.std()
 
         if aa < 1e-6:

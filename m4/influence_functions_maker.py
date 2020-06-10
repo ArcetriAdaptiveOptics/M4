@@ -1,5 +1,6 @@
 '''
-@author: cs
+Autors
+  - C. Selmi:  written in 2019
 '''
 
 import os
@@ -21,14 +22,15 @@ class IFFunctionsMaker():
     Data are saving in the folder corresponding to
     the tracking number generated
 
-    HOW TO USE IT:
-    from m4.utils import create_device
-    device = create_device.myDevice("segment")         #or "m4"
-    from m4.influence_functions_maker import IFFunctionsMaker
-    IFF = IFFunctionsMaker(device)
-    tt = IFF.acq_IFFunctions(modesVectorFitsFileName, nPushPull,
-                            amplitudeFitsFileName, cmdMatrixFitsFileName,
-                            shuffle=None)
+    HOW TO USE IT::
+
+        from m4.utils import create_device
+        device = create_device.myDevice("segment")         #or "m4"
+        from m4.influence_functions_maker import IFFunctionsMaker
+        IFF = IFFunctionsMaker(device)
+        tt = IFF.acq_IFFunctions(modesVectorFitsFileName, nPushPull,
+                                amplitudeFitsFileName, cmdMatrixFitsFileName,
+                                shuffle=None)
     '''
 
     def __init__(self, device):
@@ -51,20 +53,32 @@ class IFFunctionsMaker():
         '''
         Performs the process of acquiring interferograms
 
-        Args:
-             modes_vector_fits_file_name = fits file name
-                                         (Example = modes.fits)
-             n_push_pull = number of push pull on the actuator
-                         (int)
-             amplitude_fits_file_name = fits file name
-                                         (Example = amp.fits)
-             cmd_matrix_fits_file_name = fits file name
-                                         (Example = modalBase.fits)
-             shuffle = if not indicated, the function create the tidy command
-                        history matrix
+        Parameters
+        ----------
+             modes_vector_fits_file_name: string
+                                          fits file name
+                                          (Example = modes.fits)
+             n_push_pull: int
+                          number of push pull on the actuator
+             amplitude_fits_file_name: string
+                                       fits file name
+                                       (Example = amp.fits)
+             cmd_matrix_fits_file_name: int
+                                        fits file name
+                                        (Example = modalBase.fits)
+         Other Parameters
+        ----------------
+             shuffle: optional
+                      if not indicated, the function create the tidy command
+                      history matrix
+             template: numpy array, optional
+                       vector composed by 1 and -1
+                       if not indicated, the function create the vector [1, -1, 1]
 
-        Returns:
-                tt = tracking number of measurements made
+        Returns
+        -------
+                tt: string
+                    tracking number of measurements made
         '''
         amplitude, modes_vector, cmd_matrix = \
         object_from_fits_file_name.readObjectFitsFileName(amplitude_fits_file_name,
@@ -233,17 +247,27 @@ class IFFunctionsMaker():
     def loadInfoFromFits(folder):
         """ Reload information contained in fits Info file
 
-            Args:
-                fits_file_name = info file path
+        Parameters
+        ----------
+        fits_file_name: string
+                        info file path
 
-            Returns:
-                who = which segment
-                tt_cmdH = CommandHistory tracking number
-                acts_vector = vector of actuators
-                cmd_matrix = modal base
-                cmd_ampl = amplitude vector
-                n_push_pull = number of push pull
-                indexingList = list of index order using in command history
+        Returns
+        -------
+        who: string
+            which segment
+        tt_cmdH: string
+                CommandHistory tracking number
+        acts_vector: numpy array
+                    vector of actuators
+        cmd_matrix: matrix
+                    modal base
+        cmd_ampl: numpy array
+                amplitude vector
+        n_push_pull: int
+                    number of push pull
+        indexingList: list
+                    list of index order using in command history
         """
         additional_info_fits_file_name = os.path.join(folder, 'info.fits')
         header = pyfits.getheader(additional_info_fits_file_name)
@@ -271,17 +295,27 @@ class IFFunctionsMaker():
     def loadInfoFromH5(tt):
         """ Reload information contained in h5 Info file
 
-            Args:
-                fits_file_name = info file path
+        Parameters
+        ----------
+        fits_file_name: string
+                        info file path
 
-            Returns:
-                who = which segment
-                tt_cmdH = CommandHistory tracking number
-                acts_vector = vector of actuators
-                cmd_matrix = modal base
-                cmd_ampl = amplitude vector
-                n_push_pull = number of push pull
-                indexingList = list of index order using in command history
+        Returns
+        -------
+        who: string
+            which segment
+        tt_cmdH: string
+                CommandHistory tracking number
+        acts_vector: numpy array
+                    vector of actuators
+        cmd_matrix: matrix
+                    modal base
+        cmd_ampl: numpy array
+                amplitude vector
+        n_push_pull: int
+                    number of push pull
+        indexingList: list
+                    list of index order using in command history
         """
         store_in_folder = IFFunctionsMaker._storageFolder()
         folder = os.path.join(store_in_folder, tt)
