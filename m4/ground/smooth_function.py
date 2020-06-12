@@ -4,10 +4,20 @@ import numpy as np
 
 def smooth(a, WSZ):
     ''''
-    args:
-    a = NumPy 1-D array containing the data to be smoothed
-    WSZ = smoothing window size needs, which must be odd number,
-        as in the original MATLAB implementation '''
+
+    Parameters
+    ----------
+    a: NumPy 1-D array 
+        containing the data to be smoothed
+    WSZ: int
+        smoothing window size needs, which must be odd number,
+        as in the original MATLAB implementation
+
+    Returns
+    -------
+    smooth: numpy array
+            smoothd data
+    '''
     out0 = np.convolve(a,np.ones(WSZ,dtype=int),'valid')/WSZ
     r = np.arange(1,WSZ-1,2)
     start = np.cumsum(a[:WSZ-1])[::2]/r

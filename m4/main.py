@@ -37,11 +37,15 @@ def opto_mech_disturbances():
 
 def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
     '''
-    args :
-        template_list = list of template to use in the analysis
-        tidy_or_shuffle = (int)  0 for tidy, 1 for shuffle
+    Parameters
+    ----------
+        template_list: list
+                     list of template to use in the analysis
+        tidy_or_shuffle: int
+                        0 for tidy, 1 for shuffle
 
-    returns:
+    Returns
+        -------
     '''
     n = Noise()
 

@@ -252,7 +252,7 @@ class SPL():
         self._matrix = matrix
         self._matrixSmooth = matrix_smooth
         #self._saveMatrix(matrix)
-        piston, piston_smooth = self.templateComparison(matrix, matrix_smooth, lambda_vector)
+        piston, piston_smooth = self._templateComparison(matrix, matrix_smooth, lambda_vector)
 
         self._savePistonResult(tt, piston, piston_smooth)
 
@@ -320,7 +320,7 @@ class SPL():
 ### FINE ###
 
 
-    def templateComparison(self, matrix, matrix_smooth, lambda_vector):
+    def _templateComparison(self, matrix, matrix_smooth, lambda_vector):
         '''
         Compare the matrix obtained from the measurements with the one recreated with the synthetic data in tn_fringes.
 

@@ -450,7 +450,7 @@ class AnalyzerIFF():
 
 ### FUNZIONI STATICHE PER CREARE AN PER I TEST ###
     @staticmethod
-    def loadTestMeasureFromFits(dove):
+    def _loadTestMeasureFromFits(dove):
         """
         Creates the AnalyzerIFF object using specific informations
         """
@@ -479,7 +479,7 @@ class AnalyzerIFF():
         return theObject
 
     @staticmethod
-    def loadCubeFromIFFMeasureToCreateAn(tt):
+    def _loadCubeFromIFFMeasureToCreateAn(tt):
         dove = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
         fits_file_name = os.path.join(dove, 'CubeMeasure.fits')
         hduList = pyfits.open(fits_file_name)
@@ -571,7 +571,7 @@ class AnalyzerIFF():
 
 #### FUNZIONI PER TEST ###
 
-    def createTestCubeMeasure_forTestDataInOpdImages(self):
+    def _createTestCubeMeasure_forTestDataInOpdImages(self):
         tt = '20191210_143625'
         fold = os.path.join(Configuration.OPD_DATA_FOLDER,
                             'OPDImages', tt, 'hdf5')
@@ -604,7 +604,7 @@ class AnalyzerIFF():
         self._cubeMeasure = cube_measure
         return self._cubeMeasure
 
-    def createCube_forTestDataInOpdImages(self):
+    def _createCube_forTestDataInOpdImages(self):
         tt = '20191210_143625'
         fold = os.path.join(Configuration.OPD_DATA_FOLDER,
                             'OPDImages', tt, 'hdf5')

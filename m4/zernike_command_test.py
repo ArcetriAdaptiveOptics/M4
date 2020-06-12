@@ -117,7 +117,7 @@ class ZernikeCommand():
                 cube_name = 'cube_mode%04d.fits' %number_of_zernike_mode
                 self._saveSingleZernikeCube(single_zernike_cube, cube_name)
 
-                total_mode_image = self.imageReconstructor(single_zernike_cube)
+                total_mode_image = self._imageReconstructor(single_zernike_cube)
                 piston = self._differentialPistonMeasurement(total_mode_command)
                 final_total_mode_image = total_mode_image - piston
                 if self._m4ImagesCube is None:
@@ -163,6 +163,8 @@ class ZernikeCommand():
 
         Parameters
         ----------
+        tt: string
+                tracking number of measurement
 
         Returns
         -------
@@ -183,7 +185,7 @@ class ZernikeCommand():
         return diff_list, rms
 
 
-    def imageReconstructor(self, singleZernikeCube):
+    def _imageReconstructor(self, singleZernikeCube):
         """
 
         Parameters
@@ -243,10 +245,13 @@ class ZernikeCommand():
 
         Other Parameters
         ----------
+        tt: string
+                tracking number of measurement
 
         Returns
         -------
-                cubeList = list of cubes [n_mode][pixels, pixels, segment]
+                cubeList: list [n_mode][pixels, pixels, segment]
+                        list of cubes 
         """
         if tt is None:
             dove = self._dove
@@ -346,16 +351,21 @@ class ZernikeCommand():
 
         Parameters
         ----------
-            zernike_coeff_array = array containing the amplitude of the mode
+            zernike_coeff_array: numpy array
+                            vector containing the amplitude of the mode
                             to create located in the its corresponding position
                             exemple: np.array([z2, z3, z4....])
-            an_list = list of the 6 object an
-            number_of_zernike_mode = (int) zernike mode to measure
+            an_list: list
+                list of the 6 object an
+            number_of_zernike_mode: int
+                                    zernike mode to measure
 
         Returns
         -------
-                surface_map = zernike mode surface map
-                totalModeCommand = array of 5253 elements
+                surface_map: numpy array
+                             zernike mode surface map
+                totalModeCommand: numpy array
+                                vector of 5253 elements
         '''
         self._logger.info('Total command calculation for zernike mode %s', number_of_zernike_mode)
         commandsList = []
@@ -418,14 +428,18 @@ class ZernikeCommand():
 
         Parameters
         ----------
-            surface_map = zernike mode surface map on big image
-            segment_number = number of the chosen segment
-            an = object analyzer
+            surface_map: numpy array
+                        zernike mode surface map on big image
+            segment_number: int
+                        number of the chosen segment
+            an: object
+                object analyzer
 
         Returns
         -------
-                command_for_segment = vector of 892 element containing the
-                                segment's command
+                command_for_segment: numpy array
+                                    vector of 892 element containing the
+                                    segment's command
         '''
         theta, theta_degrees, r = self._moveSegmentView(segment_number)
         cropped_image, rotate_image, final_image = \

@@ -1,4 +1,7 @@
-
+'''
+Autors
+  - L. Busoni: written in 2018
+'''
 import numpy as np
 import h5py
 
@@ -8,11 +11,15 @@ class InterferometerConverter(object):
     @staticmethod
     def from4D(h5filename):
         """
-        args:
-            h5filename = path of h5 file to convert
+        Parameters
+        ----------
+            h5filename: string
+                 path of h5 file to convert
 
-        returns:
-                ima = masked array image
+        Returns
+        -------
+                ima: numpy masked array
+                     masked array image
         """
         f = h5py.File(h5filename, 'r')
         genraw = f['measurement0']['genraw']['data']

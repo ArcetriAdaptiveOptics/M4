@@ -1,3 +1,8 @@
+'''
+Autors
+  - L. Busoni: ?
+'''
+
 import numpy as np
 from scipy.special.basic import factorial
 

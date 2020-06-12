@@ -1,5 +1,6 @@
 '''
-@author: cs
+Autors
+  - C. Selmi: written in 2019
 '''
 import os
 import copy
@@ -15,9 +16,10 @@ class CmdHistory():
     '''
     Class to create and manage the command history matrix
 
-    HOW TO USE IT:
-    from m4.type.commandHistory import CmdHistory
-    cmdH = CmdHistory()
+    HOW TO USE IT::
+
+        from m4.type.commandHistory import CmdHistory
+        cmdH = CmdHistory()
     '''
 
     def __init__(self, device):
@@ -33,9 +35,21 @@ class CmdHistory():
         self._ampVect = None
 
     def getCommandHistory(self):
+        '''
+        Returns
+        -------
+        ccmdHToApply: numpy array
+                    command history matrix to apply
+        '''
         return self._cmdHToApply
 
     def getIndexingList(self):
+        '''
+        Returns
+        -------
+            indexingList: list
+                        list of modes/actuators used to create the command history matrix
+        '''
         return self._indexingList
 
     @staticmethod
@@ -48,19 +62,28 @@ class CmdHistory():
     def tidyCommandHistoryMaker(self, mode_vector, amp_vector,
                                 cmd_matrix, n_push_pull, template=None):
         '''
-         arg:
-            modesVector = Mode or actuator index vector
-                            to apply (numpy.array([]))
-            ampVector = amplitude mode vector (numpy.array([]))
-            cmdMatrix = mode command matrix
-                         (nActs x nModes)
-                         diagonal matrix in case of zonal commands
-            n_push_pull = vector of push pull on the actuator
-                             (es. np.array([1, -1, 1]))
-         return:
-             matrixToApply = tidy command history
-                             (nAct, nModes x nPushPusll x 2)
-             tt = tracking number
+        Parameters
+        ----------
+            modesVector: numpy array
+                         Mode or actuator index vector to apply
+            ampVector: numpy array
+                        amplitude mode vector
+            cmdMatrix: numpy array [nActs x nModes]
+                        mode command matrix
+                        diagonal matrix in case of zonal commands
+            n_push_pull: int
+                        number of push pull for actuatores 
+        Other Parameters
+        ----------
+            template: numpy array  , optional         
+                    vector composed by 1 and -1
+                    (es. np.array([1, -1, 1]))
+        Returns
+        -------
+             matrixToApply: numpy array [nAct, nModes x nPushPusll x 2]
+                            tidy command history
+             tt: string
+                 tracking number
         '''
         self._ampVect = amp_vector
         cmd_history = self._tidyCmdHistory(mode_vector, n_push_pull, cmd_matrix)
@@ -79,19 +102,28 @@ class CmdHistory():
     def shuffleCommandHistoryMaker(self, mode_vector, amp_vector,
                                    cmd_matrix, n_push_pull, template=None):
         '''
-         arg:
-            modesVector = Mode or actuator index vector
-                            to apply (numpy.array([]))
-            ampVector = amplitude mode vector (numpy.array([]))
-            cmdMatrix = mode command matrix
-                         (nActs x nModes)
-                         diagonal matrix in case of zonal commands
-            nPushPull = number of consecutive push pull on the actuator
-                         (int)
-         return:
-             matrixToApply = shuffle command history
-                             (nAct, nModes x nPushPusll x 2)
-             tt = tracking number
+        Parameters
+        ----------
+            modesVector: numpy array
+                         Mode or actuator index vector to apply
+            ampVector: numpy array
+                        amplitude mode vector
+            cmdMatrix: numpy array [nActs x nModes]
+                        mode command matrix
+                        diagonal matrix in case of zonal commands
+            n_push_pull: int
+                        number of push pull for actuatores 
+        Other Parameters
+        ----------
+            template: numpy array  , optional         
+                    vector composed by 1 and -1
+                    (es. np.array([1, -1, 1]))
+        Returns
+        -------
+             matrixToApply: numpy array [nAct, nModes x nPushPusll x 2]
+                            shuffle command history
+             tt: string
+                 tracking number
         '''
         self._ampVect = amp_vector
         cmd_history, indexing_list = self._shuffleCmdHistory(
@@ -216,7 +248,13 @@ class CmdHistory():
 
 
     def saveAsFits(self):
-        """ Save the data in fits format """
+        """ Save the data in fits format
+
+        Returns
+        -------
+        tt: string
+            tracking number
+        """
         store_in_folder = CmdHistory._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
         dove, tt = save._createFolderToStoreMeasurements()
@@ -233,7 +271,13 @@ class CmdHistory():
         return tt
 
     def saveAsH5(self):
-        """ Save the data in h5 format """
+        """ Save the data in h5 format
+
+        Returns
+        -------
+        tt: string
+            tracking number
+        """
         store_in_folder = CmdHistory._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
         dove, tt = save._createFolderToStoreMeasurements()
@@ -253,11 +297,15 @@ class CmdHistory():
     def loadFromFits(device, tt):
         """ Creates the object from the info.fits file located in tt
 
-            Args:
-                tt = tracking number
+        Parameters
+        ----------
+        tt: string
+            tracking number
 
-            Returns:
-                    theObject = CmdHistory class object
+        Returns
+        -------
+        theObject: object
+                command history class object
         """
         theObject = CmdHistory(device)
         theObject._tt = tt
@@ -282,11 +330,15 @@ class CmdHistory():
     def loadFromH5(device, tt):
         """ Creates the object from the info.fits file located in tt
 
-            Args:
-                tt = tracking number
+        Parameters
+        ----------
+        tt: string
+            tracking number
 
-            Returns:
-                    theObject = CmdHistory class object
+        Returns
+        -------
+        theObject: object
+                command history class object
         """
         theObject = CmdHistory(device)
         theObject._tt = tt

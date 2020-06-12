@@ -1,3 +1,8 @@
+'''
+Autors
+  - C. Selmi: written in 2020
+'''
+
 from m4.configuration.config import *
 from m4.configuration.ott_parameters import *
 from astropy.io import fits as pyfits
@@ -20,7 +25,17 @@ class OTT():
 
 # Elements position
     def slide(self, par_trans=None):
-        ''' parabola translation: -0.9 m +0.9m
+        ''' Function to set the parabola translation (range: -0.9 m +0.9 m)
+
+        Other Parameters
+        ----------
+        par_trans: int, optional
+                If par_trans is not set it's equal to zero
+
+        Returns
+        -------
+            par_trans: int
+                    parabola translation
         '''
         if par_trans is None:
             self._slide = self._slide
@@ -29,7 +44,17 @@ class OTT():
         return self._slide
 
     def rslide(self, ref_flat=None):
-        ''' ref-flat: -0.05 m to 0.4 m
+        '''  Function to set the reference flat mirror (range: -0.05 m to 0.4 m)
+
+        Other Parameters
+        ----------
+        ref_flat: int, optional
+                If ref_flat is not set it's equal to zero
+
+        Returns
+        -------
+        ref_flat: int
+                reference flat mirror position
         '''
         if ref_flat is None:
             self._rslide = self._rslide
@@ -38,7 +63,17 @@ class OTT():
         return self._rslide
 
     def angle(self, rot_ring_angle=None):
-        ''' rotating ring angle: 0 to 360°
+        ''' Function to set the rotating ring angle (range: 0 to 360°)
+
+        Other Parameters
+        ----------
+            rot_ring_angle: int, optional
+                If rot_ring_angle is not set it's equal to zero
+
+        Returns
+        -------
+            rot_ring_angle: int
+                            rot_ring_angle
         '''
         if rot_ring_angle is None:
             self._angle = self._angle
@@ -47,9 +82,19 @@ class OTT():
         return self._angle
 # Elements alignment
     def parab(self, start_position=None):
-        '''
-        args:
-            start_position = np.array() six position
+        '''Function to set the start position of the parable
+
+        Other Parameters
+        ----------
+        start_position: numpy array, optional
+                        vector of six position
+                        If start_position is not set it's equal to zero vector
+
+        Returns
+        -------
+            start_position: numpy array
+                        start position of the parable
+            
         '''
         if start_position is None:
             parab = self.start_position
@@ -58,6 +103,19 @@ class OTT():
         return parab
 
     def refflat(self, start_position=None):
+        '''Function to set the start position of the reference flat
+
+        Other Parameters
+        ----------
+        start_position: numpy array, optional
+                        vector of six position
+                        If start_position is not set it's equal to zero vector
+
+        Returns
+        -------
+            start_position: numpy array
+                        start position of the reference flat
+        '''
         if start_position is None:
             refflat = self.start_position
         else:
@@ -65,6 +123,19 @@ class OTT():
         return refflat
 
     def m4(self, start_position=None):
+        '''Function to set the start position of the deformable mirror
+
+        Other Parameters
+        ----------
+        start_position: numpy array, optional
+                        vector of six position
+                        If start_position is not set it's equal to zero vector
+
+        Returns
+        -------
+            start_position: numpy array
+                        start position of the deformable mirror
+        '''
         if start_position is None:
             m4 = self.start_position
         else:
@@ -72,7 +143,17 @@ class OTT():
         return m4
 ### Sensitivity matrices
     def _readMatFromTxt(self, file_name):
-        ''' 11Zernike x 6 displacements, m RMS, per 1 m displacement - or 1 radiant rotation
+        ''' Function to read matrix of 11 Zernike x 6 displacements, m RMS, per 1 m displacement - or 1 radiant rotation
+
+        Parameters
+        ----------
+        file_name: string
+                    matrix file path
+
+        Returns
+        -------
+                mat: numpy array [11,6]
+                    matrix from txt file
         '''
         file = open(file_name, 'r')
         triplets=file.read().split()
@@ -81,6 +162,12 @@ class OTT():
         return mat.astype(float)
 
     def zmx_parpos2z(self):
+        '''
+        Returns
+        -------
+                mat: numpy array [11,6]
+                    matrix parable positions to zernike
+        '''
 #         conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER, tnconf)
 #         file_name =  os.path.join(conffolder, 'ZST_PAR_pos2z.txt')
         file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_PAR_pos2z.txt'
@@ -88,6 +175,12 @@ class OTT():
         return mat
 
     def zmx_refflatpos2z(self):
+        '''
+        Returns
+        -------
+                mat: numpy array [11,6]
+                    matrix reference flat positions to zernike
+        '''
 #         conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER, tnconf)
 #         file_name =  os.path.join(conffolder, 'ZST_FM_pos2z.txt')
         file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_FM_pos2z.txt'
@@ -95,6 +188,12 @@ class OTT():
         return mat
 
     def zmx_m4pos2z(self):
+        '''
+        Returns
+        -------
+                mat: numpy array [11,6]
+                    matrix deformable mirror positions to zernike
+        '''
 #         conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER, tnconf)
 #         file_name =  os.path.join(conffolder, 'ZST_M4_pos2z.txt')
         file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_M4_pos2z.txt'
@@ -102,6 +201,13 @@ class OTT():
         return mat
 # Zmat
     def zmat(self):
+        '''
+        Returns
+        -------
+            zmat: numpy array
+            
+        
+        '''
         file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ott_mask.fits'
         hduList = pyfits.open(file_name)
         final_mask = np.invert(hduList[0].data.astype(bool))

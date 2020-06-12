@@ -123,7 +123,7 @@ def testIFF_an(tt, ttD=None):
     from m4.analyzer_iffunctions import AnalyzerIFF
     file_name = os.path.join \
                 (Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
-    an = AnalyzerIFF.loadTestMeasureFromFits(file_name)
+    an = AnalyzerIFF._loadTestMeasureFromFits(file_name)
     cube = an.createCube(ttD)
     an.saveCubeAsFits('Cube.fits')
     int_mat = an.getInteractionMatrix()
@@ -157,14 +157,14 @@ def testOPDImages_TestFormat():
     from m4.analyzer_iffunctions import AnalyzerIFF
     an = AnalyzerIFF()
     # metterci an.createTestCubeMeasure_forTestDataInOpdImages ma dal pc giù
-    cubeMeasure = an.createTestCubeMeasure_forTestDataInOpdImages() #meglio se lo leggo che ci mette una vita
+    cubeMeasure = an._createTestCubeMeasure_forTestDataInOpdImages() #meglio se lo leggo che ci mette una vita
     cube = an.createCube()
     return cube
 
 def testOPDImages_madeToOrder():
     from m4.analyzer_iffunctions import AnalyzerIFF
     an = AnalyzerIFF()
-    cube = an.createCube_forTestDataInOpdImages()
+    cube = an._createCube_forTestDataInOpdImages()
     return cube
 
 ### Fine test ###

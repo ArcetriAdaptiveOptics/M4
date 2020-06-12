@@ -13,9 +13,10 @@ class ModalBase():
     '''
     Class to create and manage the modal base
 
-    HOW TO USE IT:
-    from m4.type.modalBase import ModalBase
-    mb = ModalBase()
+    HOW TO USE IT::
+
+        from m4.type.modalBase import ModalBase
+        mb = ModalBase()
     '''
 
     def __init__(self):

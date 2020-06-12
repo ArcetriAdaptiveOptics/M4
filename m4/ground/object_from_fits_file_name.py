@@ -11,11 +11,31 @@ from m4.ground.configuration import Configuration
 
 ### Generiche
 def readFits_object(fits_file_path):
+    '''
+    Parameters
+    ----------
+    fits_file_path: string
+                    fits file path of numpy array to read
+
+    Returns
+    -------
+            object: numpy array
+    '''
     hduList = pyfits.open(fits_file_path)
     obj = hduList[0].data
     return obj
 
 def readFits_maskedImage(fits_file_path):
+    '''
+    Parameters
+    ----------
+    fits_file_path: string
+                    fits file path of masked array to read
+
+    Returns
+    -------
+    object: numpy masked array
+    '''
     hduList = pyfits.open(fits_file_path)
     ima = hduList[0].data
     immagine = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
@@ -24,11 +44,15 @@ def readFits_maskedImage(fits_file_path):
 
 def readImageFromFitsFileName(fits_file_path):
     """
-    args:
-        fits_file_path = file path of the image.fits to read
+    Parameters
+    ----------
+        fits_file_path : string
+                        file path of the image.fits to read
 
-    returns:
-            immagine = masked array of the image
+    Returns
+    -------
+            immagine: numpy masked array
+                        masked array of the image
     """
     file_name = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                              fits_file_path)
@@ -41,19 +65,25 @@ def readObjectFitsFileName(amplitude_fits_file_name,
                            mode_vector_fits_file_name,
                            cmd_matrix_fits_file_name):
     '''
-    args:
-        amplitude_fits_file_name = vector with mode amplitude fits file name
-        mode_vector_fits_file_name = mode or actuator index vector
+    Parameters
+    ----------
+        amplitude_fits_file_name: string
+                                 vector with mode amplitude fits file name
+        mode_vector_fits_file_name: string
+                                    mode or actuator index vector
                                     to be applied fits file name
-        cmd_matrix_fits_file_name = matrix of mode commands fits file name
+        cmd_matrix_fits_file_name: string
+                                matrix of mode commands fits file name
 
-    returns:
-        amplitude = vector with mode amplitude (numpy.array([]))
-        modesVector = mode or actuator index vector
-                    to be applied (numpy.array([]))
-        cmd_matrix = matrix of mode commands
-                    (nActs x nModes)
-                     diagonal matrix in case of zonal commands
+    Returns
+    -------
+        amplitude: numpy array
+                vector with mode amplitude
+        modesVector: numpy array
+                    mode or actuator index vector to be applied
+        cmd_matrix: numpy array [nActs x nModes]
+                    matrix of mode commands
+                    diagonal matrix in case of zonal commands
     '''
     ma = ModalAmplitude.loadFromFits(amplitude_fits_file_name)
     amplitude = ma.getModalAmplitude()
@@ -67,11 +97,15 @@ def readObjectFitsFileName(amplitude_fits_file_name,
 
 def readDataFromFileFits(fits_file_path):
     """
-    args:
-        fits_file_path = file path of the data to read
+    Parameters
+    ----------
+        fits_file_path: string
+                    file path of the data to read
 
-    returns:
-            data = data included in file path
+    Returns
+    -------
+            data: numpy array
+                    data included in file path
     """
     file_name = os.path.join(Configuration.OPD_DATA_FOLDER,
                              fits_file_path)

@@ -1,5 +1,6 @@
 '''
-@author: cs
+Autors
+  - C. Selmi: written in 2019
 '''
 
 import os
@@ -13,9 +14,10 @@ class ModalAmplitude():
     '''
     Class to create and manage the modal amplitude
 
-    HOW TO USE IT:
-    from m4.type.modalAmplitude import ModalAmplitude
-    ma = ModalAmplitude()
+    HOW TO USE IT::
+
+        from m4.type.modalAmplitude import ModalAmplitude
+        ma = ModalAmplitude()
     '''
 
     def __init__(self):
@@ -31,20 +33,42 @@ class ModalAmplitude():
                             "ModalAmplitude")
 
     def getModalAmplitude(self):
+        '''
+        Returns
+        -------
+        modalAmplitude: numpy array
+                        vector of modal amplitude
+        '''
         return self._modalAmplitude
 
     def getTag(self):
+        '''
+        Returns
+        -------
+        tag: string
+            modal ampplitude tag
+        '''
         return self._tag
 
     def getFitsFileName(self):
+        '''
+        Returns
+        -------
+        fitsfilename: string
+                    path fits file name
+        '''
         return self._fitsfilename
 
 
     def saveAsFits(self, tag, modal_amplitude):
         ''' Save the data in fits format
-        args:
-            tag (string) = file name to save
-            modal_amplitude (array) = vector of amplitude
+
+        Parameters
+        ----------
+            tag: string
+                file name to save
+            modal_amplitude: numpy array
+                            vector of amplitude
         '''
         self._tag = tag
         store_in_folder = ModalAmplitude._storageFolder()
@@ -54,9 +78,13 @@ class ModalAmplitude():
 
     def saveAsH5(self, tag, modal_amplitude):
         ''' Save the data in h5 format
-        args:
-            tag (string) = file name to save
-            modal_amplitude (array) = vector of amplitude
+
+        Parameters
+        ----------
+            tag: string
+                file name to save
+            modal_amplitude: numpy array
+                            vector of amplitude
         '''
         store_in_folder = ModalAmplitude._storageFolder()
         filename = tag + '.h5'
@@ -68,11 +96,15 @@ class ModalAmplitude():
     def loadFromFits(fits_file_name):
         """ Creates the object
 
-            Args:
-                fits_file_name = modal amplitude path
+        Parameters
+        ----------
+        fits_file_name : string
+                        modal amplitude path
 
-            Returns:
-                    theObject = ModalAmplitude class object
+        Returns
+        -------
+        theObject: object
+                    ModalAmplitude class object
         """
         theObject = ModalAmplitude()
         store_in_folder = ModalAmplitude._storageFolder()
@@ -86,11 +118,15 @@ class ModalAmplitude():
     def loadFromH5(filename):
         """ Creates the object
 
-            Args:
-                filename = modal amplitude path
+        Parameters
+        ----------
+        filename : string
+                 modal amplitude path
 
-            Returns:
-                    theObject = ModalAmplitude class object
+        Returns
+        -------
+        theObject: object
+                    ModalAmplitude class object
         """
         store_in_folder = ModalAmplitude._storageFolder()
         hf = h5py.File(os.path.join(store_in_folder, filename), 'r')

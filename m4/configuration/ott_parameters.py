@@ -1,10 +1,12 @@
 # This is a configuration file for 8s, the OTT Simulator
 '''
-tn_conf = {mirror:'20170203',optical:'20150730',mechanical:'20150730'} ; last mirror configuration with no slave acts, 892 acts
-tn_conf = {mirror:'20150730',optical:'20150730',mechanical:'20150730'} ; initial mirror configuration
-tn_conf = {mirror:'20170430',optical:'20150730',mechanical:'20150730'} ; mirror configuration with slave acts
-ott_folder = {mirror:'MIRROR_System/',optical:'OPTICAL_System/',mechanical:'MECHANICAL_System/', fea:'FEA/',zemax:'ZST/',config:tn_conf}
-interf: configuration parameters for the interferometer
+Tracking numbers::
+
+    tn_conf = {mirror:'20170203',optical:'20150730',mechanical:'20150730'} ; last mirror configuration with no slave acts, 892 acts
+    tn_conf = {mirror:'20150730',optical:'20150730',mechanical:'20150730'} ; initial mirror configuration
+    tn_conf = {mirror:'20170430',optical:'20150730',mechanical:'20150730'} ; mirror configuration with slave acts
+    ott_folder = {mirror:'MIRROR_System/',optical:'OPTICAL_System/',mechanical:'MECHANICAL_System/', fea:'FEA/',zemax:'ZST/',config:tn_conf}
+    interf: configuration parameters for the interferometer
 '''
 import numpy as np
 
@@ -12,7 +14,7 @@ tnconf_mirror = ''
 tnconf = ''
 
 class Interferometer():
-    '''
+    ''' Interferometer parameters
     '''
     N_PIXEL = np.array([512,512]) #2048
     BIN_PIX = 1
@@ -23,7 +25,7 @@ class Interferometer():
     QUANTIZATION = 1
 
 class OttParameters():
-    '''
+    ''' Optical tower parameters
     '''
     parab_radius    = 1.420/2 #was 1.440
     parab_dist      = 5.4
