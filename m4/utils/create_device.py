@@ -1,14 +1,23 @@
 '''
-@author: cs
+Autors
+  - C. Selmi: written in 2019
 '''
 
 from m4.type import deformable_mirror
 
 def myDevice(name_str):
     '''
-    arg:
-        device: optical element to be calibrated.
-             ex. m4 = all the mirror, segment = one petal
+    Parameters
+    ----------
+        name_str: string
+                name of optical element to be calibrated
+                'm4' for all the mirror
+                'segment' for one petal
+
+    Returns
+    -------
+        device: object
+                optical element to be calibrated
     '''
     if name_str == "m4":
         device = deformable_mirror.m4()

@@ -68,13 +68,6 @@ m4.noise\_functions module
    :undoc-members:
    :show-inheritance:
 
-m4.sandbox module
------------------
-
-.. automodule:: m4.sandbox
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 m4.zernike\_command\_test module
 --------------------------------

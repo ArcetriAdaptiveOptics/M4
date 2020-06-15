@@ -1,18 +1,24 @@
 '''
-@author: cselmi
+Autors
+  - C. Selmi: written in 2019
 '''
 import numpy as np
 from m4.ground.zernikeGenerator import ZernikeGenerator
 from m4.configuration.ott_parameters import OttParameters
 
-def _imageExtender(cube_element):
+def imageExtender(cube_element):
     ''' Funzione usata per estendere le dimenzioni delle immagini acquisite a
     quelle della pupilla su cui costruisco gli zernike
-    args:
-        cube_element = an image from cube image
 
-    returns:
-        image = cube_element extended to the size of the Zernike pupil
+    Parameters
+    ----------
+        cube_element: numpy masked array
+                    an image from cube image
+
+    Returns
+    -------
+        image: numpy masked array
+            cube_element extended to the size of the Zernike pupil
     '''
     zg = ZernikeGenerator(2*OttParameters.PARABOLA_PUPIL_XYRADIUS[2])
     dim_y = (2 * zg.getRadius() - cube_element.shape[0]).astype(int) #512-500

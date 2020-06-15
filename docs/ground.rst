@@ -12,13 +12,6 @@ m4.ground.configuration module
    :undoc-members:
    :show-inheritance:
 
-m4.ground.fit\_ellipse module
------------------------------
-
-.. automodule:: m4.ground.fit_ellipse
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 m4.ground.interferometer\_converter module
 ------------------------------------------

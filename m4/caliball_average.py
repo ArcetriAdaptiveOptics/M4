@@ -49,7 +49,7 @@ class Caliball():
         plt.ylabel('# valid points'); plt.xlabel('# frames')
         plt.title('Cumulative plot of mask valid points')
 
-        rs = image_extender._imageExtender(rs_img)
+        rs = image_extender.imageExtender(rs_img)
         coef, mat = self._zOnM4.zernikeFit(rs, np.array([2, 3]))
         rs_ttr = self._ttd.ttRemoverFromCoeff(coef, rs)
         r0 = rs_ttr.std()
@@ -124,7 +124,7 @@ class Caliball():
         cube = self._readCube()
         cube_ttr = None
         for i in range(cube.shape[2]):
-            image = image_extender._imageExtender(cube[:,:,i])
+            image = image_extender.imageExtender(cube[:,:,i])
             coef, mat = self._zOnM4.zernikeFit(image, np.array([2, 3]))
             image_ttr = self._ttd.ttRemoverFromCoeff(coef, image)
             if cube_ttr is None:

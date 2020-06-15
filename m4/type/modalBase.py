@@ -32,22 +32,43 @@ class ModalBase():
                             "ModalBase")
 
     def getModalBase(self):
+        '''
+        Returns
+        -------
+        modalBase: numpy array
+                    vector of modal base
+        '''
         return self._modalBase
 
     def getTag(self):
+        '''
+        Returns
+        -------
+        tag: string
+            modal base tag
+        '''
         return self._tag
 
     def getFitsFileName(self):
+        '''
+        Returns
+        -------
+        fitsfilename: string
+                    path fits file name
+        '''
         return self._fitsfilename
 
     def saveAsFits(self, tag, modal_base):
-        self._tag = tag
-        ''' Save the data in h5 format
-        args:
-            tag (string) = file name to save
-            modal_base = command matrix
-                                (nActs x nModes)
+        ''' Save the data in fits format
+
+        Parameters
+        ----------
+            tag: string
+                file name to save
+            modal_base: numpy array [nActs x nModes]
+                            command matrix
         '''
+        self._tag = tag
         store_in_folder = ModalBase._storageFolder()
         filename = tag + '.fits'
         fits_file_name = os.path.join(store_in_folder, filename)
@@ -55,9 +76,13 @@ class ModalBase():
 
     def saveAsH5(self, tag, modal_base):
         ''' Save the data in h5 format
-        args:
-            tag (string) = file name to save
-            modes_base = command matrix
+
+        Parameters
+        ----------
+            tag: string
+                file name to save
+            modal_bace: numpy array
+                        vector of modal base
         '''
         store_in_folder = ModalBase._storageFolder()
         filename = tag + '.h5'
@@ -69,11 +94,15 @@ class ModalBase():
     def loadFromFits(fits_file_name):
         """ Creates the object
 
-            Args:
-                fits_file_name = modal base path
+        Parameters
+        ----------
+        fits_file_name : string
+                        modal amplitude path
 
-            Returns:
-                    theObject = ModalBase class object
+        Returns
+        -------
+        theObject: object
+                    ModalBase class object
         """
         theObject = ModalBase()
         store_in_folder = ModalBase._storageFolder()
@@ -87,11 +116,15 @@ class ModalBase():
     def loadFromH5(filename):
         """ Creates the object
 
-            Args:
-                filename = modal base path
+        Parameters
+        ----------
+        filename : string
+                 modal amplitude path
 
-            Returns:
-                    theObject = ModalBase class object
+        Returns
+        -------
+        theObject: object
+                    ModalBase class object
         """
         theObject = ModalBase()
         theObject._fitsfilename = filename

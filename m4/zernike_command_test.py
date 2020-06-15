@@ -479,7 +479,7 @@ class ZernikeCommand():
         '''
         #file_name = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
         #fits_file_name = os.path.join(file_name, 'Cube.fits')
-        an = AnalyzerIFF.loadCubeFromIFFMeasureToCreateAn(tt)
+        an = AnalyzerIFF._loadCubeFromIFFMeasureToCreateAn(tt)
         return an
 
     def _createZernikeModesOnM4(self, zernike_coeff_array):
@@ -580,4 +580,4 @@ class ZernikeCommand():
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, self._measure.data)
         pyfits.append(fits_file_name, self._measure.mask.astype(int))
-        
+ 

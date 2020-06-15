@@ -66,7 +66,7 @@ class IFFunctionsMaker():
              cmd_matrix_fits_file_name: int
                                         fits file name
                                         (Example = modalBase.fits)
-         Other Parameters
+        Other Parameters
         ----------------
              shuffle: optional
                       if not indicated, the function create the tidy command

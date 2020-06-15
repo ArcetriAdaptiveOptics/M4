@@ -16,9 +16,10 @@ class opt_alignment():
     """
     Class for the optical alignment
 
-    HOW TO USE IT:
-    from m4.utils.optical_alignement import opt_alignement
-    al = opt_alignement()
+    HOW TO USE IT::
+
+        from m4.utils.optical_alignement import opt_alignement
+        al = opt_alignement()
     """
 
     def __init__(self, tt):
@@ -40,11 +41,14 @@ class opt_alignment():
 
     def opt_align(self, piston=None):
         """
-        args:
-            piston =
+        Other Parameters
+        ----------
+            piston: int, optional
 
-        returns:
-                cmd = final command for the optical alignment
+        Returns
+        -------
+                cmd: numpy array
+                     final command for the optical alignment
         """
         self._logger.info('Calculation of the alignment command for %s',
                           self._tt)
@@ -150,9 +154,12 @@ class opt_alignment():
 
     def saveCommand(self, cmd, i):
         '''
-        arg:
-            cmd = vector containing the command to be given to degrees of freedom
-            i = id number to save the command name
+        Parameters
+        ----------
+            cmd : numpy array
+                vector containing the command to be given to degrees of freedom
+            i: int
+                id number to save the command name
         '''
         dove = os.path.join(self._storageFolder(), self._tt)
         if not os.path.exists(dove):

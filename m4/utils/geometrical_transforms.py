@@ -1,16 +1,23 @@
 '''
-@author: cs
+Autors
+  - C. Selmi: written in 2020
 '''
 import os
 import numpy as np
-from scipy import ndimage 
+from scipy import ndimage
 from astropy.io import fits as pyfits
 from photutils.centroids import fit_2dgaussian
 from m4.ground.configuration import Configuration
 
 class GeomTransf():
-    ''' Classe per ottenere letrasformazione che manda le coordinate dei punti
-        fiduciali dell'immagine x0 in quelli di x1
+    ''' Class to obtain the transformation that allows you to bring the coordinates
+        of the fiducial points of the image x0 in those of image x1
+
+        HOW TO USE IT::
+
+                from m4.geometrical_transforms import GeomTransf
+                gt = GeomTransf()
+                nc, x0, x1 = gt.principal_main(im0, im1, point_to_use)
     '''
 
     def __init__(self):
@@ -25,13 +32,23 @@ class GeomTransf():
 
     def principal_main(self, im0, im1, point_to_use):
         '''
-        args:
-            point_to_use = (int) number of fiducial point tu use (1 or 5)
+        Parameters
+        ----------
+            ima0: numpy array
+                first image
+            ima1: numpy array
+                second image
+            point_to_use: int
+                        number of fiducial point to use (1 or 5)
 
-        returns:
-            nc = position of fiducial point obteined whit the transformation
-            x0 = fiducial point of first image
-            x1 = fiducial point of second image
+        Returns
+        -------
+            nc: numpy array
+                 position of fiducial point obteined whit the transformation
+            x0: numpy array
+                fiducial point of first image
+            x1: numpy array
+                fiducial point of second image
         '''
         #im0, im1 = self._readMeasure()
         if point_to_use == 1:
@@ -43,12 +60,17 @@ class GeomTransf():
 
     def fiduciali(self, image, point_to_use):
         '''
-        args:
-            ima = image from which to derive the location of the fiducial points
-            point_to_use = (int) number of fiducial point tu use (1 or 5)
+        Parameters
+        ----------
+            ima: numpy array
+                image from which to derive the location of the fiducial points
+            point_to_use: int
+                number of fiducial points to use (1 or 5)
 
-        returns:
-            par_list = list of x, y coord (number of points X 2)
+        Returns
+        -------
+            par_list: numpy array [number of points,2]
+                list of x, y coord
         '''
         ima = np.copy(image)
         par_ima_list = []
@@ -84,14 +106,21 @@ class GeomTransf():
 
     def main_five_points(self, im0, im1):
         '''
-        args:
-            im0 = first image
-            im1 = secondo image
+        Parameters
+        ----------
+            im0: numpy array
+                first image
+            im1: numpy array
+                second image
 
-        returns:
-            nc = position of fiducial point obteined whit the transformation
-            x0 = fiducial point of first image
-            x1 = fiducial point of second image
+        Returns
+        -------
+            nc: numpy array
+                 position of fiducial points obteined whit the transformation
+            x0: numpy array
+                 fiducial points of first image
+            x1: numpy array
+                fiducial points of second image
         '''
         point_to_use = 5
         x1_no = self.fiduciali(im1, point_to_use)
@@ -184,7 +213,7 @@ class GeomTransf():
         immagine2 = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
         return immagine1, immagine2
 
-    def prova(self):
+    def _prova(self):
         x0 = np.zeros((5,2))
         x0[0,0] = 115 ; x0[0,1] = 322
         x0[1,0] = 284 ; x0[1,1] = 361
@@ -203,7 +232,7 @@ class GeomTransf():
         k = np.dot(x1,x0_inv)
         return x0, x1, k
 
-    def ima_shift(self, ima):
+    def _ima_shift(self, ima):
         aa = ndimage.shift(ima, 3) #shift di 3 pixel in x e y
         new_ima = np.ma.masked_array(aa, mask=ima.mask)
         return new_ima
@@ -219,6 +248,23 @@ class GeomTransf():
         return mat
 
     def main_one_point(self, im0, im1):
+        '''
+        Parameters
+        ----------
+            im0: numpy array
+                first image
+            im1: numpy array
+                second image
+
+        Returns
+        -------
+            nc: numpy array
+                 position of fiducial point obteined whit the transformation
+            x0_coord: numpy array
+                     fiducial point of first image
+            x1_coord: numpy array
+                    fiducial point of second image
+        '''
         point_to_use = 1
         x1_coord = self.fiduciali(im1, point_to_use)
         x0_coord = self.fiduciali(im0, point_to_use)
@@ -228,13 +274,3 @@ class GeomTransf():
         tran = np.dot(x0_coord.T, rec)
         nc = np.dot(tran, cmat)
         return nc.T, x0_coord, x1_coord
-
-
-## test per sandbox Alpao
-    def gtTest(self):
-        c = test()
-        return c
-
-def test():
-    c = 1+1
-    return c

@@ -274,6 +274,7 @@ class Noise():
     def analysis_whit_structure_function(self, data_file_path, tau_vector):
         '''
         .. 4000 = total number of image in hdf5
+
         Parameters
         ----------
             data_file_path: string
@@ -337,7 +338,8 @@ class Noise():
 
     def piston_noise(self, data_file_path):
         ''' Remove tip and tilt from image and average the results
-            .. dovrei vedere una variazione nel tempo
+        .. dovrei vedere una variazione nel tempo
+
         Parameters
         ----------
             data_file_path: string

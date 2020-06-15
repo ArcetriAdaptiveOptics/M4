@@ -13,9 +13,10 @@ class ModesVector(object):
     '''
     Class to create and manage the mode vector
 
-    HOW TO USE IT:
-    from m4.type.modesVector import ModesVestor
-    mv = ModesVector()
+    HOW TO USE IT::
+
+        from m4.type.modesVector import ModesVestor
+        mv = ModesVector()
     '''
 
     def __init__(self):
@@ -31,20 +32,42 @@ class ModesVector(object):
                             "ModesVector")
 
     def getModesVector(self):
+        '''
+        Returns
+        -------
+        modesVector: numpy array
+                    vector of modes
+        '''
         return self._modesVector
 
     def getTag(self):
+        '''
+        Returns
+        -------
+        tag: string
+            mode vector tag
+        '''
         return self._tag
 
     def getFitsFileName(self):
+        '''
+        Returns
+        -------
+        fitsfilename: string
+                    path fits file name
+        '''
         return self._fitsfilename
 
 
     def saveAsFits(self, tag, modes_vector):
         ''' Save the data in fits format
-        args:
-            tag (string) = file name to save
-            modes_vector = vector of selected modes
+
+        Parameters
+        ----------
+            tag: string
+                file name to save
+            modes_vector: numpy array
+                            vector of selected modes
         '''
         self._tag = tag
         store_in_folder = ModesVector._storageFolder()
@@ -54,9 +77,13 @@ class ModesVector(object):
 
     def saveAsH5(self, tag, modes_vector):
         ''' Save the data in h5 format
-        args:
-            tag (string) = file name to save
-            modes_vector = vector of selected modes
+
+        Parameters
+        ----------
+            tag: string
+                file name to save
+            modes_vector: numpy array
+                        vector of selectred modes
         '''
         store_in_folder = ModesVector._storageFolder()
         filename = tag + '.h5'
@@ -68,11 +95,15 @@ class ModesVector(object):
     def loadFromFits(fits_file_name):
         """ Creates the object
 
-            Args:
-                filename = mode vector path
+        Parameters
+        ----------
+        fits_file_name : string
+                        modal amplitude path
 
-            Returns:
-                    theObject = ModalVector class object
+        Returns
+        -------
+        theObject: object
+                    ModaesVector class object
         """
         theObject = ModesVector()
         store_in_folder = ModesVector._storageFolder()
@@ -86,11 +117,15 @@ class ModesVector(object):
     def loadFromH5(filename):
         """ Creates the object
 
-            Args:
-                filename = mode vector path
+        Parameters
+        ----------
+        filename : string
+                 modal amplitude path
 
-            Returns:
-                    theObject = ModalVector class object
+        Returns
+        -------
+        theObject: object
+                    ModesVector class object
         """
         theObject = ModesVector()
         theObject._fitsfilename = filename

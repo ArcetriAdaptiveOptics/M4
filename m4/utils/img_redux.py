@@ -1,5 +1,6 @@
 '''
-@author: cs
+Autors
+  - C. Selmi: written in 2019
 '''
 
 import logging
@@ -15,14 +16,13 @@ class TipTiltDetrend():
     """
     Class for removal of image's tip and tilt
 
-    HOW TO USE IT:
-    from m4.utils.img_redux import TipTiltDetrend
-    TT = TipTiltDetrend()
+    HOW TO USE IT::
 
-    or
-
-    from m4.utils.img_redux import PhaseSolve
-    PS = PhaseSolve()
+        from m4.utils.img_redux import TipTiltDetrend
+        TT = TipTiltDetrend()
+        or
+        from m4.utils.img_redux import PhaseSolve
+        PS = PhaseSolve()
     """
 
     def __init__(self):
@@ -34,15 +34,22 @@ class TipTiltDetrend():
 
     def tipTiltDetrend(self, image, roi, final_index, analysis_ind=None):
         """
-        args:
-            image = image to be analyzed (np.ma-masked_array)
-            roi = roi of the image (list)
-            final_index = index of final roi (int)
-            analysis_index = index of roi to be used for
-                                the analysis (np.array[...])
+        Parameters
+        ----------
+            image: numpy masked array
+                    image to be analyzed
+            roi: list
+                roi of the image
+            final_index: int
+                    index of final roi (int)
+            analysis_index: nunpy array
+                            index of roi to be used for
+                            the analysis
 
-        returns:
-                image_ttr = image without tip and tilt
+        Returns
+        -------
+                image_ttr: numpy array
+                         image without tip and tilt
         """
         roi_copy = np.copy(roi)
         self._logger.debug('Removal of tip-tilt from roi[%d]',
@@ -84,9 +91,17 @@ class TipTiltDetrend():
 
     def ttRemoverFromCoeff(self, zernike_coeff_array, image):
         '''
-        args:
-            zernike_coeff_array = np.array([coeff_Z2, coeff_Z3])
-            image = masked array
+        Parameters
+        ----------
+            zernike_coeff_array: np.array([coeff_Z2, coeff_Z3])
+                                vector of zernike coefficients
+            image: masked array
+                image to be analyzed
+
+        Returns
+        -------
+            image_ttr: numpy array
+                         image without tip and tilt
         '''
         self._zg = ZernikeGenerator(image.shape[1])
         zernike_surface_map = self._createZernikeSurface(zernike_coeff_array)
@@ -121,15 +136,7 @@ class TipTiltDetrend():
 
 class PhaseSolve():
     """
-    Class...
-    una immagine dell'interferemotro che mette un lamba mezzi tra due superfici se non ho pistone
-    se ho il pistone seguo la variazione di pistone (tipo 2 nanometri, pi+ piccolo di lamba mezzi)
-    quindi le due immagini possono essere rimesse insieme usando questa condizione. 
-    Devo riportare a fare differenziale zero le due immagini
-    deve lavorare su una coppia di immagini e confrontarle con una soglia
 
-    terzo caso: ho una misura e nessuna condizione, cioè la misura delle spl. 
-    Vince la misura di interferometro se sono vicini, se sono lontani.
     """
 
     def __init__(self):
@@ -209,6 +216,23 @@ class SignalUnwrap():
 
     def signal_unwrap(self, x, phase, threshold=None, show=None, mask=None,
                       sample=None, silent=None):
+        '''
+        Parameters
+        ----------
+        x:
+        phase:
+        Other Parameters
+        ----------
+        threshold:
+        show:
+        mask:
+        sample:
+        silent:
+
+        Returns
+        -------
+        x1:
+        '''
 
         thresh = phase/2
         if threshold != None:

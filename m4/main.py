@@ -45,7 +45,7 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
                         0 for tidy, 1 for shuffle
 
     Returns
-        -------
+    -------
     '''
     n = Noise()
 

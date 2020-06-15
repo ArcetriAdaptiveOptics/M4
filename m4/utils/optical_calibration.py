@@ -14,9 +14,10 @@ class opt_calibration():
     """
     Class for the optical calibration
 
-    HOW TO USE IT:
-    from m4.utils.optical_calibration import opt_calibration
-    cal = opt_calibration()
+    HOW TO USE IT::
+
+        from m4.utils.optical_calibration import opt_calibration
+        cal = opt_calibration()
     """
 
     def __init__(self):
@@ -35,20 +36,26 @@ class opt_calibration():
 
     def measureCalibrationMatrix(self, who, command_amp_vector, n_push_pull):
         '''
-            arg:
-                who = number indicating the optical element
+        Parameters
+        ----------
+                who: int
+                     number indicating the optical element
                     on which to perform the calibration
-                    0 per mixing
-                    1 per parable
-                    2 per reference mirror
-                    3 per deformable mirror
-                command_amp_vector = vector containing the amplitude of the
+                    0 for mixing
+                    1 for parable
+                    2 for reference mirror
+                    3 for deformable mirror
+                command_amp_vector: numpy array
+                                     vector containing the amplitude of the
                                     commands to give degrees of freedom to
                                     calibrate
-                n_push_pull = number of push pull
+                n_push_pull: int
+                            number of push pull
 
-            Returns:
-                    tt = tracking number
+        Returns
+        -------
+        tt : string
+            tracking number
         '''
         self._nPushPull = n_push_pull
         self._commandAmpVector = command_amp_vector
@@ -68,13 +75,19 @@ class opt_calibration():
 
     def analyzerCalibrationMeasurement(self, tt, mask_index):
         '''
-        args:
-            tt = tracking number of the measures to be analysed
-            mask_index = int the reference mirror mask index
+        Parameters
+        ----------
+            tt: string
+                tracking number of the measures to be analysed
+            mask_index: int
+                    reference mirror mask index
 
-        returns:
-                self_intMat = interation matrix
-                self._rec = reconstructor
+        Returns
+        -------
+                self_intMat: numpy array
+                         interation matrix
+                self._rec: numpy array
+                         reconstructor
         '''
         a = opt_calibration.loadCommandMatrixFromFits(tt)
         a.createCube(tt)
@@ -180,11 +193,15 @@ class opt_calibration():
         """ Creates the object using information contained in command matrix
             fits file
 
-            Args:
-                tt = tracking number
+        Parameters
+        ----------
+                tt: string
+                    tracking number
 
-            Return:
-                theObject = opt_calibration class object
+        Returns
+        -------
+                theObject: ibjecct
+                         opt_calibration class object
         """
         theObject = opt_calibration()
         theObject._tt = tt
@@ -219,7 +236,8 @@ class opt_calibration():
 
     def createCube(self, tt):
         """
-        args:
+        Parameters
+        ----------
             tt = tracking number
         """
         self._logger.info('Creation of the cube relative to %s', tt)
@@ -230,6 +248,12 @@ class opt_calibration():
         return
 
     def getCube(self):
+        '''
+        Returns
+        -------
+        cube: numpy masked array
+            analyzed measurements
+        '''
         return self._cube
 
     def _createInteractionMatrixAndReconstructor(self, mask):
@@ -255,11 +279,33 @@ class opt_calibration():
 
 
     def getInteractionMatrix(self, mask):
+        '''
+        Parameters
+        ----------
+        mask: numpy array
+            reference mirror mask
+
+        Returns
+        -------
+        intMat: numpy array
+                interaction matrix
+        '''
         if self._intMat is None:
             self._createInteractionMatrixAndReconstructor(mask)
         return self._intMat
 
     def getReconstructor(self, mask):
+        '''
+        Parameters
+        ----------
+        mask: numpy array
+            reference mirror mask
+
+        Returns
+        -------
+        rec: numpy array
+            reconstructor
+        '''
         if self._rec is None:
             self._createInteractionMatrixAndReconstructor(mask)
         return self._rec
