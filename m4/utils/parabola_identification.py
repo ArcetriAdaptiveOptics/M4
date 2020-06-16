@@ -1,5 +1,6 @@
 '''
-@author: cs
+Autors
+  - C. Selmi: written in 2020
 '''
 
 import numpy as np
@@ -16,6 +17,11 @@ from m4.ground.configuration import Configuration
 
 class ParabolIdent():
     ''' Class to be used to determine the position of the parable
+
+    HOW TO USE IT::
+
+        from m4.utils.parabola_identification import ParabolIdent
+        pi = ParabolIdent()
     '''
 
     def __init__(self):
@@ -24,16 +30,23 @@ class ParabolIdent():
 
     def parable(self, image):
         '''
-        args:
-            image = masked array 
+        Parameters
+        ----------
+            image: numpy masked array
+                image to use
 
-        returns:
-            circle = circumference of 1 to be plotted
-            centro = coordinates of the center
-            axs = major and minor axis coming from the fit of the ellipse
-            raggio = radius of the parabola circumference
+        Returns
+        -------
+            circle: numpy array
+                    circumference of 1 to be plotted
+            centro: numpy array
+                    coordinates of the center
+            axs: numpy array
+                    major and minor axis coming from the fit of the ellipse
+            raggio: int
+                radius of the parabola circumference
         '''
-        x, y = self._fiduciali(image)
+        x, y = self.fiduciali(image)
         centro, axs, raggio = self._fitEllipse(x, y)
         #ellipse = self._drawEllipse(centro, axs, image)
         circle = self._drawCircle(centro, raggio, image)
@@ -46,15 +59,20 @@ class ParabolIdent():
         y = np.array([359, 512, 665, 512])
         return x, y
 
-    def _fiduciali(self, ima):
+    def fiduciali(self, ima):
         ''' Calculates the coordinates of the fiducial points of the parabola and
             return it in a single vector of x and y
-        args: 
-            image = np.ma.masked_array
+        Parameters
+        ----------
+            image: numpy masked array
+                image from which to extract the fiducial point
 
-        returns:
-            x = vector of x coordinates of fiducial points
-            y = vector of y coordinates of fiducial points
+        Returns
+        -------
+            x: numpy array
+                vector of x coordinates of fiducial points
+            y: numpy array
+                vector of y coordinates of fiducial points
         '''
         graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)
         labels = skc.spectral_clustering(graph, n_clusters=4, eigen_solver='arpack')
@@ -76,14 +94,20 @@ class ParabolIdent():
 
     def coord(self, image, centro, raggio):
         '''
-        args:
-            image = masked array
-            centro = coordinates of the center
-            raggio = radius of the parabola circumference
+        Parameters
+        ----------
+            image: numpy masked array
+            centro: numpy array
+                     coordinates of the center
+            raggio: int
+                 radius of the parabola circumference
 
-        returns:
-            xx = coordinate x della parabola
-            yy = coordinate y della parabola
+        Returns
+        -------
+            xx: numpy array
+                coordinate x della parabola
+            yy: numpy array
+                coordinate y della parabola
         '''
         raggio = raggio / self._rFiducialPoint
         size = np.array([image.shape[0], image.shape[1]])

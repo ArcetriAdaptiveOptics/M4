@@ -1,5 +1,6 @@
 '''
-@author: cs
+Autors
+  - C. Selmi: written in 2019
 '''
 
 import logging
@@ -13,9 +14,10 @@ class ROI():
     """
     Class to be used for extracting regions of interest from the image.
 
-    HOW TO USE IT:
-    from m4.utils.roi import ROI
-    roi= ROI()
+    HOW TO USE IT::
+
+        from m4.utils.roi import ROI
+        roi= ROI()
     """
 
     def __init__(self):
@@ -27,11 +29,15 @@ class ROI():
 
     def roiGenerator(self, ima):
         '''
-        arg:
-            ima = image (np.masked_array)
+        Parameters
+        ----------
+            ima: numpy masked array
+                image
 
-        return:
-            roiList = list of the first 12 roi found in the image
+        Returns
+        -------
+            roiList: list
+                list of the first 12 roi found in the image
 
         NOTA: roiList[3] = RM roi for alignement
               roiList[3] = central roi for segment
@@ -51,9 +57,25 @@ class ROI():
 
     def automatical_roi_selection(self, image, segment_or_central_view, ref_mirror_in_or_out):
         '''
-        image = np.ma.masked_array
-        segment_or_central_view = 0 for segment, 1 for central
-        ref_mirror_in_or_out = 0 for in, 1 for out
+        Parameters
+        ----------
+        image: numpy masked array
+                image
+        segment_or_central_view: int
+                             0 for segment, 1 for central
+        ref_mirror_in_or_out: int
+                            0 for in, 1 for out
+
+        Returns
+        -------
+        roi_sx: mask
+                left segment
+        roi_central: mask
+            cntral segment
+        roi_dx: mask
+             right segment
+        roi_rm: mask
+            reference mirror mask inside central segment
         '''
         if segment_or_central_view == 0:
             if ref_mirror_in_or_out == 0:
@@ -93,11 +115,33 @@ class ROI():
 
         elif segment_or_central_view == 1:
             if ref_mirror_in_or_out == 0:
+                #identificare shell da 1 a 6
                 pass
             elif ref_mirror_in_or_out == 1:
+                #identificare shell da 1 a 6
                 pass
 
     def create_circular_mask(self, center_y, center_x, radius, imagePixels=None):
+        '''
+        Parameters
+        ----------
+        center_y: int
+                y coordinate for circular mask
+        center_x: int
+                x coordinate for circular mask
+        radius: int
+                radius of circular mask
+
+        Other Parameters
+        ----------
+        imagePixels: int, optional
+                    radius of the image in which the mask is inserted
+
+        Returns
+        -------
+        mask: numpy array
+            ones circular mask
+        '''
         if imagePixels is None:
             imagePixels = 512
         else:
@@ -107,7 +151,12 @@ class ROI():
         mask[rr,cc] = 0
         return mask
 
-    def circularMaskForSegmentCreator(self):
+    def _circularMaskForSegmentCreator(self):
+        '''
+        Returns
+        -------
+        mask: numpy array
+        '''
         center_y = self._bigDiameter / 2
         center_x = self._bigDiameter / 2
         radius = Configuration.M4_OPTICAL_DIAMETER / 2

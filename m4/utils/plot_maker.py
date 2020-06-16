@@ -1,5 +1,6 @@
 '''
-@author: cs
+Autors
+  - C. Selmi: written in 2019
 '''
 
 from astropy.io import fits as pyfits
@@ -16,10 +17,13 @@ def createActMap(cmd):
     Function to plot values assigned to actuators
     in the case of all m4 or one segment
 
-    Args:
-        cmd = command for N_ACTS_TOT or N_ACT_SEG actuators
+    Parameters
+    ----------
+        cmd: numpy array
+            vector of command for N_ACTS_TOT or N_ACT_SEG actuators
 
-    Returns:
+    Returns
+    -------
             graphic plot
     '''
     if cmd.shape[0] == Configuration.N_ACTS_TOT:

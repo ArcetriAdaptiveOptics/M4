@@ -41,7 +41,7 @@ class TipTiltDetrend():
             roi: list
                 roi of the image
             final_index: int
-                    index of final roi (int)
+                    index of final roi
             analysis_index: nunpy array
                             index of roi to be used for
                             the analysis

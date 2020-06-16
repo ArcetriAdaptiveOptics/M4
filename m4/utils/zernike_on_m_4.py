@@ -1,5 +1,6 @@
 '''
-@author: cs
+Autors
+  - C. Selmi: written in 2019
 '''
 
 import numpy as np
@@ -12,9 +13,10 @@ class ZernikeOnM4():
     """
     Class for the generation of Zernike modes in relation to the deformable mirror.
 
-    HOW TO USE IT:
-    from m4.utils.zernike_on_m_4 import ZernikeOnM4
-    zOnM4= ZernikeOnM4()
+    HOW TO USE IT::
+
+        from m4.utils.zernike_on_m_4 import ZernikeOnM4
+        zOnM4= ZernikeOnM4()
     """
 
     def __init__(self):
@@ -23,22 +25,41 @@ class ZernikeOnM4():
         self._zg = ZernikeGenerator(2*self._pupilXYRadius[2])
 
     def getPupilCenterAndRadiusInIFCoords(self):
+        '''
+        Returns
+        -------
+        pupilXYRadius: numpy array
+            vector containing x,y coordinates of center and radius
+            used to create the Zernike
+        '''
         return self._pupilXYRadius
 
     def setPupilCenterAndRadiusInIFCoords(self, centerX, centerY, radius):
+        '''
+        Parameters
+        ----------
+        centerX: x coordinate of the center
+        centerY: y coordinate of the center
+        radius: radius of the pupil
+        '''
         self._pupilXYRadius = np.array([centerX, centerY, radius])
         self._zg = ZernikeGenerator(2*radius)
 
 
     def zernikeFit(self, img, zernike_mode):
         '''
-        arg:
-            img = numpy masked array
-            zernike_mode = vector of Zernike modes to remove
+        Parameters
+        ----------
+            img: numpy masked array
+            zernike_mode: numpy array
+                    vector of Zernike modes to remove
 
-        return:
-            a = vector containing Zernike modes amplitudes
-            mat = interaction matrix for the masked area
+        Returns
+        -------
+            a: numpy array
+                vector containing Zernike modes amplitudes
+            mat: numpy array
+                interaction matrix for the masked area
         '''
         mat = np.zeros((img.compressed().shape[0], zernike_mode.size))
         for i in range(0, zernike_mode.size):
@@ -54,16 +75,23 @@ class ZernikeOnM4():
     def zernikeSurface(self, surface_zernike_coeff_array, ima_mask,
                        mat, index=None):
         '''
-        args:
-            surface_zernike_coeff_array = vector containing the amplitudes
+        Parameters
+        ----------
+            surface_zernike_coeff_array: numpy array
+                                        vector containing the amplitudes
                                         of the Zernike modes
-            ima_mask = the mask area in which we want to rebuilding
+            ima_mask: numpy array
+                    the mask area in which we want to rebuilding
                     the surfaces
-            mat = interaction matrix for the masked area
-            index = vector containing the index number of interaction matrix
+            mat: numpy array
+                interaction matrix for the masked area
+            index: int
+                    vector containing the index number of interaction matrix
                     that we want to use
-        returns:
-            surf = reconstructed surface
+        Returns
+        -------
+            surf: numpy masked array
+                reconstructed surface
         '''
         zernike_surface_map = None
 
