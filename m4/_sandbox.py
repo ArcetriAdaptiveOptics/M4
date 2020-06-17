@@ -280,6 +280,7 @@ def provaAutRoi():
 #     cv_in = obj.readFits_object(os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
 #                                              file_name))
 #     file_name = 'ProvaCodice/Immagini_prova/ott_centerview_refmirr-out.fits'
-    cv_out = obj.readFits_object(os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+    mask = obj.readFits_object(os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
                                              file_name))
+    cv_out = np.ma.masked_array(cv_in.data, mask=np.invert(mask.astype(bool)))
     return sv_out, sv_in, cv_in, cv_out

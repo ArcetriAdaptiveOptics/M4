@@ -117,6 +117,28 @@ class ROI():
             if ref_mirror_in_or_out == 0:
                 roiList = self.roiGenerator(image)
                 shell_list = []
+                for i in range(7):
+                    shell = np.zeros(np.array(roiList).shape[0])
+                    shell_list.append(shell)
+                for i in range(np.array(roiList).shape[0]):
+                    shell_list[0][i] = roiList[i][350, 425].astype(int)
+                    shell_list[1][i] = roiList[i][175, 420].astype(int)
+                    shell_list[2][i] = roiList[i][55, 255].astype(int)
+                    shell_list[3][i] = roiList[i][165, 85].astype(int)
+                    shell_list[4][i] = roiList[i][350, 115].astype(int)
+                    shell_list[5][i] = roiList[i][460, 260].astype(int)
+                    shell_list[6][i] = roiList[i][290, 220].astype(int)
+                ss = []
+                for i in range(7):
+                    s = np.where(shell_list[i]==0)[0][0]
+                    shell = roiList[s]
+                    ss.append(shell)
+                shells = ss[:6]
+                rm = ss[6]
+                return shells, rm
+            elif ref_mirror_in_or_out == 1:
+                roiList = self.roiGenerator(image)
+                shell_list = []
                 for i in range(6):
                     shell = np.zeros(np.array(roiList).shape[0])
                     shell_list.append(shell)
@@ -126,15 +148,14 @@ class ROI():
                     shell_list[2][i] = roiList[i][55, 255].astype(int)
                     shell_list[3][i] = roiList[i][165, 85].astype(int)
                     shell_list[4][i] = roiList[i][350, 115].astype(int)
-                    shell_list[5][i] = roiList[i][175, 420].astype(int)
-                s0 = np.where(shell_list[0]==0)[0][0]
-                shell0 = roiList[s0]
-                s1 = np.where(shell_list[1]==0)[0][0]
-                shell1 = roiList[s1]
-                return shell0, shell1
-            elif ref_mirror_in_or_out == 1:
-                roiList = self.roiGenerator(image)
-                pass
+                    shell_list[5][i] = roiList[i][460, 260].astype(int)
+                ss = []
+                for i in range(6):
+                    s = np.where(shell_list[i]==0)[0][0]
+                    shell = roiList[s]
+                    ss.append(shell)
+                shells = ss
+                return shells
 
     def create_circular_mask(self, center_y, center_x, radius, imagePixels=None):
         '''
