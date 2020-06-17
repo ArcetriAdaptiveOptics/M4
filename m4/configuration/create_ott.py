@@ -18,7 +18,9 @@ class OTT():
         self._slide = 0
         self._rslide = 0
         self._angle = 0
-        self.start_position = np.zeros(6)
+        self.par_start_position = np.zeros(6)
+        self.m4_start_position = np.zeros(6)
+        self.refflat_start_position = np.zeros(6)
         self.smap = np.zeros((Interferometer.N_PIXEL[0], Interferometer.N_PIXEL[1]))
         self.rmap = np.zeros(((2*OttParameters.rflat_radius*OttParameters.pscale).astype(int),
                               (2*OttParameters.rflat_radius*OttParameters.pscale).astype(int)))
@@ -97,10 +99,10 @@ class OTT():
             
         '''
         if start_position is None:
-            parab = self.start_position
+            self.par_start_position = self.par_start_position
         else:
-            parab = start_position
-        return parab
+            self.par_start_position = start_position
+        return self.par_start_position
 
     def refflat(self, start_position=None):
         '''Function to set the start position of the reference flat
@@ -117,10 +119,10 @@ class OTT():
                         start position of the reference flat
         '''
         if start_position is None:
-            refflat = self.start_position
+            self.refflat_start_position = self.refflat_start_position
         else:
-            refflat = start_position
-        return refflat
+            self.refflat_start_position = start_position
+        return self.refflat_start_position
 
     def m4(self, start_position=None):
         '''Function to set the start position of the deformable mirror
@@ -137,10 +139,10 @@ class OTT():
                         start position of the deformable mirror
         '''
         if start_position is None:
-            m4 = self.start_position
+            self.m4_start_position = self.m4_start_position
         else:
-            m4 = start_position
-        return m4
+            self.m4_start_position = start_position
+        return self.m4_start_position
 ### Sensitivity matrices
     def _readMatFromTxt(self, file_name):
         ''' Function to read matrix of 11 Zernike x 6 displacements, m RMS, per 1 m displacement - or 1 radiant rotation

@@ -271,9 +271,15 @@ def provaAcquisitionNoise(template):
 ### prova ROI ###
 def provaAutRoi():
     file_name = 'ProvaCodice/Immagini_prova/mode_0005.fits'
-    central_view = obj.readImageFromFitsFileName(file_name)
+    cv_in = obj.readImageFromFitsFileName(file_name)
     file_name = 'ProvaCodice/Immagini_prova/mode_0006.fits'
-    segment_view = obj.readImageFromFitsFileName(file_name)
+    sv_out = obj.readImageFromFitsFileName(file_name)
     file_name = 'ProvaCodice/Immagini_prova/Allineamento/20191007_134908/img.fits'
-    rm_in = obj.readImageFromFitsFileName(file_name) #for seg
-    return central_view, segment_view, rm_in
+    sv_in = obj.readImageFromFitsFileName(file_name) #for seg
+    file_name = 'ProvaCodice/Immagini_prova/ott_centerview_refmirr-in.fits'
+#     cv_in = obj.readFits_object(os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+#                                              file_name))
+#     file_name = 'ProvaCodice/Immagini_prova/ott_centerview_refmirr-out.fits'
+    cv_out = obj.readFits_object(os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+                                             file_name))
+    return sv_out, sv_in, cv_in, cv_out

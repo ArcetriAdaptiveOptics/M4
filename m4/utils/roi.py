@@ -115,10 +115,25 @@ class ROI():
 
         elif segment_or_central_view == 1:
             if ref_mirror_in_or_out == 0:
-                #identificare shell da 1 a 6
-                pass
+                roiList = self.roiGenerator(image)
+                shell_list = []
+                for i in range(6):
+                    shell = np.zeros(np.array(roiList).shape[0])
+                    shell_list.append(shell)
+                for i in range(np.array(roiList).shape[0]):
+                    shell_list[0][i] = roiList[i][350, 425].astype(int)
+                    shell_list[1][i] = roiList[i][175, 420].astype(int)
+                    shell_list[2][i] = roiList[i][55, 255].astype(int)
+                    shell_list[3][i] = roiList[i][165, 85].astype(int)
+                    shell_list[4][i] = roiList[i][350, 115].astype(int)
+                    shell_list[5][i] = roiList[i][175, 420].astype(int)
+                s0 = np.where(shell_list[0]==0)[0][0]
+                shell0 = roiList[s0]
+                s1 = np.where(shell_list[1]==0)[0][0]
+                shell1 = roiList[s1]
+                return shell0, shell1
             elif ref_mirror_in_or_out == 1:
-                #identificare shell da 1 a 6
+                roiList = self.roiGenerator(image)
                 pass
 
     def create_circular_mask(self, center_y, center_x, radius, imagePixels=None):
