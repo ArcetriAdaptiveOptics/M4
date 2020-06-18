@@ -31,7 +31,7 @@ class OttParameters():
     parab_dist      = 5.4
     rflat_dist      = 4.24
     rflat_radius    = 0.3
-    fold_radius     = 0.015  #was 0.025
+    fold_radius     = 0.025  #was 0.025
     frame2m4center  = 0.887
     segm_gap        = 0.002
     m4od            = 2.540  #was 2.387
@@ -40,6 +40,7 @@ class OttParameters():
     outarea         = 4
     fullrslide      = 0.85
     segment_angle   = 60
+    rflat_cell      = 0.01
     pscale  = Interferometer.N_PIXEL[0]/2/parab_radius
 
 

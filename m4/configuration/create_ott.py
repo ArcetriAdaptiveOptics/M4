@@ -3,6 +3,8 @@ Autors
   - C. Selmi: written in 2020
 '''
 
+import numpy as np
+from m4.configuration import config as conf
 from m4.configuration.config import *
 from m4.configuration.ott_parameters import *
 from astropy.io import fits as pyfits
@@ -11,6 +13,12 @@ from m4.utils.roi import ROI
 from m4.ground.zernikeGenerator import ZernikeGenerator
 
 class OTT():
+
+#     ss = mask.shape
+#     img = np.ones(ss)
+    #img = ma.masked_array(img, mask=img-mask)
+
+
     def __init__(self):
         """The constructor """
         self._r = ROI()
@@ -21,9 +29,20 @@ class OTT():
         self.par_start_position = np.zeros(6)
         self.m4_start_position = np.zeros(6)
         self.refflat_start_position = np.zeros(6)
+        self.m4offset = 0.
+        self.offset = 0.
         self.smap = np.zeros((Interferometer.N_PIXEL[0], Interferometer.N_PIXEL[1]))
         self.rmap = np.zeros(((2*OttParameters.rflat_radius*OttParameters.pscale).astype(int),
                               (2*OttParameters.rflat_radius*OttParameters.pscale).astype(int)))
+        self.m4pupil = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER, conf.mirror_conf,
+                                                      'm4_mech_pupil-bin2.fits'))
+        self.m4ima = self.m4pupil * 0.
+        self.mask = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER, conf.mirror_conf,
+                                                     'ott_mask.fits'))
+        self.parmask = np.ma.make_mask(obj.readFits_object(os.path.join(conf.path_name.OPTICAL_FOLDER,
+                                                                        conf.optical_conf, 'ottmask.fits')))
+        self.zmat = obj.readFits_object(os.path.join(conf.path_name.OPTICAL_FOLDER, conf.optical_conf,
+                                                     'Zmat.fits'))
 
 # Elements position
     def slide(self, par_trans=None):
@@ -143,6 +162,7 @@ class OTT():
         else:
             self.m4_start_position = start_position
         return self.m4_start_position
+
 ### Sensitivity matrices
     def _readMatFromTxt(self, file_name):
         ''' Function to read matrix of 11 Zernike x 6 displacements, m RMS, per 1 m displacement - or 1 radiant rotation
@@ -170,9 +190,8 @@ class OTT():
                 mat: numpy array [11,6]
                     matrix parable positions to zernike
         '''
-#         conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER, tnconf)
-#         file_name =  os.path.join(conffolder, 'ZST_PAR_pos2z.txt')
-        file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_PAR_pos2z.txt'
+        file_name = os.path.join(conf.path_name.OPTICAL_FOLDER, conf.optical_conf, 'PAR_pos2z.txt')
+        #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_PAR_pos2z.txt'
         mat = self._readMatFromTxt(file_name)
         return mat
 
@@ -183,9 +202,8 @@ class OTT():
                 mat: numpy array [11,6]
                     matrix reference flat positions to zernike
         '''
-#         conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER, tnconf)
-#         file_name =  os.path.join(conffolder, 'ZST_FM_pos2z.txt')
-        file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_FM_pos2z.txt'
+        file_name = os.path.join(conf.path_name.OPTICAL_FOLDER, conf.optical_conf, 'M4_pos2z.txt')
+        #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_FM_pos2z.txt'
         mat = self._readMatFromTxt(file_name)
         return mat
 
@@ -196,21 +214,19 @@ class OTT():
                 mat: numpy array [11,6]
                     matrix deformable mirror positions to zernike
         '''
-#         conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER, tnconf)
-#         file_name =  os.path.join(conffolder, 'ZST_M4_pos2z.txt')
-        file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_M4_pos2z.txt'
+        file_name = os.path.join(conf.path_name.OPTICAL_FOLDER, conf.optical_conf, 'M4_pos2z.txt')
+        #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_M4_pos2z.txt'
         mat = self._readMatFromTxt(file_name)
         return mat
 # Zmat
-    def zmat(self):
+    def create_zmat(self, file_name):
         '''
         Returns
         -------
             zmat: numpy array
-            
-        
+
         '''
-        file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ott_mask.fits'
+        #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ott_mask.fits'
         hduList = pyfits.open(file_name)
         final_mask = np.invert(hduList[0].data.astype(bool))
 
