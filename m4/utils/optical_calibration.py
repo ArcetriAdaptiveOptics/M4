@@ -5,9 +5,12 @@ import os
 import logging
 from astropy.io import fits as pyfits
 import numpy as np
-from m4.ground.configuration import Configuration
+from m4.configuration.config import path_name
+from m4.configuration.ott_parameters import OttParameters
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.ground import tracking_number_folder
+from m4.configuration.create_ott import OTT 
+from m4.utils.interface_4D import comm4d
 
 
 class opt_calibration():
@@ -24,13 +27,15 @@ class opt_calibration():
         """The constructor """
         self._logger = logging.getLogger('OPT_CALIB:')
         self._zOnM4 = ZernikeOnM4()
+        self._ott = OTT()
+        self._c4d = comm4d()
         self._rec = None
         self._intMat = None
 
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(Configuration.OPD_DATA_FOLDER,
+        return os.path.join(path_name.OPD_DATA_FOLDER,
                             "Calibration")
 
 
@@ -46,7 +51,7 @@ class opt_calibration():
                     2 for reference mirror
                     3 for deformable mirror
                 command_amp_vector: numpy array
-                                     vector containing the amplitude of the
+                                    vector containing the amplitude of the
                                     commands to give degrees of freedom to
                                     calibrate
                 n_push_pull: int
@@ -64,13 +69,14 @@ class opt_calibration():
         save = tracking_number_folder.TtFolder(store_in_folder)
         dove, self._tt = save._createFolderToStoreMeasurements()
         self._logger.info('Measure of calibration. Location: %s', self._tt)
+        self._saveCommandAmplitudeAsFits(dove)
 
         self._commandMatrix = self._createCommandMatrix(who,
                                                         self._commandAmpVector,
                                                         self._nPushPull)
         self._saveCommandMatrixAsFits(dove)
 
-        self._applyCommandMatrix(self._commandMatrix)
+        self._measureAndStoreCommandMatrix(who, self._commandMatrix, dove)
         return self._tt
 
     def analyzerCalibrationMeasurement(self, tt, mask_index):
@@ -105,9 +111,40 @@ class opt_calibration():
         return self._intMat, self._rec
 
 
-    def _applyCommandMatrix(self, command_matrix):
+    def _measureAndStoreCommandMatrix(self, who, command_matrix, dove):
         #deve applicare la matrice e salvare gli interferogrammi
-        pass
+        command_list = []
+        for i in range(command_matrix.shape[1]):
+            cmd = command_matrix[:,i]
+            command_list.append(cmd)
+        if who == 0:
+            for k in range(len(command_list)):
+                if k <= 5:
+                    self._ott.parab(command_list[k])
+                else:
+                    self._ott.parab(np.zeros(6))
+                    self._ott.refflat(command_list[k])
+                p, m = self._c4d.acq4d(self._ott, 1, show=1)
+                masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
+                name = 'Frame_%04d.fits' %k
+                self._saveSimulatedInterf(dove, name, masked_ima)
+
+        elif who == 1:
+            pass
+        elif who == 2:
+            pass
+        elif who == 3:
+            for cmd in command_list:
+                self._ott.m4(cmd)
+                p, m = self._c4d.acq4d(self._ott, 1, show=1)
+                masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
+                name = 'Frame_%04d.fits' %i
+                self._saveSimulatedInterf(dove, name, masked_ima)
+
+    def _saveSimulatedInterf(self, dove, file_name, image):
+        fits_file_name = os.path.join(dove, file_name)
+        pyfits.writeto(fits_file_name, image.data)
+        pyfits.append(fits_file_name, image.mask.astype(int))
 
 
     def _createCommandMatrix(self, who, command_amp_vector, n_push_pull):
@@ -126,28 +163,27 @@ class opt_calibration():
         '''
         if who == 0:
             self._who = 'PAR + RM'
-            self._rows = Configuration.PARABOLA_DOF + Configuration.RM_DOF
+            self._dofIndex = np.append(OttParameters.PARABOLA_DOF, OttParameters.RM_DOF)
         elif who == 1:
             self._who = 'PAR'
-            self._rows = Configuration.PARABOLA_DOF
+            self._dofIndex = OttParameters.PARABOLA_DOF
         elif who == 2:
             self._who = 'RM'
-            self._rows = Configuration.RM_DOF
+            self._dofIndex = OttParameters.RM_DOF
         elif who == 3:
             self._who = 'M4'
-            self._rows = Configuration.M4_DOF
+            self._dofIndex = OttParameters.M4_DOF
         else:
             raise OSError('Who= %s doesnt exists' % who)
 
         self._logger.info('Creation of the command matrix for %s', self._who)
-        self._commandMatrix = self._createCommandHistoryMatrix(self._rows,
+        self._commandMatrix = self._createCommandHistoryMatrix(self._dofIndex,
                                                                command_amp_vector,
                                                                n_push_pull)
         return self._commandMatrix
 
 
-    def _createCommandHistoryMatrix(self, rows, command_amp_vector,
-                                    n_push_pull):
+    def _createCommandHistoryMatrix(self, dofIndex_vector, command_amp_vector, n_push_pull):
         '''
             create the command matrix using as lines
             the degrees of freedom chosen in rows
@@ -161,17 +197,20 @@ class opt_calibration():
                     command_matrix = command matrix for the dof
         '''
         vec_push_pull = np.array((1, -1))
-        rows = rows
+        rows = 6
         columns = command_amp_vector.shape[0]*n_push_pull*vec_push_pull.shape[0]
         command_matrix = np.zeros((rows, columns))
 
         for k in range(n_push_pull):
             for i in range(command_amp_vector.shape[0]):
                 j = (command_amp_vector.shape[0]*vec_push_pull.shape[0])*k +2*i
-                command_matrix[i,j] = command_amp_vector[i]*vec_push_pull[0]
-                command_matrix[i,j+1] = command_amp_vector[i]*vec_push_pull[1]
+                command_matrix[dofIndex_vector[i],j] = command_amp_vector[i]*vec_push_pull[0]
+                command_matrix[dofIndex_vector[i],j+1] = command_amp_vector[i]*vec_push_pull[1]
         return command_matrix
 
+    def _saveCommandAmplitudeAsFits(self, dove):
+        fits_file_name = os.path.join(dove, 'CommandAmplitude.fits')
+        pyfits.writeto(fits_file_name, self._commandAmpVector)
 
     def _saveCommandMatrixAsFits(self, dove):
         """
@@ -181,7 +220,7 @@ class opt_calibration():
         args:
             dove = path that indicates where to save the command matrix file
         """
-        fits_file_name = os.path.join(dove, 'CommandMatrix.fits')
+        fits_file_name = os.path.join(dove, 'CommandMatrixInfo.fits')
         header = pyfits.Header()
         header['NPUSHPUL'] = self._nPushPull
         header['WHO'] = self._who
@@ -206,7 +245,7 @@ class opt_calibration():
         theObject = opt_calibration()
         theObject._tt = tt
         dove = os.path.join(theObject._storageFolder(), tt)
-        file = os.path.join(dove, 'CommandMatrix.fits')
+        file = os.path.join(dove, 'CommandMatrixInfo.fits')
         header = pyfits.getheader(file)
         hduList = pyfits.open(file)
         theObject._who = header['WHO']
@@ -222,16 +261,18 @@ class opt_calibration():
         cube_measure = None
         fold_my_pc = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/MixingIntMat/20190930_162714'
         #fold_m4_pc = os.path.join(Configuration.OPD_DATA_FOLDER, 'TestData', 'MixingIntMat')
+        amp = np.array([5.0e-06, 5.0e-06, 2.5e-05, 5.0e-06, 5.0e-06, 5.0e-06])
         for i in range(5):
             name = 'Frame_%04d.fits' %i
             file = os.path.join(fold_my_pc, name)
             hduList = pyfits.open(file)
             aa = hduList[0].data
             mode = np.ma.masked_array(aa[0,:,:], mask=np.invert(aa[1,:,:].astype(bool)))
+            mode_norm = mode/amp[i]
             if cube_measure is None:
-                cube_measure = mode
+                cube_measure = mode_norm
             else:
-                cube_measure = np.ma.dstack((cube_measure, mode))
+                cube_measure = np.ma.dstack((cube_measure, mode_norm))
         return cube_measure
 
     def createCube(self, tt):
@@ -241,10 +282,38 @@ class opt_calibration():
             tt = tracking number
         """
         self._logger.info('Creation of the cube relative to %s', tt)
-        cube_from_measure = self._testCalibration_createCubeMeasurefromFileFitsMeasure()
-        for i in range(cube_from_measure.shape[2]):
-            cube_from_measure[:,:,i] = cube_from_measure[:,:,i] / self._commandAmpVector[i]
-        self._cube = cube_from_measure
+#         cube_from_measure = self._testCalibration_createCubeMeasurefromFileFitsMeasure()
+#         for i in range(cube_from_measure.shape[2]):
+#             cube_from_measure[:,:,i] = cube_from_measure[:,:,i] / self._commandAmpVector[i]
+#         self._cube = cube_from_measure
+        self._cube = None
+        fold = os.path.join(opt_calibration._storageFolder(), tt)
+        for i in range(self._commandAmpVector.shape[0]):
+            for j in range(self._nPushPull):
+                k = 2*i + 2*self._commandAmpVector.shape[0]*self._nPushPull*j
+                name_pos = 'Frame_%04d.fits' %k
+                name_neg = 'Frame_%04d.fits' %(k+1)
+                file = os.path.join(fold, name_pos)
+                hduList = pyfits.open(file)
+                image_pos = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
+                file = os.path.join(fold, name_neg)
+                hduList = pyfits.open(file)
+                image_neg = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
+
+                image = (image_pos - image_neg) / 2. *self._commandAmpVector[i]
+                if j == 0:
+                    all_push_pull_act = image
+                else:
+                    all_push_pull_act = np.ma.dstack((all_push_pull_act, image))
+            if self._nPushPull == 1:
+                final_ima = all_push_pull_act
+            else:
+                final_ima = np.ma.mean(all_push_pull_act, axis=2)
+
+            if self._cube is None:
+                self._cube = final_ima
+            else:
+                self._cube = np.ma.dstack((self._cube, final_ima))
         return
 
     def getCube(self):

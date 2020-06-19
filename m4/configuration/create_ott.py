@@ -115,7 +115,7 @@ class OTT():
         -------
             start_position: numpy array
                         start position of the parable
-            
+
         '''
         if start_position is None:
             self.par_start_position = self.par_start_position

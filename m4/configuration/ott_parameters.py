@@ -45,8 +45,8 @@ class OttParameters():
 
 
     PARABOLA_PUPIL_XYRADIUS = np.array([256, 256, 256])
-    PARABOLA_DOF = 3
-    RM_DOF = 2
+    PARABOLA_DOF = np.array([2,3,4])
+    RM_DOF = np.array([3,4])
     PIXEL_SCALE = 360.5 #PIXEL/METRI
 
     M4_MECHANICAL_PUPIL_XYRADIUS = np.array([458, 458, 458]) #np.array([512, 512, 512])
@@ -54,7 +54,7 @@ class OttParameters():
     N_SEG = 6
     N_ACTS_TOT = 5352
     N_ACT_SEG = 892
-    M4_DOF = 6
+    M4_DOF = np.array([3,4])
     REFERENCE_ANGLE_RAD = np.pi / 3
     REFERENCE_ANGLE_DEGREES = 60
     SEGMENT_DISTANCE_FROM_CENTRE = 320

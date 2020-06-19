@@ -85,7 +85,7 @@ class OttImages():
             loadct, 3,/silent
           endif
       endif
-    """ 
+    """
         if (show != 0):
             plt.clf()
             plt.imshow(smap1, cmap='hot')
