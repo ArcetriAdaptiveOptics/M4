@@ -6,10 +6,13 @@ import os
 import logging
 from astropy.io import fits as pyfits
 import numpy as np
-from m4.ground.configuration import Configuration
+from m4.ground import tracking_number_folder
+from m4.configuration.config import path_name
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.utils.optical_calibration import opt_calibration
 from m4.ground import object_from_fits_file_name as obj
+from m4.utils.interface_4D import comm4d
+from m4.configuration.ott_parameters import OttParameters
 
 
 class opt_alignment():
@@ -28,6 +31,7 @@ class opt_alignment():
         self._tt = tt
         self._cal = opt_calibration()
         self._zOnM4 = ZernikeOnM4()
+        self._c4d = comm4d()
         self._rec = None
         self._intMat = None
         self._mask = None
@@ -35,11 +39,11 @@ class opt_alignment():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save data"""
-        return os.path.join(Configuration.OPD_DATA_FOLDER,
+        return os.path.join(path_name.OPD_DATA_FOLDER,
                             "Alignment")
 
 
-    def opt_align(self, piston=None):
+    def opt_align(self, ott, piston=None):
         """
         Other Parameters
         ----------
@@ -50,15 +54,19 @@ class opt_alignment():
                 cmd: numpy array
                      final command for the optical alignment
         """
+        par_position = ott.parab()
+        rm_position = ott.refflat()
         self._logger.info('Calculation of the alignment command for %s',
                           self._tt)
         self._intMat, self._rec, self._mask = self._loadAlignmentInfo()
-        img = self._measureOTTPhaseMap()
+        img = self._measureOTTPhaseMap(ott)
         cmd = self._commandGenerator(img)
 #         cmdf= self._commandGenerator(imgf)
 #         cmdt= self._commandGenerator(imgt)
 #         self.saveCommand(cmdf, 1)
-        return cmd
+        par_command, rm_command = self._reorgCmd(cmd)
+        self._saveAllData(par_position, rm_position, par_command, rm_command)
+        return par_command, rm_command
 
 
     def _loadAlignmentInfo(self):
@@ -76,6 +84,17 @@ class opt_alignment():
         hduList = pyfits.open(file)
         info = hduList[0].data
         return info
+
+    def _reorgCmd(self, cmd):
+        dofIndex = np.append(OttParameters.PARABOLA_DOF, OttParameters.RM_DOF)
+        par_command = np.zeros(6)
+        rm_command = np.zeros(6)
+        for i in range(cmd.size):
+            if i <3:
+                par_command[dofIndex[i]] = cmd[i]
+            else:
+                rm_command[dofIndex[i]] = cmd[i]
+        return par_command, rm_command
 
     def _testAlignment_loadMeasureFromFileFits(self, test):
         """ Test function """
@@ -130,11 +149,13 @@ class opt_alignment():
         cmd = - np.dot(self._rec, zernike_vector)
         return cmd
 
-    def _measureOTTPhaseMap(self):
+    def _measureOTTPhaseMap(self, ott):
         #acquisirà e salverà l'interferogramma
         self._logger.debug('Measure of phase map')
-        imgf, imgt = self._testAlignment_loadMeasureFromFileFits(0)
-        img = self._testAlignment_loadMeasureFromFileFits(1)
+#         imgf, imgt = self._testAlignment_loadMeasureFromFileFits(0)
+#         img = self._testAlignment_loadMeasureFromFileFits(1)
+        p, m = self._c4d.acq4d(ott, 1, show=1)
+        img = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
         return img
 
     def _zernikeCoeff(self, img):
@@ -151,6 +172,23 @@ class opt_alignment():
         for i, j in zipped:
             final_coef[i] = coef[j]
         return final_coef
+
+    def _saveAllData(self, par_position, rm_position, par_command, rm_command):
+        save = tracking_number_folder.TtFolder(self._storageFolder())
+        dove, self._align_tt = save._createFolderToStoreMeasurements()
+        name = 'par_position.fits'
+        fits_file_name = os.path.join(dove, name)
+        pyfits.writeto(fits_file_name, par_position)
+        name = 'rm_position.fits'
+        fits_file_name = os.path.join(dove, name)
+        pyfits.writeto(fits_file_name, rm_position)
+        name = 'par_command.fits'
+        fits_file_name = os.path.join(dove, name)
+        pyfits.writeto(fits_file_name, par_command)
+        name = 'rm_command.fits'
+        fits_file_name = os.path.join(dove, name)
+        pyfits.writeto(fits_file_name, rm_command)
+
 
     def saveCommand(self, cmd, i):
         '''

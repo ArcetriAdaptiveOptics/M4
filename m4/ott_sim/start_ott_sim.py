@@ -22,7 +22,7 @@ from m4.configuration import start
 ott=start.create_ott()
 
 ott.slide(0.75)
-ott.angle(30.)
+ott.angle(70.)
 ott.rslide(0.3)
 ott.parab([0,0,1e-5,0,0,0])
 ott.m4([0,0,0,1e-6,0,0])
