@@ -10,7 +10,6 @@ from m4.ground import tracking_number_folder
 from m4.configuration.config import path_name
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.utils.optical_calibration import opt_calibration
-from m4.ground import object_from_fits_file_name as obj
 from m4.utils.interface_4D import comm4d
 from m4.configuration.ott_parameters import OttParameters
 
@@ -21,15 +20,16 @@ class opt_alignment():
 
     HOW TO USE IT::
 
-        from m4.utils.optical_alignement import opt_alignement
-        al = opt_alignement()
+        from m4.utils.optical_alignment import opt_alignment
+        al = opt_alignment(tt)
+        command = al.opt_align(ott, piston=None)
     """
 
     def __init__(self, tt):
         """The constructor """
         self._logger = logging.getLogger('OPT_ALIGN:')
         self._tt = tt
-        self._cal = opt_calibration()
+        self._cal = opt_calibration.loadCommandMatrixFromFits(tt)
         self._zOnM4 = ZernikeOnM4()
         self._c4d = comm4d()
         self._rec = None
@@ -45,6 +45,11 @@ class opt_alignment():
 
     def opt_align(self, ott, piston=None):
         """
+        Parameters
+        ----------
+        ott: object
+            test tower
+
         Other Parameters
         ----------
             piston: int, optional
@@ -56,17 +61,22 @@ class opt_alignment():
         """
         par_position = ott.parab()
         rm_position = ott.refflat()
+        m4_position = ott.m4()
         self._logger.info('Calculation of the alignment command for %s',
                           self._tt)
         self._intMat, self._rec, self._mask = self._loadAlignmentInfo()
         img = self._measureOTTPhaseMap(ott)
-        cmd = self._commandGenerator(img)
-#         cmdf= self._commandGenerator(imgf)
-#         cmdt= self._commandGenerator(imgt)
-#         self.saveCommand(cmdf, 1)
-        par_command, rm_command = self._reorgCmd(cmd)
-        self._saveAllData(par_position, rm_position, par_command, rm_command)
-        return par_command, rm_command
+
+        if self._cal._who=='PAR + RM':
+            cmd = self._commandGenerator(img)
+            par_command, rm_command = self._reorgCmdMix(cmd)
+            self._saveAllDataMix(par_position, rm_position, par_command, rm_command)
+            return par_command, rm_command
+        elif self._cal._who=='M4':
+            cmd = self._commandGenerator(img)
+            m4_command = self._reorgCmdM4(cmd)
+            self._saveAllDataM4(m4_position, m4_command)
+            return m4_command
 
 
     def _loadAlignmentInfo(self):
@@ -85,56 +95,23 @@ class opt_alignment():
         info = hduList[0].data
         return info
 
-    def _reorgCmd(self, cmd):
+    def _reorgCmdMix(self, cmd):
         dofIndex = np.append(OttParameters.PARABOLA_DOF, OttParameters.RM_DOF)
         par_command = np.zeros(6)
         rm_command = np.zeros(6)
         for i in range(cmd.size):
-            if i <3:
+            if i < OttParameters.PARABOLA_DOF.size:
                 par_command[dofIndex[i]] = cmd[i]
             else:
                 rm_command[dofIndex[i]] = cmd[i]
         return par_command, rm_command
 
-    def _testAlignment_loadMeasureFromFileFits(self, test):
-        """ Test function """
-        if test == 0:
-            # my pc
-            imgf = obj.readImageFromFitsFileName('ProvaCodice/Immagini_prova/Allineamento/20191007_134908/img.fits')
-            imgt = obj.readImageFromFitsFileName('ProvaCodice/Immagini_prova/Allineamento/20191007_135037/img.fits')
-            # m4 pc
-#            imgf = obj.readImageFromFitsFileName('TestData/Allineamento/20191007_134908/img.fits')
-#            imgt = obj.readImageFromFitsFileName('TestData/Allineamento/20191007_135037/img.fits')
-            return imgf, imgt
-        elif test == 1:
-            # my pc
-            img = obj.readImageFromFitsFileName('ProvaCodice/Immagini_prova/Allineamento/20191001_081344/img.fits')
-            # m4 pc
-#            img = obj.readImageFromFitsFileName('TestData/Allineamento/20191001_081344/img.fits')
-            return img
-
-    def _testAlignment_loadInfoPositionFromFileFits(self, test):
-        """ Test function """
-        if test == 0:
-            # my pc
-#             parf = obj.readDataFromFileFits('Immagini_prova/Allineamento/20191007_134908/parpos.fits')
-#             rmf = obj.readDataFromFileFits('Immagini_prova/Allineamento/20191007_134908/rflatpos.fits')
-#             part = obj.readDataFromFileFits('Immagini_prova/Allineamento/20191007_135037/parpos.fits')
-#             rmt = obj.readDataFromFileFits('Immagini_prova/Allineamento/20191007_135037/rflatpos.fits')
-            # m4 pc
-            parf = obj.readDataFromFileFits('TestData/Allineamento/20191007_134908/parpos.fits')
-            rmf = obj.readDataFromFileFits('TestData/Allineamento/20191007_134908/rflatpos.fits')
-            part = obj.readDataFromFileFits('TestData/Allineamento/20191007_135037/parpos.fits')
-            rmt = obj.readDataFromFileFits('TestData/Allineamento/20191007_135037/rflatpos.fits')
-            return parf, rmf, part, rmt
-        elif test == 1:
-            # my pc
-            par = obj.readDataFromFileFits('Immagini_prova/Allineamento/20191001_081344/parpos.fits')
-            rm = obj.readDataFromFileFits('Immagini_prova/Allineamento/20191001_081344/rflatpos.fits')
-            # m4 pc
-#            par = obj.readDataFromFileFits('TestData/Allineamento/20191001_081344/parpos.fits')
-#            rm = obj.readDataFromFileFits('TestData/Allineamento/20191001_081344/rflatpos.fits')
-            return par, rm
+    def _reorgCmdM4(self, cmd):
+        dofIndex = OttParameters.M4_DOF
+        m4_command = np.zeros(6)
+        for i in range(dofIndex.size):
+            m4_command[dofIndex[i]] = cmd[i]
+        return m4_command
 
     def _commandGenerator(self, img):
         """
@@ -173,7 +150,7 @@ class opt_alignment():
             final_coef[i] = coef[j]
         return final_coef
 
-    def _saveAllData(self, par_position, rm_position, par_command, rm_command):
+    def _saveAllDataMix(self, par_position, rm_position, par_command, rm_command):
         save = tracking_number_folder.TtFolder(self._storageFolder())
         dove, self._align_tt = save._createFolderToStoreMeasurements()
         name = 'par_position.fits'
@@ -189,23 +166,12 @@ class opt_alignment():
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, rm_command)
 
-
-    def saveCommand(self, cmd, i):
-        '''
-        Parameters
-        ----------
-            cmd : numpy array
-                vector containing the command to be given to degrees of freedom
-            i: int
-                id number to save the command name
-        '''
-        dove = os.path.join(self._storageFolder(), self._tt)
-        if not os.path.exists(dove):
-            os.makedirs(dove)
-            name = 'Command_%03d.fits' %i
-            fits_file_name = os.path.join(dove, name)
-            pyfits.writeto(fits_file_name, cmd)
-        else:
-            name = 'Command_%03d.fits' %i
-            fits_file_name = os.path.join(dove, name)
-            pyfits.writeto(fits_file_name, cmd)
+    def _saveAllDataM4(self, m4_position, m4_command):
+        save = tracking_number_folder.TtFolder(self._storageFolder())
+        dove, self._align_tt = save._createFolderToStoreMeasurements()
+        name = 'm4_position.fits'
+        fits_file_name = os.path.join(dove, name)
+        pyfits.writeto(fits_file_name, m4_position)
+        name = 'm4_command.fits'
+        fits_file_name = os.path.join(dove, name)
+        pyfits.writeto(fits_file_name, m4_command)

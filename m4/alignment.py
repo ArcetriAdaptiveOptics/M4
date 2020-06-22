@@ -18,20 +18,21 @@ class Alignment():
     HOW TO USE IT::
 
         from m4.alignment import Alignment
-        a = Alignment()
+        a = Alignment(ott)
         #for the optical tower
         tt = a.ott_calibration(commandAmpVector, nPushPull, maskIndex)
-        cmd = a.ott_alignement(tt)
+        par_cmd, rm_cmd = a.ott_alignement(tt)
         #for deformable mirror
         tt, zCoefComa, comaSurface = a.m4_calibration(...)
         cmd = a.m4_alignement(zCoefComa)
     """
 
-    def __init__(self):
+    def __init__(self, ott):
         """The constructor """
         self._cal = opt_calibration()
         self._roi = ROI()
         self._zOnM4 = ZernikeOnM4()
+        self._ott = ott
 
 
     def ott_calibration(self, command_amp_vector, n_push_pull, mask_index):
@@ -45,15 +46,16 @@ class Alignment():
                 n_push_pull: int
                             number of push pull for each degree of freedom
                 mask_index: int
-                            3 for the RM mask
+                            3 for the RM mask (non ruotate 2)
 
         Returns
         -------
                 tt: string
                     tracking number of measurements made
         '''
-        self._moveRM()
-        self._tt = self._cal.measureCalibrationMatrix(0, command_amp_vector,
+        self._moveSegmentView(0.75, 90.)
+        self._moveRM(0.6)
+        self._tt = self._cal.measureCalibrationMatrix(self._ott, 0, command_amp_vector,
                                                       n_push_pull)
         int_mat, rec = self._cal.analyzerCalibrationMeasurement(self._tt,
                                                                 mask_index)
@@ -76,9 +78,9 @@ class Alignment():
             al = opt_alignment(self._tt)
         else:
             al = opt_alignment(tt)
-        cmd = al.opt_align()
-        self._applyCmd()
-        return cmd
+        par_cmd, rm_cmd = al.opt_align(self._ott)
+        self._applyCmd(par_cmd, rm_cmd)
+        return par_cmd, rm_cmd
 
 
     def m4_calibration(self, commandAmpVector_ForParRmAlignement,
@@ -96,12 +98,14 @@ class Alignment():
                                         number of push pull for par+rm dof
             maskIndex_ForParRmAlignement: int
                                         number of mask index to use
+                                        (reference mirror mask)
             commandAmpVector_ForM4Calibration: numpy array
                                             amplitude to be applied to m4
             nPushPull_ForM4Calibration: int
                                         number of push pull for m4 dof
             maskIndex_ForM4Alignement: int
                                         number of mask index to use
+                                        (segment mask)
 
         Returns
         -------
@@ -111,14 +115,15 @@ class Alignment():
             coma_surface: numpy array
                             reconstructed surface
         """
-        self._moveSegmentView()
+        self._moveSegmentView(0.75, 90.)
+        self._moveRM(0.6)
         tt = self.ott_calibration(commandAmpVector_ForParRmAlignement,
                                   nPushPull_ForParRmAlignement,
                                   maskIndex_ForParRmAlignement)
-        cmd = self.ott_alignement(tt)
-        self._moveRM()
+        par_cmd, rm_cmd = self.ott_alignement(tt)
+        self._moveRM(-0.6)
         zernike_coef_coma, coma_surface = self._measureComaOnSegmentMask()
-        self._tt = self._cal.measureCalibrationMatrix(3,
+        self._tt = self._cal.measureCalibrationMatrix(self._ott, 3,
                                                       commandAmpVector_ForM4Calibration,
                                                       nPushPull_ForM4Calibration)
         intMat, rec = self._cal.analyzerCalibrationMeasurement(self._tt,
@@ -147,14 +152,18 @@ class Alignment():
         cmd = al.opt_align(zernike_coef_coma)
         return cmd
 
-    def _moveRM(self):
-        pass
+    def _moveRM(self, rslide):
+        self._ott.rslide(rslide)
 
-    def _moveSegmentView(self):
-        pass
+    def _moveSegmentView(self, slide, angle):
+        self._ott.slide(slide)
+        self._ott.angle(angle)
 
-    def _applyCmd(self):
-        pass
+    def _applyCmd(self, par_cmd, rm_cmd):
+        pos_par = self._ott.parab()
+        self._ott.parab(pos_par + par_cmd)
+        pos_rm = self._ott.refflat()
+        self._ott.refflat(pos_rm + rm_cmd)
 
     def _measureComaOnSegmentMask(self):
         ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')

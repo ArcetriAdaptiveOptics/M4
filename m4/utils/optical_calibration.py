@@ -5,12 +5,10 @@ import os
 import logging
 from astropy.io import fits as pyfits
 import numpy as np
-from scipy import ndimage
 from m4.configuration.config import path_name
 from m4.configuration.ott_parameters import OttParameters
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.ground import tracking_number_folder
-from m4.configuration.create_ott import OTT
 from m4.utils.interface_4D import comm4d
 
 
@@ -28,7 +26,6 @@ class opt_calibration():
         """The constructor """
         self._logger = logging.getLogger('OPT_CALIB:')
         self._zOnM4 = ZernikeOnM4()
-        self._ott = OTT()
         self._c4d = comm4d()
         self._rec = None
         self._intMat = None
@@ -40,7 +37,7 @@ class opt_calibration():
                             "Calibration")
 
 
-    def measureCalibrationMatrix(self, who, command_amp_vector, n_push_pull):
+    def measureCalibrationMatrix(self, ott, who, command_amp_vector, n_push_pull):
         '''
         Parameters
         ----------
@@ -63,8 +60,10 @@ class opt_calibration():
         tt : string
             tracking number
         '''
+        self._ott = ott
         self._nPushPull = n_push_pull
         self._commandAmpVector = command_amp_vector
+        self._who = who
 
         store_in_folder = self._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
@@ -96,7 +95,7 @@ class opt_calibration():
                 self._rec: numpy array
                          reconstructor
         '''
-        #mask_index per il simulatore è 2 (se le ruoto non funziona più roi)
+        #mask_index per il simulatore è 2 (se le ruoto è 3)
         a = opt_calibration.loadCommandMatrixFromFits(tt)
         a.createCube(tt)
         cube = a.getCube()
@@ -120,9 +119,9 @@ class opt_calibration():
             cmd = command_matrix[:,i]
             command_list.append(cmd)
         if who == 0:
-            self._ott.slide(0.75)
-            self._ott.angle(90.)
-            self._ott.rslide(0.6)
+#             self._ott.slide(0.75)
+#             self._ott.angle(90.)
+#             self._ott.rslide(0.6)
             for k in range(len(command_list)):
                 if k <= 5:
                     self._ott.parab(command_list[k])
@@ -130,24 +129,25 @@ class opt_calibration():
                     self._ott.parab(np.zeros(6))
                     self._ott.refflat(command_list[k])
                 p, m = self._c4d.acq4d(self._ott, 1, show=1)
-#                 p_rot = ndimage.rotate(p, - 90, reshape=False)
-#                 m_rot = ndimage.rotate(np.invert(m.astype(bool)), - 90, reshape=False)
-                masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
+                #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
+                masked_ima = np.ma.masked_array(p.T, mask=np.invert(m.astype(bool)).T)
                 name = 'Frame_%04d.fits' %k
                 self._saveSimulatedInterf(dove, name, masked_ima)
+            self._ott.refflat(np.zeros(6))
 
         elif who == 1:
             pass
         elif who == 2:
             pass
         elif who == 3:
-            self._ott.slide(0.75)
-            self._ott.angle(90.)
-            self._ott.rslide(0.6)
+#             self._ott.slide(0.75)
+#             self._ott.angle(90.)
+#             self._ott.rslide(0.6)
             for k in range(len(command_list)):
                 self._ott.m4(cmd)
                 p, m = self._c4d.acq4d(self._ott, 1, show=1)
-                masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
+                #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
+                masked_ima = np.ma.masked_array(p.T, mask=np.invert(m.astype(bool)).T)
                 name = 'Frame_%04d.fits' %k
                 self._saveSimulatedInterf(dove, name, masked_ima)
 
