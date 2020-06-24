@@ -9,6 +9,7 @@ from m4.utils.optical_calibration import opt_calibration
 from m4.ground import object_from_fits_file_name as obj
 from m4.utils.roi import ROI
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
+from m4.utils.interface_4D import comm4d 
 
 class Alignment():
     """
@@ -18,6 +19,8 @@ class Alignment():
     HOW TO USE IT::
 
         from m4.alignment import Alignment
+        from m4.configuration import start
+        ott = start.create_ott()
         a = Alignment(ott)
         #for the optical tower
         tt = a.ott_calibration(commandAmpVector, nPushPull, maskIndex)
@@ -33,6 +36,7 @@ class Alignment():
         self._roi = ROI()
         self._zOnM4 = ZernikeOnM4()
         self._ott = ott
+        self._c4d = comm4d()
 
 
     def ott_calibration(self, command_amp_vector, n_push_pull, mask_index):
@@ -83,10 +87,7 @@ class Alignment():
         return par_cmd, rm_cmd
 
 
-    def m4_calibration(self, commandAmpVector_ForParRmAlignement,
-                       nPushPull_ForParRmAlignement,
-                       maskIndex_ForParRmAlignement,
-                       commandAmpVector_ForM4Calibration,
+    def m4_calibration(self, commandAmpVector_ForM4Calibration,
                        nPushPull_ForM4Calibration, maskIndex_ForM4Alignement):
         """ Calibration of the deformable mirror
 
@@ -115,13 +116,12 @@ class Alignment():
             coma_surface: numpy array
                             reconstructed surface
         """
-        self._moveSegmentView(0.75, 90.)
-        self._moveRM(0.6)
-        tt = self.ott_calibration(commandAmpVector_ForParRmAlignement,
-                                  nPushPull_ForParRmAlignement,
-                                  maskIndex_ForParRmAlignement)
-        par_cmd, rm_cmd = self.ott_alignement(tt)
-        self._moveRM(-0.6)
+#         self._moveSegmentView(0.75, 90.)
+#         self._moveRM(0.6)
+#         tt = self.ott_calibration(commandAmpVector_ForParRmAlignement,
+#                                   nPushPull_ForParRmAlignement,
+#                                   maskIndex_ForParRmAlignement)
+#         par_cmd, rm_cmd = self.ott_alignement(tt)
         zernike_coef_coma, coma_surface = self._measureComaOnSegmentMask()
         self._tt = self._cal.measureCalibrationMatrix(self._ott, 3,
                                                       commandAmpVector_ForM4Calibration,
@@ -145,11 +145,12 @@ class Alignment():
                 cmd: numpy array
                     vector of command to apply to M4 dof
         """
+        self._moveRM(0.)
         if tt is None:
             al = opt_alignment(self._tt)
         else:
             al = opt_alignment(tt)
-        cmd = al.opt_align(zernike_coef_coma)
+        cmd = al.opt_align(self._ott, zernike_coef_coma)
         return cmd
 
     def _moveRM(self, rslide):
@@ -166,9 +167,11 @@ class Alignment():
         self._ott.refflat(pos_rm + rm_cmd)
 
     def _measureComaOnSegmentMask(self):
-        ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
+        #ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
+        p, m = self._c4d.acq4d(self._ott, 1, show=1)
+        ima = np.ma.masked_array(p.T, mask=np.invert(m.astype(bool)).T)
         roi = self._roi.roiGenerator(ima)
-        segment_ima = np.ma.masked_array(ima.data, mask=roi[11])
+        segment_ima = np.ma.masked_array(ima.data, mask=roi[5])
 
         coef, mat = self._zOnM4.zernikeFit(segment_ima, np.arange(2, 11))
         coma = coef[5]

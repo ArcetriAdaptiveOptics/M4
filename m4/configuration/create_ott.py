@@ -117,10 +117,16 @@ class OTT():
                         start position of the parable
 
         '''
-        if start_position is None:
-            self.par_start_position = self.par_start_position
+        if type(start_position) is np.ndarray:
+            if start_position.size == 6:
+                if start_position is None:
+                    self.par_start_position = self.par_start_position
+                else:
+                    self.par_start_position = start_position
+            else:
+                raise OSError('Incorrect length of the vector')
         else:
-            self.par_start_position = start_position
+            raise OSError('Data is not a numpy array')
         return self.par_start_position
 
     def refflat(self, start_position=None):
@@ -137,10 +143,16 @@ class OTT():
             start_position: numpy array
                         start position of the reference flat
         '''
-        if start_position is None:
-            self.refflat_start_position = self.refflat_start_position
+        if type(start_position) is np.ndarray:
+            if start_position.size == 6:
+                if start_position is None:
+                    self.refflat_start_position = self.refflat_start_position
+                else:
+                    self.refflat_start_position = start_position
+            else:
+                raise OSError('Incorrect length of the vector')
         else:
-            self.refflat_start_position = start_position
+            raise OSError('Data is not a numpy array')
         return self.refflat_start_position
 
     def m4(self, start_position=None):
@@ -157,10 +169,16 @@ class OTT():
             start_position: numpy array
                         start position of the deformable mirror
         '''
-        if start_position is None:
-            self.m4_start_position = self.m4_start_position
+        if type(start_position) is np.ndarray:
+            if start_position.size == 6:
+                if start_position is None:
+                    self.m4_start_position = self.m4_start_position
+                else:
+                    self.m4_start_position = start_position
+            else:
+                raise OSError('Incorrect length of the vector')
         else:
-            self.m4_start_position = start_position
+            raise OSError('Data is not a numpy array')
         return self.m4_start_position
 
 ### Sensitivity matrices

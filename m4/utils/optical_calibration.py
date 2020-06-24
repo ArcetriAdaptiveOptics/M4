@@ -150,6 +150,7 @@ class opt_calibration():
                 masked_ima = np.ma.masked_array(p.T, mask=np.invert(m.astype(bool)).T)
                 name = 'Frame_%04d.fits' %k
                 self._saveSimulatedInterf(dove, name, masked_ima)
+            self._ott.m4(np.zeros(6))
 
     def _saveSimulatedInterf(self, dove, file_name, image):
         fits_file_name = os.path.join(dove, file_name)
