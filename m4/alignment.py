@@ -122,6 +122,8 @@ class Alignment():
 #                                   nPushPull_ForParRmAlignement,
 #                                   maskIndex_ForParRmAlignement)
 #         par_cmd, rm_cmd = self.ott_alignement(tt)
+        self._moveSegmentView(0.75, 90.)
+        self._moveRM(0.6)
         zernike_coef_coma, coma_surface = self._measureComaOnSegmentMask()
         self._tt = self._cal.measureCalibrationMatrix(self._ott, 3,
                                                       commandAmpVector_ForM4Calibration,
@@ -150,8 +152,9 @@ class Alignment():
             al = opt_alignment(self._tt)
         else:
             al = opt_alignment(tt)
-        cmd = al.opt_align(self._ott, zernike_coef_coma)
-        return cmd
+        m4_cmd = al.opt_align(self._ott, zernike_coef_coma)
+        self._applyM4Command(m4_cmd)
+        return m4_cmd
 
     def _moveRM(self, rslide):
         self._ott.rslide(rslide)
@@ -165,6 +168,10 @@ class Alignment():
         self._ott.parab(pos_par + par_cmd)
         pos_rm = self._ott.refflat()
         self._ott.refflat(pos_rm + rm_cmd)
+
+    def _applyM4Command(self, m4_cmd):
+        pos_m4 = self._ott.m4()
+        self._ott.m4(pos_m4 + m4_cmd)
 
     def _measureComaOnSegmentMask(self):
         #ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')

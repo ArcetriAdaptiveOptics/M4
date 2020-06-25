@@ -74,7 +74,7 @@ class opt_alignment():
             return par_command, rm_command
         elif self._cal._who=='M4':
             cmd = self._commandGenerator(img)
-            m4_command = self._reorgCmdM4(cmd)
+            m4_command = self._reorgCmdM4(cmd, piston)
             self._saveAllDataM4(m4_position, m4_command)
             return m4_command
 
@@ -106,11 +106,15 @@ class opt_alignment():
                 rm_command[dofIndex[i]] = cmd[i]
         return par_command, rm_command
 
-    def _reorgCmdM4(self, cmd):
+    def _reorgCmdM4(self, cmd, piston=None):
         dofIndex = OttParameters.M4_DOF
         m4_command = np.zeros(6)
-        for i in range(dofIndex.size):
-            m4_command[dofIndex[i]] = cmd[i]
+        if  piston is None:
+            for i in range(dofIndex.size):
+                m4_command[dofIndex[i]] = cmd[i]
+        else:
+            for i in range(dofIndex.size):
+                m4_command[dofIndex[i]] = cmd[i] + piston
         return m4_command
 
     def _commandGenerator(self, img):

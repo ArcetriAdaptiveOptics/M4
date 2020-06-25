@@ -122,18 +122,20 @@ class opt_calibration():
 #             self._ott.slide(0.75)
 #             self._ott.angle(90.)
 #             self._ott.rslide(0.6)
-            for k in range(len(command_list)):
-                if k <= 5:
-                    self._ott.parab(command_list[k])
-                else:
-                    self._ott.parab(np.zeros(6))
-                    self._ott.refflat(command_list[k])
-                p, m = self._c4d.acq4d(self._ott, 1, show=1)
-                #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
-                masked_ima = np.ma.masked_array(p.T, mask=np.invert(m.astype(bool)).T)
-                name = 'Frame_%04d.fits' %k
-                self._saveSimulatedInterf(dove, name, masked_ima)
-            self._ott.refflat(np.zeros(6))
+            for l in range(self._nPushPull):
+                for m in range(len(command_list)/self._nPushPull):
+                    k = 2 * l * self._dofIndex.size + m
+                    if k <= 2 * l * self._dofIndex.size + self._dofIndex.size:
+                        self._ott.parab(command_list[k])
+                    elif 2 * l * self._dofIndex.size + self._dofIndex.size < k < 2 * (l+1) * self._dofIndex.size:
+                        self._ott.parab(np.zeros(6))
+                        self._ott.refflat(command_list[k])
+                    p, m = self._c4d.acq4d(self._ott, 1, show=1)
+                    #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
+                    masked_ima = np.ma.masked_array(p.T, mask=np.invert(m.astype(bool)).T)
+                    name = 'Frame_%04d.fits' %k
+                    self._saveSimulatedInterf(dove, name, masked_ima)
+                self._ott.refflat(np.zeros(6))
 
         elif who == 1:
             pass
@@ -144,7 +146,7 @@ class opt_calibration():
 #             self._ott.angle(90.)
 #             self._ott.rslide(0.6)
             for k in range(len(command_list)):
-                self._ott.m4(cmd)
+                self._ott.m4(-command_list[i])
                 p, m = self._c4d.acq4d(self._ott, 1, show=1)
                 #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
                 masked_ima = np.ma.masked_array(p.T, mask=np.invert(m.astype(bool)).T)
@@ -301,7 +303,7 @@ class opt_calibration():
         fold = os.path.join(opt_calibration._storageFolder(), tt)
         for i in range(self._commandAmpVector.shape[0]):
             for j in range(self._nPushPull):
-                k = 2*i + 2*self._commandAmpVector.shape[0]*self._nPushPull*j
+                k = 2*i + 2*self._commandAmpVector.shape[0]*j
                 name_pos = 'Frame_%04d.fits' %k
                 name_neg = 'Frame_%04d.fits' %(k+1)
                 file = os.path.join(fold, name_pos)
@@ -311,7 +313,11 @@ class opt_calibration():
                 hduList = pyfits.open(file)
                 image_neg = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
 
-                image = (image_pos - image_neg) / (2 * self._commandAmpVector[i])
+                if self._who == 'PAR + RM':
+                    image = (image_pos - image_neg) / (2 * self._commandAmpVector[i])
+                elif self._who == 'M4':
+                    image = (image_pos + image_neg) / (2 * self._commandAmpVector[i])
+
                 if j == 0:
                     all_push_pull_act = image
                 else:

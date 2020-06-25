@@ -88,15 +88,19 @@ class OttImages():
     """
         if (show != 0):
             plt.clf()
-            plt.imshow(smap1, cmap='hot')
-            plt.colorbar()
+            plt.subplot(131)
+            plt.imshow(self.ott_view())
+            plt.subplot(132)
+            plt.imshow(smap1, cmap='hot');  plt.colorbar()
+            plt.subplot(133)
+            plt.imshow(self.pwrap(smap1, smask), cmap='gray')
         return(smap1, smask)
 
-    def pwrap(self, img):
+    def pwrap(self, img, mask):
         wav = Interferometer.WAVEL
         img1 = img.copy()
         optfact = 1
-        img1[img1 != 0] = np.sin(2*np.pi*img1[img1 != 0]*optfact/(wav))
+        img1[mask != 0] = np.sin(2*np.pi*img1[mask != 0]*optfact/(wav))
         return(img1)
 
     def ott_parab_ima(self):
@@ -183,12 +187,12 @@ class OttImages():
         return(simg)
 
 
-    def ott_view(self):
+    def ott_view(self, show=None):
         #pixscale = 200. #pix/m
         #parod   = 1.44
         #rmod   = 0.6
         m4 = self._ott.m4pupil.copy()
-        pixscale = OttParameters.PIXEL_SCALE
+        pixscale=OttParameters.PIXEL_SCALE
         parxy = [self._ott.slide()*pixscale,0]
         refmxy = [self._ott.rslide()*pixscale, 0]
         ang = (-30-self._ott.angle())*np.pi/180
@@ -199,6 +203,8 @@ class OttImages():
         m4c = (ss-1)/2
         parcircle = geo.draw_mask(m4*0, parxy[0]+m4c[0],parxy[1]+m4c[1],OttParameters.parab_radius*pixscale)
         refmcircle = geo.draw_mask(m4*0, refmxy[0]+m4c[0],refmxy[1]+m4c[1],OttParameters.rflat_radius*pixscale)
-        ottimg = m4 + parcircle + refmcircle
-
-        return(ottimg)
+        ottimg=m4+parcircle+refmcircle
+        if show != None:
+            plt.imshow(ottimg)
+            
+        return ottimg
