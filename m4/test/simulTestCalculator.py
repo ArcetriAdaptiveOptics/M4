@@ -31,4 +31,18 @@ class TestCalc(unittest.TestCase):
         else:
             result = False
         self.assertEqual(result, True, "Ohno")
-        
+
+    def test_calibration_and_alignement_m4(self):
+        command_amp_vector = np.array([5.0e-06, 5.0e-06])
+        n_push_pull = 1
+        print("Calibration test for M4")
+        from m4.configuration.create_ott import OTT
+        ott = OTT()
+        from m4.alignment import Alignment
+        a = Alignment(ott)
+        tt, zcoma, sur = a.m4_calibration(command_amp_vector, n_push_pull, 5)
+
+        ott.m4(np.array([0,0,0,9.9999997e-06,0,0]))
+
+        print("Alignment test")
+        cmd = a.m4_alignement(zcoma, tt)

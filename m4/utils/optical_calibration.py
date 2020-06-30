@@ -123,7 +123,7 @@ class opt_calibration():
 #             self._ott.angle(90.)
 #             self._ott.rslide(0.6)
             for l in range(self._nPushPull):
-                for m in range(len(command_list)/self._nPushPull):
+                for m in range(np.int(len(command_list)/self._nPushPull)):
                     k = 2 * l * self._dofIndex.size + m
                     if k <= 2 * l * self._dofIndex.size + self._dofIndex.size:
                         self._ott.parab(command_list[k])

@@ -4,12 +4,12 @@ Autors
 '''
 
 import numpy as np
+import os
 from m4.utils.optical_alignment import opt_alignment
 from m4.utils.optical_calibration import opt_calibration
-from m4.ground import object_from_fits_file_name as obj
 from m4.utils.roi import ROI
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
-from m4.utils.interface_4D import comm4d 
+from m4.utils.interface_4D import comm4d
 
 class Alignment():
     """
@@ -26,8 +26,8 @@ class Alignment():
         tt = a.ott_calibration(commandAmpVector, nPushPull, maskIndex)
         par_cmd, rm_cmd = a.ott_alignement(tt)
         #for deformable mirror
-        tt, zCoefComa, comaSurface = a.m4_calibration(...)
-        cmd = a.m4_alignement(zCoefComa)
+        tt, zCoefComa, comaSurface = a.m4_calibration(commandAmpVector, nPushPull, maskIndex)
+        cmd = a.m4_alignement(zCoefComa, tt)
     """
 
     def __init__(self, ott):
@@ -75,8 +75,10 @@ class Alignment():
                 None for the last measurement made
         Returns
         -------
-                cmd: numpy array
-                    vector of command to apply to PAR+RM dof
+                par_cmd: numpy array
+                    vector of command to apply to PAR dof
+                rm_cmd: numpy array
+                    vector of command to apply to RM dof
         """
         if tt is None:
             al = opt_alignment(self._tt)
@@ -93,19 +95,13 @@ class Alignment():
 
         Parameters
         ----------
-            commandAmpVector_ForParRmAlignement: numpy array
-                                            amplitude to be applied to par+rm
-            nPushPull_ForParRmAlignemen: int
-                                        number of push pull for par+rm dof
-            maskIndex_ForParRmAlignement: int
-                                        number of mask index to use
-                                        (reference mirror mask)
             commandAmpVector_ForM4Calibration: numpy array
                                             amplitude to be applied to m4
             nPushPull_ForM4Calibration: int
                                         number of push pull for m4 dof
             maskIndex_ForM4Alignement: int
                                         number of mask index to use
+                                        rm out = 3, rm in = 5
                                         (segment mask)
 
         Returns
@@ -116,18 +112,13 @@ class Alignment():
             coma_surface: numpy array
                             reconstructed surface
         """
-#         self._moveSegmentView(0.75, 90.)
-#         self._moveRM(0.6)
-#         tt = self.ott_calibration(commandAmpVector_ForParRmAlignement,
-#                                   nPushPull_ForParRmAlignement,
-#                                   maskIndex_ForParRmAlignement)
-#         par_cmd, rm_cmd = self.ott_alignement(tt)
         self._moveSegmentView(0.75, 90.)
         self._moveRM(0.6)
         zernike_coef_coma, coma_surface = self._measureComaOnSegmentMask()
         self._tt = self._cal.measureCalibrationMatrix(self._ott, 3,
                                                       commandAmpVector_ForM4Calibration,
                                                       nPushPull_ForM4Calibration)
+        self._saveZcoef(zernike_coef_coma)
         intMat, rec = self._cal.analyzerCalibrationMeasurement(self._tt,
                                                                maskIndex_ForM4Alignement)
         return self._tt, zernike_coef_coma, coma_surface
@@ -144,7 +135,7 @@ class Alignment():
                 None for the last measurement made
         Returns
         -------
-                cmd: numpy array
+                m4_cmd: numpy array
                     vector of command to apply to M4 dof
         """
         self._moveRM(0.)
@@ -168,10 +159,12 @@ class Alignment():
         self._ott.parab(pos_par + par_cmd)
         pos_rm = self._ott.refflat()
         self._ott.refflat(pos_rm + rm_cmd)
+        p,m = self._c4d.acq4d(self._ott, 1, show=1)
 
     def _applyM4Command(self, m4_cmd):
         pos_m4 = self._ott.m4()
         self._ott.m4(pos_m4 + m4_cmd)
+        p,m = self._c4d.acq4d(self._ott, 1, show=1)
 
     def _measureComaOnSegmentMask(self):
         #ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
@@ -186,3 +179,10 @@ class Alignment():
                                                   segment_ima.mask, mat,
                                                   np.array([5]))
         return coma, coma_surface
+
+    def _saveZcoef(self, zernike_coef_coma):
+        dove = os.path.join(self._cal._storageFolder(), self._tt)
+        fits_file_name = os.path.join(dove, 'z_coma.txt')
+        file = open(fits_file_name, 'w+')
+        file.write('%e' %zernike_coef_coma)
+        file.close()

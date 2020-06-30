@@ -52,28 +52,39 @@
 	- Allineamento dell'OTT (PAR + RM)
 	
 	  PROCEDIMENTO:
-	  from m4.alignment import Alignment 
-	  a = Alignment()
-	  tt = a.ott_calibration(commandAmpVector, nPushPull, maskIndex)
-	  cmd = a.ott_alignment(tt)
+	  from m4.alignment import Alignment
+      from m4.configuration import start
+      ott = start.create_ott()
+      a = Alignment(ott)
+      tt = a.ott_calibration(commandAmpVector, nPushPull, maskIndex=3)
+      par_cmd, rm_cmd = a.ott_alignement(tt)
 	  
 	  RISULTATI:
 	  * .../Calibration/tt contiene
-	  (per ora no) misure all'applicazione di ogni comando al grado di libertà
-	  la matrice dei comandi utilizzate per le misure (CommandMatrix.fits)
+	  'Frame_0000.fits' misure all'applicazione di ogni comando al grado di libertà
+	  la matrice dei comandi utilizzate per le misure (CommandMatrixInfo.fits)
+	  il vettore dei comandi dati durante la calibrazione (CommandAmplitude.fits)
 	  la maschera della misura (Mask.fits)
 	  matrice d'interazione e ricostruttore
 	  
 	- Allinemaneto di M4
 	
 	  PROCEDIMENTO:
-	  from m4.alignment import Alignment 
-	  a = Alignment()
-	  tt, zCoefComa, comaSurface = a.m4_calibration(...)
-      cmd = a.m4_alignement(zCoefComa)
+	  from m4.alignment import Alignment
+      from m4.configuration import start
+      ott = start.create_ott()
+      a = Alignment(ott)
+	  tt, zCoefComa, comaSurface = a.m4_calibration(commandAmpVector, nPushPull, maskIndex= 3 oppure 5)
+      cmd = a.m4_alignement(zCoefComa, tt)
 	  
 	  RISULTATI:
-	  
+	  * .../Calibration/tt contiene
+	  'Frame_0000.fits' misure all'applicazione di ogni comando al grado di libertà
+	  la matrice dei comandi utilizzate per le misure (CommandMatrixInfo.fits)
+	  il vettore dei comandi dati durante la calibrazione (CommandAmplitude.fits)
+	  la maschera della misura (Mask.fits)
+	  matrice d'interazione e ricostruttore
+	  z_coma.txt valore del coma valutato sulla superficie corrispondente all'indice della maschera usato
 	 
 
 	  
