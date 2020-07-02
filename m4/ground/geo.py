@@ -22,12 +22,12 @@ def draw_mask(img, cx,cy,r, out=0):
     if nr ==2:
         rr = x*x/r[0]**2+y*y/r[1]**2
         r1 = 1
-    
+
     else:
         rr = x*x+y*y
         r1 = r**2
-    
-           
+
+
     pp = np.where(rr <r1)
     img1 = img.copy()
     if out == 1:

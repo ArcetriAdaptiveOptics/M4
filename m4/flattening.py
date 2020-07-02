@@ -9,6 +9,8 @@ from astropy.io import fits as pyfits
 from m4.utils.roi import ROI
 from m4.type.deformable_mirror import Mirror
 from m4.ground.configuration import Configuration
+from m4.ground.timestamp import Timestamp
+from m4.configuration.config import path_name
 from m4.ground.tracking_number_folder import TtFolder
 from m4.utils.img_redux import TipTiltDetrend
 
@@ -33,7 +35,7 @@ class Flattenig():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+        return os.path.join(path_name.OPD_DATA_FOLDER,
                             "Flattening")
 
     def readVMatrix(self):
@@ -53,13 +55,18 @@ class Flattenig():
         """ Returns the command to give to the actuators to level
         the wf considered
         """
+        tt = Timestamp.now()
+        fitsFileName = os.path.join(Flattenig._storageFolder(), tt)
+
         self._logger.info('Calculation of the flat command')
-        circular_mask = self._roi.circularMaskForSegmentCreator()
+        circular_mask = self._roi._circularMaskForSegmentCreator()
         mask_no_edge_actuators = np.ma.mask_or(wf.mask, circular_mask)
 
         normal_mask = np.ma.mask_or(wf.mask, self._an.getMasterMask())
         super_mask = np.ma.mask_or(mask_no_edge_actuators, self._an.getMasterMask())
         wf_masked = np.ma.masked_array(wf.data, mask=super_mask)
+        pyfits.writeto(os.path.join(fitsFileName, 'imgstart.fits'), wf_masked.data)
+        pyfits.append(os.path.join(fitsFileName, 'imgstart.fits'), wf_masked.mask.astype(int))
 
         self._an.setDetectorMask(wf_masked.mask | self._an.getMasterMask())
         rec = self._an.getReconstructor()
@@ -67,6 +74,7 @@ class Flattenig():
         amp = -np.dot(rec, wf_masked.compressed())
         v_matrix_cut = self.readVMatrix()
         self._command = np.dot(v_matrix_cut, amp)
+        pyfits.writeto(os.path.join(fitsFileName, 'flatDeltaCommand.fits'), self._command)
         return self._command
 
     def syntheticWfCreator(self, wf_mask, command):
@@ -78,7 +86,7 @@ class Flattenig():
         amp = np.dot(v_pinv, command)
         sintetic_wf = np.dot(self._an.getInteractionMatrix(), amp)
 
-        circular_mask = self._roi.circularMaskForSegmentCreator()
+        circular_mask = self._roi._circularMaskForSegmentCreator()
         mask_no_edge_actuators = np.ma.mask_or(wf_mask, circular_mask)
         normal_mm = np.ma.mask_or(wf_mask, self._an.getMasterMask())
         super_mm = np.ma.mask_or(mask_no_edge_actuators, self._an.getMasterMask())

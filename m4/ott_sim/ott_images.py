@@ -206,5 +206,23 @@ class OttImages():
         ottimg=m4+parcircle+refmcircle
         if show != None:
             plt.imshow(ottimg)
-            
+
         return ottimg
+
+    def iff_images(self, zonal_modal):
+        a = np.zeros((21,21)) 
+        b = geo.draw_mask(a,10,10,10)
+
+        segmask1 = np.ma.make_mask(self._ott.segmask1)
+
+        if zonal_modal == 0:
+            s1 = segmask1.copy()
+            s1 = s1.astype(float)
+            b[segmask1 == True] = self._ott.ifmat[3,:]
+            return b
+        elif zonal_modal == 1:
+            comm  = np.dot(self._ott.ifmat.T, self._ott.vmat[:,3])
+            s1 = segmask1.copy()
+            s1 = s1.astype(float)
+            s1[segmask1 == True] = comm
+            return s1

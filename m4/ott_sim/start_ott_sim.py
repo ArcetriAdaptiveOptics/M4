@@ -15,6 +15,9 @@ usage:
     acquire an image
 """
 
+import numpy as np
+from m4.ground import import geo
+
 ### CHIARA ###
 from m4.utils.interface_4D import comm4d
 c4d = comm4d()
@@ -34,6 +37,13 @@ from m4.ott_sim.ott_images import OttImages
 ottIma = OttImages(ott)
 
 p,m=ottIma.ott_smap(show=1)
+
+
+a=np.zeros((21,21)) 
+b=geo.draw_mask(a,10,10,10)
+
+segmask1 = np.ma.make_mask(ott.segmask1)
+
 
 
 '''
@@ -86,7 +96,7 @@ ifmat = hduList[0].data
  s1 = segmask1.copy()
  s1=s1.astype(float)
  b[segmask1 == True]=ifmat[3,:]  #if zonale
- 
+
  comm  = np.dot(ott.ifmat.T,ott.vmat[:,3]) #ifmodale
  s1 = segmask1.copy()
  s1=s1.astype(float)
