@@ -3,8 +3,8 @@ Autors
   - C. Selmi:  written in 2019
 '''
 
-import numpy as np
 import os
+import numpy as np
 from m4.utils.optical_alignment import opt_alignment
 from m4.utils.optical_calibration import opt_calibration
 from m4.utils.roi import ROI
@@ -57,8 +57,6 @@ class Alignment():
                 tt: string
                     tracking number of measurements made
         '''
-        self._moveSegmentView(0.75, 90.)
-        self._moveRM(0.6)
         self._tt = self._cal.measureCalibrationMatrix(self._ott, 0, command_amp_vector,
                                                       n_push_pull)
         int_mat, rec = self._cal.analyzerCalibrationMeasurement(self._tt,
@@ -85,7 +83,7 @@ class Alignment():
         else:
             al = opt_alignment(tt)
         par_cmd, rm_cmd = al.opt_align(self._ott)
-        self._applyCmd(par_cmd, rm_cmd)
+        #self._applyCmd(par_cmd, rm_cmd)
         return par_cmd, rm_cmd
 
 
@@ -112,8 +110,6 @@ class Alignment():
             coma_surface: numpy array
                             reconstructed surface
         """
-        self._moveSegmentView(0.75, 90.)
-        self._moveRM(0.6)
         zernike_coef_coma, coma_surface = self._measureComaOnSegmentMask()
         self._tt = self._cal.measureCalibrationMatrix(self._ott, 3,
                                                       commandAmpVector_ForM4Calibration,
@@ -138,13 +134,13 @@ class Alignment():
                 m4_cmd: numpy array
                     vector of command to apply to M4 dof
         """
-        self._moveRM(0.)
+        #self._moveRM(0.)
         if tt is None:
             al = opt_alignment(self._tt)
         else:
             al = opt_alignment(tt)
         m4_cmd = al.opt_align(self._ott, zernike_coef_coma)
-        self._applyM4Command(m4_cmd)
+        #self._applyM4Command(m4_cmd)
         return m4_cmd
 
     def _moveRM(self, rslide):
@@ -159,12 +155,12 @@ class Alignment():
         self._ott.parab(pos_par + par_cmd)
         pos_rm = self._ott.refflat()
         self._ott.refflat(pos_rm + rm_cmd)
-        p,m = self._c4d.acq4d(self._ott, 1, show=1)
+        #p,m = self._c4d.acq4d(self._ott, 1, show=1)
 
     def _applyM4Command(self, m4_cmd):
         pos_m4 = self._ott.m4()
         self._ott.m4(pos_m4 + m4_cmd)
-        p,m = self._c4d.acq4d(self._ott, 1, show=1)
+        #p,m = self._c4d.acq4d(self._ott, 1, show=1)
 
     def _measureComaOnSegmentMask(self):
         #ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')

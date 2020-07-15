@@ -25,3 +25,4 @@ class fold_name(path_name):
     '''
     LOG_ROOT_FOLDER = os.path.join(path_name.CALIBRATION_ROOT_FOLDER, 'LOGData/mylog')
     IFFUNCTIONS_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER, 'IFFunctions')
+    # metterci tutti i path di tutte le classi

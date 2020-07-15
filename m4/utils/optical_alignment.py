@@ -127,6 +127,7 @@ class opt_alignment():
         """
         image = np.ma.masked_array(img.data, mask=self._mask)
         zernike_vector = self._zernikeCoeff(image)
+        #sommare il coma a questo zernike vector 
         cmd = - np.dot(self._rec, zernike_vector)
         return cmd
 

@@ -16,9 +16,9 @@ def start_log(logging_level):
 #     file_path = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, 'LogIFF')
 #     lsu.set_up_logger(file_path, logging_level)
 
-def total_alignement(commandAmpVector, nPushPull,
-                     commandAmpVector_ForM4Calibration,
-                     nPushPull_ForM4Calibration):
+ott = start.create_ott()
+a = Alignment(ott)
+def ott_alignement_calibration(commandAmpVector=None, nPushPull=None):
     '''
     Parameters
     ----------
@@ -41,17 +41,33 @@ def total_alignement(commandAmpVector, nPushPull,
             m4_cmd: numpy array
                     vector of command to apply to M4 dof
     '''
-    ott = start.create_ott()
-    a = Alignment(ott)
+    a._moveSegmentView(0.75, 90.)
+    a._moveRM(0.6)
     tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 3)
-    #comando da allineare a par e rm
+    return tt_tower
+
+def ott_alignement(tt_tower):
     par_cmd, rm_cmd = a.ott_alignement(tt_tower)
+    #check
+    #applicare comando (separare l'aplycmd e decidere dove metterlo)
+
+
+def m4_alignement_calibration(commandAmpVector_ForM4Calibration,
+                     nPushPull_ForM4Calibration):
+    a._moveSegmentView(0.75, 90.)
+    a._moveRM(0.6)
     tt_m4, zCoefComa, comaSurface = a.m4_calibration(commandAmpVector_ForM4Calibration,
-                                                     nPushPull_ForM4Calibration,
-                                                     5)
-    #comando da allineare a m4
+                                                     nPushPull_ForM4Calibration, 5)
+    return tt_m4
+
+def m4_alignement(tt_m4):
+    #rileggere valore coma
     cmd_m4 = a.m4_alignement(zCoefComa, tt_m4)
-    return par_cmd, rm_cmd, cmd_m4
+    #check
+    #applicare comando
+    return cmd_m4
+
+###
 
 def opto_mech_disturbances():
     #acquisizione di immagini con un certo criterio

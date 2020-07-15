@@ -16,7 +16,7 @@ usage:
 """
 
 import numpy as np
-from m4.ground import import geo
+from m4.ground import geo
 
 ### CHIARA ###
 from m4.utils.interface_4D import comm4d
@@ -72,7 +72,7 @@ ott.refflat([0,0,0,0,1e-6,0])
 
 
 p,m = comm4d.acq4d(1,show=1)
-#which is a call to the simulated interf. acquisition
+#which is a call to the simulated interf.acquisition
 p,m=ott_smap(show=1)
 
 
