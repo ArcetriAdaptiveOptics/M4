@@ -150,14 +150,16 @@ class Alignment():
         self._ott.slide(slide)
         self._ott.angle(angle)
 
-    def _applyCmd(self, par_cmd, rm_cmd):
+    def _write_par(self, par_cmd):
         pos_par = self._ott.parab()
         self._ott.parab(pos_par + par_cmd)
+
+    def _write_rm(self, rm_cmd):
         pos_rm = self._ott.refflat()
         self._ott.refflat(pos_rm + rm_cmd)
         #p,m = self._c4d.acq4d(self._ott, 1, show=1)
 
-    def _applyM4Command(self, m4_cmd):
+    def _write_m4(self, m4_cmd):
         pos_m4 = self._ott.m4()
         self._ott.m4(pos_m4 + m4_cmd)
         #p,m = self._c4d.acq4d(self._ott, 1, show=1)
@@ -182,3 +184,10 @@ class Alignment():
         file = open(fits_file_name, 'w+')
         file.write('%e' %zernike_coef_coma)
         file.close()
+
+# fare un fits e via
+    def _readZcoef(self, tt):
+        dove = os.path.join(self._cal._storageFolder(), tt)
+        fits_file_name = os.path.join(dove, 'z_coma.txt')
+        file = open(fits_file_name, 'r')
+        txt_number = file.readline()
