@@ -9,6 +9,7 @@ from m4.noise_functions import Noise
 from m4.alignment import Alignment
 from m4.ground import logger_set_up as lsu
 from m4.configuration import start
+from m4.configuration.ott_parameters import *
 
 def start_log(logging_level):
     file_path = Configuration.LOG_ROOT_FOLDER
@@ -43,6 +44,10 @@ def ott_alignement_calibration(commandAmpVector=None, nPushPull=None):
     '''
     a._moveSegmentView(0.75, 90.)
     a._moveRM(0.6)
+    if commandAmpVector is None:
+        commandAmpVector = np.array([5.0e-06, 5.0e-06, 5.0e-05, 5.0e-06, 5.0e-06])
+    if nPushPull is None:
+        nPushPull = 3
     tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 3)
     return tt_tower
 
@@ -50,21 +55,43 @@ def ott_alignement(tt_tower):
     par_cmd, rm_cmd = a.ott_alignement(tt_tower)
     #check
     #applicare comando (separare l'aplycmd e decidere dove metterlo)
+    for i in range(OttParameters.PARABOLA_DOF.size):
+        if par_cmd[OttParameters.PARABOLA_DOF[i]] < OttParameters.parab_max_displacement[OttParameters.PARABOLA_DOF[i]]:
+            lala=0
+        else:
+            raise OSError('Par command to large')
+    for i in range(OttParameters.RM_DOF.size):
+        if rm_cmd[OttParameters.RM_DOF[i]] < OttParameters.rm_max_displacement[OttParameters.RM_DOF[i]]:
+            lala=1
+        else:
+            raise OSError('Rm command to large')
+    a._write_par(par_cmd)
+    a._write_rm(rm_cmd)
 
 
-def m4_alignement_calibration(commandAmpVector_ForM4Calibration,
-                     nPushPull_ForM4Calibration):
+def m4_alignement_calibration(commandAmpVector_ForM4Calibration=None,
+                     nPushPull_ForM4Calibration=None):
     a._moveSegmentView(0.75, 90.)
     a._moveRM(0.6)
+    if commandAmpVector_ForM4Calibration is None:
+        commandAmpVector_ForM4Calibration = np.array([5.0e-06, 5.0e-06])
+    if nPushPull_ForM4Calibration is None:
+        nPushPull_ForM4Calibration = 3
     tt_m4, zCoefComa, comaSurface = a.m4_calibration(commandAmpVector_ForM4Calibration,
                                                      nPushPull_ForM4Calibration, 5)
     return tt_m4
 
 def m4_alignement(tt_m4):
-    #rileggere valore coma
+    zCoefComa = a._readZcoef(tt_m4)
     cmd_m4 = a.m4_alignement(zCoefComa, tt_m4)
     #check
     #applicare comando
+    for i in range(2):
+        if cmd_m4[i] < OttParameters.m4_max_displacement[i]:
+            lala=0
+        else:
+            raise OSError('Command to large')
+    a._write_m4(cmd_m4)
     return cmd_m4
 
 ###

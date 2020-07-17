@@ -42,9 +42,9 @@ class OttParameters():
     segment_angle   = 60
     rflat_cell      = 0.01
     pscale  = Interferometer.N_PIXEL[0]/2/parab_radius
-    parab_max_displacement = np.array([1,1,1]) #range of maximum allowed displacement
-    rm_max_displacement = np.array([1,1]) #range of maximum allowed displacement
-    m4_max_displacement = np.array([1,1]) #range of maximum allowed displacement
+    parab_max_displacement = np.array([0,0,1,1,1,0]) #range of maximum allowed displacement
+    rm_max_displacement = np.array([0,0,0,1,1,0]) #range of maximum allowed displacement
+    m4_max_displacement = np.array([0,0,0,1,1,0]) #range of maximum allowed displacement
 
 
     PARABOLA_PUPIL_XYRADIUS = np.array([256, 256, 256])

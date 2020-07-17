@@ -5,6 +5,7 @@ Autors
 
 import os
 import numpy as np
+from astropy.io import fits as pyfits
 from m4.utils.optical_alignment import opt_alignment
 from m4.utils.optical_calibration import opt_calibration
 from m4.utils.roi import ROI
@@ -184,10 +185,13 @@ class Alignment():
         file = open(fits_file_name, 'w+')
         file.write('%e' %zernike_coef_coma)
         file.close()
+        fits_file_name = os.path.join(dove, 'z_coma.txt')
+        pyfits.writeto(fits_file_name, zernike_coef_coma)
 
 # fare un fits e via
     def _readZcoef(self, tt):
         dove = os.path.join(self._cal._storageFolder(), tt)
         fits_file_name = os.path.join(dove, 'z_coma.txt')
-        file = open(fits_file_name, 'r')
-        txt_number = file.readline()
+        hduList = pyfits.open(fits_file_name)
+        z_coma = hduList[0].data
+        return z_coma
