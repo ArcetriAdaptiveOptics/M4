@@ -10,7 +10,7 @@ import h5py
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
-from m4.ground.configuration import Configuration
+from m4.configuration.config import fold_name
 from m4.type.commandHistory import CmdHistory
 from m4.ground import object_from_fits_file_name
 
@@ -43,8 +43,7 @@ class IFFunctionsMaker():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(Configuration.OPD_DATA_FOLDER,
-                            "IFFunctions")
+        return fold_name.IFFUNCTIONS_ROOT_FOLDER
 
 
     def acq_IFFunctions(self, modes_vector_fits_file_name, n_push_pull,

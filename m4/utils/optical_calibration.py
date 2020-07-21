@@ -5,7 +5,7 @@ import os
 import logging
 from astropy.io import fits as pyfits
 import numpy as np
-from m4.configuration.config import path_name
+from m4.configuration.config import fold_name
 from m4.configuration.ott_parameters import OttParameters
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.ground import tracking_number_folder
@@ -33,8 +33,7 @@ class opt_calibration():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(path_name.OPD_DATA_FOLDER,
-                            "Calibration")
+        return fold_name.CALIBRATION_ROOT_FOLDER
 
 
     def measureCalibrationMatrix(self, ott, who, command_amp_vector, n_push_pull):
@@ -130,9 +129,8 @@ class opt_calibration():
                     elif 2 * l * self._dofIndex.size + self._dofIndex.size < k < 2 * (l+1) * self._dofIndex.size:
                         self._ott.parab(np.zeros(6))
                         self._ott.refflat(command_list[k])
-                    p, m = self._c4d.acq4d(self._ott, 1, show=1)
+                    masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
                     #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
-                    masked_ima = np.ma.masked_array(p.T, mask=np.invert(m.astype(bool)).T)
                     name = 'Frame_%04d.fits' %k
                     self._saveSimulatedInterf(dove, name, masked_ima)
                 self._ott.refflat(np.zeros(6))
@@ -147,9 +145,7 @@ class opt_calibration():
 #             self._ott.rslide(0.6)
             for k in range(len(command_list)):
                 self._ott.m4(-command_list[i])
-                p, m = self._c4d.acq4d(self._ott, 1, show=1)
-                #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
-                masked_ima = np.ma.masked_array(p.T, mask=np.invert(m.astype(bool)).T)
+                masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
                 name = 'Frame_%04d.fits' %k
                 self._saveSimulatedInterf(dove, name, masked_ima)
             self._ott.m4(np.zeros(6))

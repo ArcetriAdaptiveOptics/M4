@@ -23,6 +23,28 @@ class path_name():
 class fold_name(path_name):
     '''
     '''
-    LOG_ROOT_FOLDER = os.path.join(path_name.CALIBRATION_ROOT_FOLDER, 'LOGData/mylog')
-    IFFUNCTIONS_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER, 'IFFunctions')
+    LOG_ROOT_FOLDER = os.path.join(path_name.CALIBRATION_ROOT_FOLDER,
+                                   'LOGData/mylog')
+    IFFUNCTIONS_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER,
+                                           'IFFunctions')
+    FLAT_ROOT_FOLD = os.path.join(path_name.OPD_DATA_FOLDER, "Flattening")
+    CALIBRATION_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER,
+                                           "Calibration")
+    ALIGNMENT_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER, "Alignment")
+    ZERNIKECOMMANDTEST_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER,
+                                                  "ZernikeCommandTest")
+    NOISE_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER, "Noise")
+    SPL_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER, "SPL")
+    CALIBALL_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER,
+                                        "Caliball")
+    MODESVECTOR_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER,
+                                           "ModesVector")
+    MODALBASE_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER,
+                                         "ModalBase")
+    MODALAMPLITUDE_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER,
+                                              "ModalAmplitude")
+    COMMANDHISTORY_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER,
+                                              "CommandHistory")
+    GEOTRANSFORM_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER,
+                                            "GeomTransf")
     # metterci tutti i path di tutte le classi

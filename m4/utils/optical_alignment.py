@@ -7,11 +7,12 @@ import logging
 from astropy.io import fits as pyfits
 import numpy as np
 from m4.ground import tracking_number_folder
-from m4.configuration.config import path_name
+from m4.configuration.config import fold_name
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.utils.optical_calibration import opt_calibration
 from m4.utils.interface_4D import comm4d
 from m4.configuration.ott_parameters import OttParameters
+from m4.configuration import config as conf
 
 
 class opt_alignment():
@@ -39,8 +40,7 @@ class opt_alignment():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save data"""
-        return os.path.join(path_name.OPD_DATA_FOLDER,
-                            "Alignment")
+        return fold_name.ALIGNMENT_ROOT_FOLDER
 
 
     def opt_align(self, ott, piston=None):
@@ -128,9 +128,8 @@ class opt_alignment():
         self._logger.debug('Measure of phase map')
 #         imgf, imgt = self._testAlignment_loadMeasureFromFileFits(0)
 #         img = self._testAlignment_loadMeasureFromFileFits(1)
-        p, m = self._c4d.acq4d(ott, 1, show=1)
-        img = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
-        return img
+        masked_ima = self._c4d.acq4d(ott, 1, show=1)
+        return masked_ima
 
     def _zernikeCoeff(self, img):
         """

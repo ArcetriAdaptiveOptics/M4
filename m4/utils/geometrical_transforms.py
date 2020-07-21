@@ -7,7 +7,7 @@ import numpy as np
 from scipy import ndimage
 from astropy.io import fits as pyfits
 from photutils.centroids import fit_2dgaussian
-from m4.ground.configuration import Configuration
+from m4.configuration.config import fold_name
 
 class GeomTransf():
     ''' Class to obtain the transformation that allows you to bring the coordinates
@@ -27,8 +27,7 @@ class GeomTransf():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(Configuration.OPD_DATA_FOLDER,
-                            "GeomTransf")
+        return fold_name.GEOTRANSFORM_ROOT_FOLDER
 
     def principal_main(self, im0, im1, point_to_use):
         '''

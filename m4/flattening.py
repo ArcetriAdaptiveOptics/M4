@@ -10,7 +10,7 @@ from m4.utils.roi import ROI
 from m4.type.deformable_mirror import Mirror
 from m4.ground.configuration import Configuration
 from m4.ground.timestamp import Timestamp
-from m4.configuration.config import path_name
+from m4.configuration.config import fold_name
 from m4.ground.tracking_number_folder import TtFolder
 from m4.utils.img_redux import TipTiltDetrend
 
@@ -35,8 +35,7 @@ class Flattenig():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(path_name.OPD_DATA_FOLDER,
-                            "Flattening")
+        return fold_name.FLAT_ROOT_FOLD
 
     def readVMatrix(self):
         """ Function that returns V matrix (892, 811) for the segment

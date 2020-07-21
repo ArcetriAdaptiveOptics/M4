@@ -64,7 +64,7 @@ class Alignment():
                                                                 mask_index)
         return self._tt
 
-    def ott_alignement(self, tt=None):
+    def ott_alignment(self, tt=None):
         """
         Parameters
         ----------
@@ -120,7 +120,7 @@ class Alignment():
                                                                maskIndex_ForM4Alignement)
         return self._tt, zernike_coef_coma, coma_surface
 
-    def m4_alignement(self, zernike_coef_coma, tt=None):
+    def m4_alignment(self, zernike_coef_coma, tt=None):
         """
         Parameters
         ----------

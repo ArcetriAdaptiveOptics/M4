@@ -8,7 +8,7 @@ import logging
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
-from m4.ground.configuration import Configuration
+from m4.configuration.config import fold_name
 from m4.utils.img_redux import TipTiltDetrend
 from m4.ground.interferometer_converter import InterferometerConverter
 from m4.analyzer_iffunctions import AnalyzerIFF
@@ -40,8 +40,7 @@ class Noise():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(Configuration.OPD_DATA_FOLDER,
-                            "Noise")
+        return fold_name.NOISE_ROOT_FOLDER
 
 ### IFF spostate in C_noise dell'altro m4
 

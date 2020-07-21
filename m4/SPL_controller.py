@@ -13,7 +13,8 @@ import scipy.ndimage as scin
 from m4.ground import smooth_function as sf
 from m4.ground import tracking_number_folder
 from astropy.io import fits as pyfits
-from m4.ground.configuration import Configuration
+from m4.configuration.config import fold_name
+from m4.configuration.ott_parameters import *
 
 class SPL():
     ''' Class used to obtain the piston value for two segments
@@ -37,8 +38,7 @@ class SPL():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(Configuration.OPD_DATA_FOLDER,
-                            "SPL")
+        return fold_name.SPL_ROOT_FOLDER
 
     def measurement(self, lambda_vector, acq4d=None, an=None):
         '''
@@ -338,7 +338,7 @@ class SPL():
         piston: int
                 piston value
         '''
-        tn_fringes = Configuration.TN_FRINGES
+        tn_fringes = OttParameters.TN_FRINGES
         #tn_fringes = '20181026'
         self._logger.debug('Template Comparison with data in tn_fringes = %s',
                            tn_fringes)

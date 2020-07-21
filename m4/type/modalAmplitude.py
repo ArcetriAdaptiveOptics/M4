@@ -7,7 +7,7 @@ import os
 from astropy.io import fits as pyfits
 import h5py
 import numpy as np
-from m4.ground.configuration import Configuration
+from m4.configuration.config import fold_name
 
 
 class ModalAmplitude():
@@ -29,8 +29,7 @@ class ModalAmplitude():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save data"""
-        return os.path.join(Configuration.OPD_DATA_FOLDER,
-                            "ModalAmplitude")
+        return fold_name.MODALAMPLITUDE_ROOT_FOLDER
 
     def getModalAmplitude(self):
         '''

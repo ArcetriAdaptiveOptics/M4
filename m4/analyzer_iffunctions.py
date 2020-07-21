@@ -12,7 +12,7 @@ from m4.ground.interferometer_converter import InterferometerConverter
 from m4.influence_functions_maker import IFFunctionsMaker
 from m4.utils.roi import ROI
 from m4.utils.img_redux import TipTiltDetrend
-from m4.ground.configuration import Configuration
+from m4.configuration.config import fold_name
 
 
 class AnalyzerIFF():
@@ -353,7 +353,7 @@ class AnalyzerIFF():
                             example 'Cube.fits'
         """
         tt = self._ttData()
-        dove = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
+        dove = os.path.join(fold_name.IFFUNCTIONS_ROOT_FOLDER, tt)
         fits_file_name = os.path.join(dove, cube_name)
         header = pyfits.Header()
         header['NPUSHPUL'] = self._nPushPull
@@ -372,7 +372,7 @@ class AnalyzerIFF():
                             example 'Cube.h5'
         """
         tt = self._ttData()
-        dove = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
+        dove = os.path.join(fold_name.IFFUNCTIONS_ROOT_FOLDER, tt)
         fits_file_name = os.path.join(dove, cube_name)
         hf = h5py.File(fits_file_name, 'w')
         hf.create_dataset('dataset_1', data=self._cube.data)
@@ -480,7 +480,7 @@ class AnalyzerIFF():
 
     @staticmethod
     def _loadCubeFromIFFMeasureToCreateAn(tt):
-        dove = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
+        dove = os.path.join(fold_name.IFFUNCTIONS_ROOT_FOLDER, tt)
         fits_file_name = os.path.join(dove, 'CubeMeasure.fits')
         hduList = pyfits.open(fits_file_name)
         theObject = AnalyzerIFF()
@@ -573,7 +573,7 @@ class AnalyzerIFF():
 
     def _createTestCubeMeasure_forTestDataInOpdImages(self):
         tt = '20191210_143625'
-        fold = os.path.join(Configuration.OPD_DATA_FOLDER,
+        fold = os.path.join(fold_name.OPD_DATA_FOLDER,
                             'OPDImages', tt, 'hdf5')
 
         hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
@@ -606,7 +606,7 @@ class AnalyzerIFF():
 
     def _createCube_forTestDataInOpdImages(self):
         tt = '20191210_143625'
-        fold = os.path.join(Configuration.OPD_DATA_FOLDER,
+        fold = os.path.join(fold_name.OPD_DATA_FOLDER,
                             'OPDImages', tt, 'hdf5')
 
         hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))

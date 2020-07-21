@@ -6,9 +6,9 @@ Autors
 import os
 import logging
 from scipy import ndimage
-import numpy as np
 from astropy.io import fits as pyfits
-from m4.ground.configuration import Configuration
+from m4.configuration.config import fold_name
+from m4.configuration.ott_parameters import *
 from m4.ground.zernikeGenerator import ZernikeGenerator
 from m4.flattening import Flattenig
 from m4.analyzer_iffunctions import AnalyzerIFF
@@ -35,10 +35,10 @@ class ZernikeCommand():
         self._roi = segment_roi
         self._ttListForAn = tt_list_for_an
         self._ic = InterferometerConverter()
-        self._pupilXYRadius = Configuration.M4_MECHANICAL_PUPIL_XYRADIUS
+        self._pupilXYRadius = OttParameters.M4_MECHANICAL_PUPIL_XYRADIUS
         self._zg = ZernikeGenerator(2*self._pupilXYRadius[2])
-        self._diameterInPixelForSegmentImages = Configuration.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES
-        self._bigDiameter = Configuration.BIG_IMAGE_DIAMETER
+        self._diameterInPixelForSegmentImages = OttParameters.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES
+        self._bigDiameter = OttParameters.BIG_IMAGE_DIAMETER
         self._measure = None
         self._totalModeCommand = None
         self._anList = []
@@ -49,8 +49,7 @@ class ZernikeCommand():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        return os.path.join(Configuration.OPD_DATA_FOLDER,
-                            "ZernikeCommandTest")
+        return fold_name.ZERNIKECOMMANDTEST_ROOT_FOLDER
 
     def _saveMeasurementInfo(self):
         fits_file_name = os.path.join(self._dove, 'info.fits')
@@ -203,14 +202,14 @@ class ZernikeCommand():
         final_total_mask = np.ones((self._bigDiameter, self._bigDiameter))
         imaList = []
         maskList = []
-        for i in range(Configuration.N_SEG):
+        for i in range(OttParameters.N_SEG):
             total_mode_image = np.zeros((self._bigDiameter, self._bigDiameter))
             total_image_masks = np.ones((self._bigDiameter, self._bigDiameter))
             seg_img = singleZernikeCube[:, :, i]
             seg_mask = singleZernikeCube[:, :, i].mask.astype(int)
-            theta = Configuration.REFERENCE_ANGLE_RAD * i
-            theta_degrees = Configuration.REFERENCE_ANGLE_DEGREES * i
-            r = Configuration.SEGMENT_DISTANCE_FROM_CENTRE
+            theta = OttParameters.REFERENCE_ANGLE_RAD * i
+            theta_degrees = OttParameters.REFERENCE_ANGLE_DEGREES * i
+            r = OttParameters.SEGMENT_DISTANCE_FROM_CENTRE
             seg_img_rot = ndimage.rotate(seg_img, - theta_degrees + 90, reshape=False)
             seg_mask_rot = ndimage.rotate(seg_mask, - theta_degrees + 90, reshape=False, cval=1)
 
@@ -300,7 +299,7 @@ class ZernikeCommand():
         self._logger.info('Single cube creation: for mode %s', number_of_zernike_mode)
         fits_file_path = os.path.join(self._storageFolder(), self._tt)
         singleZernikeCube = None
-        for i in range(Configuration.N_SEG):
+        for i in range(OttParameters.N_SEG):
             pos_file_path = os.path.join(fits_file_path,
                                          'mode%04d_measure_segment%02d_pos.h5' %(number_of_zernike_mode, i))
             positive_image = self._ic.from4D(pos_file_path)
@@ -323,7 +322,7 @@ class ZernikeCommand():
         fits_file_path = os.path.join(self._storageFolder(), self._tt)
         singleZernikeCube = None
         #for i in range(2):
-        for i in range(Configuration.N_SEG):
+        for i in range(OttParameters.N_SEG):
             pos_file_path = os.path.join(fits_file_path,
                                          'mode%04d_measure_segment%02d_pos.fits' %(number_of_zernike_mode, i))
             positive_image = self._readImage(pos_file_path)
@@ -377,7 +376,7 @@ class ZernikeCommand():
         surface_map[center_big_image - raggio_zer:center_big_image + raggio_zer,
                     center_big_image - raggio_zer:center_big_image + raggio_zer] = surface_map_on_m4
 
-        for i in range(Configuration.N_SEG):
+        for i in range(OttParameters.N_SEG):
         #for i in range(2):
             self._logger.debug('Single segment command calculation: segment number %s', i)
             command_for_segment = self.zernikeCommandForSegment(surface_map, i, an_list[i])
@@ -540,9 +539,9 @@ class ZernikeCommand():
         ''' Dovrà comandare il movimento della parabola.
             Per ora restituisce l'angolo e il raggio del centro del segmento scelto
             '''
-        theta = Configuration.REFERENCE_ANGLE_RAD * segment_number
-        theta_degrees = Configuration.REFERENCE_ANGLE_DEGREES * segment_number
-        r = Configuration.SEGMENT_DISTANCE_FROM_CENTRE
+        theta = OttParameters.REFERENCE_ANGLE_RAD * segment_number
+        theta_degrees = OttParameters.REFERENCE_ANGLE_DEGREES * segment_number
+        r = OttParameters.SEGMENT_DISTANCE_FROM_CENTRE
         return theta, theta_degrees, r
 
 
@@ -556,7 +555,7 @@ class ZernikeCommand():
             returns:
                     test_image = image from the cube
         """
-        fold = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, '20170216_123645')
+        fold = os.path.join('/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions', '20170216_123645')
         cube_path = os.path.join(fold, 'CubeMeasure.fits')
         hduList = pyfits.open(cube_path)
         cube = np.ma.masked_array(hduList[0].data,

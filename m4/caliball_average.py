@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 from m4.utils import image_extender
 from m4.utils.img_redux import TipTiltDetrend
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
-from m4.ground.configuration import Configuration
+from m4.configuration.config import fold_name
 from m4.ground.interferometer_converter import InterferometerConverter
 
 class Caliball():
@@ -30,8 +30,7 @@ class Caliball():
     @staticmethod
     def _storageFolder():
         """ Creates the path for measurement data"""
-        return os.path.join(Configuration.OPD_DATA_FOLDER,
-                            "Caliball")
+        return fold_name.CALIBALL_ROOT_FOLDER
 
     def doStat(self):
         cube = self._readCube()

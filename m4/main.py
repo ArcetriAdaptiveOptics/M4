@@ -19,7 +19,7 @@ def start_log(logging_level):
 
 ott = start.create_ott()
 a = Alignment(ott)
-def ott_alignement_calibration(commandAmpVector=None, nPushPull=None):
+def ott_alignment_calibration(commandAmpVector=None, nPushPull=None):
     '''
     Parameters
     ----------
@@ -51,8 +51,9 @@ def ott_alignement_calibration(commandAmpVector=None, nPushPull=None):
     tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 3)
     return tt_tower
 
-def ott_alignement(tt_tower):
-    par_cmd, rm_cmd = a.ott_alignement(tt_tower)
+def ott_alignment(tt_tower):
+    par_cmd, rm_cmd = a.ott_alignment(tt_tower)
+    print(par_cmd, rm_cmd)
     #check
     #applicare comando (separare l'aplycmd e decidere dove metterlo)
     for i in range(OttParameters.PARABOLA_DOF.size):
@@ -65,11 +66,12 @@ def ott_alignement(tt_tower):
             lala=1
         else:
             raise OSError('Rm command to large')
+
     a._write_par(par_cmd)
     a._write_rm(rm_cmd)
 
 
-def m4_alignement_calibration(commandAmpVector_ForM4Calibration=None,
+def m4_alignment_calibration(commandAmpVector_ForM4Calibration=None,
                      nPushPull_ForM4Calibration=None):
     a._moveSegmentView(0.75, 90.)
     a._moveRM(0.6)
@@ -81,13 +83,13 @@ def m4_alignement_calibration(commandAmpVector_ForM4Calibration=None,
                                                      nPushPull_ForM4Calibration, 5)
     return tt_m4
 
-def m4_alignement(tt_m4):
+def m4_alignment(tt_m4):
     zCoefComa = a._readZcoef(tt_m4)
-    cmd_m4 = a.m4_alignement(zCoefComa, tt_m4)
+    cmd_m4 = a.m4_alignment(zCoefComa, tt_m4)
     #check
     #applicare comando
-    for i in range(2):
-        if cmd_m4[i] < OttParameters.m4_max_displacement[i]:
+    for i in range(OttParameters.M4_DOF.size):
+        if cmd_m4[OttParameters.M4_DOF[i]] < OttParameters.m4_max_displacement[i]:
             lala=0
         else:
             raise OSError('Command to large')
