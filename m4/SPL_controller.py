@@ -401,5 +401,5 @@ class SPL():
         dove = os.path.join(self._storageFolder(), tt,
                             'piston_result_prova.txt')
         file = open(dove, 'w+')
-        file.write('%e, %e' %(piston[0], piston_smooth[0]))
+        file.write('%4e, %4e' %(piston[0], piston_smooth[0]))
         file.close()

@@ -112,10 +112,11 @@ class Alignment():
                             reconstructed surface
         """
         zernike_coef_coma, coma_surface = self._measureComaOnSegmentMask()
+        print(zernike_coef_coma)
         self._tt = self._cal.measureCalibrationMatrix(self._ott, 3,
                                                       commandAmpVector_ForM4Calibration,
                                                       nPushPull_ForM4Calibration)
-        self._saveZcoef(zernike_coef_coma)
+        self._saveZcoef(zernike_coef_coma, coma_surface)
         intMat, rec = self._cal.analyzerCalibrationMeasurement(self._tt,
                                                                maskIndex_ForM4Alignement)
         return self._tt, zernike_coef_coma, coma_surface
@@ -167,8 +168,7 @@ class Alignment():
 
     def _measureComaOnSegmentMask(self):
         #ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
-        p, m = self._c4d.acq4d(self._ott, 1, show=1)
-        ima = np.ma.masked_array(p.T, mask=np.invert(m.astype(bool)).T)
+        ima = self._c4d.acq4d(self._ott, 1, show=1)
         roi = self._roi.roiGenerator(ima)
         segment_ima = np.ma.masked_array(ima.data, mask=roi[5])
 
@@ -179,19 +179,23 @@ class Alignment():
                                                   np.array([5]))
         return coma, coma_surface
 
-    def _saveZcoef(self, zernike_coef_coma):
+    def _saveZcoef(self, zernike_coef_coma, coma_surface):
         dove = os.path.join(self._cal._storageFolder(), self._tt)
         fits_file_name = os.path.join(dove, 'z_coma.txt')
         file = open(fits_file_name, 'w+')
-        file.write('%e' %zernike_coef_coma)
+        file.write('%4e' %zernike_coef_coma)
         file.close()
-        fits_file_name = os.path.join(dove, 'z_coma.txt')
-        pyfits.writeto(fits_file_name, zernike_coef_coma)
+        fits_file_name = os.path.join(dove, 'z_coma.fits')
+        header = pyfits.Header()
+        header['COMA'] = zernike_coef_coma
+        pyfits.writeto(fits_file_name, coma_surface.data, header)
+        pyfits.append(fits_file_name, coma_surface.mask.astype(int), header)
 
 # fare un fits e via
     def _readZcoef(self, tt):
         dove = os.path.join(self._cal._storageFolder(), tt)
-        fits_file_name = os.path.join(dove, 'z_coma.txt')
+        fits_file_name = os.path.join(dove, 'z_coma.fits')
         hduList = pyfits.open(fits_file_name)
-        z_coma = hduList[0].data
+        header = pyfits.getheader(fits_file_name)
+        z_coma = header['COMA']
         return z_coma

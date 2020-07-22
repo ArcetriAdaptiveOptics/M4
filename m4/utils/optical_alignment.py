@@ -73,7 +73,8 @@ class opt_alignment():
             self._saveAllDataMix(par_position, rm_position, par_command, rm_command)
             return par_command, rm_command
         elif self._cal._who=='M4':
-            m4_command = self._commandGenerator(img, piston)
+            cmd = self._commandGenerator(img, piston)
+            m4_command = self._reorgCmdM4(cmd)
             self._saveAllDataM4(m4_position, m4_command)
             return m4_command
 
@@ -105,6 +106,13 @@ class opt_alignment():
                 rm_command[dofIndex[i]] = cmd[i]
         return par_command, rm_command
 
+    def _reorgCmdM4(self, cmd):
+        dofIndex = OttParameters.M4_DOF
+        m4_command = np.zeros(6)
+        for i in range(cmd.size):
+            m4_command[dofIndex[i]] = cmd[i]
+        return m4_command
+
     def _commandGenerator(self, img, piston=None):
         """
         args:
@@ -118,7 +126,8 @@ class opt_alignment():
         if piston is None:
             zernike_vector = zernike_vector
         else:
-            zernike_vector[5] = zernike_vector[5] + piston
+            cc = zernike_vector[3]
+            zernike_vector[3] = cc + piston
         #sommare il coma a questo zernike vector
         cmd = - np.dot(self._rec, zernike_vector)
         return cmd

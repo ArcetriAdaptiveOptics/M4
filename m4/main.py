@@ -89,7 +89,7 @@ def m4_alignment(tt_m4):
     #check
     #applicare comando
     for i in range(OttParameters.M4_DOF.size):
-        if cmd_m4[OttParameters.M4_DOF[i]] < OttParameters.m4_max_displacement[i]:
+        if cmd_m4[OttParameters.M4_DOF[i]] < OttParameters.m4_max_displacement[OttParameters.M4_DOF[i]]:
             lala=0
         else:
             raise OSError('Command to large')
