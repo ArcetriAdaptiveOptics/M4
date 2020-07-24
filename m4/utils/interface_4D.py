@@ -41,7 +41,7 @@ class comm4d():
         return masked_ima
 
     def _getMeasurementOnTheFly(self, interf):
-    
+
         def _measureAndStoreH5(interf, filename):
             import time
             import shutil
@@ -52,14 +52,14 @@ class comm4d():
             interf.disconnect()
             time.sleep(1.0)
             fName = '/home/labot/4d/Zcopy/DM_temp'
-    
+
             for i in range(nMeasure):
                 shutil.move(fName + '/hdf5/img_%04d.h5' %i,
                         filename + "_m%02d" %i + ".h5")
-    
+
             shutil.rmtree(fName + '/hdf5')
             shutil.rmtree(fName + '/raw')
-    
-    
+
+
         _measureAndStoreH5(interf, '/tmp/prova4d')
         return InterferometerConverter.from4D('/tmp/prova4d_m00.h5')
