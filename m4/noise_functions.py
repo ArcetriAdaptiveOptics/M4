@@ -195,7 +195,7 @@ class Noise():
         fits_file_name = os.path.join(dove, 'Info.fits')
         header = pyfits.Header()
         header['NPUSHPUL'] = n_push_pull
-        header['TIDY/SHUFFLE'] = tidy_or_shuffle
+        header['TIDYSHUF'] = tidy_or_shuffle
         pyfits.writeto(fits_file_name, template)
         pyfits.append(fits_file_name, actsVector)
         return

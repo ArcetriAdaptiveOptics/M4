@@ -3,6 +3,7 @@
 '''
 import os
 import numpy as np
+from m4.ground import tracking_number_folder
 from matplotlib import pyplot as plt
 from m4.ground.configuration import Configuration
 from m4.noise_functions import Noise
@@ -119,6 +120,8 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
     -------
     '''
     n = Noise()
+    save = tracking_number_folder.TtFolder(os.path.join(n._storageFolder(), 'Results'))
+    dove, tt_base = save._createFolderToStoreMeasurements()
 
     tt_list = []
     for temp in template_list:
@@ -126,10 +129,22 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
                                                temp)
         tt_list.append(tt)
 
+    fits_file_name = os.path.join(dove, 'trackingnumbers.txt')
+    file = open(fits_file_name, 'w+')
+    file.write('Tidy or shuffle = %d \n' %tidy_or_shuffle)
+    for tt in tt_list: 
+         file.write('%s \n' %tt)
+    file.close()
+
     rms_medio, quad_medio, n_temp = n.different_template_analyzer(tt_list)
     plt.plot(n_temp, rms_medio, '-o', label= 'rms_medio'); plt.xlabel('n_temp')
+    plt.legend()
+    plt.savefig(os.path.join(dove, 'rms_ntemp.png'))
+    plt.figure()
     plt.plot(n_temp, quad_medio, '-o', label= 'tip_tilt'); plt.xlabel('n_temp')
     plt.legend()
+    plt.savefig(os.path.join(dove, 'tiptilt_ntemp.png'))
+    return
 
 def convection_noise(data_file_path, tau_vector):
     '''
@@ -141,16 +156,25 @@ def convection_noise(data_file_path, tau_vector):
                     vector of tau to use
     '''
     n = Noise()
+    save = tracking_number_folder.TtFolder(os.path.join(n._storageFolder(), 'Results'))
+    dove, tt_base = save._createFolderToStoreMeasurements()
 
     rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector)
-    plt.figure()
     plt.plot(tau_vector, rms, '-o', label= 'rms_medio'); plt.xlabel('tau_vector')
+    plt.legend()
+    plt.savefig(os.path.join(dove, 'rms_tau.png'))
+    plt.figure()
     plt.plot(tau_vector, quad, '-o', label= 'tip_tilt'); plt.xlabel('tau_vector')
     plt.legend()
+    plt.savefig(os.path.join(dove, 'tiptilt_tau.png'))
 
     #stimare tc dal grafico e usare 2*tau_c = epsilon_c / np.sqrt(n) n = 4000
     tau_c = 30 * (1/27.58)
     epsilon_c = 2 * tau_c * np.sqrt(n_meas)
+    fits_file_name = os.path.join(dove, 'epsilon_c.txt')
+    file = open(fits_file_name, 'w+')
+    file.write('Epsilon_c = %e' %epsilon_c)
+    file.close()
     return epsilon_c
 
 def piston_noise(data_file_path):
@@ -161,8 +185,12 @@ def piston_noise(data_file_path):
                         measurement data folder
     '''
     n = Noise()
+    save = tracking_number_folder.TtFolder(os.path.join(n._storageFolder(), 'Results'))
+    dove, tt_base = save._createFolderToStoreMeasurements()
+
     mean, time = n.piston_noise(data_file_path)
     plt.plot(time, mean); plt.xlabel('time[s]'); plt.ylabel('mean_image')
+    plt.savefig(os.path.join(dove, 'piston_noise.png'))
 
 #PROCEDURE OTT#
 def RS_verification():
