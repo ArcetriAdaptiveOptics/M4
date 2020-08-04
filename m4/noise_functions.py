@@ -367,3 +367,23 @@ class Noise():
             mean = image_ttr.mean()
             mean_list.append(mean)
         return np.array(mean_list), time
+
+
+
+
+
+### Trasformate di Fourier ###
+    def direct_transform(self, data):
+        res = np.fft.fftshift(
+            np.fft.fft2(
+                np.fft.fftshift(data, axes=(-1, -2)),
+                norm="ortho"),
+            axes=(-1, -2))
+        return res
+
+    def inverse_transform(self, data):
+        res = np.fft.ifftshift(
+            np.fft.ifft2(
+                np.fft.ifftshift(data),
+                norm="ortho"))
+        return res
