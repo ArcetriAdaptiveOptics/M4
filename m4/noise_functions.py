@@ -162,6 +162,21 @@ class Noise():
         rms_mean = np.mean(rms_vector)
         return rms_mean, quad_tt
 
+    def _fft(self, vector):
+        dt = 35e-3
+        n = vector.size
+        T = n*dt
+        t = np.linspace(0, T, n)
+#         freq = np.fft.fftfreq(t.size, d=dt)
+#         f = np.fft.fftshift(freq)
+#         df = freq[1]-freq[0]
+
+        spe = np.fft.fftshift(np.fft.fft(vector, norm='ortho'))
+        freq = np.fft.fftshift(np.fft.fftfreq(spe.size, d=dt))
+#         res = np.fft.fft(rms_vector)
+#         qq = res.real**2+res.imag**2
+        return spe, freq
+
     def _imageExtender(self, cube_element):
         ''' Funzione usata per estendere le dimenzioni delle immagini acquisite a
         quelle della pupilla su cui costruisco gli zernike
@@ -367,23 +382,3 @@ class Noise():
             mean = image_ttr.mean()
             mean_list.append(mean)
         return np.array(mean_list), time
-
-
-
-
-
-### Trasformate di Fourier ###
-    def direct_transform(self, data):
-        res = np.fft.fftshift(
-            np.fft.fft2(
-                np.fft.fftshift(data, axes=(-1, -2)),
-                norm="ortho"),
-            axes=(-1, -2))
-        return res
-
-    def inverse_transform(self, data):
-        res = np.fft.ifftshift(
-            np.fft.ifft2(
-                np.fft.ifftshift(data),
-                norm="ortho"))
-        return res

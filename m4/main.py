@@ -3,9 +3,10 @@
 '''
 import os
 import numpy as np
-from m4.ground import tracking_number_folder
+from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
-from m4.ground.configuration import Configuration
+#from m4.ground.configuration import Configuration
+from m4.configuration import config
 from m4.noise_functions import Noise
 from m4.alignment import Alignment
 from m4.ground import logger_set_up as lsu
@@ -13,7 +14,7 @@ from m4.configuration import start
 from m4.configuration.ott_parameters import *
 
 def start_log(logging_level):
-    file_path = Configuration.LOG_ROOT_FOLDER
+    file_path = config.fold_name.LOG_ROOT_FOLDER
     lsu.set_up_logger(file_path, logging_level)
 #     file_path = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, 'LogIFF')
 #     lsu.set_up_logger(file_path, logging_level)
@@ -105,6 +106,16 @@ def opto_mech_disturbances():
     data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
     return data_file_path
 
+def _path_noise_results(data_file_path):
+    results_path = config.path_name.OUT_FOLDER
+    x = data_file_path.split("/")
+    dove = os.path.join(results_path, x[len(x)-1])
+    if os.path.exists(dove):
+        dove = dove
+    else:
+        os.makedirs(dove)
+    return dove
+
 def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
     '''
     Parameters
@@ -120,8 +131,7 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
     -------
     '''
     n = Noise()
-    save = tracking_number_folder.TtFolder(os.path.join(n._storageFolder(), 'Results'))
-    dove, tt_base = save._createFolderToStoreMeasurements()
+    dove = _path_noise_results(data_file_path)
 
     tt_list = []
     for temp in template_list:
@@ -129,21 +139,31 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
                                                temp)
         tt_list.append(tt)
 
-    fits_file_name = os.path.join(dove, 'trackingnumbers.txt')
+    fits_file_name = os.path.join(dove, 'trackingnumbers_%d.txt' %tidy_or_shuffle)
     file = open(fits_file_name, 'w+')
     file.write('Tidy or shuffle = %d \n' %tidy_or_shuffle)
     for tt in tt_list: 
-         file.write('%s \n' %tt)
+        file.write('%s \n' %tt)
     file.close()
 
     rms_medio, quad_medio, n_temp = n.different_template_analyzer(tt_list)
+    spe, freq = n._fft(quad_medio)
+    pyfits.writeto(os.path.join(dove, 'rms_vector_%d.fits' %tidy_or_shuffle), rms_medio)
+    pyfits.writeto(os.path.join(dove, 'tiptilt_vector_%d.fits' %tidy_or_shuffle), quad_medio)
+    pyfits.writeto(os.path.join(dove, 'n_temp_vector_%d.fits' %tidy_or_shuffle), n_temp)
+
+    plt.clf()
     plt.plot(n_temp, rms_medio, '-o', label= 'rms_medio'); plt.xlabel('n_temp')
     plt.legend()
-    plt.savefig(os.path.join(dove, 'rms_ntemp.png'))
+    plt.savefig(os.path.join(dove, 'rms_ntemp_%d.png' %tidy_or_shuffle))
     plt.figure()
     plt.plot(n_temp, quad_medio, '-o', label= 'tip_tilt'); plt.xlabel('n_temp')
     plt.legend()
-    plt.savefig(os.path.join(dove, 'tiptilt_ntemp.png'))
+    plt.savefig(os.path.join(dove, 'tiptilt_ntemp_%d.png' %tidy_or_shuffle))
+    plt.figure()
+    plt.plot(freq, np.absolute(spe), '-o'); plt.xlabel('Freq[HZ]');
+    plt.ylabel('|FFT(sig)|'); plt.title('tip_tilt_%d' %tidy_or_shuffle)
+    plt.savefig(os.path.join(dove, 'tiptilt_spectrum_%d.png' %tidy_or_shuffle))
     return
 
 def convection_noise(data_file_path, tau_vector):
@@ -156,10 +176,14 @@ def convection_noise(data_file_path, tau_vector):
                     vector of tau to use
     '''
     n = Noise()
-    save = tracking_number_folder.TtFolder(os.path.join(n._storageFolder(), 'Results'))
-    dove, tt_base = save._createFolderToStoreMeasurements()
+    dove = _path_noise_results(data_file_path)
 
     rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector)
+    pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms)
+    pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad)
+    pyfits.writeto(os.path.join(dove, 'tau_vector.fits'), tau_vector)
+
+    plt.clf()
     plt.plot(tau_vector, rms, '-o', label= 'rms_medio'); plt.xlabel('tau_vector')
     plt.legend()
     plt.savefig(os.path.join(dove, 'rms_tau.png'))
@@ -185,12 +209,21 @@ def piston_noise(data_file_path):
                         measurement data folder
     '''
     n = Noise()
-    save = tracking_number_folder.TtFolder(os.path.join(n._storageFolder(), 'Results'))
-    dove, tt_base = save._createFolderToStoreMeasurements()
+    dove = _path_noise_results(data_file_path)
 
     mean, time = n.piston_noise(data_file_path)
+    spe, freq = n._fft(mean)
+    pyfits.writeto(os.path.join(dove, 'piston_vector.fits'), mean)
+    pyfits.writeto(os.path.join(dove, 'time_vector.fits'), time)
+
+    plt.clf()
     plt.plot(time, mean); plt.xlabel('time[s]'); plt.ylabel('mean_image')
     plt.savefig(os.path.join(dove, 'piston_noise.png'))
+    plt.figure()
+    plt.plot(freq, np.absolute(spe), '-o'); plt.xlabel('Freq[HZ]');
+    plt.ylabel('|FFT(sig)|'); plt.title('piston_power_spectrum')
+    plt.savefig(os.path.join(dove, 'piston_spectrum.png'))
+
 
 #PROCEDURE OTT#
 def RS_verification():
