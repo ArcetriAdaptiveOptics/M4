@@ -171,8 +171,8 @@ class Noise():
 #         f = np.fft.fftshift(freq)
 #         df = freq[1]-freq[0]
 
-        spe = np.fft.fftshift(np.fft.fft(vector, norm='ortho'))
-        freq = np.fft.fftshift(np.fft.fftfreq(spe.size, d=dt))
+        spe = np.fft.fftshift(np.fft.rfft(vector, norm='ortho'))
+        freq = np.fft.fftshift(np.fft.rfftfreq(spe.size, d=dt))
 #         res = np.fft.fft(rms_vector)
 #         qq = res.real**2+res.imag**2
         return spe, freq

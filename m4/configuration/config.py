@@ -47,4 +47,6 @@ class fold_name(path_name):
                                               "CommandHistory")
     GEOTRANSFORM_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER,
                                             "GeomTransf")
+    ROT_OPT_ALIGN_ROOT_FOLDER = os.path.join(path_name.OPD_DATA_FOLDER,
+                                             "RotOptAlignment")
     # metterci tutti i path di tutte le classi

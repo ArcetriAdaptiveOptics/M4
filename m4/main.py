@@ -224,6 +224,12 @@ def piston_noise(data_file_path):
     plt.ylabel('|FFT(sig)|'); plt.title('piston_power_spectrum')
     plt.savefig(os.path.join(dove, 'piston_spectrum.png'))
 
+def rotation_and_optical_axis_alignment():
+    from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
+    ro = RotOptAlign(ott)
+
+    ott.m4(np.array([0,0,0,9.9999997e-06,0,0]))
+    tt = ro.acquire_image()
 
 #PROCEDURE OTT#
 def RS_verification():
