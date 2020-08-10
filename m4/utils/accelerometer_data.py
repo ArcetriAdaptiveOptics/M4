@@ -4,7 +4,7 @@
 
 import numpy as np
 
-class Acc():
+class AccData():
 
     def __init__(self):
         """The constructor """
@@ -15,7 +15,7 @@ class Acc():
         """ Creates the path where to save measurement data"""
         pass
 
-    def create_signal(self):
+    def create_test_signal(self):
         T = 10
         n = int(T/self._dt)
         t = np.linspace(0, T, n)
@@ -26,12 +26,22 @@ class Acc():
 #         freq = np.fft.fftshift(np.fft.fftfreq(spe.size, d=dt))
         return vector, t
 
-    def create_vector_sign(self, vector):
+    def create_test_vector_sign(self, vector):
         vv = np.column_stack((vector, vector))
         vv_c = np.column_stack((vv, vector))
         return vv_c
 
-    def proiezione_dati(self, vv_c):
+    def data_projection(self, vv_c):
+        '''
+        Parameters
+        ----------
+            vv_c: numpy array
+                    matrix containing the signal (1000x3)
+        Returns
+        -------
+            z: numpy array
+                matrix containing the signal projections
+        '''
         c30 = np.cos(30/180. * np.pi)
         c60= np.cos(60/180. * np.pi)
 
@@ -49,7 +59,21 @@ class Acc():
 #plot(t, z[1,:], label='proizione2'); plot(t, z[2,:], label='proiezione3');
 #plt.xlabel('Time[s]'); plt.legend()
 
-    def spettro(self, z):
+    def power_spectrum(self, z):
+        '''
+        Parameters
+        ----------
+            z: numpy array
+                matrix containing the signal projections
+        Returns
+        -------
+            spe_list: list 
+                    list containing the spectrum of vectors composing
+                    the matrix z
+            freq_list: list
+                    list containing the frequencies of vectors composing
+                    the matrix z
+        '''
         spe_list = []
         freq_list = []
         for i in range(z.shape[0]):
