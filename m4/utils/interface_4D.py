@@ -63,3 +63,4 @@ class comm4d():
 
         _measureAndStoreH5(interf, '/tmp/prova4d')
         return InterferometerConverter.from4D('/tmp/prova4d_m00.h5')
+

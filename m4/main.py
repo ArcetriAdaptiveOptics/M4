@@ -100,10 +100,25 @@ def m4_alignment(tt_m4):
 
 ###
 
-def opto_mech_disturbances():
+def opto_mech_disturbances_acquisition(nFrame, name=None, produce=0):
     #acquisizione di immagini con un certo criterio
     #definire una serie di intervalli per prendere misure
-    data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
+    #data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
+    from oaautils import i4d
+    from m4.ground.timestamp import Timestamp
+    tt = Timestamp.now()
+
+    interf = i4d.I4D()
+    interf.connect()
+    if name is None:
+    	name = tt
+
+    interf.capture(nFrame, name= name)
+    if produce == 1:
+    	interf.produce(name)
+    interf.disconnect()
+
+    data_file_path = os.path.join(config.fold_name.PHASECAM_ROOT_FOLDER, name)
     return data_file_path
 
 def _path_noise_results(data_file_path):

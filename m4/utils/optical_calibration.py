@@ -94,7 +94,7 @@ class opt_calibration():
                 self._rec: numpy array
                          reconstructor
         '''
-        #mask_index per il simulatore è 2 (se le ruoto è 3)
+        #mask_index per il simulatore: 2 (se le ruoto: 3)
         a = opt_calibration.loadCommandMatrixFromFits(tt)
         a.createCube(tt)
         cube = a.getCube()

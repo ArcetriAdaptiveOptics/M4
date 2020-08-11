@@ -90,7 +90,7 @@ class OTT():
         return self._rslide
 
     def angle(self, rot_ring_angle=None):
-        ''' Function to set the rotating ring angle (range: 0 to 360°)
+        ''' Function to set the rotating ring angle (range: 0 to 360)
 
         Other Parameters
         ----------

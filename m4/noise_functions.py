@@ -25,7 +25,7 @@ class Noise():
         n = Noise()
         #acquisizione dati e analisi dalla cartella hdf5
         tt = n.noise_analysis_from_hdf5_folder(tidy_or_shuffle, template)
-        #analisi di più cartelle di dati
+        #analisi di pi cartelle di dati
         rms_medio, tip, tilt, n_temp = n.different_template_analyzer(tt_list)
     '''
 

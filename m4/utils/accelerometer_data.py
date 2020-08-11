@@ -8,7 +8,7 @@ class AccData():
 
     def __init__(self):
         """The constructor """
-        self._dt = 10e-3
+        self._dt = 1e-3
 
     @staticmethod
     def _storageFolder():
@@ -19,7 +19,7 @@ class AccData():
         T = 10
         n = int(T/self._dt)
         t = np.linspace(0, T, n)
-        freqSin = 7
+        freqSin = 30
         ampSin = 1
         vector = ampSin * np.sin(2*np.pi*freqSin*t)
 #         spe = np.fft.fftshift(np.fft.fft(vector, norm='ortho'))

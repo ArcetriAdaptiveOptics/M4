@@ -133,7 +133,7 @@ class opt_alignment():
         return cmd
 
     def _measureOTTPhaseMap(self, ott):
-        #acquisirà e salverà l'interferogramma
+        #acquisir e salver l'interferogramma
         self._logger.debug('Measure of phase map')
 #         imgf, imgt = self._testAlignment_loadMeasureFromFileFits(0)
 #         img = self._testAlignment_loadMeasureFromFileFits(1)
