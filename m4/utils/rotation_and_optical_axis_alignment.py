@@ -99,4 +99,40 @@ class RotOptAlign():
         rot_mat[1,0] = np.sin(theta)
         rot_mat[1,1] = np.cos(theta)
         return rot_mat
-        
+
+    def tipTiltCorrector(self, tip_or_tilt):
+        rot_coef = self._tipOrTiltRotation(tip_or_tilt)
+        if tip_or_tilt==0:
+            posToBeCorrected = 4
+        elif tip_or_tilt==1:
+            posToBeCorrected = 3
+        self._applyCorrection(rot_coef, posToBeCorrected)
+        return self._ott.m4()
+
+    def _tipOrTiltRotation(self, tip_or_tilt):
+        '''
+        Parameters
+        ----------
+        tip_or_tilt: int
+                    0 for tip
+                    1 for tilt
+        Returns
+        -------
+        rot_coef: int
+        '''
+        theta = self._ott.angle()
+        masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
+        coef, mat = self._zOnM4.zernikeFit(masked_ima,
+                                            np.array([2, 3]))
+        if tip_or_tilt==0:
+            rot_mat = self._rotationMatrix(theta)
+        elif tip_or_tilt==1:
+            rot_mat = self._rotationMatrix(-theta)
+        rot_coef = np.dot(coef, rot_mat)
+        return rot_coef[tip_or_tilt]
+
+    def _applyCorrection(self, rot_coef, posToBeCorrected):
+        start_position = self._ott.m4()
+        new_position = start_position
+        new_position[posToBeCorrected] = start_position[posToBeCorrected] + rot_coef
+        self._ott.m4(new_position)

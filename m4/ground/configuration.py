@@ -17,7 +17,7 @@ class Configuration():
 
     CALIBRATION_ROOT_FOLDER = "/Users/rm/Desktop/Arcetri/M4"
 
-    OPD_DATA_FOLDER = "/Users/rm/Desktop/Arcetri/M4/ProvaCodice"
+    OPT_DATA_FOLDER = "/Users/rm/Desktop/Arcetri/M4/ProvaCodice"
 
     TEST_IMAGE_ROOT_FOLDER = \
         "/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova"
@@ -31,7 +31,7 @@ class Configuration():
     V_MATRIX_FOR_SEGMENT_ROOT_892= \
         '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170216_123645/modeMatrix.fits'
 
-    CONFIGURATION_ROOT_FOLDER = os.path.join(OPD_DATA_FOLDER, 'SYSCONFData')
+    CONFIGURATION_ROOT_FOLDER = os.path.join(OPT_DATA_FOLDER, 'SYSCONFData')
     curr_conffolder = os.path.join(CONFIGURATION_ROOT_FOLDER, 'tnconf_mirror')
 
 

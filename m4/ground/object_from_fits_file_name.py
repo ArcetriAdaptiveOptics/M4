@@ -107,7 +107,7 @@ def readDataFromFileFits(fits_file_path):
             data: numpy array
                     data included in file path
     """
-    file_name = os.path.join(Configuration.OPD_DATA_FOLDER,
+    file_name = os.path.join(Configuration.OPT_DATA_FOLDER,
                              fits_file_path)
     hduList = pyfits.open(file_name)
     data = hduList[0].data

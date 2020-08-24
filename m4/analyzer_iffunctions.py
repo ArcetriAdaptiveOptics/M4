@@ -573,7 +573,7 @@ class AnalyzerIFF():
 
     def _createTestCubeMeasure_forTestDataInOpdImages(self):
         tt = '20191210_143625'
-        fold = os.path.join(fold_name.OPD_DATA_FOLDER,
+        fold = os.path.join(fold_name.OPT_DATA_FOLDER,
                             'OPDImages', tt, 'hdf5')
 
         hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
@@ -606,7 +606,7 @@ class AnalyzerIFF():
 
     def _createCube_forTestDataInOpdImages(self):
         tt = '20191210_143625'
-        fold = os.path.join(fold_name.OPD_DATA_FOLDER,
+        fold = os.path.join(fold_name.OPT_DATA_FOLDER,
                             'OPDImages', tt, 'hdf5')
 
         hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
