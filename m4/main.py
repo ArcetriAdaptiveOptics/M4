@@ -122,7 +122,7 @@ def opto_mech_disturbances_acquisition(nFrame, name=None, produce=0):
     return data_file_path
 
 def _path_noise_results(data_file_path):
-    results_path = config.path_name.OUT_FOLDER
+    results_path = os.path.join(config.path_name.OUT_FOLDER, 'Noise')
     x = data_file_path.split("/")
     dove = os.path.join(results_path, x[len(x)-1])
     if os.path.exists(dove):
@@ -130,6 +130,36 @@ def _path_noise_results(data_file_path):
     else:
         os.makedirs(dove)
     return dove
+
+def _createTemplateList(numbers_array):
+    '''
+    Parameters
+    ----------
+        numbers_array: numpy array
+                    vector containing integers numbers for
+                    template creation
+    Returns
+    -------
+        template_list: list
+                    list of template to use
+    '''
+    template_list = []
+    vec = np.array([1, -1])
+    for i in numbers_array:
+        if i % 2 == 0:
+            #pari
+            k = i-2
+            temp = np.tile(vec, k)
+        elif i %2 == 1:
+            #dispari
+            k = i-2
+            if k == 1:
+                temp_pari = vec
+            else:
+                temp_pari = np.tile(vec, k-1)
+            temp = np.append(temp_pari, 1)
+        template_list.append(temp)
+    return template_list
 
 def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
     '''
@@ -162,7 +192,6 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
     file.close()
 
     rms_medio, quad_medio, n_temp = n.different_template_analyzer(tt_list)
-    spe, freq = n._fft(quad_medio)
     pyfits.writeto(os.path.join(dove, 'rms_vector_%d.fits' %tidy_or_shuffle), rms_medio)
     pyfits.writeto(os.path.join(dove, 'tiptilt_vector_%d.fits' %tidy_or_shuffle), quad_medio)
     pyfits.writeto(os.path.join(dove, 'n_temp_vector_%d.fits' %tidy_or_shuffle), n_temp)
@@ -175,11 +204,28 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
     plt.plot(n_temp, quad_medio, '-o', label= 'tip_tilt'); plt.xlabel('n_temp')
     plt.legend()
     plt.savefig(os.path.join(dove, 'tiptilt_ntemp_%d.png' %tidy_or_shuffle))
-    plt.figure()
-    plt.plot(freq, np.absolute(spe), '-o'); plt.xlabel('Freq[HZ]');
-    plt.ylabel('|FFT(sig)|'); plt.title('tip_tilt_%d' %tidy_or_shuffle)
-    plt.savefig(os.path.join(dove, 'tiptilt_spectrum_%d.png' %tidy_or_shuffle))
+#     plt.figure()
+#     plt.plot(freq, np.absolute(spe), '-o'); plt.xlabel('Freq[HZ]');
+#     plt.ylabel('|FFT(sig)|'); plt.title('tip_tilt_%d' %tidy_or_shuffle)
+#     plt.savefig(os.path.join(dove, 'tiptilt_spectrum_%d.png' %tidy_or_shuffle))
     return
+
+def spectrumFromData(data_file_path):
+    n = Noise()
+    dove = _path_noise_results(data_file_path)
+
+    tip, tilt = n._spectrumAllData(data_file_path)
+    spe_tip, freq_tip = n._fft(tip)
+    spe_tilt, freq_tilt = n._fft(tilt)
+
+    plt.clf()
+    plt.plot(freq_tip, np.absolute(spe_tip), '-o'); plt.xlabel('Freq[HZ]')
+    plt.ylabel('|FFT(sig)|'); plt.title('tip_spectrum')
+    plt.savefig(os.path.join(dove, 'tip_spectrum.png'))
+    plt.figure()
+    plt.plot(freq_tilt, np.absolute(spe_tilt), '-o'); plt.xlabel('Freq[HZ]')
+    plt.ylabel('|FFT(sig)|'); plt.title('tilt_spectrum')
+    plt.savefig(os.path.join(dove, 'tilt_spectrum.png'))
 
 def convection_noise(data_file_path, tau_vector):
     '''

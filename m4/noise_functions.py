@@ -162,6 +162,23 @@ class Noise():
         rms_mean = np.mean(rms_vector)
         return rms_mean, quad_tt
 
+    def _spectrumAllData(self, data_file_path):
+        list = os.listdir(data_file_path)
+        coef_tilt_list = []
+        coef_tip_list = []
+        for i in range(len(list)-2):
+            name = 'img_%04d.h5' %i
+            file_name = os.path.join(data_file_path, name)
+            start_image = self._ic.from4D(file_name)
+            image = self._imageExtender(start_image)
+            coef, mat = self._zOnM4.zernikeFit(image,
+                                               np.array([2, 3]))
+            coef_tip_list.append(coef[0])
+            coef_tilt_list.append(coef[1])
+        tip = np.array(coef_tip_list)
+        tilt = np.array(coef_tilt_list)
+        return tip, tilt
+
     def _fft(self, vector):
         dt = 35e-3
         n = vector.size
