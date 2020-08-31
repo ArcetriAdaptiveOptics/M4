@@ -11,7 +11,7 @@ def set_up_logger(file_path, logging_level):
             file path and log name (txt) where to create the log
     logging_level: int
                     Warning = 30, Info = 20, Debug = 10, Notset = 0
-    
+
     """
     import logging
     import logging.handlers

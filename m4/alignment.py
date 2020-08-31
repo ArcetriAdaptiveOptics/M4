@@ -5,6 +5,7 @@ Autors
 
 import os
 import numpy as np
+import logging
 from astropy.io import fits as pyfits
 from m4.utils.optical_alignment import opt_alignment
 from m4.utils.optical_calibration import opt_calibration
@@ -33,6 +34,7 @@ class Alignment():
 
     def __init__(self, ott):
         """The constructor """
+        self._logger = logging.getLogger('ALIGNMENT:')
         self._cal = opt_calibration()
         self._roi = ROI()
         self._zOnM4 = ZernikeOnM4()
@@ -146,9 +148,11 @@ class Alignment():
         return m4_cmd
 
     def _moveRM(self, rslide):
+        self._logger.debug('rslide = %f', rslide)
         self._ott.rslide(rslide)
 
     def _moveSegmentView(self, slide, angle):
+        self._logger.debug('slide = %f angle = %f', slide, angle)
         self._ott.slide(slide)
         self._ott.angle(angle)
 

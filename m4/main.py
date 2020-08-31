@@ -13,6 +13,7 @@ from m4.ground import logger_set_up as lsu
 from m4.configuration import start
 from m4.configuration.ott_parameters import *
 
+
 def start_log(logging_level):
     file_path = config.fold_name.LOG_ROOT_FOLDER
     lsu.set_up_logger(file_path, logging_level)
@@ -44,6 +45,7 @@ def ott_alignment_calibration(commandAmpVector=None, nPushPull=None):
             m4_cmd: numpy array
                     vector of command to apply to M4 dof
     '''
+    print('PAR + RM calibration')
     a._moveSegmentView(0.75, 90.)
     a._moveRM(0.6)
     if commandAmpVector is None:
@@ -54,8 +56,10 @@ def ott_alignment_calibration(commandAmpVector=None, nPushPull=None):
     return tt_tower
 
 def ott_alignment(tt_tower):
+    print('Ott alignemnt')
     par_cmd, rm_cmd = a.ott_alignment(tt_tower)
-    print(par_cmd, rm_cmd)
+    print(par_cmd)
+    print(rm_cmd)
     #check
     #applicare comando (separare l'aplycmd e decidere dove metterlo)
     for i in range(OttParameters.PARABOLA_DOF.size):
@@ -75,6 +79,7 @@ def ott_alignment(tt_tower):
 
 def m4_alignment_calibration(commandAmpVector_ForM4Calibration=None,
                      nPushPull_ForM4Calibration=None):
+    print('M4 calibration')
     a._moveSegmentView(0.75, 90.)
     a._moveRM(0.6)
     if commandAmpVector_ForM4Calibration is None:
@@ -86,8 +91,10 @@ def m4_alignment_calibration(commandAmpVector_ForM4Calibration=None,
     return tt_m4
 
 def m4_alignment(tt_m4):
+    print('M4 alignment')
     zCoefComa = a._readZcoef(tt_m4)
     cmd_m4 = a.m4_alignment(zCoefComa, tt_m4)
+    print(cmd_m4)
     #check
     #applicare comando
     for i in range(OttParameters.M4_DOF.size):
@@ -104,6 +111,7 @@ def opto_mech_disturbances_acquisition(nFrame, name=None, produce=0):
     #acquisizione di immagini con un certo criterio
     #definire una serie di intervalli per prendere misure
     #data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
+    print('Frame acquisition')
     from oaautils import i4d
     from m4.ground.timestamp import Timestamp
     tt = Timestamp.now()
@@ -175,6 +183,7 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
     Returns
     -------
     '''
+    print('Noise analysis using template')
     n = Noise()
     dove = _path_noise_results(data_file_path)
 
@@ -211,6 +220,7 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
     return
 
 def spectrumFromData(data_file_path):
+    print('Spectrum analysis')
     n = Noise()
     dove = _path_noise_results(data_file_path)
 
@@ -219,11 +229,11 @@ def spectrumFromData(data_file_path):
     spe_tilt, freq_tilt = n._fft(tilt)
 
     plt.clf()
-    plt.plot(freq_tip, np.absolute(spe_tip), '-o'); plt.xlabel('Freq[HZ]')
+    plt.plot(freq_tip, np.absolute(spe_tip), 'o'); plt.xlabel('Freq[HZ]')
     plt.ylabel('|FFT(sig)|'); plt.title('tip_spectrum')
     plt.savefig(os.path.join(dove, 'tip_spectrum.png'))
     plt.figure()
-    plt.plot(freq_tilt, np.absolute(spe_tilt), '-o'); plt.xlabel('Freq[HZ]')
+    plt.plot(freq_tilt, np.absolute(spe_tilt), 'o'); plt.xlabel('Freq[HZ]')
     plt.ylabel('|FFT(sig)|'); plt.title('tilt_spectrum')
     plt.savefig(os.path.join(dove, 'tilt_spectrum.png'))
 
@@ -236,6 +246,7 @@ def convection_noise(data_file_path, tau_vector):
         tau_vector: numpy array
                     vector of tau to use
     '''
+    print('Noise analysis using tau vector')
     n = Noise()
     dove = _path_noise_results(data_file_path)
 
@@ -281,7 +292,7 @@ def piston_noise(data_file_path):
     plt.plot(time, mean); plt.xlabel('time[s]'); plt.ylabel('mean_image')
     plt.savefig(os.path.join(dove, 'piston_noise.png'))
     plt.figure()
-    plt.plot(freq, np.absolute(spe), '-o'); plt.xlabel('Freq[HZ]');
+    plt.plot(freq, np.absolute(spe), 'o'); plt.xlabel('Freq[HZ]');
     plt.ylabel('|FFT(sig)|'); plt.title('piston_power_spectrum')
     plt.savefig(os.path.join(dove, 'piston_spectrum.png'))
 
