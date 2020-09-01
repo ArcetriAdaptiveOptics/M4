@@ -1,5 +1,6 @@
 '''
-@author: cselmi
+Autors
+  - C. Selmi: written in 2020
 '''
 
 import numpy as np

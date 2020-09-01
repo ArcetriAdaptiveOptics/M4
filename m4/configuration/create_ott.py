@@ -114,7 +114,7 @@ class OTT():
         Other Parameters
         ----------
         start_position: numpy array, optional
-                        vector of six position
+                        vector of six position,
                         If start_position is not set it's equal to zero vector
 
         Returns
@@ -141,7 +141,7 @@ class OTT():
         Other Parameters
         ----------
         start_position: numpy array, optional
-                        vector of six position
+                        vector of six position,
                         If start_position is not set it's equal to zero vector
 
         Returns
@@ -167,7 +167,7 @@ class OTT():
         Other Parameters
         ----------
         start_position: numpy array, optional
-                        vector of six position
+                        vector of six position,
                         If start_position is not set it's equal to zero vector
 
         Returns

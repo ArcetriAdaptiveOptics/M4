@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar 16 11:00:08 2020
+Autors
+  - R. Briguglio: created on Mon Mar 16 11:00:08 2020
 
-@author: Runa
 """
 import numpy as np
 #import image as image

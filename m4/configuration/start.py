@@ -1,4 +1,6 @@
 '''
+Autors
+  - C. Selmi: written in 2020
 '''
 from m4.configuration.create_ott import *
 

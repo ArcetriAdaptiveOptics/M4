@@ -21,7 +21,7 @@ class TestCalc(unittest.TestCase):
         ott.parab(np.array([0,0,9.9999997e-06, 1.0836526e-07, 2.2898718e-09,0]))
 
         print("Alignment test")
-        par_cmd, rm_cmd = a.ott_alignement(tt)
+        par_cmd, rm_cmd = a.ott_alignment(tt)
 
         aa = ott.parab() #nuova posizione
         bb = ott.refflat()
@@ -45,4 +45,4 @@ class TestCalc(unittest.TestCase):
         ott.m4(np.array([0,0,0,9.9999997e-06,0,0]))
 
         print("Alignment test")
-        cmd = a.m4_alignement(zcoma, tt)
+        cmd = a.m4_alignment(zcoma, tt)

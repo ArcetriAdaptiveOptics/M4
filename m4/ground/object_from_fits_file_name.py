@@ -7,7 +7,7 @@ import numpy as np
 from m4.type.modalAmplitude import ModalAmplitude
 from m4.type.modalBase import ModalBase
 from m4.type.modesVector import ModesVector
-from m4.ground.configuration import Configuration
+from m4.configuration.config import *
 
 ### Generiche
 def readFits_object(fits_file_path):
@@ -54,7 +54,7 @@ def readImageFromFitsFileName(fits_file_path):
             immagine: numpy masked array
                         masked array of the image
     """
-    file_name = os.path.join(Configuration.CALIBRATION_ROOT_FOLDER,
+    file_name = os.path.join(path_name.CALIBRATION_ROOT_FOLDER,
                              fits_file_path)
     hduList = pyfits.open(file_name)
     ima = hduList[0].data
@@ -107,14 +107,14 @@ def readDataFromFileFits(fits_file_path):
             data: numpy array
                     data included in file path
     """
-    file_name = os.path.join(Configuration.OPT_DATA_FOLDER,
+    file_name = os.path.join(path_name.OPT_DATA_FOLDER,
                              fits_file_path)
     hduList = pyfits.open(file_name)
     data = hduList[0].data
     return data
 
 def readImageFromRunaIFFs(fits_file_path):
-    file_name = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER,
+    file_name = os.path.join(fold_name.IFFUNCTIONS_ROOT_FOLDER,
                              fits_file_path)
     hduList = pyfits.open(file_name)
     cube = hduList[0].data

@@ -15,6 +15,7 @@ M4 is a collection of tools to perform the optical calibration of ELT M4 adaptiv
    :maxdepth: 2
    :caption: Contents:
 
+
 Tutorial
 --------
 Maybe you want to give some examples of usage here?
@@ -35,6 +36,7 @@ parameters available for the algorithms.
    ground
    type
    utils
+   ott_sim
    
 
 

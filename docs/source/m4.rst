@@ -1,0 +1,97 @@
+m4 package
+==========
+
+Subpackages
+-----------
+
+.. toctree::
+
+    m4.configuration
+    m4.ground
+    m4.test
+    m4.type
+    m4.utils
+
+Submodules
+----------
+
+m4.SPL\_controller module
+-------------------------
+
+.. automodule:: m4.SPL_controller
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.alignment module
+-------------------
+
+.. automodule:: m4.alignment
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.analyzer\_iffunctions module
+-------------------------------
+
+.. automodule:: m4.analyzer_iffunctions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.caliball\_average module
+---------------------------
+
+.. automodule:: m4.caliball_average
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.flattening module
+--------------------
+
+.. automodule:: m4.flattening
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.influence\_functions\_maker module
+-------------------------------------
+
+.. automodule:: m4.influence_functions_maker
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.main module
+--------------
+
+.. automodule:: m4.main
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.noise\_functions module
+--------------------------
+
+.. automodule:: m4.noise_functions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.zernike\_command\_test module
+--------------------------------
+
+.. automodule:: m4.zernike_command_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: m4
+    :members:
+    :undoc-members:
+    :show-inheritance:
