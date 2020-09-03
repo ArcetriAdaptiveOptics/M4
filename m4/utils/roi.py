@@ -7,7 +7,7 @@ import logging
 import numpy as np
 from skimage.draw import circle
 from scipy import ndimage as ndi
-from m4.ground.configuration import Configuration
+from m4.configuration.ott_parameters import *
 
 
 class ROI():
@@ -23,8 +23,8 @@ class ROI():
     def __init__(self):
         """The constructor """
         self._logger = logging.getLogger('ROI:')
-        self._bigDiameter = Configuration.BIG_IMAGE_DIAMETER
-        self._segmentImaDiameter = Configuration.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES
+        self._bigDiameter = OttParameters.BIG_IMAGE_DIAMETER
+        self._segmentImaDiameter = OttParameters.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES
 
 
     def roiGenerator(self, ima):
@@ -195,11 +195,11 @@ class ROI():
         '''
         center_y = self._bigDiameter / 2
         center_x = self._bigDiameter / 2
-        radius = Configuration.M4_OPTICAL_DIAMETER / 2
+        radius = OttParameters.M4_OPTICAL_DIAMETER / 2
         big_mask = self.create_circular_mask(center_y,
                                          center_x, radius, self._bigDiameter)
 
-        seg_center_y = np.int(self._bigDiameter/2 + Configuration.SEGMENT_DISTANCE_FROM_CENTRE)
+        seg_center_y = np.int(self._bigDiameter/2 + OttParameters.SEGMENT_DISTANCE_FROM_CENTRE)
         seg_center_x = np.int(self._bigDiameter/2)
         seg_radius = np.int(self._segmentImaDiameter / 2)
         mask = big_mask[seg_center_y - seg_radius : seg_center_y + seg_radius,

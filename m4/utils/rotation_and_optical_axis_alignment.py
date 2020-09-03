@@ -5,6 +5,7 @@
 import os
 import numpy as np
 from astropy.io import fits as pyfits
+from matplotlib import pyplot as plt
 from m4.utils.interface_4D import comm4d
 from m4.configuration.config import fold_name
 from m4.ground import tracking_number_folder
@@ -50,10 +51,16 @@ class RotOptAlign():
         self._saveAngles(angle_list, tt)
         return tt
 
-    def analyser(self, tt):
+    def analyzer(self, tt):
         cube = self._readCube(tt)
         tip, tilt = self._tipTiltCalculator(cube)
+        self._plot(tip, tilt)
         centro, axs, raggio = self._parab._fitEllipse(tip, tilt)
+        return centro, axs, raggio
+
+    def _plot(self, tip, tilt):
+        plt.figure(figsize=(7,7))
+        plt.plot(tip, tilt)
 
     def _saveInterfData(self, dove, file_name, image):
         fits_file_name = os.path.join(dove, file_name)
@@ -90,6 +97,9 @@ class RotOptAlign():
             coef_tilt_list.append(coef[1])
         tip = np.array(coef_tip_list)
         tilt = np.array(coef_tilt_list)
+        #devo diventare angoli
+        #mettendo la maschera
+        #fare il plot di tip, tilt (plot isometrico:stesse dimensioni x y)
         return tip, tilt
 
     def _rotationMatrix(self, theta):

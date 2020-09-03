@@ -13,7 +13,7 @@ from skimage.measure import label
 from astropy.io import fits as pyfits
 import sklearn.feature_extraction as skf_e
 import sklearn.cluster as skc
-from m4.ground.configuration import Configuration
+from m4.configuration.ott_parameters import *
 
 class ParabolIdent():
     ''' Class to be used to determine the position of the parable
@@ -26,7 +26,7 @@ class ParabolIdent():
 
     def __init__(self):
         """The constructor """
-        self._rFiducialPoint = Configuration.RADIUS_FIDUCIAL_POINT
+        self._rFiducialPoint = OttParameters.RADIUS_FIDUCIAL_POINT
 
     def parable(self, image):
         '''

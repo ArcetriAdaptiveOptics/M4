@@ -4,7 +4,7 @@ Autors
 '''
 
 import numpy as np
-from m4.ground.configuration import Configuration
+from m4.configuration.ott_parameters import *
 from m4.ground.zernikeGenerator import ZernikeGenerator
 from m4.ground.zernikeMask import CircularMask
 
@@ -21,7 +21,7 @@ class ZernikeOnM4():
 
     def __init__(self):
         """The constructor """
-        self._pupilXYRadius = Configuration.PARABOLA_PUPIL_XYRADIUS
+        self._pupilXYRadius = OttParameters.PARABOLA_PUPIL_XYRADIUS
         self._zg = ZernikeGenerator(2*self._pupilXYRadius[2])
 
     def getPupilCenterAndRadiusInIFCoords(self):

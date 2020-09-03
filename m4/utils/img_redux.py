@@ -6,7 +6,7 @@ Autors
 import logging
 import numpy as np
 from matplotlib.mlab import find
-from m4.ground.configuration import Configuration
+from m4.configuration.ott_parameters import *
 from m4.utils.roi import ROI
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.ground.zernikeGenerator import ZernikeGenerator
@@ -28,7 +28,7 @@ class TipTiltDetrend():
     def __init__(self):
         """The constructor """
         self._logger = logging.getLogger('TIP_TILT_DETREND:')
-        self._pupilXYRadius = Configuration.PARABOLA_PUPIL_XYRADIUS
+        self._pupilXYRadius = OttParameters.PARABOLA_PUPIL_XYRADIUS
         self._zOnM4 = ZernikeOnM4()
         self._totalMatList = None
 
@@ -142,7 +142,7 @@ class PhaseSolve():
     def __init__(self):
         """The constructor """
         self._roi = ROI()
-        self._lambda = Configuration.LAMBDA
+        self._lambda = Interferometer.WAVEL
         self._n = None
 
 
