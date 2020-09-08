@@ -7,10 +7,26 @@ import time
 from opcua import Client
 from functools import *
 from pyzabbix import ZabbixAPI
+from pyzabbix import ZabbixMetric, ZabbixSender
 
-def createZabbixAPI(zserver, port):
-    zapi = ZabbixAPI(server='http://localhost/zabbix/')
-    zapi.login(user="Admin", password="zabbix")
+
+def mainZabbix(zserver, port):
+    zapi = createZabbixAPI()
+    hostname = 'name'
+    valore = 7
+    valore2 = getZabbixMetrics(zapi, hostname, 'key')
+
+    packet = [
+        ZabbixMetric(hostname, 'Descrizione oggetto1', valore),
+        # multiple metrics can be sent in same call for effeciency
+        ZabbixMetric(hostname, 'Descrizione oggetto2', valore2)
+                ]
+
+    result = ZabbixSender(zserver, port, use_config=None).send(packet)
+    return result
+
+def createZabbixAPI():
+    zapi = ZabbixAPI(url='http://localhost/zabbix/', user='Admin', password='zabbix')
     return zapi
 
 def getZabbixMetrics(zapi, host, key):
@@ -70,8 +86,21 @@ def getZabbixMetrics(zapi, host, key):
     return avehist
 
 
+#####################
+#EndPoint: TcOpcUaServer@CP-4A2AC8[None,None] [opc.tcp://CP-4A2AC8:4840]
 
-
-def createOpcua():
+def mainOpcUa():
     server = "opc.tcp://CP-4A2AC8:4840"
+    m4ws = "opc.tcp://10.20.30.6:4840"
     client = Client(url=server)
+    client.connect()
+
+    root = client.get_root_node()
+    print("Root node is: ", root)
+    objects = client.get_objects_node()
+    print("Objects node is: ", objects)
+    print("Children of root are: ", root.get_children())
+
+    node = root.get_child(["0:Objects", "4:tutti i passaggi dell'albero", "4:fino alla", "4:proprietà che voglio leggere"])
+    var = node.get_value()
+    return var
