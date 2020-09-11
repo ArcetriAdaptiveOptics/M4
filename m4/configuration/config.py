@@ -53,4 +53,7 @@ class fold_name(path_name):
                                             "GeomTransf")
     ROT_OPT_ALIGN_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
                                              "RotOptAlignment")
+    
+    PT_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
+                                             "PTCalibration")
     # metterci tutti i path di tutte le classi

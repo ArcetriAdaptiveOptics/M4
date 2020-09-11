@@ -5,6 +5,7 @@
 import sys
 import time
 from opcua import Client
+from opcua import ua
 from functools import *
 from pyzabbix import ZabbixAPI
 from pyzabbix import ZabbixMetric, ZabbixSender
@@ -75,7 +76,7 @@ def getZabbixMetrics(zapi, host, key):
                               'sortorder': 'DESC',
                               'output': 'extend'
                           })
-    # show history rows 
+    # show history rows
     print( "Retrieved {} rows of history".format(len(history['result'])))
     for hist in history['result']:
         # convert epoch to human readable format
@@ -90,17 +91,35 @@ def getZabbixMetrics(zapi, host, key):
 #EndPoint: TcOpcUaServer@CP-4A2AC8[None,None] [opc.tcp://CP-4A2AC8:4840]
 
 def mainOpcUa():
-    server = "opc.tcp://CP-4A2AC8:4840"
-    m4ws = "opc.tcp://10.20.30.6:4840"
+    server = "opc.tcp://192.168.22.100:48050"
+    #m4ws = "opc.tcp://10.20.30.6:4840"
     client = Client(url=server)
     client.connect()
 
+    #ok, ma non serve
     root = client.get_root_node()
     print("Root node is: ", root)
     objects = client.get_objects_node()
     print("Objects node is: ", objects)
     print("Children of root are: ", root.get_children())
 
-    node = root.get_child(["0:Objects", "4:tutti i passaggi dell'albero", "4:fino alla", "4:proprietà che voglio leggere"])
-    var = node.get_value()
+    #node = root.get_child(["0:Objects", "4:tutti i passaggi dell'albero", "4:fino alla", "4:proprietà che voglio leggere"])
+    #var = node.get_value()
+
+    var = client.get_node("ns=7;s=MAIN.i_Temperature_Sensor[16]")
+    value = var.get_value()
+    type = var.get_data_type_as_variant_type()
+    new_value = ua.DataValue(ua.Variant(int(1), type))
+    var.set_value(new_value)
+
+#rotazione torre
+    rot_angle = client.get_node("ns=7;s=MAIN.f_targetPosition_input[0]")
+    type_rot_angle = rot_angle.get_data_type_as_variant_type()
+    move_rot = client.get_node("ns=7;s=MAIN.b_MoveCmd[0]")
+    tipo_move_rot = move_rot.get_data_type_as_variant_type()
+
+    rot_angle.set_value(1, type_rot_angle)
+    move_rot.set_value(True, tipo_move_rot)
+
+    client.disconnect()
     return var

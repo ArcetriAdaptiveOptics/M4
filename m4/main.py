@@ -309,6 +309,26 @@ def rotation_and_optical_axis_alignment(tt=None):
     #le immagini le fa l'analyzer
     return centro, axs, raggio
 
+def PT_calibration(n_meas):
+    from m4.configuration.config import fold_name
+    from opcua import Client
+    import time
+    server = "opc.tcp://192.168.22.100:48050"
+    client = Client(url=server)
+    client.connect()
+
+    for i in range(n_meas):
+        time.sleep(2)
+        temp_list = client.get_node("ns=7;s=MAIN.i_Temperature_Sensor")
+        temp_vector = np.array(temp_list.get_value())
+
+        folder = fold_name.PT_ROOT_FOLDER
+        fits_file_name = os.path.join(folder, 'temperature_%04.fits' %i)
+        pyfits.writeto(fits_file_name, temp_vector)
+
+        print('Misura %04d', i)
+
+
 #PROCEDURE OTT#
 def RS_verification():
     #caliball
