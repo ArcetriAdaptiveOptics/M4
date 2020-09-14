@@ -20,6 +20,10 @@ def start_log(logging_level):
 #     file_path = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, 'LogIFF')
 #     lsu.set_up_logger(file_path, logging_level)
 
+
+
+####### Allineamento Torre ########
+
 ott = start.create_ott()
 a = Alignment(ott)
 def ott_alignment_calibration(commandAmpVector=None, nPushPull=None):
@@ -105,7 +109,20 @@ def m4_alignment(tt_m4):
     a._write_m4(cmd_m4)
     return cmd_m4
 
-###
+def rotation_and_optical_axis_alignment(tt=None):
+    from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
+    ro = RotOptAlign(ott)
+
+    if tt is None:
+        tt = ro.acquire_image()
+    else:
+        tt = tt
+
+    centro, axs, raggio = ro.analyzer(tt)
+    #le immagini le fa l'analyzer
+    return centro, axs, raggio
+
+######### Misure di noise ##########
 
 def opto_mech_disturbances_acquisition(nFrame, name=None, produce=0):
     #acquisizione di immagini con un certo criterio
@@ -296,37 +313,62 @@ def piston_noise(data_file_path):
     plt.ylabel('|FFT(sig)|'); plt.title('piston_power_spectrum')
     plt.savefig(os.path.join(dove, 'piston_spectrum.png'))
 
-def rotation_and_optical_axis_alignment(tt=None):
-    from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
-    ro = RotOptAlign(ott)
 
-    if tt is None:
-        tt = ro.acquire_image()
-    else:
-        tt = tt
 
-    centro, axs, raggio = ro.analyzer(tt)
-    #le immagini le fa l'analyzer
-    return centro, axs, raggio
+######## Sensori PT #######
 
 def PT_calibration(n_meas):
-    from m4.configuration.config import fold_name
+    from m4.ground import tracking_number_folder
     from opcua import Client
     import time
     server = "opc.tcp://192.168.22.100:48050"
     client = Client(url=server)
     client.connect()
 
+    folder = config.fold_name.PT_ROOT_FOLDER
+    save = tracking_number_folder.TtFolder(folder)
+    dove, tt = save._createFolderToStoreMeasurements()
+
     for i in range(n_meas):
         time.sleep(2)
-        temp_list = client.get_node("ns=7;s=MAIN.i_Temperature_Sensor")
+        temp = client.get_node("ns=7;s=MAIN.i_Temperature_Sensor")
+        temp_list = temp.get_value()
         temp_vector = np.array(temp_list.get_value())
 
-        folder = fold_name.PT_ROOT_FOLDER
-        fits_file_name = os.path.join(folder, 'temperature_%04.fits' %i)
+        fits_file_name = os.path.join(dove, 'temperature_%04.fits' %i)
         pyfits.writeto(fits_file_name, temp_vector)
 
-        print('Misura %04d', i)
+        print('Misura %04d' %i)
+
+def analyzer_PT_meas(tt):
+    from m4.ground import smooth_function
+
+    folder = config.fold_name.PT_ROOT_FOLDER
+    name = os.path.join(folder, '20200911_142702')
+    list = os.listdir(name)
+    list.sort()
+
+    matrix = np.zeros((len(list), 24))
+    matrix_s = np.zeros((len(list), 24))
+
+    i = 0
+    for t in list:
+        hduList = pyfits.open(os.path.join(name, t))
+        temp = hduList[0].data
+        matrix[i,:] = temp
+        i = i+1
+
+    matrixDiff = matrix - matrix[0,:]
+    i=0
+    for i in range(24):
+        ss = smooth_function.smooth(matrixDiff[:,i],9)
+        matrix_s[:,i] = ss
+        i=i+1
+
+    t = np.arange(0,2*len(list),2)
+    plt.plot(t, matrix_s/100)
+    plt.xlabel('Time [s]'); plt.ylabel('Temperature [C]'); 
+    plt.title('PT Calibration')
 
 
 #PROCEDURE OTT#

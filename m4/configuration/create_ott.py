@@ -11,16 +11,18 @@ from astropy.io import fits as pyfits
 from m4.ground import object_from_fits_file_name as obj
 from m4.utils.roi import ROI
 from m4.ground.zernikeGenerator import ZernikeGenerator
+from m4.utils.opc_ua_controller import OpcUaController
 
 class OTT():
 
-#     ss = mask.shape
-#     img = np.ones(ss)
-    #img = ma.masked_array(img, mask=img-mask)
+#ss = mask.shape
+#img = np.ones(ss)
+#img = ma.masked_array(img, mask=img-mask)
 
 
     def __init__(self):
         """The constructor """
+        self._opcUa = OpcUaController()
         self._r = ROI()
         self._zg = ZernikeGenerator(2*OttParameters.parab_radius*OttParameters.pscale)
         self._slide = 0
@@ -64,10 +66,13 @@ class OTT():
             par_trans: int
                     parabola translation
         '''
-        if par_trans is None:
-            self._slide = self._slide
+        if conf.simulated == 1:
+            if par_trans is None:
+                self._slide = self._slide
+            else:
+                self._slide = par_trans
         else:
-            self._slide = par_trans
+            pass
         return self._slide
 
     def rslide(self, ref_flat=None):
@@ -83,10 +88,13 @@ class OTT():
         ref_flat: int
                 reference flat mirror position
         '''
-        if ref_flat is None:
-            self._rslide = self._rslide
+        if conf.simulated == 1:
+            if ref_flat is None:
+                self._rslide = self._rslide
+            else:
+                self._rslide = ref_flat
         else:
-            self._rslide = ref_flat
+            pass
         return self._rslide
 
     def angle(self, rot_ring_angle=None):
@@ -102,10 +110,16 @@ class OTT():
             rot_ring_angle: int
                             rot_ring_angle
         '''
-        if rot_ring_angle is None:
-            self._angle = self._angle
+        if conf.simulated == 1:
+            if rot_ring_angle is None:
+                self._angle = self._angle
+            else:
+                self._angle = rot_ring_angle
         else:
-            self._angle = rot_ring_angle
+            if rot_ring_angle is None:
+                self._angle = self._opcUa.get_rotation_angle()
+            else:
+                self._angle = self._opcUa.set_rotation_angle(rot_ring_angle)
         return self._angle
 # Elements alignment
     def parab(self, start_position=None):
