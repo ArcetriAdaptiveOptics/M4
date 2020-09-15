@@ -37,9 +37,9 @@ class RotOptAlign():
         self._cube = None
 
         for k in range(number_of_image):
-            star_angle = self._ott.angle()
-            self._ott.angle(star_angle + rot_angle)
-            angle_list.append(star_angle + rot_angle)
+            start_angle = self._ott.angle()
+            self._ott.angle(start_angle + rot_angle)
+            angle_list.append(start_angle + rot_angle)
             masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
             name = 'Frame_%04d.fits' %k
             self._saveInterfData(dove, name, masked_ima)

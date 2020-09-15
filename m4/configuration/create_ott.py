@@ -125,7 +125,11 @@ class OTT():
             if rot_ring_angle is None:
                 self._angle = self._opcUa.get_rotation_angle()
             else:
-                self._angle = self._opcUa.set_rotation_angle(rot_ring_angle)
+                self._opcUa.set_rotation_angle(rot_ring_angle)
+                self._opcUa.move_ring_angle()
+                
+                self._angle = self._opcUa.get_rotation_angle()
+                
         return self._angle
 # Elements alignment
     def parab(self, start_position=None):
