@@ -72,7 +72,10 @@ class OTT():
             else:
                 self._slide = par_trans
         else:
-            pass
+            if par_trans is None:
+                self._slide = self._opcUa.get_slide()
+            else:
+                self._slide = self._opcUa.set_slide(par_trans)
         return self._slide
 
     def rslide(self, ref_flat=None):
@@ -94,7 +97,10 @@ class OTT():
             else:
                 self._rslide = ref_flat
         else:
-            pass
+            if ref_flat is None:
+                self._rslide = self._opcUa.get_rslide()
+            else:
+                self._rslide = self._opcUa.set_rslide(ref_flat)
         return self._rslide
 
     def angle(self, rot_ring_angle=None):
