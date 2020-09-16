@@ -33,8 +33,9 @@ class RotOptAlign():
         self._logger.info('Images acquisition')
         save = tracking_number_folder.TtFolder(RotOptAlign._storageFolder())
         dove, tt = save._createFolderToStoreMeasurements()
-        self._ott.angle(0)
-        rot_angle = 20
+        self._ott.angle(-180)
+        n_points = 6
+        rot_angle = 360/n_points
         number_of_image = np.int(360/rot_angle)
         angle_list = []
         self._cube = None
