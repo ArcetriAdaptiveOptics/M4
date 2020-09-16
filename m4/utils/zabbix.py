@@ -8,6 +8,8 @@ import numpy as np
 from functools import *
 from pyzabbix import ZabbixAPI
 from pyzabbix import ZabbixMetric, ZabbixSender
+from m4.utils.opc_ua_controller import OpcUaController
+
 
 
 def mainZabbix():
@@ -16,13 +18,9 @@ def mainZabbix():
     zserver = '192.168.22.22'
     port = 10051
 
-    valore2 = getZabbixMetrics(zapi, hostname, 'key')
+    temperature_vector = read_temperature_from_OpcUa()
+#     valore2 = getZabbixMetrics(zapi, hostname, 'key')
 
-    packet = [
-        ZabbixMetric(hostname, 'Nome oggetto1', valore),
-        # multiple metrics can be sent in same call for effeciency
-        ZabbixMetric(hostname, 'Nome oggetto2', valore2)
-                ]
 
     result = ZabbixSender(zserver, port, use_config=None).send(packet)
     return result
@@ -31,12 +29,25 @@ def createZabbixAPI():
     zapi = ZabbixAPI(url='http://192.168.22.22/zabbix/', user='Admin', password='zabbix')
     return zapi
 
-def read_temperature(zapi, hostname):
+def read_temperature_from_OpcUa():
+    opcUa = OpcUaController()
+    temperature_vector = opcUa.get_temperature_vector()
+    return temperature_vector
+
+def read_temperature_from_zabbix(zapi, hostname):
     temp_list = []
     for i in range(24):
         temp = getZabbixMetrics(zapi, hostname, 'PT%02d' %i)
         temp_list.append(temp)
     return np.array(temp_list)
+
+def write_tempertaure(hostname, temperature_vector):
+    for i in range(temperature_vector.size):
+        packet = [
+        ZabbixMetric(hostname, 'Nome oggetto1', temperature_vector[]),
+        # multiple metrics can be sent in same call for effeciency
+        ZabbixMetric(hostname, 'Nome oggetto2', valore2)
+                ]
 
 def getZabbixMetrics(zapi, host, key):
     zversion = zapi.do_request('apiinfo.version')
