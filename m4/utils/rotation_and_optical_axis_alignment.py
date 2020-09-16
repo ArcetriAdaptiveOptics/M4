@@ -4,6 +4,7 @@
 
 import os
 import numpy as np
+import logging
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from m4.utils.interface_4D import comm4d
@@ -16,6 +17,7 @@ class RotOptAlign():
 
     def __init__(self, ott):
         """The constructor """
+        self._logger = logging.getLogger('ROTOPTALIGN')
         self._c4d = comm4d()
         self._ott = ott
         self._zOnM4 = ZernikeOnM4()
@@ -28,6 +30,7 @@ class RotOptAlign():
 
 
     def acquire_image(self):
+        self._logger.info('Images acquisition')
         save = tracking_number_folder.TtFolder(RotOptAlign._storageFolder())
         dove, tt = save._createFolderToStoreMeasurements()
         self._ott.angle(0)
@@ -52,6 +55,7 @@ class RotOptAlign():
         return tt
 
     def analyzer(self, tt):
+        self._logger.info('Images analysis')
         cube = self._readCube(tt)
         tip, tilt = self._tipTiltCalculator(cube)
         self._plot(tip, tilt)

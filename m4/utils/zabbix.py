@@ -4,6 +4,7 @@
 
 import sys
 import time
+import numpy as np
 from functools import *
 from pyzabbix import ZabbixAPI
 from pyzabbix import ZabbixMetric, ZabbixSender
@@ -14,8 +15,7 @@ def mainZabbix():
     hostname = 'M4OTT'
     zserver = '192.168.22.22'
     port = 10051
- 
-    valore = 7
+
     valore2 = getZabbixMetrics(zapi, hostname, 'key')
 
     packet = [
@@ -30,6 +30,13 @@ def mainZabbix():
 def createZabbixAPI():
     zapi = ZabbixAPI(url='http://192.168.22.22/zabbix/', user='Admin', password='zabbix')
     return zapi
+
+def read_temperature(zapi, hostname):
+    temp_list = []
+    for i in range(24):
+        temp = getZabbixMetrics(zapi, hostname, 'PT%02d' %i)
+        temp_list.append(temp)
+    return np.array(temp_list)
 
 def getZabbixMetrics(zapi, host, key):
     zversion = zapi.do_request('apiinfo.version')

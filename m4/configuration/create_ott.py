@@ -3,6 +3,7 @@ Autors
   - C. Selmi: written in 2020
 '''
 
+import logging
 from m4.configuration import config as conf
 from m4.configuration.config import *
 from m4.configuration.ott_parameters import *
@@ -21,6 +22,7 @@ class OTT():
 
     def __init__(self):
         """The constructor """
+        self._logger = logging.getLogger('OTT:')
         self._opcUa = OpcUaController()
         self._r = ROI()
         self._zg = ZernikeGenerator(2*OttParameters.parab_radius*OttParameters.pscale)
@@ -65,6 +67,7 @@ class OTT():
             par_trans: int
                     parabola translation
         '''
+        self._logger.debug('About SLIDE')
         if conf.simulated == 1:
             if par_trans is None:
                 self._slide = self._slide
@@ -93,6 +96,7 @@ class OTT():
         ref_flat: int
                 reference flat mirror position
         '''
+        self._logger.debug('About RSLIDE')
         if conf.simulated == 1:
             if ref_flat is None:
                 self._rslide = self._rslide
@@ -121,6 +125,7 @@ class OTT():
             rot_ring_angle: int
                             rot_ring_angle
         '''
+        self._logger.debug('About ANGLE')
         if conf.simulated == 1:
             if rot_ring_angle is None:
                 self._angle = self._angle

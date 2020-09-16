@@ -2,6 +2,7 @@
 @author: cselmi
 '''
 
+import logging
 import numpy as np
 import time
 from opcua import Client
@@ -14,6 +15,7 @@ class OpcUaController():
     def __init__(self):
         """The constructor """
         self._client = Client(url=server)
+        self._logger = logging.getLogger('OPCUA:')
 
     def _test(self):
         self._client.connect()
@@ -45,6 +47,7 @@ class OpcUaController():
         node = self._client.get_node("ns=7;s=MAIN.Drivers_input.f_PosAct[%d]" %int_number)
         position = node.get_value()
         self._client.disconnect()
+        self._logger.debug('Position = %f', position)
         return position
 
     def set_target_position(self, int_number, value):
@@ -54,6 +57,7 @@ class OpcUaController():
         node.set_value(ua.DataValue(ua.Variant(value, type_node)))
         target_position = node.get_value()
         self._client.disconnect()
+        self._logger.debug('Target position = %f', target_position)
         return target_position
 
     def move_object(self, int_number):
@@ -62,6 +66,7 @@ class OpcUaController():
         node_type = node.get_data_type_as_variant_type()
         node.set_value(ua.DataValue(ua.Variant(True, node_type)))
         self._client.disconnect()
+        self._logger.debug('Object moved successfully')
 
     def _get_command_state(self, int_number):
         self._client.connect()
