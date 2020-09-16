@@ -3,8 +3,6 @@ Autors
   - C. Selmi: written in 2020
 '''
 
-import numpy as np
-import time
 from m4.configuration import config as conf
 from m4.configuration.config import *
 from m4.configuration.ott_parameters import *
@@ -74,9 +72,12 @@ class OTT():
                 self._slide = par_trans
         else:
             if par_trans is None:
-                self._slide = self._opcUa.get_slide()
+                self._slide = self._opcUa.get_position(OpcUaParameters.ST)
             else:
-                self._slide = self._opcUa.set_slide(par_trans)
+                self._slide = self._opcUa.set_target_position(OpcUaParameters.ST, par_trans)
+                self._opcUa.move_object(OpcUaParameters.ST)
+                self._opcUa.wait_for_stop(OpcUaParameters.ST)
+                self._slide = self._opcUa.get_position(OpcUaParameters.ST)
         return self._slide
 
     def rslide(self, ref_flat=None):
@@ -99,9 +100,12 @@ class OTT():
                 self._rslide = ref_flat
         else:
             if ref_flat is None:
-                self._rslide = self._opcUa.get_rslide()
+                self._rslide = self._opcUa.get_position(OpcUaParameters.CAR)
             else:
-                self._rslide = self._opcUa.set_rslide(ref_flat)
+                self._rslide = self._opcUa.set_target_position(OpcUaParameters.CAR, ref_flat)
+                self._opcUa.move_object(OpcUaParameters.CAR)
+                self._opcUa.wait_for_stop(OpcUaParameters.CAR)
+                self._rslide = self._opcUa.get_position(OpcUaParameters.CAR)
         return self._rslide
 
     def angle(self, rot_ring_angle=None):
@@ -124,13 +128,13 @@ class OTT():
                 self._angle = rot_ring_angle
         else:
             if rot_ring_angle is None:
-                self._angle = self._opcUa.get_rotation_angle()
+                self._angle = self._opcUa.get_position(OpcUaParameters.RA)
             else:
-                self._opcUa.set_rotation_angle(rot_ring_angle)
-                self._opcUa.move_ring_angle()
-                self._opcUa.wait_for_stop(0)
-                self._angle = self._opcUa.get_rotation_angle()
-                
+                self._opcUa.set_target_position(OpcUaParameters.RA, rot_ring_angle)
+                self._opcUa.move_object(OpcUaParameters.RA)
+                self._opcUa.wait_for_stop(OpcUaParameters.RA)
+                self._angle = self._opcUa.get_position(OpcUaParameters.RA)
+
         return self._angle
 # Elements alignment
     def parab(self, start_position=None):

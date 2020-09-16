@@ -67,3 +67,9 @@ class OttParameters():
 
     #SPL
     TN_FRINGES = '20181108_1'
+
+class OpcUaParameters():
+    ''' Numbers for opc ua parameters '''
+    RA = 0 #angolo di rotazione
+    CAR = 1 #carrello dell RM
+    ST = 2 #slitta della parabola
