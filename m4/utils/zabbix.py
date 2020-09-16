@@ -9,23 +9,26 @@ from pyzabbix import ZabbixAPI
 from pyzabbix import ZabbixMetric, ZabbixSender
 
 
-def mainZabbix(zserver, port):
+def mainZabbix():
     zapi = createZabbixAPI()
-    hostname = 'name'
+    hostname = 'M4OTT'
+    zserver = '192.168.22.22'
+    port = 10051
+ 
     valore = 7
     valore2 = getZabbixMetrics(zapi, hostname, 'key')
 
     packet = [
-        ZabbixMetric(hostname, 'Descrizione oggetto1', valore),
+        ZabbixMetric(hostname, 'Nome oggetto1', valore),
         # multiple metrics can be sent in same call for effeciency
-        ZabbixMetric(hostname, 'Descrizione oggetto2', valore2)
+        ZabbixMetric(hostname, 'Nome oggetto2', valore2)
                 ]
 
     result = ZabbixSender(zserver, port, use_config=None).send(packet)
     return result
 
 def createZabbixAPI():
-    zapi = ZabbixAPI(url='http://localhost/zabbix/', user='Admin', password='zabbix')
+    zapi = ZabbixAPI(url='http://192.168.22.22/zabbix/', user='Admin', password='zabbix')
     return zapi
 
 def getZabbixMetrics(zapi, host, key):
@@ -68,7 +71,7 @@ def getZabbixMetrics(zapi, host, key):
     history = zapi.do_request('history.get',
                           {
                               'history': itemType,
-                              'filter': {'host': host, 'itemid': itemId},
+                              'filter': {'itemid': itemId},
                               'limit': '5',
                               'sortfield': 'clock',
                               'sortorder': 'DESC',

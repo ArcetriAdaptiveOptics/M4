@@ -6,7 +6,7 @@ Created on Thu Jun 18 06:20:03 2020
 """
 # from importlib import reload
 # import os
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 # a='D:\Astro\ARCETRI\Python\M4-master'
 # os.chdir(a)
 # from m4.configuration.create_ott import *
