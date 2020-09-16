@@ -12,6 +12,7 @@ from m4.configuration.config import fold_name
 from m4.ground import tracking_number_folder
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.utils.parabola_identification import ParabolIdent
+from m4.noise_functions import Noise
 
 class RotOptAlign():
 
@@ -22,6 +23,7 @@ class RotOptAlign():
         self._ott = ott
         self._zOnM4 = ZernikeOnM4()
         self._parab = ParabolIdent()
+        self._n = Noise()
 
     @staticmethod
     def _storageFolder():
@@ -33,17 +35,19 @@ class RotOptAlign():
         self._logger.info('Images acquisition')
         save = tracking_number_folder.TtFolder(RotOptAlign._storageFolder())
         dove, tt = save._createFolderToStoreMeasurements()
-        self._ott.angle(-180)
-        n_points = 6
-        rot_angle = 360/n_points
-        number_of_image = np.int(360/rot_angle)
+        self._ott.angle(180)
+        n_points = 24
+        rot_angle = 350/n_points
+        number_of_image = np.int(350/rot_angle)
         angle_list = []
         self._cube = None
 
-        for k in range(number_of_image):
-            start_angle = self._ott.angle()
-            self._ott.angle(start_angle + rot_angle)
-            angle_list.append(start_angle + rot_angle)
+        start_angle = self._ott.angle()
+        direction = -1
+        for k in range(number_of_image+1):
+            #start_angle = self._ott.angle()
+            self._ott.angle(start_angle + k*rot_angle*direction)
+            angle_list.append(start_angle + k*rot_angle*direction)
             masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
             name = 'Frame_%04d.fits' %k
             self._saveInterfData(dove, name, masked_ima)
@@ -65,7 +69,7 @@ class RotOptAlign():
 
     def _plot(self, tip, tilt):
         plt.figure(figsize=(7,7))
-        plt.plot(tip, tilt)
+        plt.plot(tip, tilt, '-o')
 
     def _saveInterfData(self, dove, file_name, image):
         fits_file_name = os.path.join(dove, file_name)
@@ -96,7 +100,8 @@ class RotOptAlign():
         coef_tip_list = []
         for i in range(cube.shape[2]):
             image = cube[:,:,i]
-            coef, mat = self._zOnM4.zernikeFit(image,
+            image_ex = self._n._imageExtender(image)
+            coef, mat = self._zOnM4.zernikeFit(image_ex,
                                                np.array([2, 3]))
             coef_tip_list.append(coef[0])
             coef_tilt_list.append(coef[1])
@@ -114,6 +119,17 @@ class RotOptAlign():
         rot_mat[1,0] = np.sin(theta)
         rot_mat[1,1] = np.cos(theta)
         return rot_mat
+
+    def tipTiltRotation(self, theta, tip, tilt):
+        new_tt_mat = np.zeros((26,2))
+        aa = np.dstack((tip,tilt))
+        bb = aa[0]
+        for i in range(theta.size):
+            rot_mat = self._rotationMatrix(theta[i])
+            new_tt = np.dot(bb[0], rot_mat)
+            new_tt_mat[i,:] = new_tt
+        return new_tt_mat
+            
 
     def tipTiltCorrector(self, tip_or_tilt):
         rot_coef = self._tipOrTiltRotation(tip_or_tilt)

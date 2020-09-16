@@ -40,6 +40,7 @@ class comm4d():
             if show ==0:
                 pass
             else:
+                plt.clf()
                 plt.imshow(masked_ima)
                 plt.colorbar()
 
