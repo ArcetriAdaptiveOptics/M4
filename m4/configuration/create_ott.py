@@ -4,6 +4,7 @@ Autors
 '''
 
 import numpy as np
+import time
 from m4.configuration import config as conf
 from m4.configuration.config import *
 from m4.configuration.ott_parameters import *
@@ -127,7 +128,7 @@ class OTT():
             else:
                 self._opcUa.set_rotation_angle(rot_ring_angle)
                 self._opcUa.move_ring_angle()
-                
+                self._opcUa.wait_for_stop(0)
                 self._angle = self._opcUa.get_rotation_angle()
                 
         return self._angle

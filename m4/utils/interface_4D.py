@@ -37,6 +37,11 @@ class comm4d():
             from oaautils import i4d
             interf = i4d.I4D()
             masked_ima = self._getMeasurementOnTheFly(interf)
+            if show ==0:
+                pass
+            else:
+                plt.imshow(masked_ima)
+                plt.colorbar()
 
         return masked_ima
 

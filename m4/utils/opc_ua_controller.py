@@ -84,3 +84,15 @@ class OpcUaController():
         move_rot_type = move_rot.get_data_type_as_variant_type()
         move_rot.set_value(ua.DataValue(ua.Variant(True, move_rot_type)))
 
+    def _get_command_state(self, int_number):
+        self._client.connect()
+        node = self._client.get_node("ns=7;s=MAIN.b_MoveCmd[%d]" %int_number)
+        value = node.get_value()
+        self._client.disconnect()
+        return value
+
+    def wait_for_stop(self, int_number):
+        value = self._opcUa._get_command_state(0)
+        while value == True:
+            time.sleep(0.1)
+            value = self._opcUa._get_command_state(0)
