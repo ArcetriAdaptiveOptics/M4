@@ -14,6 +14,7 @@ from m4.configuration import start
 from m4.configuration.ott_parameters import *
 
 
+
 def start_log(logging_level):
     file_path = config.fold_name.LOG_ROOT_FOLDER
     lsu.set_up_logger(file_path, logging_level)
@@ -132,7 +133,7 @@ def plotExCuori(ro):
     tt6 = '20200917_115201'
     tt7 = '20200917_122431'
     tt = [tt2, tt3, tt4, tt5, tt6, tt7]
-    
+
     c1, ax1, r1 = ro.analyzer(tt1)
     for t in tt:
         cube = ro._readCube(t)
@@ -140,7 +141,10 @@ def plotExCuori(ro):
         plt.plot(tip*1e6, tilt*1e6, '-o')
 
 def main_18092020():
-    
+    n_meas = 100
+    for i in range(n_meas):
+        ro, tt = rotation_and_optical_axis_alignment(36, 180, -1)
+        ro, tt = rotation_and_optical_axis_alignment(36, -170, 1)
 
 ######### Misure di noise ##########
 

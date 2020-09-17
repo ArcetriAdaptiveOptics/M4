@@ -14,8 +14,8 @@ class OpcUaController():
 
     def __init__(self):
         """The constructor """
-        self._client = Client(url=server)
         self._logger = logging.getLogger('OPCUA:')
+        self._client = Client(url=server)
 
     def _test(self):
         self._client.connect()
