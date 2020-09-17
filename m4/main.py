@@ -132,7 +132,8 @@ def plotExCuori(ro):
     tt5 = '20200917_105957'
     tt6 = '20200917_115201'
     tt7 = '20200917_122431'
-    tt = [tt2, tt3, tt4, tt5, tt6, tt7]
+    tt8 = '20200917_144404'
+    tt = [tt2, tt3, tt4, tt5, tt6, tt7, tt8]
 
     c1, ax1, r1 = ro.analyzer(tt1)
     for t in tt:
@@ -141,7 +142,7 @@ def plotExCuori(ro):
         plt.plot(tip*1e6, tilt*1e6, '-o')
 
 def main_18092020():
-    n_meas = 100
+    n_meas = 30
     for i in range(n_meas):
         ro, tt = rotation_and_optical_axis_alignment(36, 180, -1)
         ro, tt = rotation_and_optical_axis_alignment(36, -170, 1)
