@@ -3,6 +3,7 @@
 '''
 
 import os
+import time
 import numpy as np
 import logging
 from astropy.io import fits as pyfits
@@ -31,23 +32,24 @@ class RotOptAlign():
         return fold_name.ROT_OPT_ALIGN_ROOT_FOLDER
 
 
-    def acquire_image(self):
+    def acquire_image(self, n_points, start_point, direction):
         self._logger.info('Images acquisition')
         save = tracking_number_folder.TtFolder(RotOptAlign._storageFolder())
         dove, tt = save._createFolderToStoreMeasurements()
-        self._ott.angle(180)
-        n_points = 24
+        self._ott.angle(start_point)
+        #n_points = 24
         rot_angle = 350/n_points
         number_of_image = np.int(350/rot_angle)
         angle_list = []
         self._cube = None
 
         start_angle = self._ott.angle()
-        direction = -1
+        #direction = -1
         for k in range(number_of_image+1):
             #start_angle = self._ott.angle()
             self._ott.angle(start_angle + k*rot_angle*direction)
             angle_list.append(start_angle + k*rot_angle*direction)
+            time.sleep(5)
             masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
             name = 'Frame_%04d.fits' %k
             self._saveInterfData(dove, name, masked_ima)
@@ -69,7 +71,7 @@ class RotOptAlign():
 
     def _plot(self, tip, tilt):
         plt.figure(figsize=(7,7))
-        plt.plot(tip, tilt, '-o')
+        plt.plot(tip*1e6, tilt*1e6, '-o')
 
     def _saveInterfData(self, dove, file_name, image):
         fits_file_name = os.path.join(dove, file_name)
@@ -83,11 +85,19 @@ class RotOptAlign():
         for angle in angle_list:
             file.write('%s \n' %angle)
         file.close()
+        fits_file_name = os.path.join(RotOptAlign._storageFolder(), tt, 'theta.fits')
+        pyfits.writeto(fits_file_name, np.array(angle_list))
 
     def _saveCube(self, dove):
         fits_file_name = os.path.join(dove, 'Cube.fits')
         pyfits.writeto(fits_file_name, self._cube.data)
         pyfits.append(fits_file_name, self._cube.mask.astype(int))
+
+    def _readTheta(self, tt):
+        file_name = os.path.join(RotOptAlign._storageFolder(), tt, 'theta.fits')
+        hduList = pyfits.open(file_name)
+        self._theta = hduList[0].data
+        return self._theta
 
     def _readCube(self, tt):
         file_name = os.path.join(RotOptAlign._storageFolder(), tt, 'Cube.fits')

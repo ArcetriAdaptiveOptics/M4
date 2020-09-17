@@ -109,18 +109,38 @@ def m4_alignment(tt_m4):
     a._write_m4(cmd_m4)
     return cmd_m4
 
-def rotation_and_optical_axis_alignment(tt=None):
+def rotation_and_optical_axis_alignment( n_points, start_point, direction, tt=None):
     from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
     ro = RotOptAlign(ott)
 
     if tt is None:
-        tt = ro.acquire_image()
+        tt = ro.acquire_image(n_points, start_point, direction)
     else:
         tt = tt
 
     centro, axs, raggio = ro.analyzer(tt)
+    print(centro, axs, raggio)
     #le immagini le fa l'analyzer
-    return centro, axs, raggio
+    return ro, tt
+
+def plotExCuori(ro):
+    tt1 = '20200917_085915'
+    tt2 =  '20200917_091754'
+    tt3 = '20200917_094242'
+    tt4 ='20200917_102244'
+    tt5 = '20200917_105957'
+    tt6 = '20200917_115201'
+    tt7 = '20200917_122431'
+    tt = [tt2, tt3, tt4, tt5, tt6, tt7]
+    
+    c1, ax1, r1 = ro.analyzer(tt1)
+    for t in tt:
+        cube = ro._readCube(t)
+        tip, tilt = ro._tipTiltCalculator(cube)
+        plt.plot(tip*1e6, tilt*1e6, '-o')
+
+def main_18092020():
+    
 
 ######### Misure di noise ##########
 
