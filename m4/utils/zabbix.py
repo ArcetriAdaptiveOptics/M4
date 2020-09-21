@@ -9,6 +9,7 @@ from functools import *
 from pyzabbix import ZabbixAPI
 from pyzabbix import ZabbixMetric, ZabbixSender
 from m4.utils.opc_ua_controller import OpcUaController
+from m4.configuration.ott_parameters import OpcUaParameters
 
 
 
@@ -20,10 +21,13 @@ def mainZabbix():
 
     temperature_vector = read_temperature_from_OpcUa()
 #     valore2 = getZabbixMetrics(zapi, hostname, 'key')
-
     packet = write_tempertaure(hostname, temperature_vector)
-    result = ZabbixSender(zserver, port, use_config=None).send(packet)
-    return result
+    result1 = ZabbixSender(zserver, port, use_config=None).send(packet)
+
+    var_positions = read_var_pos_from_OpcUa()
+    packet = write_var_pos(hostname, var_positions)
+    result2 = ZabbixSender(zserver, port, use_config=None).send(packet)
+    return result1, result2
 
 def createZabbixAPI():
     zapi = ZabbixAPI(url='http://192.168.22.22/zabbix/', user='Admin', password='zabbix')
@@ -33,6 +37,11 @@ def read_temperature_from_OpcUa():
     opcUa = OpcUaController()
     temperature_vector = opcUa.get_temperature_vector()
     return temperature_vector
+
+def read_var_pos_from_OpcUa():
+    opcUa = OpcUaController()
+    var_positions = opcUa.get_variables_positions()
+    return var_positions
 
 def read_temperature_from_zabbix(zapi, hostname):
     temp_list = []
@@ -45,6 +54,14 @@ def write_tempertaure(hostname, temperature_vector):
     packet = []
     for i in range(temperature_vector.size):
         packet.append(ZabbixMetric(hostname, 'PT%02d' %i, temperature_vector[i]))
+    return packet
+
+def write_var_pos(hostname, var_pos):
+    opcUa = OpcUaController()
+    zipped = zip(OpcUaParameters.zabbix_variables_name, var_pos)
+    packet = []
+    for name, value in zipped:
+        packet.append(ZabbixMetric(hostname, '%s' %name, value))
     return packet
 
 def getZabbixMetrics(zapi, host, key):

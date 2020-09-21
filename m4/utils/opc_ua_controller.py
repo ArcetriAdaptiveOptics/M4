@@ -7,6 +7,7 @@ import numpy as np
 import time
 from opcua import Client
 from opcua import ua
+from m4.configuration.ott_parameters import OttParameters, OpcUaParameters
 
 server = "opc.tcp://192.168.22.100:48050"
 
@@ -16,15 +17,6 @@ class OpcUaController():
         """The constructor """
         self._logger = logging.getLogger('OPCUA:')
         self._client = Client(url=server)
-
-    def _test(self):
-        self._client.connect()
-        var = self._client.get_node("ns=7;s=MAIN.i_Temperature_Sensor[16]")
-        value = var.get_value()
-        type = var.get_data_type_as_variant_type()
-        new_value = ua.DataValue(ua.Variant(int(1), type))
-        var.set_value(new_value)
-
 
     def stop(self):
         self._client.connect()
@@ -39,6 +31,16 @@ class OpcUaController():
         temperature_vector = np.array(temperature_node.get_value())/100
         self._client.disconnect()
         return temperature_vector
+
+    def get_variables_positions(self):
+        self._client.connect()
+        var_list = []
+        for i in range(len(OpcUaParameters.zabbix_variables_name)):
+            node = self._client.get_node("ns=7;s=MAIN.f_PosAct[%d]" %i)
+            var = node.get_value()
+            var_list.append(var)
+        self._client.disconnect()
+        return np.array(var_list)
 
 
 ### Command for object ###

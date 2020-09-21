@@ -110,14 +110,11 @@ def m4_alignment(tt_m4):
     a._write_m4(cmd_m4)
     return cmd_m4
 
-def rotation_and_optical_axis_alignment( n_points, start_point, direction, tt=None):
+def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
     from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
     ro = RotOptAlign(ott)
 
-    if tt is None:
-        tt = ro.acquire_image(n_points, start_point, direction)
-    else:
-        tt = tt
+    tt = ro.acquire_image(start_point, end_point, n_points)
 
     centro, axs, raggio = ro.analyzer(tt)
     print(centro, axs, raggio)

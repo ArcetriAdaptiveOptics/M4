@@ -31,20 +31,33 @@ class RotOptAlign():
         """ Creates the path where to save measurement data"""
         return fold_name.ROT_OPT_ALIGN_ROOT_FOLDER
 
+    def _checkAngle(self, angle):
+        if angle < -170 or angle > 180:
+            raise OSError(' The required angle is incorrect: %d' % angle)
+        else:
+            pass
 
-    def acquire_image(self, n_points, start_point, direction):
+    def acquire_image(self, start_point, end_point, n_points):
         self._logger.info('Images acquisition')
         save = tracking_number_folder.TtFolder(RotOptAlign._storageFolder())
         dove, tt = save._createFolderToStoreMeasurements()
+
+        self._checkAngle(start_point)
+        self._checkAngle(end_point)
+
+        total_angle = np.abs(end_point - start_point)
         self._ott.angle(start_point)
-        #n_points = 24
-        rot_angle = 350/n_points
-        number_of_image = np.int(350/rot_angle)
+        rot_angle = total_angle/n_points
+        number_of_image = np.int(total_angle/rot_angle)
         angle_list = []
         self._cube = None
 
         start_angle = self._ott.angle()
-        #direction = -1
+        if end_point < start_point:
+            direction = -1
+        elif end_point > start_point:
+            direction = 1
+
         for k in range(number_of_image+1):
             #start_angle = self._ott.angle()
             self._ott.angle(start_angle + k*rot_angle*direction)
@@ -139,7 +152,7 @@ class RotOptAlign():
             new_tt = np.dot(bb[0], rot_mat)
             new_tt_mat[i,:] = new_tt
         return new_tt_mat
-            
+
 
     def tipTiltCorrector(self, tip_or_tilt):
         rot_coef = self._tipOrTiltRotation(tip_or_tilt)
