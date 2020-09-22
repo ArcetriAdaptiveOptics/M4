@@ -70,6 +70,8 @@ class OttParameters():
 
 class OpcUaParameters():
     ''' Numbers for opc ua parameters '''
+    max_angle = 181
+    min_angle = -171
     RA = 0 #angolo di rotazione
     CAR = 1 #carrello dell RM
     ST = 2 #slitta della parabola

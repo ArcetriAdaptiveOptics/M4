@@ -14,6 +14,7 @@ from m4.ground import tracking_number_folder
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.utils.parabola_identification import ParabolIdent
 from m4.noise_functions import Noise
+from m4.configuration.ott_parameters import OpcUaParameters
 
 class RotOptAlign():
 
@@ -32,7 +33,7 @@ class RotOptAlign():
         return fold_name.ROT_OPT_ALIGN_ROOT_FOLDER
 
     def _checkAngle(self, angle):
-        if angle < -170 or angle > 180:
+        if angle <= OpcUaParameters.min_angle or angle >= OpcUaParameters.max_angle:
             raise OSError(' The required angle is incorrect: %d' % angle)
         else:
             pass
@@ -63,7 +64,7 @@ class RotOptAlign():
             self._ott.angle(start_angle + k*rot_angle*direction)
             angle_list.append(start_angle + k*rot_angle*direction)
             time.sleep(5)
-            masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
+            masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
             name = 'Frame_%04d.fits' %k
             self._saveInterfData(dove, name, masked_ima)
             if self._cube is None:
