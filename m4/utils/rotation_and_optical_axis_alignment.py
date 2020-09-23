@@ -127,8 +127,8 @@ class RotOptAlign():
             image_ex = self._n._imageExtender(image)
             coef, mat = self._zOnM4.zernikeFit(image_ex,
                                                np.array([2, 3]))
-            coef_tip_list.append(coef[0])
-            coef_tilt_list.append(coef[1])
+            coef_tip_list.append(-coef[0]/(633e-9) *np.sqrt(2))
+            coef_tilt_list.append(coef[1]/(633e-9) *np.sqrt(2))
         tip = np.array(coef_tip_list)
         tilt = np.array(coef_tilt_list)
         #devo diventare angoli

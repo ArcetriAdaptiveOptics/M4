@@ -130,13 +130,25 @@ def plotExCuori(ro):
     tt6 = '20200917_115201'
     tt7 = '20200917_122431'
     tt8 = '20200917_144404'
-    tt = [tt2, tt3, tt4, tt5, tt6, tt7, tt8]
+    tt9 = '20200923_153946'
+    tt10 = '20200923_162320'
+    tt = [tt1, tt2, tt3, tt4, tt5, tt6, tt7, tt8, tt9, tt10]
 
-    c1, ax1, r1 = ro.analyzer(tt1)
     for t in tt:
         cube = ro._readCube(t)
         tip, tilt = ro._tipTiltCalculator(cube)
-        plt.plot(tip*1e6, tilt*1e6, '-o')
+        plt.plot(tip, tilt, '-o')
+
+def plotCircles(ro):
+    tt1 = '20200923_153946'
+    tt2 = '20200923_162320'
+    tt = [tt1, tt2]
+
+    for t in tt:
+        cube = ro._readCube(t)
+        tip, tilt = ro._tipTiltCalculator(cube)
+        plt.plot(tip, tilt, '-o')
+    
 
 def main_18092020():
     n_meas = 30
