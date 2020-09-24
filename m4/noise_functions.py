@@ -211,6 +211,12 @@ class Noise():
         vv2 = np.ma.masked_array(np.zeros(((2 * self._zOnM4._zg.getRadius()).astype(int), dim_x)),
                                  mask=np.ones(((2 * self._zOnM4._zg.getRadius()).astype(int), dim_x)).astype(bool))
         pp = np.ma.append(cube_element, vv, axis=0)
+        
+        #v = vv2[:,0:vv2.shape[1]/2]
+        #ll = np.ma.append(v, pp, axis=1)
+        #ll2 = np.ma.append(ll,v,axis=1)
+        #image=ll2
+        
         image = np.ma.append(pp, vv2, axis=1)
         return image
 

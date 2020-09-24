@@ -46,7 +46,7 @@ class RotOptAlign():
         self._checkAngle(start_point)
         self._checkAngle(end_point)
 
-        total_angle = np.abs(end_point - start_point)
+        total_angle = np.abs(end_point - start_point)/1.
         self._ott.angle(start_point)
         rot_angle = total_angle/n_points
         number_of_image = np.int(total_angle/rot_angle)
@@ -85,7 +85,7 @@ class RotOptAlign():
 
     def _plot(self, tip, tilt):
         plt.figure(figsize=(7,7))
-        plt.plot(tip*1e6, tilt*1e6, '-o')
+        plt.plot(tip, tilt, '-o')
 
     def _saveInterfData(self, dove, file_name, image):
         fits_file_name = os.path.join(dove, file_name)
@@ -135,6 +135,15 @@ class RotOptAlign():
         #mettendo la maschera
         #fare il plot di tip, tilt (plot isometrico:stesse dimensioni x y)
         return tip, tilt
+
+    def singleImage(self):
+        masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
+        image_ex = self._n._imageExtender(masked_ima)
+        coef, mat = self._zOnM4.zernikeFit(image_ex,
+                                           np.array([2, 3]))
+        tip = -coef[0]/(633e-9) *np.sqrt(2)
+        tilt = coef[1]/(633e-9) *np.sqrt(2)
+        return np.array([tip, tilt])
 
     def _rotationMatrix(self, theta):
         rot_mat = np.zeros((2,2))

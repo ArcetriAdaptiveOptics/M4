@@ -132,8 +132,14 @@ def plotExCuori(ro):
     tt8 = '20200917_144404'
     tt9 = '20200923_153946'
     tt10 = '20200923_162320'
-    tt = [tt1, tt2, tt3, tt4, tt5, tt6, tt7, tt8, tt9, tt10]
+    tt11 = '20200924_092753'
+    tt12 = '20200924_094520'
+    tt13 = '20200924_095743'
+    tt14 = '20200924_101445'
+    tt = [tt1, tt2, tt3, tt4, tt5, tt6, tt7, tt8, tt9, tt10,
+        tt11, tt12, tt13, tt14]
 
+    plt.figure(figsize=(7,7))
     for t in tt:
         cube = ro._readCube(t)
         tip, tilt = ro._tipTiltCalculator(cube)

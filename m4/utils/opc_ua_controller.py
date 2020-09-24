@@ -28,7 +28,7 @@ class OpcUaController():
     def get_temperature_vector(self):
         self._client.connect()
         temperature_node = self._client.get_node("ns=7;s=MAIN.i_Temperature_Sensor")
-        temperature_vector = np.array(temperature_node.get_value())/100
+        temperature_vector = np.array(temperature_node.get_value())/100.
         self._client.disconnect()
         return temperature_vector
 
@@ -36,7 +36,7 @@ class OpcUaController():
         self._client.connect()
         var_list = []
         for i in range(len(OpcUaParameters.zabbix_variables_name)):
-            node = self._client.get_node("ns=7;s=MAIN.f_PosAct[%d]" %i)
+            node = self._client.get_node("ns=7;s=MAIN.Drivers_input.f_PosAct[%d]" %i)
             var = node.get_value()
             var_list.append(var)
         self._client.disconnect()
