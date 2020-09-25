@@ -8,6 +8,7 @@ import numpy as np
 import logging
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
+from m4.ground import tip_tilt_interf_fit
 from m4.utils.interface_4D import comm4d
 from m4.configuration.config import fold_name
 from m4.ground import tracking_number_folder
@@ -136,14 +137,19 @@ class RotOptAlign():
         #fare il plot di tip, tilt (plot isometrico:stesse dimensioni x y)
         return tip, tilt
 
-    def singleImage(self):
-        masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
+    def singleImage(self, masked_ima=None):
+        if masked_ima is None:
+            masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
+        else:
+            masked_ima = masked_ima
         image_ex = self._n._imageExtender(masked_ima)
         coef, mat = self._zOnM4.zernikeFit(image_ex,
                                            np.array([2, 3]))
         tip = -coef[0]/(633e-9) *np.sqrt(2)
         tilt = coef[1]/(633e-9) *np.sqrt(2)
-        return np.array([tip, tilt])
+        
+        cc = tip_tilt_interf_fit.fit(masked_ima)
+        return np.array([tip, tilt]), cc
 
     def _rotationMatrix(self, theta):
         rot_mat = np.zeros((2,2))
