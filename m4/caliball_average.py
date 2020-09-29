@@ -119,7 +119,7 @@ class Caliball():
         return total_cube
 
     def createCubeTTrFromCube(self):
-        # ci mette un'eternità a fare l'estenzione dell'immagine
+        # ci mette un eternit a fare l estenzione dell immagine
         cube = self._readCube()
         cube_ttr = None
         for i in range(cube.shape[2]):
