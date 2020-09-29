@@ -6,7 +6,7 @@ Autors
 from m4.type import deformable_mirror
 
 def myDevice(name_str):
-    '''
+    """
     Parameters
     ----------
         name_str: string
@@ -18,7 +18,7 @@ def myDevice(name_str):
     -------
         device: object
                 optical element to be calibrated
-    '''
+    """
     if name_str == "m4":
         device = deformable_mirror.m4()
 

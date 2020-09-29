@@ -3,7 +3,7 @@
 '''
 import numpy as np
 import os
-from m4.ground.configuration import Configuration
+from m4.configuration.ott_parameters import *
 from m4.ground import object_from_fits_file_name as obj
 
 
@@ -11,7 +11,7 @@ class m4():
     """ Class for m4 definition"""
     def __init__(self):
         """The constructor """
-        self._nActsTot = Configuration.N_ACTS_TOT
+        self._nActsTot = OttParameters.N_ACTS_TOT
         self._who = 'All segments'
 
     def nActs(self):
@@ -29,12 +29,12 @@ class segment(m4):
         else:
             raise OSError('Segment number %s doesnt exists' % segment_index)
 
-        self._nActSeg = Configuration.N_ACT_SEG
-        self._nSeg = Configuration.N_SEG
+        self._nActSeg = OttParameters.N_ACT_SEG
+        self._nSeg = OttParameters.N_SEG
         self._who = 'Segment number %s' % segment_index
-        self._angleInDegrees = Configuration.REFERENCE_ANGLE_DEGREES
-        self._angleInRad = Configuration.REFERENCE_ANGLE_RAD
-        self._distance = Configuration.SEGMENT_DISTANCE_FROM_CENTRE
+        self._angleInDegrees = OttParameters.REFERENCE_ANGLE_DEGREES
+        self._angleInRad = OttParameters.REFERENCE_ANGLE_RAD
+        self._distance = OttParameters.SEGMENT_DISTANCE_FROM_CENTRE
 
     def nActs(self):
         return self._nActSeg
@@ -43,9 +43,9 @@ class segment(m4):
 class Mirror():
     def __init__(self):
         """The constructor """
-        self._nActsTot = Configuration.N_ACTS_TOT
-        self._nActSeg = Configuration.N_ACT_SEG
-        self._nSeg = Configuration.N_SEG
+        self._nActsTot = OttParameters.N_ACTS_TOT
+        self._nActSeg = OttParameters.N_ACT_SEG
+        self._nSeg = OttParameters.N_SEG
         self._activeSegment = 0
         #self._ff = obj.readFits_object(os.path.join(Configuration.curr_conffolder,'ff_matrix.fits'))
 

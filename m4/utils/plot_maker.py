@@ -7,7 +7,7 @@ from astropy.io import fits as pyfits
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import ion
-from m4.ground.configuration import Configuration
+from m4.configuration.ott_parameters import OttParameters
 
 
     #cmd=np.random.rand(5352)
@@ -26,26 +26,26 @@ def createActMap(cmd):
     -------
             graphic plot
     '''
-    if cmd.shape[0] == Configuration.N_ACTS_TOT:
+    if cmd.shape[0] == OttParameters.N_ACTS_TOT:
         cmd = cmd
-    elif cmd.shape[0] == Configuration.N_ACT_SEG:
+    elif cmd.shape[0] == OttParameters.N_ACT_SEG:
         print('Segment number: ')
         input_number = int(input())
-        if input_number < Configuration.N_SEG:
+        if input_number < OttParameters.N_SEG:
             segment_index = input_number
         else:
             raise OSError('Segment number %s doesnt exists' % input_number)
 
-        command = np.zeros(Configuration.N_ACTS_TOT)
+        command = np.zeros(OttParameters.N_ACTS_TOT)
         for j in range(cmd.shape[0]):
-            act = j + (Configuration.N_ACT_SEG * segment_index)
+            act = j + (OttParameters.N_ACT_SEG * segment_index)
             command[act] = cmd[j]
         cmd = command
 
     else:
         raise OSError('The number of actuators chosen is incorrect')
 
-    fits_file_name = Configuration.M4COORDINATE_ROOT_FOLDER
+    fits_file_name = OttParameters.M4COORDINATE_ROOT_FOLDER
     hduList = pyfits.open(fits_file_name)
     co = np.array(hduList[0].data)
     input_number = co[0][:]

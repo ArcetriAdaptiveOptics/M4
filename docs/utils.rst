@@ -52,6 +52,14 @@ m4.utils.interface\_4D module
     :undoc-members:
     :show-inheritance:
 
+m4.utils.opc\_ua\_controller module
+-----------------------------------
+
+.. automodule:: m4.utils.opc_ua_controller
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 m4.utils.optical\_alignment module
 ----------------------------------
 
@@ -96,6 +104,14 @@ m4.utils.rotation\_and\_optical\_axis\_alignment module
 -------------------------------------------------------
 
 .. automodule:: m4.utils.rotation_and_optical_axis_alignment
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.utils.zabbix module
+----------------------
+
+.. automodule:: m4.utils.zabbix
     :members:
     :undoc-members:
     :show-inheritance:

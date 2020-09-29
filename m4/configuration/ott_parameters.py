@@ -66,6 +66,13 @@ class OttParameters():
     DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES = 512
     BIG_IMAGE_DIAMETER = 1236
 
+    V_MATRIX_FOR_SEGMENT_ROOT_811= \
+        '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170630_105105/modeMatrix.fits'
+    DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES = 512
+
+    M4COORDINATE_ROOT_FOLDER = \
+        '/Users/rm/Desktop/Arcetri/M4/ActuatorCoordinates.fits'
+
     #SPL
     TN_FRINGES = '20181108_1'
 

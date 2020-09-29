@@ -6,9 +6,9 @@ import os
 import logging
 import numpy as np
 from astropy.io import fits as pyfits
+from m4.configuration.ott_parameters import *
 from m4.utils.roi import ROI
 from m4.type.deformable_mirror import Mirror
-from m4.ground.configuration import Configuration
 from m4.ground.timestamp import Timestamp
 from m4.configuration.config import fold_name
 from m4.ground.tracking_number_folder import TtFolder
@@ -40,7 +40,7 @@ class Flattenig():
     def readVMatrix(self):
         """ Function that returns V matrix (892, 811) for the segment
         """
-        root = Configuration.V_MATRIX_FOR_SEGMENT_ROOT_811
+        root = OttParameters.V_MATRIX_FOR_SEGMENT_ROOT_811
         #root = Configuration.V_MATRIX_FOR_SEGMENT_ROOT_892
         hduList = pyfits.open(root)
         v_matrix = hduList[0].data
@@ -89,8 +89,8 @@ class Flattenig():
         mask_no_edge_actuators = np.ma.mask_or(wf_mask, circular_mask)
         normal_mm = np.ma.mask_or(wf_mask, self._an.getMasterMask())
         super_mm = np.ma.mask_or(mask_no_edge_actuators, self._an.getMasterMask())
-        final_wf_data = np.zeros((Configuration.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES,
-                                  Configuration.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES))
+        final_wf_data = np.zeros((OttParameters.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES,
+                                  OttParameters.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES))
         final_wf_data[np.where(super_mm == False)] = sintetic_wf
         final_wf = np.ma.masked_array(final_wf_data, mask=super_mm)
         return final_wf
