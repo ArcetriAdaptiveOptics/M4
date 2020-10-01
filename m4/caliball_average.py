@@ -153,7 +153,7 @@ class Caliball():
 
     def _createMeasurementCube(self):
         cube = None
-        fold = os.path.join(Caliball._storageFolder(), self._folderName)
+        fold = os.path.join(Caliball._storageFolder(), self._folderName, 'hdf5')
         list = os.listdir(fold)
         for i in range(len(list)-1):
             name = 'img_%04d.h5' %i
