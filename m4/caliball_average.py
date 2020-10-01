@@ -17,8 +17,9 @@ from m4.ground.interferometer_converter import InterferometerConverter
 
 class Caliball():
 
-    def __init__(self):
+    def __init__(self, folder_name):
         """The constructor """
+        self._folderName = folder_name
         self._maskthreshold = 5
         self._rmsthreshold = 3
         self._logger = logging.getLogger('CALIBALL:')
@@ -31,6 +32,15 @@ class Caliball():
     def _storageFolder():
         """ Creates the path for measurement data"""
         return fold_name.CALIBALL_ROOT_FOLDER
+
+    def createDataForAnalysis(self):
+        cube = self._createMeasurementCube()
+        cube_ttr = self._createCubeTTrFromCube()
+        rs_ima = self._createRsImgFile()
+
+        self._saveCube(cube, 'Total_Cube.fits')
+        self._saveCube(cube_ttr, 'Total_Cube_ttr.fits')
+        return self._folderName
 
     def doStat(self):
         cube = self._readCube()
@@ -53,7 +63,7 @@ class Caliball():
         rs_ttr = self._ttd.ttRemoverFromCoeff(coef, rs)
         r0 = rs_ttr.std()
 
-        cube_ttr = self.readCubeTTR()
+        cube_ttr = self._readCube(1)
         rs_vect = np.zeros(cube_ttr.shape[0])
         for j in range(cube_ttr.shape[0]):
             rs_vect[j] = cube_ttr[j,:,:].std()
@@ -105,20 +115,8 @@ class Caliball():
     # non deve starci idr ma gli idx[idr]
 
 ###
-    def createImgCubeFile(self):
-        path = Caliball._storageFolder()
-        total_cube = None
-        for j in range(1,4):
-            fold = os.path.join(path, 'test%d' %j)
-            cube = self._createMeasurementCube(fold)
-            if total_cube is None:
-                total_cube = cube
-            else:
-                total_cube = np.ma.dstack((total_cube, cube))
-        self._saveCube(total_cube, 'Total_Cube.fits')
-        return total_cube
 
-    def createCubeTTrFromCube(self):
+    def _createCubeTTrFromCube(self):
         # ci mette un eternit a fare l estenzione dell immagine
         cube = self._readCube()
         cube_ttr = None
@@ -133,21 +131,7 @@ class Caliball():
         self._saveCube(cube_ttr, 'Total_Cube_ttr.fits')
         return cube_ttr
 
-    def createCubeTTrFromRuna(self):
-        file_name = '/Users/rm/imgcubefit.fits'
-        hduList = pyfits.open(file_name)
-        cube_runa = hduList[0].data #(3000, 500, 496)
-        cube = self._readCube()
-        cube_ttr = None
-        for i in range(cube_runa.shape[0]):
-            image = np.ma.masked_array(cube_runa[i, :, :], mask=cube.mask[:,:,i])
-            if cube_ttr is None:
-                cube_ttr = image
-            else:
-                cube_ttr = np.ma.dstack((cube_ttr, image))
-        return cube_ttr
-
-    def createRsImgFile(self):
+    def _createRsImgFile(self):
         cube = self._readCube()
         mask_point = np.zeros(cube.shape[2])
         for i in range(mask_point.shape[0]):
@@ -163,8 +147,9 @@ class Caliball():
         pyfits.append(fits_file_name, rs_img.mask.astype(int))
         return rs_img
 
-    def _createMeasurementCube(self, fold):
+    def _createMeasurementCube(self):
         cube = None
+        fold = os.path.join(Caliball._storageFolder(), self._folderName)
         list = os.listdir(fold)
         for i in range(len(list)-1):
             name = 'img_%04d.h5' %i
@@ -177,30 +162,23 @@ class Caliball():
         return cube
 
     def _saveCube(self, total_cube, name):
-        fits_file_name = os.path.join(Caliball._storageFolder(), name)
+        fits_file_name = os.path.join(Caliball._storageFolder(), self._folderName, name)
         pyfits.writeto(fits_file_name, total_cube.data)
         pyfits.append(fits_file_name, total_cube.mask.astype(int))
 
     def _readCube(self, ttr=None):
         if ttr is None:
-            file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube.fits')
+            file_name = os.path.join(Caliball._storageFolder(), self._folderName, 'Total_Cube.fits')
         else:
             #file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube_ttr_runa.fits')
-            file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube_ttr.fits')
+            file_name = os.path.join(Caliball._storageFolder(), self._folderName, 'Total_Cube_ttr.fits')
         hduList = pyfits.open(file_name)
         cube = np.ma.masked_array(hduList[0].data,
                                   hduList[1].data.astype(bool))
         return cube
 
-    def readCubeTTR(self):
-        file_name = '/Users/rm/imgcubefit.fits'
-        #file_name = '/mnt/cargo/data/M4/OTT-Review/CaliBallTest/imgcubefit.fits'
-        hduList = pyfits.open(file_name)
-        cube_ttr = hduList[0].data #(3000, 500, 496)
-        return cube_ttr
-
     def _readRsImg(self):
-        file_name = os.path.join(Caliball._storageFolder(), 'rs_img.fits')
+        file_name = os.path.join(Caliball._storageFolder(), self._folderName, 'rs_img.fits')
         #file_name = '/mnt/cargo/data/M4/OTT-Review/CaliBallTest/RS-img.fits'
         hduList = pyfits.open(file_name)
         rs_img = np.ma.masked_array(hduList[0].data,
