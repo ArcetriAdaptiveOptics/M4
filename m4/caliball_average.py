@@ -34,12 +34,12 @@ class Caliball():
         return fold_name.CALIBALL_ROOT_FOLDER
 
     def createDataForAnalysis(self):
-        cube = self._createMeasurementCube()
-        cube_ttr = self._createCubeTTrFromCube()
+        self._cube = self._createMeasurementCube()
+        self._cube_ttr = self._createCubeTTrFromCube()
         rs_ima = self._createRsImgFile()
 
-        self._saveCube(cube, 'Total_Cube.fits')
-        self._saveCube(cube_ttr, 'Total_Cube_ttr.fits')
+        self._saveCube(self._cube, 'Total_Cube.fits')
+        self._saveCube(self._cube_ttr, 'Total_Cube_ttr.fits')
         return self._folderName
 
     def doStat(self):
@@ -122,10 +122,10 @@ class Caliball():
 
     def _createCubeTTrFromCube(self):
         # ci mette un eternit a fare l estenzione dell immagine
-        cube = self._readCube()
+        #cube = self._readCube()
         cube_ttr = None
-        for i in range(cube.shape[2]):
-            image = image_extender.imageExtender(cube[:,:,i])
+        for i in range(self._cube.shape[2]):
+            image = image_extender.imageExtender(self._cube[:,:,i])
             coef, mat = self._zOnM4.zernikeFit(image, np.array([2, 3]))
             image_ttr = self._ttd.ttRemoverFromCoeff(coef, image)
             if cube_ttr is None:
