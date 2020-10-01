@@ -64,13 +64,13 @@ class Caliball():
         r0 = rs_ttr.std()
 
         cube_ttr = self._readCube(1)
-        rs_vect = np.zeros(cube_ttr.shape[0])
-        for j in range(cube_ttr.shape[0]):
-            rs_vect[j] = cube_ttr[j,:,:].std()
+        rs_vect = np.zeros(cube_ttr.shape[2])
+        for j in range(cube_ttr.shape[2]):
+            rs_vect[j] = cube_ttr[:,:,j].std()
 
         plt.figure()
-        plt.plot(np.arange(cube_ttr.shape[0]), rs_vect, label='Data'); plt.yscale('log')
-        plt.plot(np.zeros(cube_ttr.shape[0]) + r0, label='Average')
+        plt.plot(np.arange(cube_ttr.shape[2]), rs_vect, label='Data'); plt.yscale('log')
+        plt.plot(np.zeros(cube_ttr.shape[2]) + r0, label='Average')
         plt.ylabel('m RMS'); plt.xlabel('# frames')
         plt.title('Images WFE'); plt.legend()
         return bad_dataset, bad_mask
@@ -92,7 +92,7 @@ class Caliball():
         cube_ttr = self._readCube(1)
         mask_point = np.zeros(cube_ttr.shape[2])
         for i in range(mask_point.shape[0]):
-            mask_point[i] = np.sum(cube_ttr[:,:,i].mask)
+            mask_point[i] = np.sum(np.invert(cube_ttr[:,:,i].mask))
         idx = np.where(mask_point <= (min(mask_point) + self._maskthreshold))
 
         rs_std = np.zeros(idx[0].shape[0])
@@ -101,8 +101,12 @@ class Caliball():
 
         rthresh = np.mean(rs_std)+self._rmsthreshold*np.std(rs_std)
         idr = np.where(rs_std < rthresh)
-        r_img = np.mean(cube_ttr[:,:,idr], axis=3)
-        std_img = np.std(cube_ttr[:,:,idr], axis=3)
+
+        idxr = idr
+        for i in range(idr[0].shape[0]):
+            idxr[0][i]=idx[0][idr[0][i]]
+        r_img = np.mean(cube_ttr[:,:,idxr], axis=3)
+        std_img = np.std(cube_ttr[:,:,idxr], axis=3)
         r_image = r_img[:,:,0]
         std_image = std_img[:,:,0]
 
