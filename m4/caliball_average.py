@@ -14,6 +14,7 @@ from m4.utils.img_redux import TipTiltDetrend
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.configuration.config import fold_name
 from m4.ground.interferometer_converter import InterferometerConverter
+from m4.ground import tip_tilt_interf_fit
 
 class Caliball():
 
@@ -117,18 +118,28 @@ class Caliball():
 
 ###
 
-    def _createCubeTTrFromCube(self):
+    def _createCubeTTrFromCube(self, fitEx=None):
         # ci mette un eternit a fare l estenzione dell immagine
         #cube = self._readCube()
         cube_ttr = None
-        for i in range(self._cube.shape[2]):
-            image = image_extender.imageExtender(self._cube[:,:,i])
-            coef, mat = self._zOnM4.zernikeFit(image, np.array([2, 3]))
-            image_ttr = self._ttd.ttRemoverFromCoeff(coef, image)
-            if cube_ttr is None:
-                cube_ttr = image_ttr
-            else:
-                cube_ttr = np.ma.dstack((cube_ttr, image_ttr))
+        if fitEx is None:
+            for i in range(self._cube.shape[2]):
+                coef, interf_coef = tip_tilt_interf_fit.fit(self._cube[:,:,i])
+                image_ttr = self._ttd.ttRemoverFromCoeff(coef, self._cube[:,:,i])
+                if cube_ttr is None:
+                    cube_ttr = image_ttr
+                else:
+                    cube_ttr = np.ma.dstack((cube_ttr, image_ttr))
+        else:
+            for i in range(self._cube.shape[2]):
+                image = image_extender.imageExtender(self._cube[:,:,i])
+                coef, mat = self._zOnM4.zernikeFit(image, np.array([2, 3]))
+                image_ttr = self._ttd.ttRemoverFromCoeff(coef, image)
+                if cube_ttr is None:
+                    cube_ttr = image_ttr
+                else:
+                    cube_ttr = np.ma.dstack((cube_ttr, image_ttr))
+
         self._saveCube(cube_ttr, 'Total_Cube_ttr.fits')
         return cube_ttr
 
@@ -160,7 +171,7 @@ class Caliball():
                 cube = ima
             else:
                 cube = np.ma.dstack((cube, ima))
-        self._saveCube(self._cube, 'Total_Cube.fits')        
+        self._saveCube(cube, 'Total_Cube.fits')
         return cube
 
     def _saveCube(self, total_cube, name):
