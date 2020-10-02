@@ -21,7 +21,7 @@ class Caliball():
     def __init__(self, folder_name):
         """The constructor """
         self._folderName = folder_name
-        self._maskthreshold = 5
+        self._maskthreshold = 1e5 #5
         self._rmsthreshold = 3
         self._logger = logging.getLogger('CALIBALL:')
         self._ic = InterferometerConverter()
@@ -91,7 +91,7 @@ class Caliball():
         mask_point = np.zeros(cube_ttr.shape[2])
         for i in range(mask_point.shape[0]):
             mask_point[i] = np.sum(np.invert(cube_ttr[:,:,i].mask))
-        idx = np.where(mask_point <= (min(mask_point) + self._maskthreshold))
+        idx = np.where(mask_point >= (min(mask_point) + self._maskthreshold))
 
         rs_std = np.zeros(idx[0].shape[0])
         for i in range(idx[0].shape[0]):
@@ -124,17 +124,17 @@ class Caliball():
         cube_ttr = None
         if fitEx is None:
             for i in range(self._cube.shape[2]):
-                coef, interf_coef = tip_tilt_interf_fit.fit(self._cube[:,:,i])
-                image_ttr = self._ttd.ttRemoverFromCoeff(coef, self._cube[:,:,i])
+                image = image_extender.imageExtender(self._cube[:,:,i])
+                coef, mat = self._zOnM4.zernikeFit(image, np.array([2, 3]))
+                image_ttr = self._ttd.ttRemoverFromCoeff(coef, image)
                 if cube_ttr is None:
                     cube_ttr = image_ttr
                 else:
                     cube_ttr = np.ma.dstack((cube_ttr, image_ttr))
         else:
             for i in range(self._cube.shape[2]):
-                image = image_extender.imageExtender(self._cube[:,:,i])
-                coef, mat = self._zOnM4.zernikeFit(image, np.array([2, 3]))
-                image_ttr = self._ttd.ttRemoverFromCoeff(coef, image)
+                coef, interf_coef = tip_tilt_interf_fit.fit(self._cube[:,:,i])
+                image_ttr = self._ttd.ttRemoverFromCoeff(coef, self._cube[:,:,i])
                 if cube_ttr is None:
                     cube_ttr = image_ttr
                 else:
@@ -154,7 +154,7 @@ class Caliball():
         mask = np.prod(cube[:,:,idx].mask, 3)
         rs_img = np.ma.masked_array(image[:,:,0], mask=mask)
 
-        fits_file_name = os.path.join(Caliball._storageFolder(), 'rs_img.fits')
+        fits_file_name = os.path.join(Caliball._storageFolder(), self._folderName, 'rs_img.fits')
         pyfits.writeto(fits_file_name, rs_img.data)
         pyfits.append(fits_file_name, rs_img.mask.astype(int))
         return rs_img

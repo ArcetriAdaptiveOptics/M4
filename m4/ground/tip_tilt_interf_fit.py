@@ -11,7 +11,7 @@ def fit(image):
 
     x = np.linspace(1, dim_x, dim_x)
     y =  np.linspace(1, dim_y, dim_y)
-    xv, yv = np.meshgrid(x,y)
+    xv, yv = np.meshgrid(y, x)
 
     aa = xv[np.where(mask==1)]
     bb = yv[np.where(mask==1)]
