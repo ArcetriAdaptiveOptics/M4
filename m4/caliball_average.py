@@ -37,9 +37,6 @@ class Caliball():
         self._cube = self._createMeasurementCube()
         self._cube_ttr = self._createCubeTTrFromCube()
         rs_ima = self._createRsImgFile()
-
-        self._saveCube(self._cube, 'Total_Cube.fits')
-        self._saveCube(self._cube_ttr, 'Total_Cube_ttr.fits')
         return self._folderName
 
     def doStat(self):
@@ -163,6 +160,7 @@ class Caliball():
                 cube = ima
             else:
                 cube = np.ma.dstack((cube, ima))
+        self._saveCube(self._cube, 'Total_Cube.fits')        
         return cube
 
     def _saveCube(self, total_cube, name):
