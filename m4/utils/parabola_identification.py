@@ -207,7 +207,8 @@ class ParabolIdent():
         return circle
 
     def imaTest(self):
-        file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/20161226_122557/mode_0569.fits'
+        #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/20161226_122557/mode_0569.fits'
+        file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Seg/img_0000.fits'
         hduList = pyfits.open(file_name)
         ima = hduList[0].data
         immagine = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
