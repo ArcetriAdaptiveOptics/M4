@@ -17,11 +17,22 @@ from m4.ground.interferometer_converter import InterferometerConverter
 from m4.ground import tip_tilt_interf_fit
 
 class Caliball():
+    """
+    Class for data analysis.
+
+    HOW TO USE IT::
+    from m4.caliball_average import Caliball
+    folder_name = 'tt_rotBall_num'
+    cal = Caliball(folder_name)
+    cal.createDataForAnalysis()
+    r_image, std_image = cal.dataSelectionAndAnalysis()
+    
+    """
 
     def __init__(self, folder_name):
         """The constructor """
         self._folderName = folder_name
-        self._maskthreshold = 1e5 #5
+        self._maskthreshold = 1000 #5
         self._rmsthreshold = 3
         self._logger = logging.getLogger('CALIBALL:')
         self._ic = InterferometerConverter()
@@ -35,15 +46,31 @@ class Caliball():
         return fold_name.CALIBALL_ROOT_FOLDER
 
     def createDataForAnalysis(self):
+        '''Create file fits for data analysis
+
+        Returns
+        ----------
+        self._folderName: string
+                        folder name for data
+        '''
         self._cube = self._createMeasurementCube()
         self._cube_ttr = self._createCubeTTrFromCube()
         rs_ima = self._createRsImgFile()
         return self._folderName
 
-    def doStat(self):
+    def validMaskPoint(self):
+        '''Create the cumulative plot of mask valid points
+        (valid points within each frames)
+
+        Returns
+        ----------
+        bad_dataset: numpy array
+                    worst measurement data
+        bad_mask: numpy array
+                    worst mask
+        '''
         cube = self._readCube()
         #cube_ttr = self._readCube(1)
-        rs_img = self._readRsImg()
         mask_point = np.zeros(cube.shape[2])
         for i in range(mask_point.shape[0]):
             mask_point[i] = np.sum(np.invert(cube[:,:,i].mask))
@@ -55,7 +82,13 @@ class Caliball():
         plt.plot(np.arange(mask_point.shape[0]), mask_ord, 'o'); plt.xscale('log')
         plt.ylabel('# valid points'); plt.xlabel('# frames')
         plt.title('Cumulative plot of mask valid points')
+        return bad_dataset, bad_mask
 
+    def validFrames(self):
+        '''Create the plot of individual RMS of each frames
+        (without tip/tilt) together with RMS of the average frame
+        '''
+        rs_img = self._readRsImg()
         rs = image_extender.imageExtender(rs_img)
         coef, mat = self._zOnM4.zernikeFit(rs, np.array([2, 3]))
         rs_ttr = self._ttd.ttRemoverFromCoeff(coef, rs)
@@ -71,10 +104,19 @@ class Caliball():
         plt.plot(np.zeros(cube_ttr.shape[2]) + r0, label='Average')
         plt.ylabel('m RMS'); plt.xlabel('# frames')
         plt.title('Images WFE'); plt.legend()
-        return bad_dataset, bad_mask
     #plot(x, mask_ord, 'o'); pyplot.xscale('log'); plt.ylabel('# valid points'); plt.xlabel('# frames'); plt.title('Cumulative plot of mask valid points')
 
     def pixel_std(self):
+        '''
+        Create the plot of single pixel stdev and mean along the sequence
+
+        Returns
+        -------
+        std_image: masked array
+                single pixel stdev along the sequence
+        mean_image: masked array
+                mean along the sequence
+        '''
         cube_ttr = self._readCube(1)
         std_image = cube_ttr.std(axis=2)
         mean_image = cube_ttr.mean(axis=2)
@@ -86,12 +128,23 @@ class Caliball():
         plt.title('RS average value')
         return std_image, mean_image
 
-    def doselaverage(self):
+    def dataSelectionAndAnalysis(self):
+        '''
+        Create the plot of pixel stdev and mean after 
+        rejecting the frames whit bad mask
+
+        Returns
+        -------
+        std_image: masked array
+                stdev along the sequence
+        mean_image: masked array
+                mean along the sequence
+        '''
         cube_ttr = self._readCube(1)
         mask_point = np.zeros(cube_ttr.shape[2])
         for i in range(mask_point.shape[0]):
             mask_point[i] = np.sum(np.invert(cube_ttr[:,:,i].mask))
-        idx = np.where(mask_point >= (min(mask_point) + self._maskthreshold))
+        idx = np.where(mask_point >= (max(mask_point) - self._maskthreshold))
 
         rs_std = np.zeros(idx[0].shape[0])
         for i in range(idx[0].shape[0]):
@@ -103,10 +156,11 @@ class Caliball():
         idxr = idr
         for i in range(idr[0].shape[0]):
             idxr[0][i]=idx[0][idr[0][i]]
-        r_img = np.mean(cube_ttr[:,:,idxr], axis=3)
-        std_img = np.std(cube_ttr[:,:,idxr], axis=3)
-        r_image = r_img[:,:,0]
-        std_image = std_img[:,:,0]
+        r_img = np.mean(cube_ttr[:,:,idxr], axis=2)
+        std_img = np.std(cube_ttr[:,:,idxr], axis=2)
+        mask = np.prod(cube_ttr[:,:,idxr].mask, 2)
+        r_image = np.ma.masked_array(r_img[:,:,0], mask=mask[:,:,0])
+        std_image = np.ma.masked_array(std_img[:,:,0], mask=mask[:,:,0])
 
         plt.imshow(r_image, origin='lower'); plt.colorbar()
         plt.title('RS measurement error')

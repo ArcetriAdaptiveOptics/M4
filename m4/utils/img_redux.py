@@ -5,7 +5,7 @@ Autors
 
 import logging
 import numpy as np
-from matplotlib.mlab import find
+#from matplotlib.mlab import find
 from m4.configuration.ott_parameters import *
 from m4.utils.roi import ROI
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
@@ -213,6 +213,10 @@ class SignalUnwrap():
 
     def __init__(self):
         """The constructor """
+    
+    def find(condition):
+        res, = np.nonzero(np.ravel(condition))
+        return res
 
     def signal_unwrap(self, x, phase, threshold=None, show=None, mask=None,
                       sample=None, silent=None):
@@ -239,7 +243,7 @@ class SignalUnwrap():
             thresh = threshold
 
         if mask != None:
-            idx = find(mask)
+            idx = self.find(mask)
             mm = np.mean(x[idx])
             x1 = x.copy()
             if mm > thresh:
