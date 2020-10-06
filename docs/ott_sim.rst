@@ -12,14 +12,6 @@ m4.ott\_sim.ott\_images module
     :undoc-members:
     :show-inheritance:
 
-m4.ott\_sim.start\_ott\_sim module
-----------------------------------
-
-.. automodule:: m4.ott_sim.start_ott_sim
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

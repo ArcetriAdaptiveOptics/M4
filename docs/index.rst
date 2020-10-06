@@ -32,11 +32,6 @@ parameters available for the algorithms.
    :maxdepth: 1
 
    m4
-   configuration
-   ground
-   type
-   utils
-   ott_sim
    
 
 
