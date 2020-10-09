@@ -1,3 +1,4 @@
 '''
-@author: cs
+Autors
+  - C. Selmi:
 '''

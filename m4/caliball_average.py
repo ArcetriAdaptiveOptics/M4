@@ -21,12 +21,13 @@ class Caliball():
     Class for data analysis.
 
     HOW TO USE IT::
-    from m4.caliball_average import Caliball
-    folder_name = 'tt_rotBall_num'
-    cal = Caliball(folder_name)
-    cal.createDataForAnalysis()
-    r_image, std_image = cal.dataSelectionAndAnalysis()
-    
+
+        from m4.caliball_average import Caliball
+        folder_name = 'tt_rotBall_num'
+        cal = Caliball(folder_name)
+        cal.createDataForAnalysis()
+        r_image, std_image = cal.dataSelectionAndAnalysis()
+
     """
 
     def __init__(self, folder_name):

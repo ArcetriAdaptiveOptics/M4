@@ -1,15 +1,19 @@
 '''
 Autors
   - C. Selmi: written in 2019
+
+Function used to extend the dimensions of the captured images to
+those of the pupil on which I build the Zernike::
+
+    from m4.utils import imageExterder
+    image_ex = imageExterder.imageExterder(image)
 '''
 import numpy as np
 from m4.ground.zernikeGenerator import ZernikeGenerator
 from m4.configuration.ott_parameters import OttParameters
 
 def imageExtender(cube_element):
-    ''' Funzione usata per estendere le dimenzioni delle immagini acquisite a
-    quelle della pupilla su cui costruisco gli zernike
-
+    ''' 
     Parameters
     ----------
         cube_element: numpy masked array

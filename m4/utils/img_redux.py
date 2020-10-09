@@ -20,9 +20,6 @@ class TipTiltDetrend():
 
         from m4.utils.img_redux import TipTiltDetrend
         TT = TipTiltDetrend()
-        or
-        from m4.utils.img_redux import PhaseSolve
-        PS = PhaseSolve()
     """
 
     def __init__(self):
@@ -136,7 +133,12 @@ class TipTiltDetrend():
 
 class PhaseSolve():
     """
+    Class for ...
 
+    HOW TO USE IT::
+    
+        from m4.utils.img_redux import PhaseSolve
+        PS = PhaseSolve()
     """
 
     def __init__(self):
@@ -210,11 +212,20 @@ class PhaseSolve():
 
 
 class SignalUnwrap():
+    """
+        Class for ...
+
+        HOW TO USE IT::
+
+            from m4.utils.img_redux import SignalUnwrap
+            SW = SignalUnwrap
+    """
 
     def __init__(self):
         """The constructor """
-    
-    def find(condition):
+
+
+    def find(self, condition):
         res, = np.nonzero(np.ravel(condition))
         return res
 
@@ -223,19 +234,19 @@ class SignalUnwrap():
         '''
         Parameters
         ----------
-        x:
-        phase:
+            x:
+            phase:
         Other Parameters
         ----------
-        threshold:
-        show:
-        mask:
-        sample:
-        silent:
+            threshold:
+            show:
+            mask:
+            sample:
+            silent:
 
         Returns
         -------
-        x1:
+            x1:
         '''
 
         thresh = phase/2

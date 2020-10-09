@@ -1,6 +1,16 @@
-'''
-@author: cs
-'''
+"""
+Autors
+  - C. Selmi:  written in 2019
+
+Function for reading file fits::
+
+    from m4.ground import object_from_fits_file_name as obj
+    numpy_array_data = obj.readFits_object(fits_file_path)
+    or
+    numpy_masked_array_data = obj.readFits_maskedImage(fits_file_path)
+    or
+    amplitude, mode_vector, cmd_matrix = obj.readObjectFitsFileName('ampName.fits', 'mvec.fits', 'cmdMatrix.fits')
+"""
 import os
 from astropy.io import fits as pyfits
 import numpy as np
@@ -42,7 +52,7 @@ def readFits_maskedImage(fits_file_path):
     return immagine
 ###
 
-def readImageFromFitsFileName(fits_file_path):
+def _readImageFromFitsFileName(fits_file_path):
     """
     Parameters
     ----------
@@ -95,7 +105,7 @@ def readObjectFitsFileName(amplitude_fits_file_name,
     cmd_matrix = mb.getModalBase()
     return amplitude, mode_vector, cmd_matrix
 
-def readDataFromFileFits(fits_file_path):
+def _readDataFromFileFits(fits_file_path):
     """
     Parameters
     ----------
@@ -113,7 +123,7 @@ def readDataFromFileFits(fits_file_path):
     data = hduList[0].data
     return data
 
-def readImageFromRunaIFFs(fits_file_path):
+def _readImageFromRunaIFFs(fits_file_path):
     file_name = os.path.join(fold_name.IFFUNCTIONS_ROOT_FOLDER,
                              fits_file_path)
     hduList = pyfits.open(file_name)

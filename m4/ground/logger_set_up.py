@@ -1,4 +1,11 @@
 '''
+Autors
+  - C. Selmi:  written in September 2020
+
+Function to start the log::
+
+    from m4.ground import logger_set_up
+    logger_set_up.set_up_logger(file_path, logging_level)
 '''
 
     #per l'applicazione

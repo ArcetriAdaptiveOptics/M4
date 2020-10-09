@@ -114,9 +114,9 @@ def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
     from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
     ro = RotOptAlign(ott)
 
-    tt = ro.acquire_image(start_point, end_point, n_points)
+    tt = ro.image_acquisition(start_point, end_point, n_points)
 
-    centro, axs, raggio = ro.analyzer(tt)
+    centro, axs, raggio = ro.data_analyzer(tt)
     print(centro, axs, raggio)
     #le immagini le fa l'analyzer
     return ro, tt
@@ -154,7 +154,7 @@ def plotCircles(ro):
         cube = ro._readCube(t)
         tip, tilt = ro._tipTiltCalculator(cube)
         plt.plot(tip, tilt, '-o')
-    
+
 
 def main_18092020():
     n_meas = 30

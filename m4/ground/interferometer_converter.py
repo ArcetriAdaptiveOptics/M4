@@ -1,6 +1,11 @@
 '''
 Autors
   - L. Busoni: written in 2018
+
+Function to convert interferometer H5 file to masked array image::
+
+    from m4.ground import InterferometerConverter as ic
+    masked_image = ic.from4D('image.h5')
 '''
 import numpy as np
 import h5py

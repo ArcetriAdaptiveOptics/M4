@@ -1,28 +1,6 @@
 m4 package
 ==========
 
-Subpackages
------------
-
-.. toctree::
-
-    configuration
-    ground
-    ott_sim
-    test
-    type
-    utils
-
-Submodules
-----------
-
-m4.SPL\_controller module
--------------------------
-
-.. automodule:: m4.SPL_controller
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 m4.alignment module
 -------------------
@@ -80,6 +58,14 @@ m4.noise\_functions module
     :undoc-members:
     :show-inheritance:
 
+m4.SPL\_controller module
+-------------------------
+
+.. automodule:: m4.SPL_controller
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 m4.zernike\_command\_test module
 --------------------------------
 
@@ -88,6 +74,15 @@ m4.zernike\_command\_test module
     :undoc-members:
     :show-inheritance:
 
+
+Subpackages
+-----------
+
+.. toctree::
+
+    configuration
+    ground
+    utils
 
 Module contents
 ---------------

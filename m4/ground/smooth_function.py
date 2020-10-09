@@ -1,3 +1,13 @@
+"""
+Autors
+  - C. Selmi:  written in 2020
+
+Function for data smoothing::
+
+    form m4.ground import smooth_function
+    ss = smooth_function.smooth(data, WSZ)
+"""
+
 import numpy as np
 
 

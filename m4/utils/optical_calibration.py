@@ -1,5 +1,6 @@
 '''
-@author: cselmi
+Autors
+  - C. Selmi:  written in 2019
 '''
 import os
 import logging
@@ -238,8 +239,7 @@ class opt_calibration():
 
     @staticmethod
     def loadCommandMatrixFromFits(tt):
-        """ Creates the object using information contained in command matrix
-            fits file
+        """ Creates the object using information contained in command matrix fits file
 
         Parameters
         ----------

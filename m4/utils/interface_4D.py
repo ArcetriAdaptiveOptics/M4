@@ -1,8 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jun 18 06:20:03 2020
+Autors
+  - C. Selmi:  written in March 2020
 
-@author: Runa
+Function for simulation or data acquisition from the interferometer::
+
+    from m4.configuration import start
+    ott = start.create_ott()
+    from m4.utils.interface_4D import comm4d
+    c4d = comm4d()
+    image = c4d.acq4d(ott, nframes, 0)
+    
 """
 # from importlib import reload
 # import os
@@ -26,6 +34,21 @@ class comm4d():
     phcam_conf = ''
 
     def acq4d(self, ott, nframes=1, show=0):
+        """
+        Parameters
+        ----------
+            ott: object
+                the ott object
+            nframes: int
+                number of frames
+            show: int
+                0 to not show the image
+
+        Returns
+        -------
+            masked_ima: numpy masked array
+                    interferometer image
+        """
         ottIma = OttImages(ott)
 
         if conf.simulated ==1:
@@ -33,7 +56,7 @@ class comm4d():
             masked_ima = np.ma.masked_array(opd.T, mask=np.invert(mask.astype(bool)).T)
 
         else:
-            print('some function to acquire the interferometer....')
+            print('Frame acquisition')
             from oaautils import i4d
             interf = i4d.I4D()
             masked_ima = self._getMeasurementOnTheFly(interf)

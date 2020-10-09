@@ -1,5 +1,6 @@
 '''
-@author: cs
+Autors
+  - C. Selmi:  written in 2019
 '''
 
 import os

@@ -1,7 +1,29 @@
+"""
+Autors
+  - C. Selmi:  written in September 2020
+
+Function for calculating tip and tilt coefficients in interferometer units::
+
+    from m4.ground import tip_tilt_interf
+    coef, interf_coef = tip_tilt_interf.fit(image)
+"""
 
 import numpy as np
 
 def fit(image):
+    """
+    Parameters
+    ----------
+            image: masked array
+                image from interferometer
+
+    Returns
+    -------
+        coef: numpy array
+            zernike Noll coefficents
+        interf_coef: numpy array
+            interferometer units coefficients
+    """
     dim_x, dim_y = [image.shape[0], image.shape[1]]
     mask = np.invert(image.mask).astype(int)
     mm = image.mask.astype(int)

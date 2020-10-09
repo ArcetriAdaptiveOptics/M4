@@ -61,7 +61,8 @@ class ParabolIdent():
 
     def fiduciali(self, ima):
         ''' Calculates the coordinates of the fiducial points of the parabola and
-            return it in a single vector of x and y
+        return it in a single vector of x and y
+
         Parameters
         ----------
             image: numpy masked array
@@ -206,7 +207,7 @@ class ParabolIdent():
         circle[rr, cc]=1
         return circle
 
-    def imaTest(self):
+    def _imaTest(self):
         #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/20161226_122557/mode_0569.fits'
         file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Seg/img_0000.fits'
         hduList = pyfits.open(file_name)

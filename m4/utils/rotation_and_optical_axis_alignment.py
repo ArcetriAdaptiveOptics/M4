@@ -1,5 +1,6 @@
 '''
-@author: cselmi
+Autors
+  - C. Selmi:  written in September 2020
 '''
 
 import os
@@ -18,7 +19,16 @@ from m4.noise_functions import Noise
 from m4.configuration.ott_parameters import OpcUaParameters
 
 class RotOptAlign():
+    """
+    Class for alignment data acquisition and analysis::
 
+        fom m4.configuration import start
+        ott = start.create_ott()
+        from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
+        ro = RotOptAlign(ott)
+        tt = ro.image_acquisition(start_point, end_point, n_points)
+        centro, axs, raggio = ro.data_analyzer(tt)
+    """
     def __init__(self, ott):
         """The constructor """
         self._logger = logging.getLogger('ROTOPTALIGN')
@@ -39,7 +49,22 @@ class RotOptAlign():
         else:
             pass
 
-    def acquire_image(self, start_point, end_point, n_points):
+    def image_acquisition(self, start_point, end_point, n_points):
+        """
+        Parameters
+        ----------
+                start_point: int
+                            value of start angle
+                end_point: int
+                            value of end angle
+                n_points:int
+                        number of images desired
+
+        Returns
+        -------
+                tt: string
+                    tracking number of measurements
+        """
         self._logger.info('Images acquisition')
         save = tracking_number_folder.TtFolder(RotOptAlign._storageFolder())
         dove, tt = save._createFolderToStoreMeasurements()
@@ -76,7 +101,22 @@ class RotOptAlign():
         self._saveAngles(angle_list, tt)
         return tt
 
-    def analyzer(self, tt):
+    def data_analyzer(self, tt):
+        """
+        Parameters
+        ----------
+                tt: string
+                    tracking number of measurements
+
+        Returns
+        -------
+            centro: numpy array
+                    coordinates of the center
+            axs: numpy array
+                major and minor axis coming from the fit of the ellipse
+            raggio: int
+                    radius of the parabola circumference
+        """
         self._logger.info('Images analysis')
         cube = self._readCube(tt)
         tip, tilt = self._tipTiltCalculator(cube)
@@ -138,6 +178,22 @@ class RotOptAlign():
         return tip, tilt
 
     def singleImage(self, masked_ima=None):
+        """
+        On single image returns the coefficients of tip and tilt both in Zernike of Noll
+        and in units of the interferometer
+
+        Other Parameters
+        ---------------
+                masked_ima: numpy masked array
+                    if it is not passed acquires the interferometer
+
+        Returns
+        -------
+            tip_tilt: numpy array
+                    Zernike Noll coefficients
+            cc: numpy array
+                    Interferometers values
+        """
         if masked_ima is None:
             masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
         else:
@@ -147,7 +203,7 @@ class RotOptAlign():
                                            np.array([2, 3]))
         tip = -coef[0]/(633e-9) *np.sqrt(2)
         tilt = coef[1]/(633e-9) *np.sqrt(2)
-        
+
         cc = tip_tilt_interf_fit.fit(masked_ima)
         return np.array([tip, tilt]), cc
 
@@ -159,7 +215,7 @@ class RotOptAlign():
         rot_mat[1,1] = np.cos(theta)
         return rot_mat
 
-    def tipTiltRotation(self, theta, tip, tilt):
+    def _tipTiltRotation(self, theta, tip, tilt):
         new_tt_mat = np.zeros((26,2))
         aa = np.dstack((tip,tilt))
         bb = aa[0]
@@ -170,7 +226,7 @@ class RotOptAlign():
         return new_tt_mat
 
 
-    def tipTiltCorrector(self, tip_or_tilt):
+    def _tipTiltCorrector(self, tip_or_tilt):
         rot_coef = self._tipOrTiltRotation(tip_or_tilt)
         if tip_or_tilt==0:
             posToBeCorrected = 4

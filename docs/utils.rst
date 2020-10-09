@@ -1,21 +1,11 @@
 m4.utils package
 ================
 
-Submodules
-----------
 
 m4.utils.accelerometer\_data module
 -----------------------------------
 
 .. automodule:: m4.utils.accelerometer_data
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-m4.utils.create\_device module
-------------------------------
-
-.. automodule:: m4.utils.create_device
     :members:
     :undoc-members:
     :show-inheritance:
@@ -84,14 +74,6 @@ m4.utils.parabola\_identification module
     :undoc-members:
     :show-inheritance:
 
-m4.utils.plot\_maker module
----------------------------
-
-.. automodule:: m4.utils.plot_maker
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 m4.utils.roi module
 -------------------
 
@@ -120,15 +102,6 @@ m4.utils.zernike\_on\_m\_4 module
 ---------------------------------
 
 .. automodule:: m4.utils.zernike_on_m_4
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: m4.utils
     :members:
     :undoc-members:
     :show-inheritance:
