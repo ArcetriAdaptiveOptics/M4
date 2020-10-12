@@ -1,6 +1,35 @@
 '''
-@author: cs
+Autors
+  - C. Selmi: written in 2020
+
+List of contents:
+
+Functions for tower alignment
++++++++++++++++++++++++++++++
+- :func:`ott_alignment_calibration`
+- :func:`ott_alignment`
+- :func:`m4_alignment_calibration`
+- :func:`m4_alignment`
+- :func:`rotation_and_optical_axis_alignment`
+
+Functions for noise measurements
+++++++++++++++++++++++++++++++++
+- :func:`opto_mech_disturbances_acquisition`
+- :func:`stability_vibrations`
+- :func:`spectrumFromData`
+- :func:`convection_moise`
+- :func:`piston_noise`
+
+PT sensors
+++++++++++
+- :func:`PT_calibration`
+- :func:`analyzer_PT_meas`
+
+OTT procedures
+++++++++++++++
+- tutte le altre (da fare)
 '''
+
 import os
 import numpy as np
 from astropy.io import fits as pyfits
@@ -16,39 +45,37 @@ from m4.configuration.ott_parameters import *
 
 
 def start_log(logging_level):
+    """
+    Parameters
+    ----------
+    logging_level: int
+                    Warning = 30, Info = 20, Debug = 10, Notset = 0
+
+    """
     file_path = config.fold_name.LOG_ROOT_FOLDER
     lsu.set_up_logger(file_path, logging_level)
-#     file_path = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, 'LogIFF')
-#     lsu.set_up_logger(file_path, logging_level)
-
+    return file_path
 
 
 ####### Allineamento Torre ########
 
 ott = start.create_ott()
 a = Alignment(ott)
+
 def ott_alignment_calibration(commandAmpVector=None, nPushPull=None):
     '''
-    Parameters
-    ----------
+    Other Parameters
+    ----------------
             command_amp_vector: numpy array
                                   vector containing the movement values
                                   of the 5 degrees of freedom
             n_push_pull: int
                         number of push pull for each degree of freedom
-            commandAmpVector_ForM4Calibration: numpy array
-                                            amplitude to be applied to m4
-            nPushPull_ForM4Calibration: int
-                                        number of push pull for m4 dof
 
     Returns
     -------
-            par_cmd: numpy array
-                    vector of command to apply to PAR dof
-            rm_cmd: numpy array
-                    vector of command to apply to RM dof
-            m4_cmd: numpy array
-                    vector of command to apply to M4 dof
+            tt_tower: string
+                    calibration measurement
     '''
     print('PAR + RM calibration')
     a._moveSegmentView(0.75, 90.)
@@ -61,6 +88,12 @@ def ott_alignment_calibration(commandAmpVector=None, nPushPull=None):
     return tt_tower
 
 def ott_alignment(tt_tower):
+    '''
+    Parameters
+    ----------
+    tt_tower: string
+            calibration measurement to use for alignment
+    '''
     print('Ott alignemnt')
     par_cmd, rm_cmd = a.ott_alignment(tt_tower)
     print(par_cmd)
@@ -84,6 +117,19 @@ def ott_alignment(tt_tower):
 
 def m4_alignment_calibration(commandAmpVector_ForM4Calibration=None,
                      nPushPull_ForM4Calibration=None):
+    """
+    Other Parameters
+    ----------------
+            commandAmpVector_ForM4Calibration: numpy array
+                                            amplitude to be applied to m4
+            nPushPull_ForM4Calibration: int
+                                        number of push pull for m4 dof
+
+    Returns
+    -------
+            tt_m4: string
+                    calibration measurement
+    """
     print('M4 calibration')
     a._moveSegmentView(0.75, 90.)
     a._moveRM(0.6)
@@ -96,6 +142,12 @@ def m4_alignment_calibration(commandAmpVector_ForM4Calibration=None,
     return tt_m4
 
 def m4_alignment(tt_m4):
+    '''
+    Parameters
+    ----------
+    tt_m4: string
+            calibration measurement to use for alignment
+    '''
     print('M4 alignment')
     zCoefComa = a._readZcoef(tt_m4)
     cmd_m4 = a.m4_alignment(zCoefComa, tt_m4)
@@ -111,6 +163,23 @@ def m4_alignment(tt_m4):
     return cmd_m4
 
 def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
+    '''
+    Parameters
+    ----------
+            start_point: int
+                        value of start angle
+            end_point: int
+                        value of end angle
+            n_points:int
+                    number of images desired
+
+    Returns
+    -------
+        ro: object
+            rotation_and_optical_axis_alignment class object
+        tt: strig
+            tracking number of measurement
+    '''
     from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
     ro = RotOptAlign(ott)
 
@@ -121,7 +190,7 @@ def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
     #le immagini le fa l'analyzer
     return ro, tt
 
-def plotExCuori(ro):
+def _plotExCuori(ro):
     tt1 = '20200917_085915'
     tt2 =  '20200917_091754'
     tt3 = '20200917_094242'
@@ -145,28 +214,30 @@ def plotExCuori(ro):
         tip, tilt = ro._tipTiltCalculator(cube)
         plt.plot(tip, tilt, '-o')
 
-def plotCircles(ro):
-    tt1 = '20200923_153946'
-    tt2 = '20200923_162320'
-    tt = [tt1, tt2]
-
-    for t in tt:
-        cube = ro._readCube(t)
-        tip, tilt = ro._tipTiltCalculator(cube)
-        plt.plot(tip, tilt, '-o')
-
-
-def main_18092020():
-    n_meas = 30
-    for i in range(n_meas):
-        ro, tt = rotation_and_optical_axis_alignment(36, 180, -1)
-        ro, tt = rotation_and_optical_axis_alignment(36, -170, 1)
 
 ######### Misure di noise ##########
 
 def opto_mech_disturbances_acquisition(nFrame, name=None, produce=0):
-    #acquisizione di immagini con un certo criterio
-    #definire una serie di intervalli per prendere misure
+    ''' Function for image acquisition with interferometer
+
+    Parameters
+    ----------
+        nFrame: int
+            number of frames
+        produce: int
+            0 for not h5 production
+
+    Other Parameters
+    ----------
+        name: string
+            folder name
+            If not passed, the function generates a folder with the tracking number
+
+    Returns
+    -------
+        data_file_path: string
+            data file path for the measurements
+    '''
     #data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
     print('Frame acquisition')
     from oaautils import i4d
@@ -236,9 +307,6 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
                      list of template to use in the analysis
         tidy_or_shuffle: int
                         0 for tidy, 1 for shuffle
-
-    Returns
-    -------
     '''
     print('Noise analysis using template')
     n = Noise()
@@ -277,6 +345,12 @@ def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
     return
 
 def spectrumFromData(data_file_path):
+    '''
+    Parameters
+    ----------
+        data_file_path: string
+                        measurement data folder
+    '''
     print('Spectrum analysis')
     n = Noise()
     dove = _path_noise_results(data_file_path)
@@ -358,10 +432,21 @@ def piston_noise(data_file_path):
 ######## Sensori PT #######
 
 def PT_calibration(n_meas):
+    '''
+    Parameters
+    ----------
+        n_meas: int
+            number of measurement to store
+
+    Returns
+    -------
+        dove: string
+            data file path of measurement
+    '''
     from m4.ground import tracking_number_folder
     from opcua import Client
     import time
-    server = "opc.tcp://192.168.22.100:48050"
+    server = OpcUaParameters.server
     client = Client(url=server)
     client.connect()
 
@@ -379,17 +464,25 @@ def PT_calibration(n_meas):
         pyfits.writeto(fits_file_name, temp_vector)
 
         print('Misura %04d' %i)
+    return dove
 
 def analyzer_PT_meas(tt):
+    '''
+    Parameters
+    ----------
+    tt: string
+        tracking number folder
+    '''
+    #tt = '20200911_142702'
     from m4.ground import smooth_function
 
     folder = config.fold_name.PT_ROOT_FOLDER
-    name = os.path.join(folder, '20200911_142702')
+    name = os.path.join(folder, tt)
     list = os.listdir(name)
     list.sort()
 
-    matrix = np.zeros((len(list), 24))
-    matrix_s = np.zeros((len(list), 24))
+    matrix = np.zeros((len(list), OpcUaParameters.num_PT_sensor))
+    matrix_s = np.zeros((len(list), OpcUaParameters.num_PT_sensor))
 
     i = 0
     for t in list:
@@ -400,7 +493,7 @@ def analyzer_PT_meas(tt):
 
     matrixDiff = matrix - matrix[0,:]
     i=0
-    for i in range(24):
+    for i in range(OpcUaParameters.num_PT_sensor):
         ss = smooth_function.smooth(matrixDiff[:,i],9)
         matrix_s[:,i] = ss
         i=i+1

@@ -78,6 +78,8 @@ class OttParameters():
 
 class OpcUaParameters():
     ''' Numbers for opc ua parameters '''
+    server = "opc.tcp://192.168.22.100:48050"
+    num_PT_sensor = 24
     max_angle = 181
     min_angle = -171
     RA = 0 #angolo di rotazione

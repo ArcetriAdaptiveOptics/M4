@@ -17,7 +17,7 @@ class ROI():
     HOW TO USE IT::
 
         from m4.utils.roi import ROI
-        roi= ROI()
+        roi = ROI()
     """
 
     def __init__(self):
@@ -39,8 +39,9 @@ class ROI():
             roiList: list
                 list of the first 12 roi found in the image
 
-        NOTA: roiList[3] = RM roi for alignement
-              roiList[3] = central roi for segment
+        .. note::
+
+            roiList[3] = RM roi for alignement, roiList[3] = central roi for segment
 
         '''
         self._logger.info('Creation of roi list')
