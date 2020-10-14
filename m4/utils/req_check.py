@@ -6,6 +6,7 @@ from m4.configuration.ott_parameters import *
 from astropy.io import fits as pyfits
 from skimage.draw import circle as draw_circle
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
+from scipy.ndimage.interpolation import shift
 
 def patches_extractor(image, metri):
     #metri = 0.05
@@ -84,9 +85,44 @@ def curv_fit(image, test_diameter):
     alpha = 0.5*( coeff[1]+ coeff[2]+ np.sqrt((coeff[1]-coeff[2])**2 + coeff[3]**2) )
     beta  = 0.5*( coeff[1]+ coeff[2]- np.sqrt((coeff[1]-coeff[2])**2 + coeff[3]**2) )
 
-    wfe = test_diameter**2 /(8*np.sqrt(3)) * np.sqrt(2*(alpha-beta)**2 - (alpha+beta)**2)
-    return alpha, beta, wfe
+    return alpha, beta
 
+def roc(test_diameter, alpha, beta):
+    wfe = test_diameter**2 /(8*np.sqrt(3)) * np.sqrt(2*(alpha-beta)**2 - (alpha+beta)**2)
+    rho = test_diameter/2
+    raggio = (rho**2 + wfe**2)/(2*wfe)
+    return raggio
+
+def slope(image):
+    ax = ((image - shift(image, [1,0]))/OttParameters.PIXEL_SCALE)
+    ay = ((image - shift(image, [0,1]))/OttParameters.PIXEL_SCALE)
+    sp = np.sqrt(((ax))**2+((ay))**2)
+    s = np.sqrt((np.arctan(ax))**2+(np.arctan(ay))**2)
+    return s
+
+### REQ ###
+
+def test242(image):
+    s = slope(image)
+    #C = (dimensione pixel[mm] x 206265) / Focale utilizzata
+    slope_arcsec = s * 1e-3 * 206265
+    rms = slope_arcsec.std()
+    return rms
+
+def test243(image):
+    diameter = 0 #average inter-actuator spacing 
+    cube = patches_extractor(image, diameter)
+    rms_vector = np.zeros(cube.shape[2])
+    for i in range (cube.shape[2]):
+        ima = cube[:,:,i]
+        rms_vector[i] = ima.std()
+    return rms_vector
+
+def test283(image):
+    test_diameter = 0.08
+    alpha, beta = curv_fit(image, test_diameter)
+    raggio = roc(test_diameter, alpha, beta)
+    return raggio
 
 def imaTest():
     ff = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest/20191210_110019/mode0002_measure_segment00_neg.fits'
