@@ -74,6 +74,14 @@ m4.utils.parabola\_identification module
     :undoc-members:
     :show-inheritance:
 
+m4.utils.req\_check module
+----------------------------------------
+
+.. automodule:: m4.utils.req_check
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 m4.utils.roi module
 -------------------
 
