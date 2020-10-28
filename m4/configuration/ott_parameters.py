@@ -80,8 +80,10 @@ class OpcUaParameters():
     ''' Numbers for opc ua parameters '''
     server = "opc.tcp://192.168.22.100:48050"
     num_PT_sensor = 24
-    max_angle = 181
-    min_angle = -171
+    min_angle, max_angle = np.array([-171, 181])
+    min_r_slide, max_r_slide = np.array([ -0.05, 0.4])
+    min_slide, max_slide = np.array([ -0.9, 0.9])
+
     RA = 0 #angolo di rotazione
     CAR = 1 #carrello dell RM
     ST = 2 #slitta della parabola

@@ -10,12 +10,12 @@ from opcua import Client
 from opcua import ua
 from m4.configuration.ott_parameters import OttParameters, OpcUaParameters
 
-server = "opc.tcp://192.168.22.100:48050"
+server = OpcUaParameters.server
 
 class OpcUaController():
     """
     Function for test tower management via OpcUa::
-    
+
         from m4.utils.opc_ua_controller import OpcUaController
         opc = OpcUaController()
     """
@@ -145,7 +145,7 @@ class OpcUaController():
     def wait_for_stop(self, int_number):
         """
         Function to wait for the movement to be completed
-        
+
         Parameters
         ----------
             int_number: int

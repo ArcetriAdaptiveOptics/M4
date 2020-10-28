@@ -1,8 +1,6 @@
 • Acquisizione ed analisi delle Funzioni d'influenza
 
-
 	- Acquisizione
-	
 	  PROCEDIMENTO:
 	  from m4.utils import create_device
       device = create_device.myDevice("segment") 		#or "m4"
@@ -19,7 +17,6 @@
       	
       	
      - Analisi
-     
        PROCEDIMENTO:
        from m4.analyzer_iffunctions import AnalyzerIFF 
        fileName = os.path.join(".../IFFunctions", tt)
@@ -34,7 +31,6 @@
   	   
   	   
 • Spianamento
-  	 
   	   PROCEDIMENTO:
   	   from m4.analyzer_iffunctions import AnalyzerIFF
   	   an = AnalyzerIFF.loadInfoFromTtFolder(fileName)
@@ -47,10 +43,8 @@
   	   
   	   
 • Calibrazione e allineamento delle ottiche 
-
 	
 	- Allineamento dell'OTT (PAR + RM)
-	
 	  PROCEDIMENTO:
 	  from m4.alignment import Alignment
       from m4.configuration import start
@@ -68,7 +62,6 @@
 	  matrice d'interazione e ricostruttore
 	  
 	- Allinemaneto di M4
-	
 	  PROCEDIMENTO:
 	  from m4.alignment import Alignment
       from m4.configuration import start
@@ -89,7 +82,6 @@
 
 	  
 • Ricostruzione degli zernike su tutto m4
-
 	  PROCEDIMENTO:
 	  from m4 import sandbox
 	  seg = sandbox.immaginiDaIFFRuna()
@@ -112,7 +104,6 @@
 
 
 • SW per gli SPL
-
 	  PROCEDIMENTO:
 	  from m4.SPL_controller import SPL
 	  #definizione dell'oggetto filtro e dell'oggetto camera
@@ -129,6 +120,7 @@
 	  lambda_vector.fits
 	  piston_result.txt
 	  fringe_result.fits (la mia matrice totale 151xn_lambda)
+
 
 • Noise
 	 PROCEDIMENTO:
@@ -148,5 +140,15 @@
 	 il cubo di misure prese con le iff (misere.fits) #caso IFF
 	 il cubo che viene dall'analisi delle iff con l'analyzer (Cube.fits)
 	 il file di testo con scritti i valori medi (result.txt)
+
+• Rotazione della tore per l'allineamento dell'asse ottico
+	PRCEDIMENTO:
+	from m4 import main
+	ro, tt = main.rotation_and_optical_axis_alignement(start_point, end_point, n_points)
 	
+	RISULTATI:
+	tt = tracking number della misura effettuata
+	'Cube.fits' cubo delle immagini acquisite
+	'angle_list.txt' lista degli angoli usati per la misura
+	'theta.fits' vettore contenente gli angoli usati per la misura
 	

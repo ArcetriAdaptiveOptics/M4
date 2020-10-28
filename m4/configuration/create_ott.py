@@ -77,11 +77,18 @@ class OTT():
             if par_trans is None:
                 self._slide = self._opcUa.get_position(OpcUaParameters.ST)
             else:
+                self._checkSlide(par_trans)
                 self._slide = self._opcUa.set_target_position(OpcUaParameters.ST, par_trans)
                 self._opcUa.move_object(OpcUaParameters.ST)
                 self._opcUa.wait_for_stop(OpcUaParameters.ST)
                 self._slide = self._opcUa.get_position(OpcUaParameters.ST)
         return self._slide
+
+    def _checkSlide(self, slide):
+        if slide <= OpcUaParameters.min_slide or slide >= OpcUaParameters.max_slide:
+            raise OSError(' The required parabola position is incorrect: %d' % slide)
+        else:
+            pass
 
     def rslide(self, ref_flat=None):
         '''  Function to set the reference flat mirror (range: -0.05 m to 0.4 m)
@@ -106,11 +113,18 @@ class OTT():
             if ref_flat is None:
                 self._rslide = self._opcUa.get_position(OpcUaParameters.CAR)
             else:
+                self._checkRslide(ref_flat)
                 self._rslide = self._opcUa.set_target_position(OpcUaParameters.CAR, ref_flat)
                 self._opcUa.move_object(OpcUaParameters.CAR)
                 self._opcUa.wait_for_stop(OpcUaParameters.CAR)
                 self._rslide = self._opcUa.get_position(OpcUaParameters.CAR)
         return self._rslide
+
+    def _checkRslide(self, r_slide):
+        if r_slide <= OpcUaParameters.min_r_slide or r_slide >= OpcUaParameters.max_r_slide:
+            raise OSError(' The required reference flat position is incorrect: %d' % r_slide)
+        else:
+            pass
 
     def angle(self, rot_ring_angle=None):
         ''' Function to set the rotating ring angle (range: 0 to 360)
@@ -135,12 +149,19 @@ class OTT():
             if rot_ring_angle is None:
                 self._angle = self._opcUa.get_position(OpcUaParameters.RA)
             else:
+                self._checkAngle(rot_ring_angle)
                 self._opcUa.set_target_position(OpcUaParameters.RA, rot_ring_angle)
                 self._opcUa.move_object(OpcUaParameters.RA)
                 self._opcUa.wait_for_stop(OpcUaParameters.RA)
                 self._angle = self._opcUa.get_position(OpcUaParameters.RA)
-
         return self._angle
+
+    def _checkAngle(self, angle):
+        if angle <= OpcUaParameters.min_angle or angle >= OpcUaParameters.max_angle:
+            raise OSError(' The required angle is incorrect: %d' % angle)
+        else:
+            pass
+
 # Elements alignment
     def parab(self, start_position=None):
         '''Function to set the start position of the parable

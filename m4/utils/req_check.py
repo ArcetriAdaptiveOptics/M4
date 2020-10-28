@@ -228,3 +228,16 @@ def imaTest():
     hduList=pyfits.open(ff)
     image = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
     return image
+
+#    path_rm = '/Users/rm/Desktop/Arcetri/M4/RM_20201020.fits'
+#    path_par = '/Users/rm/Desktop/Arcetri/M4/PM_20191113.fits'
+def readTestData(path):
+    hduList = pyfits.open(path)
+    ogg = hduList[0].data
+    dim = int(np.sqrt(ogg[:,0].size))
+    image = np.zeros((dim, dim))
+    xx = np.reshape(ogg[:,1], [dim,dim])
+    yy = np.reshape(ogg[:,0], [dim,dim])
+    z = ogg[:,2]
+
+
