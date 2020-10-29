@@ -9,7 +9,7 @@ from skimage.draw import circle as draw_circle
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from scipy.ndimage.interpolation import shift
 
-def patches_extractor(image, radius_m, step=None):
+def patches_extractor(image, radius_m, pixelscale, step=None):
     '''
     Parameters
     ----------
@@ -28,8 +28,11 @@ def patches_extractor(image, radius_m, step=None):
         ord_rms: numpy array
             tidy std of every patches
     '''
+    diameter = image.shape[0]
+    OttParameters.PARABOLA_PUPIL_XYRADIUS[2] = np.int(diameter/2)
     #metri = 0.05
-    ps = 1/OttParameters.pscale
+    ps = pixelscale
+    #ps = 1/OttParameters.pscale
     raggio_px = radius_m/ps
 
     nn = image.compressed().shape[0]
@@ -53,6 +56,7 @@ def patches_extractor(image, radius_m, step=None):
 #         circle[rr, cc] = 0
 #         mask_prod = np.ma.mask_or(circle.astype(bool), image.mask)
 #         ima = np.ma.masked_array(image, mask=mask_prod)
+        print('%d %d' %(x[p], y[p]))
         ima = _double(image, radius_m, x[p], y[p])
         valid_point = ima.compressed().shape[0]
         if valid_point >= th_validPoint:
@@ -239,5 +243,8 @@ def readTestData(path):
     xx = np.reshape(ogg[:,1], [dim,dim])
     yy = np.reshape(ogg[:,0], [dim,dim])
     z = ogg[:,2]
-
-
+    zz = np.reshape(ogg[:,2], [dim,dim])
+    mask = np.isnan(zz)
+    prova = np.ma.masked_array(zz, mask=mask)
+    ps = ogg[:,1][1] - ogg[:,1][0]
+    return prova, ps
