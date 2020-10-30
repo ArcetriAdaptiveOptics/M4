@@ -9,7 +9,7 @@ from skimage.draw import circle as draw_circle
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from scipy.ndimage.interpolation import shift
 
-def patches_extractor(image, radius_m, pixelscale, step=None):
+def patches_extractor(image, radius_m, pixelscale=None, step=None):
     '''
     Parameters
     ----------
@@ -31,8 +31,11 @@ def patches_extractor(image, radius_m, pixelscale, step=None):
     diameter = image.shape[0]
     OttParameters.PARABOLA_PUPIL_XYRADIUS[2] = np.int(diameter/2)
     #metri = 0.05
-    ps = pixelscale
-    #ps = 1/OttParameters.pscale
+    if pixelscale is None:
+        ps = 1/OttParameters.pscale
+    else:
+        ps = pixelscale
+
     raggio_px = radius_m/ps
 
     nn = image.compressed().shape[0]
@@ -48,6 +51,7 @@ def patches_extractor(image, radius_m, pixelscale, step=None):
         n_point = np.int(nn/step)+1
 
     rms = np.zeros(n_point)
+    list_ima = []
     for i in range(n_point):
         p = i + i * (step - 1)
         print('%d' %p)
@@ -57,16 +61,20 @@ def patches_extractor(image, radius_m, pixelscale, step=None):
 #         mask_prod = np.ma.mask_or(circle.astype(bool), image.mask)
 #         ima = np.ma.masked_array(image, mask=mask_prod)
         print('%d %d' %(x[p], y[p]))
-        ima = _double(image, radius_m, x[p], y[p])
-        valid_point = ima.compressed().shape[0]
-        if valid_point >= th_validPoint:
-            rms[i] = np.std(ima)
-        else:
+        ima = _double(image, radius_m, x[p], y[p], ps)
+        if ima is None:
             pass
+        else:
+            list_ima.append(ima)
+            valid_point = ima.compressed().shape[0]
+            if valid_point >= th_validPoint:
+                rms[i] = np.std(ima)
+            else:
+                pass
     ord_rms = np.sort(rms)
-    return rms, ord_rms
+    return list_ima, rms, ord_rms
 
-def _double(image, radius_m, x, y):
+def _double(image, radius_m, x, y, pixelscale=None):
     '''
     Parameters
     ----------
@@ -83,7 +91,11 @@ def _double(image, radius_m, x, y):
         final_ima: numpy masked array
             circle cropped image
     '''
-    ps = 1/OttParameters.pscale
+    if pixelscale is None:
+        ps = 1/OttParameters.pscale
+    else:
+        ps = pixelscale
+
     if radius_m<=0.1:
         r1 = 0.1
         r_px1 = r1/ps
@@ -100,12 +112,25 @@ def _double(image, radius_m, x, y):
     return final_ima
 
 def _circleImage(image, x, y, raggio_px):
-    circle = np.ones((image.shape[0],image.shape[1])).astype(int)
-    rr, cc = draw_circle(x, y, raggio_px)
-    circle[rr, cc] = 0
-    mask_prod = np.ma.mask_or(circle.astype(bool), image.mask)
-    ima = np.ma.masked_array(image, mask=mask_prod)
-    return ima
+    if image is None:
+        pass
+    else:
+        circle = np.ones((image.shape[0],image.shape[1])).astype(int)
+        rr, cc = draw_circle(x, y, raggio_px)
+        test_r = (len(list(filter (lambda x : x >= image.shape[0], rr))) > 0)
+        test_r2 = (len(list(filter (lambda x : x <= 0, rr))) > 0)
+        test_c = (len(list(filter (lambda x : x >= image.shape[0], cc))) > 0)
+        if test_r == True:
+            pass
+        elif test_r2 == True:
+            pass
+        elif test_c == True:
+            pass
+        else:
+            circle[rr, cc] = 0
+            mask_prod = np.ma.mask_or(circle.astype(bool), image.mask)
+            ima = np.ma.masked_array(image, mask=mask_prod)
+            return ima
 
 def surf_fit(ima):
     '''
@@ -118,12 +143,15 @@ def surf_fit(ima):
         pp: numpy masked array
             image without tip and tilt
     '''
-    zOnM4 = ZernikeOnM4()
-    coef, mat = zOnM4.zernikeFit(ima,
-                                np.array([2, 3]))
-    new_image = zOnM4.zernikeSurface(coef, ima.mask, mat)
-    pp = np.ma.masked_array(new_image, mask=ima.mask) 
-    return pp
+    if ima is None:
+        pass
+    else:
+        zOnM4 = ZernikeOnM4()
+        coef, mat = zOnM4.zernikeFit(ima,
+                                    np.array([2, 3]))
+        new_image = zOnM4.zernikeSurface(coef, ima.mask, mat)
+        pp = np.ma.masked_array(new_image, mask=ima.mask) 
+        return pp
 
 def curv_fit(image, test_diameter):
     '''
@@ -216,9 +244,9 @@ def test242(image):
     rms = slope_arcsec.std()
     return rms
 
-def test243(image):
+def test243(image, ps):
     diameter = 0 #average inter-actuator spacing 
-    rms, rms_ord = patches_extractor(image, diameter)
+    rms, rms_ord = patches_extractor(image, ps, diameter)
     return rms
 
 def test283(image):
