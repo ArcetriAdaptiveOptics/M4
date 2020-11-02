@@ -9,7 +9,7 @@ from skimage.draw import circle as draw_circle
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from scipy.ndimage.interpolation import shift
 
-def patches_extractor(image, radius_m, pixelscale=None, step=None):
+def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patchs=None):
     '''
     Parameters
     ----------
@@ -17,6 +17,9 @@ def patches_extractor(image, radius_m, pixelscale=None, step=None):
             image for the analysis
         radius_m: int
             radius of circular patch in meters
+        fit: int
+            0 toglie tip e tilt
+            1 non lo toglie
     Other Parameters
     ----------
         step: int
@@ -50,7 +53,7 @@ def patches_extractor(image, radius_m, pixelscale=None, step=None):
     else:
         n_point = np.int(nn/step)+1
 
-    rms = np.zeros(n_point)
+    rms_list = []
     list_ima = []
     for i in range(n_point):
         p = i + i * (step - 1)
@@ -61,20 +64,33 @@ def patches_extractor(image, radius_m, pixelscale=None, step=None):
 #         mask_prod = np.ma.mask_or(circle.astype(bool), image.mask)
 #         ima = np.ma.masked_array(image, mask=mask_prod)
         print('%d %d' %(x[p], y[p]))
-        ima = _double(image, radius_m, x[p], y[p], ps)
-        if ima is None:
-            pass
-        else:
-            list_ima.append(ima)
-            valid_point = ima.compressed().shape[0]
-            if valid_point >= th_validPoint:
-                rms[i] = np.std(ima)
-            else:
+        if n_patchs is None:
+            ima = _patchesAndFit(image, radius_m, x[p], y[p], fit, ps)
+            if ima is None:
                 pass
+            else:
+                list_ima.append(ima)
+                valid_point = ima.compressed().shape[0]
+                if valid_point >= th_validPoint:
+                    rms_list.append(np.std(ima))
+                else:
+                    pass
+        else:
+            list_ima = _patchesAndFitMatrix(image, radius_m, x[p], y[p], n_patchs, ps)
+            if list_ima is None:
+                pass
+            else:
+                for ima in list_ima:
+                    valid_point = ima.compressed().shape[0]
+                    if valid_point >= th_validPoint:
+                        rms_list.append(np.std(ima))
+                    else:
+                        pass
+    rms = np.array(rms_list)
     ord_rms = np.sort(rms)
     return list_ima, rms, ord_rms
 
-def _double(image, radius_m, x, y, pixelscale=None):
+def _patchesAndFit(image, radius_m, x, y, fit, pixelscale=None):
     '''
     Parameters
     ----------
@@ -86,6 +102,9 @@ def _double(image, radius_m, x, y, pixelscale=None):
             coordinate x
         y: int
             coordinate y
+        fit: int
+            0 toglie tip e tilt
+            altro non lo toglie
     Returns
     -------
         final_ima: numpy masked array
@@ -96,20 +115,55 @@ def _double(image, radius_m, x, y, pixelscale=None):
     else:
         ps = pixelscale
 
-    if radius_m<=0.1:
-        r1 = 0.1
-        r_px1 = r1/ps
-        ima = _circleImage(image, x, y, r_px1)
-        new_ima = surf_fit(ima)
-        r2 = radius_m
-        r_px2 = r2/ps
-        final_ima = _circleImage(new_ima, x, y, r_px2)
+    if fit == 0:
+        if radius_m<=(0.1/2):
+            r1 = 0.1/2
+            r_px1 = r1/ps
+            ima = _circleImage(image, x, y, r_px1)
+            new_ima = surf_fit(ima)
+            r2 = radius_m
+            r_px2 = r2/ps
+            final_ima = _circleImage(new_ima, x, y, r_px2)  
+        else:
+            r_px2 = radius_m/ps
+            ima = _circleImage(image, x, y, r_px2)
+            final_ima = surf_fit(ima)
     else:
         r1 = radius_m
         r_px1 = r1/ps
-        ima = _circleImage(image, x, y, r_px1)
-        final_ima = surf_fit(ima)
+        final_ima = _circleImage(image, x, y, r_px1)
+
     return final_ima
+
+def _patchesAndFitMatrix(image, radius_m, x, y, n_point, pixelscale=None):
+    if pixelscale is None:
+        ps = 1/OttParameters.pscale
+    else:
+        ps = pixelscale
+
+    r1 = 0.1/2
+    r_px1 = r1/ps
+    ima = _circleImage(image, x, y, r_px1)
+    new_ima = surf_fit(ima)
+    r2 = radius_m
+    r_px2 = r2/ps
+    if new_ima is None:
+        pass
+    else:
+        nn = new_ima.compressed().shape[0]
+        idx = np.where(new_ima.mask==0)
+        x = idx[0]
+        y = idx[1]
+        step = np.int(nn/(n_point-1))
+        final_ima_list = []
+        for i in range(n_point):
+            p = i + i * (step - 2)
+            final_ima = _circleImage(new_ima, x[p], y[p], r_px2)
+            if final_ima is None:
+                pass
+            else:
+                final_ima_list.append(final_ima)
+        return final_ima_list
 
 def _circleImage(image, x, y, raggio_px):
     if image is None:
@@ -246,7 +300,9 @@ def test242(image):
 
 def test243(image, ps):
     diameter = 0 #average inter-actuator spacing 
-    rms, rms_ord = patches_extractor(image, ps, diameter)
+    fit = 0
+    step = None
+    rms, rms_ord = patches_analysis(image, diameter/2, fit, ps, step)
     return rms
 
 def test283(image):
