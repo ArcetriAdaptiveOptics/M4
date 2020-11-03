@@ -64,7 +64,7 @@ class ZernikeOnM4():
         mat = np.zeros((img.compressed().shape[0], zernike_mode.size))
         for i in range(0, zernike_mode.size):
             z = self._zg.getZernike(zernike_mode[i])
-            aa = np.ma.masked_array(z, mask=img.mask)
+            aa = np.ma.masked_array(z.data, mask=img.mask)
             mat.T[i] = aa.compressed()
 
         self._mat = mat

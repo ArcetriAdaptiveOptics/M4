@@ -9,7 +9,7 @@ from skimage.draw import circle as draw_circle
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from scipy.ndimage.interpolation import shift
 
-def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patchs=None):
+def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patches=None):
     '''
     Parameters
     ----------
@@ -18,12 +18,17 @@ def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patchs=
         radius_m: int
             radius of circular patch in meters
         fit: int
-            0 toglie tip e tilt
-            1 non lo toglie
+            0 to remove tip e tilt
+            other values to not remove it
     Other Parameters
     ----------
+        pixelscale: int
+            value of image's pixel scale
         step: int
             distance between patches
+        n_patches: int
+        number of patches for the second cut
+        (if it is None sw creates a single crop in the center of the image)
     Returns
     -------
         rms: numpy array
@@ -64,7 +69,7 @@ def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patchs=
 #         mask_prod = np.ma.mask_or(circle.astype(bool), image.mask)
 #         ima = np.ma.masked_array(image, mask=mask_prod)
         print('%d %d' %(x[p], y[p]))
-        if n_patchs is None:
+        if n_patches is None:
             ima = _patchesAndFit(image, radius_m, x[p], y[p], fit, ps)
             if ima is None:
                 pass
@@ -76,7 +81,7 @@ def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patchs=
                 else:
                     pass
         else:
-            list_ima = _patchesAndFitMatrix(image, radius_m, x[p], y[p], n_patchs, ps)
+            list_ima = _patchesAndFitMatrix(image, radius_m, x[p], y[p], n_patches, ps)
             if list_ima is None:
                 pass
             else:
@@ -88,7 +93,7 @@ def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patchs=
                         pass
     rms = np.array(rms_list)
     ord_rms = np.sort(rms)
-    return list_ima, rms, ord_rms
+    return rms, ord_rms
 
 def _patchesAndFit(image, radius_m, x, y, fit, pixelscale=None):
     '''
@@ -103,8 +108,12 @@ def _patchesAndFit(image, radius_m, x, y, fit, pixelscale=None):
         y: int
             coordinate y
         fit: int
-            0 toglie tip e tilt
-            altro non lo toglie
+            0 to remove tip e tilt
+            other values to not remove it
+    Other Parameters
+    ----------
+        pixelscale: int
+            value of image's pixel scale
     Returns
     -------
         final_ima: numpy masked array
@@ -136,6 +145,28 @@ def _patchesAndFit(image, radius_m, x, y, fit, pixelscale=None):
     return final_ima
 
 def _patchesAndFitMatrix(image, radius_m, x, y, n_point, pixelscale=None):
+    '''
+    Parameters
+    ----------
+        image: masked array
+            image for the analysis
+        radius_m: int
+            radius of circular patch in meters
+        x: int
+            coordinate x
+        y: int
+            coordinate y
+        n_point: int
+            number of images for second cut
+    Other Parameters
+    ----------
+        pixelscale: int
+            value of image's pixel scale
+    Returns
+    -------
+        final_ima_list: list
+            list of circle cropped image
+    '''
     if pixelscale is None:
         ps = 1/OttParameters.pscale
     else:
@@ -166,6 +197,9 @@ def _patchesAndFitMatrix(image, radius_m, x, y, n_point, pixelscale=None):
         return final_ima_list
 
 def _circleImage(image, x, y, raggio_px):
+    ''' Function to create circular cuts of the image.
+    The function excludes cuts that come out of the edges of the image
+    '''
     if image is None:
         pass
     else:
