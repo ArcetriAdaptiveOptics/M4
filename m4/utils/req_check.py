@@ -132,7 +132,7 @@ def _patchesAndFit(image, radius_m, x, y, fit, pixelscale=None):
             new_ima = surf_fit(ima)
             r2 = radius_m
             r_px2 = r2/ps
-            final_ima = _circleImage(new_ima, x, y, r_px2)  
+            final_ima = _circleImage(new_ima, x, y, r_px2)
         else:
             r_px2 = radius_m/ps
             ima = _circleImage(image, x, y, r_px2)
@@ -366,3 +366,9 @@ def readTestData(path):
     prova = np.ma.masked_array(zz, mask=mask)
     ps = ogg[:,1][1] - ogg[:,1][0]
     return prova, ps
+
+### Per l'immagine 591X591
+# vv = np.ma.masked_array(np.zeros((1,image.shape[0])), mask=np.ones((1,image.shape[0])).astype(bool))
+# vv2 =np.ma.masked_array(np.zeros((image.shape[0]+1,1)), mask=np.ones((image.shape[0]+1, 1)).astype(bool)) 
+# pp = np.ma.append(image, vv, axis=0)
+# new = np.ma.append(pp, vv2, axis=1) 
