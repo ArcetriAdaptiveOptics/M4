@@ -357,10 +357,10 @@ def readTestData(path):
     hduList = pyfits.open(path)
     ogg = hduList[0].data
     dim = int(np.sqrt(ogg[:,0].size))
-    image = np.zeros((dim, dim))
-    xx = np.reshape(ogg[:,1], [dim,dim])
-    yy = np.reshape(ogg[:,0], [dim,dim])
-    z = ogg[:,2]
+#     image = np.zeros((dim, dim))
+#     xx = np.reshape(ogg[:,1], [dim,dim])
+#     yy = np.reshape(ogg[:,0], [dim,dim])
+#     z = ogg[:,2]
     zz = np.reshape(ogg[:,2], [dim,dim])
     mask = np.isnan(zz)
     prova = np.ma.masked_array(zz, mask=mask)
@@ -371,4 +371,4 @@ def readTestData(path):
 # vv = np.ma.masked_array(np.zeros((1,image.shape[0])), mask=np.ones((1,image.shape[0])).astype(bool))
 # vv2 =np.ma.masked_array(np.zeros((image.shape[0]+1,1)), mask=np.ones((image.shape[0]+1, 1)).astype(bool)) 
 # pp = np.ma.append(image, vv, axis=0)
-# new = np.ma.append(pp, vv2, axis=1) 
+# new = np.ma.append(pp, vv2, axis=1)
