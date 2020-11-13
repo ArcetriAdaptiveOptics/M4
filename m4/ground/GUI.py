@@ -12,23 +12,23 @@ class GuiCreator():
     def __init__(self):
         """The constructor """
         self._gui = Gui(
-              [  M('plot') , ___ ,  ___ , VS('slider') ],
+              [  M('plot') , ___ ,  ___ , ___ ],
               [     III    , III ,  III ,     III      ],
               [     III    , III ,  III ,     III      ],
-              [     III    , III ,  III ,  '^^^ Move the slider'  ],
+              [     III    , III ,  III ,     III],
              )
 
 
-    def plot_image(self, image):
+    def create_one_image(self, image):
         with Ax(self._gui.plot) as ax:
             ax.set_title('Titolo')
-            ax.imshow(image, origin='lower')
-            #ax.colorbar()
+            im = ax.imshow(image, origin='lower', cmap='Reds')
+            ax.figure.colorbar(im, ax=ax)
 
-    def replot(self, image):
-        self.plot_image(image)
+    def plot_image(self, image):
+        self.create_one_image(image)
         self._gui.events(
-            [  _            ,  _ , _ ,   self.plot_image ],
+            [  _            ,  _ , _ ,   self.create_one_image ],
             [  _            ,  _ , _ ,   _          ],
             [  _            ,  _ , _ ,   _          ], )
         self._gui.run()
