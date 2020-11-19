@@ -36,6 +36,7 @@ class GuiCreator():
         self.create_one_image(image)
         self._gui.run()
 
+
     def test(self, color='Blues'):
         fig, ax = plt.subplots(1, 1, figsize=(8, 6))
         ax.set_title('Titolo')

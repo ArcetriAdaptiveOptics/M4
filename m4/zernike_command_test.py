@@ -44,6 +44,8 @@ class ZernikeCommand():
         self._anList = []
         self._zernikeSurfaceCube = None
         self._m4ImagesCube = None
+        self._ampVector = None
+        self._nModes = None
 
 
     @staticmethod
@@ -176,7 +178,7 @@ class ZernikeCommand():
         rms_list = []
         a = m4_images_cube[0][2].shape
         for i in range(a[0]):
-            diff = m4_images_cube[: , :, i] - surf_cube[:, :, i]
+            diff = m4_images_cube[:, :, i] - surf_cube[:, :, i]
             rms = diff.std()
             diff_list.append(diff)
             rms_list.append(rms)
@@ -222,9 +224,9 @@ class ZernikeCommand():
                              centerx + segment_radius] = seg_img_rot
 
             total_image_masks[centery - segment_radius:
-                             centery + segment_radius,
-                             centerx - segment_radius:
-                             centerx + segment_radius] = seg_mask_rot
+                              centery + segment_radius,
+                              centerx - segment_radius:
+                              centerx + segment_radius] = seg_mask_rot
 
             imaList.append(total_mode_image)
             final_total_mode_image = final_total_mode_image + total_mode_image
@@ -250,7 +252,7 @@ class ZernikeCommand():
         Returns
         -------
                 cubeList: list [n_mode][pixels, pixels, segment]
-                        list of cubes 
+                        list of cubes
         """
         if tt is None:
             dove = self._dove
@@ -280,7 +282,7 @@ class ZernikeCommand():
                 piston = piston value measured with SPL
         """
         #applico questo comando allo specchio (pos e neg) e misuro il pistone
-        #credo si faccia misurando tutti i valori tra i 6 segmenti e usando 
+        #credo si faccia misurando tutti i valori tra i 6 segmenti e usando
         # img_redux per ottenere la nuova immagine di m4
         piston = 0
         return piston
@@ -419,7 +421,7 @@ class ZernikeCommand():
             else:
                 self._totalModeCommand = np.concatenate((self._totalModeCommand,
                                                          commandsList[i]),
-                                                         axis=None)
+                                                        axis=None)
         return self._totalModeCommand
 
     def zernikeCommandForSegment(self, surface_map, segment_number, an):
@@ -555,7 +557,8 @@ class ZernikeCommand():
             returns:
                     test_image = image from the cube
         """
-        fold = os.path.join('/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions', '20170216_123645')
+        fold = os.path.join('/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions',
+                            '20170216_123645')
         cube_path = os.path.join(fold, 'CubeMeasure.fits')
         hduList = pyfits.open(cube_path)
         cube = np.ma.masked_array(hduList[0].data,

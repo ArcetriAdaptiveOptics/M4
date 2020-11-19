@@ -38,7 +38,15 @@ class IFFunctionsMaker():
         self._device = device
         self._who = self._device._who
         self._nActs = self._device.nActs()
-        self._logger= logging.getLogger('IFF_MAKER:')
+        self._logger = logging.getLogger('IFF_MAKER:')
+
+        self._nPushPull = None
+        self._template = None
+        self._modesVectorTag = None
+        self._amplitudeTag = None
+        self._cmdMatrixTag = None
+        self._tt_cmdH = None
+        self._indexingList = None
 
     @staticmethod
     def _storageFolder():
@@ -103,12 +111,11 @@ class IFFunctionsMaker():
                             np.diag(np.diagonal(diagonal_mat))) == 0:
             print('Measure of zonal IF')
             self._logger.info("Measurement of zonal influence functions for %s. Location: %s",
-                       self._who, tt)
-
+                              self._who, tt)
         else:
             print('Measure of global IF')
             self._logger.info("Measurement of modal influence functions for %s. Location: %s",
-                       self._who, tt)
+                              self._who, tt)
 
 
         cmdH = CmdHistory(self._device)
@@ -132,7 +139,7 @@ class IFFunctionsMaker():
         self._saveInfoSeparately(dove)
 
         for i in range(command_history_matrix_to_apply.shape[1]):
-            self._applyToDM(command_history_matrix_to_apply[:,i])
+            self._applyToDM(command_history_matrix_to_apply[:, i])
             #acquisizione immagine con 4d
             #salvataggio immagine
 

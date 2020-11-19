@@ -6,7 +6,7 @@ import os
 
 mirror_conf = '20170430'
 optical_conf= '20150730'
-simulated = 0
+simulated = 1 # 1 per il simulatore
 
 class path_name():
     '''

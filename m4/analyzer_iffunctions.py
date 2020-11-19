@@ -41,6 +41,15 @@ class AnalyzerIFF():
         self._analysisMask = None
         self._cubeMeasure = None
 
+        self._cmdAmplitude = None
+        self._cmdMatrix = None
+        self._actsVector = None
+        self._who = None
+        self._nPushPull = None
+        self._template = None
+        self._h5Folder = None
+        self._tt_cmdH = None
+
     def _ttData(self):
         """ Allow to obtain the tracking number from the path """
         split = os.path.split(self._h5Folder)
@@ -91,7 +100,7 @@ class AnalyzerIFF():
                 shape: int
                     number of images
         '''
-        return self.getCube()[:,:,0].shape
+        return self.getCube()[:, :, 0].shape
 
     def getMasterMask(self):
         '''
@@ -185,9 +194,9 @@ class AnalyzerIFF():
                 #img_pos = misure_pos[:,:,mis]
                 #img_neg = misure_neg[:,:,mis]
                 image_sum = np.zeros((self._cubeMeasure.shape[0],
-                                     self._cubeMeasure.shape[1]))
+                                      self._cubeMeasure.shape[1]))
                 for l in range(1, self._template.shape[0]):
-                    image = image_sum + self._cubeMeasure[:,:, mis+l] * self._template[l]
+                    image = image_sum + self._cubeMeasure[:, :, mis+l] * self._template[l]
                 img_if = image / (2 * ampl_reorg[mis_amp] * (self._template.shape[0] - 1))
                 if tiptilt_detrend is None:
                     img_if = img_if
@@ -218,7 +227,8 @@ class AnalyzerIFF():
 
         return self._cube
 
-    def createCubeFromImageFolder(self, data_file_path, tiptilt_detrend=None, phase_ambiguity=None):
+    def createCubeFromImageFolder(self, data_file_path, tiptilt_detrend=None,
+                                  phase_ambiguity=None):
         '''
         Parameters
         ----------
@@ -257,7 +267,7 @@ class AnalyzerIFF():
                 image_for_dim = self._ic.from4D(file_name)
 
                 image_sum = np.zeros((image_for_dim.shape[0],
-                                     image_for_dim.shape[1]))
+                                      image_for_dim.shape[1]))
                 for l in range(1, self._template.shape[0]):
                     name = 'img_%04d.h5' %(mis+l)
                     file_name = os.path.join(data_file_path, name)
@@ -308,14 +318,14 @@ class AnalyzerIFF():
         for j in range(misure.shape[2]):
             if j%2 == 0:
                 if misure_pos is None:
-                    misure_pos = misure[:,:,j]
+                    misure_pos = misure[:, :, j]
                 else:
-                    misure_pos = np.ma.dstack((misure_pos, misure[:,:,j]))
+                    misure_pos = np.ma.dstack((misure_pos, misure[:, :, j]))
             else:
                 if misure_neg is None:
-                    misure_neg = misure[:,:,j]
+                    misure_neg = misure[:, :, j]
                 else:
-                    misure_neg = np.ma.dstack((misure_neg, misure[:,:,j]))
+                    misure_neg = np.ma.dstack((misure_neg, misure[:, :, j]))
 
         return misure_pos, misure_neg
 
@@ -525,7 +535,7 @@ class AnalyzerIFF():
         return self._analysisMask
 
     def _getMaskedInfluenceFunction(self, idx_influence_function):
-        return np.ma.array(self.getCube()[:,:,idx_influence_function],
+        return np.ma.array(self.getCube()[:, :, idx_influence_function],
                            mask=self.getAnalysisMask())
 
     def _createInteractionMatrix(self):
@@ -595,12 +605,12 @@ class AnalyzerIFF():
 #                 self._cubeMeasure = ima
 #             else:
 #                 self._cubeMeasure = np.ma.dstack((self._cubeMeasure, ima))
-# 
-        cube_name= 'CubeMeasure.fits'
+#
+        cube_name = 'CubeMeasure.fits'
         fits_file_name = os.path.join(fold, cube_name)
         hduList = pyfits.open(fits_file_name)
         cube_measure = np.ma.masked_array(hduList[0].data,
-                                  hduList[1].data.astype(bool))
+                                          hduList[1].data.astype(bool))
         self._cubeMeasure = cube_measure
         return self._cubeMeasure
 

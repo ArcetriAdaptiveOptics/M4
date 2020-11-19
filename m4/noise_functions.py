@@ -36,6 +36,7 @@ class Noise():
         self._zOnM4 = ZernikeOnM4()
         self._ttd = TipTiltDetrend()
         self._numberOfNoiseIma = None
+        self._cubeFromAnalysis = None
 
     @staticmethod
     def _storageFolder():
@@ -145,7 +146,7 @@ class Noise():
         coef_tip_list = []
         quad_list = []
         for i in range(cube_to_process.shape[2]):
-            image = self._imageExtender(cube_to_process[:,:,i])
+            image = self._imageExtender(cube_to_process[:, :, i])
             coef, mat = self._zOnM4.zernikeFit(image,
                                                np.array([2, 3]))
             image_ttr = self._ttd.ttRemoverFromCoeff(coef, image)
@@ -183,7 +184,7 @@ class Noise():
         dt = 35e-3
         n = vector.size
         T = n*dt
-        t = np.linspace(0, T, n)
+#         t = np.linspace(0, T, n)
 #         freq = np.fft.fftfreq(t.size, d=dt)
 #         f = np.fft.fftshift(freq)
 #         df = freq[1]-freq[0]
@@ -209,7 +210,8 @@ class Noise():
                                 mask=np.ones((dim_y, cube_element.shape[1])).astype(bool)) #496
         dim_x = (2 * self._zOnM4._zg.getRadius() - cube_element.shape[1]).astype(int)   #512-496
         vv2 = np.ma.masked_array(np.zeros(((2 * self._zOnM4._zg.getRadius()).astype(int), dim_x)),
-                                 mask=np.ones(((2 * self._zOnM4._zg.getRadius()).astype(int), dim_x)).astype(bool))
+                                 mask=np.ones(((2 * self._zOnM4._zg.getRadius()).astype(int),
+                                               dim_x)).astype(bool))
         pp = np.ma.append(cube_element, vv, axis=0)
 
         #v = vv2[:,0:vv2.shape[1]/2]
@@ -252,7 +254,7 @@ class Noise():
         fits_file_name = os.path.join(file_path, 'Cube.fits')
         hduList = pyfits.open(fits_file_name)
         self._cubeFromAnalysis = np.ma.masked_array(hduList[0].data,
-                                  hduList[1].data.astype(bool))
+                                                    hduList[1].data.astype(bool))
         return self._cubeFromAnalysis
 
     def _readTempFromInfoFile(self, tt):
@@ -266,7 +268,7 @@ class Noise():
         store_in_folder = Noise._storageFolder()
         file_path = os.path.join(store_in_folder, tt)
         fits_file_name = os.path.join(file_path, 'Info.fits')
-        hduList= pyfits.open(fits_file_name)
+        hduList = pyfits.open(fits_file_name)
         n_temp = hduList[0].data.shape[0]
         return n_temp
 

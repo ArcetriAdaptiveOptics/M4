@@ -73,6 +73,7 @@ class OTT():
                 self._slide = self._slide
             else:
                 self._slide = par_trans
+            self._logger.debug('Position = %f', self._slide)
         else:
             if par_trans is None:
                 self._slide = self._opcUa.get_position(OpcUaParameters.ST)
@@ -109,6 +110,7 @@ class OTT():
                 self._rslide = self._rslide
             else:
                 self._rslide = ref_flat
+            self._logger.debug('Position = %f', self._rslide)
         else:
             if ref_flat is None:
                 self._rslide = self._opcUa.get_position(OpcUaParameters.CAR)
@@ -145,6 +147,7 @@ class OTT():
                 self._angle = self._angle
             else:
                 self._angle = rot_ring_angle
+            self._logger.debug('Position = %f', self._angle)
         else:
             if rot_ring_angle is None:
                 self._angle = self._opcUa.get_position(OpcUaParameters.RA)
@@ -178,12 +181,14 @@ class OTT():
                         start position of the parable
 
         '''
+        self._logger.debug('About PARAB')
         #if type(start_position) is np.ndarray:
         #if start_position.size == 6:
         if start_position is None:
             self.par_start_position = self.par_start_position
         else:
             self.par_start_position = start_position
+        self._logger.debug(self.par_start_position)
         #else:
             #raise OSError('Incorrect length of the vector')
         #else:
@@ -204,12 +209,14 @@ class OTT():
             start_position: numpy array
                         start position of the reference flat
         '''
+        self._logger.debug('About REFFLAT')
         #if type(start_position) is np.ndarray:
         #if start_position.size == 6:
         if start_position is None:
             self.refflat_start_position = self.refflat_start_position
         else:
             self.refflat_start_position = start_position
+        self._logger.debug(self.refflat_start_position)
         #else:
             #raise OSError('Incorrect length of the vector')
         #else:
@@ -230,12 +237,14 @@ class OTT():
             start_position: numpy array
                         start position of the deformable mirror
         '''
+        self._logger.debug('About M4')
         #if type(start_position) is np.ndarray:
         #if start_position.size == 6:
         if start_position is None:
             self.m4_start_position = self.m4_start_position
         else:
             self.m4_start_position = start_position
+        self._logger.debug(self.m4_start_position)
         #else:
             #raise OSError('Incorrect length of the vector')
         #else:

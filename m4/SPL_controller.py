@@ -34,6 +34,9 @@ class SPL():
         self._filter = filter_obj
         self._camera = camera_obj
         self._pix2um = 3.75
+        self._exptime = None
+        self._acq4d = None
+        self._an = None
 
     @staticmethod
     def _storageFolder():
@@ -66,11 +69,11 @@ class SPL():
             tt = self.acquire(lambda_vector)
             piston = self.analyzer(tt)
 
-        elif (acq4d==1 and an==0):
+        elif (acq4d == 1 and an == 0):
             self._exptime, self._acq4d, self._an = self._setParameters(0.7, 1, 0)
             tt = self.acquire(lambda_vector)
 
-        elif (acq4d==0 and an==1):
+        elif (acq4d == 0 and an == 1):
             self._exptime, self._acq4d, self._an = self._setParameters(0.7, 0, 1)
             tt = input('Tracking number of measurement to analyze:')
             piston = self.analyzer(tt)
@@ -125,7 +128,7 @@ class SPL():
         self._baricenterCalculator(reference_image)
 
 
-        expgain= np.ones(lambda_vector.shape[0])
+        expgain = np.ones(lambda_vector.shape[0])
         expgain[np.where(lambda_vector < 500)] = 8
         expgain[np.where(lambda_vector < 530)] = 4
         expgain[np.where(lambda_vector > 680)] = 3
@@ -226,7 +229,7 @@ class SPL():
         matrix_smooth = np.zeros((pick[3]-pick[2] + 1, lambda_vector.shape[0]))
         crop_frame_cube = None
         for i in range(lambda_vector.shape[0]):
-            frame = cube[:,:,i]
+            frame = cube[:, :, i]
             crop_frame = frame[pick[0]:pick[1], pick[2]:pick[3] + 1]
             if np.max(crop_frame) > 4000:
                 print("**************** WARNING: saturation detected!")
@@ -240,9 +243,9 @@ class SPL():
             y_norm = y / area
             if i == 0:
                 mm = 1.2 * np.max(y_norm)
-                matrix[:,i] = mm
+                matrix[:, i] = mm
             else:
-                matrix[:,i] = y_norm
+                matrix[:, i] = y_norm
 
             w = sf.smooth(y_norm, 4)
             w = w[:pick[3]-pick[2] + 1]
@@ -260,7 +263,9 @@ class SPL():
     ### PLOT MATRIX ###
     # x = lambda_vector
     # y = np.arange(151)* spl._pix2um
-    # imshow(spl._matrix, extent = [x[0],x[19],y[0], y[150]], origin= 'lower'); colorbar(); plt.xlabel('lambda [nm]'); plt.ylabel('position [um]'); plt.title('TN = %s' %tt)
+    # imshow(spl._matrix, extent = [x[0],x[19],y[0], y[150]], origin= 'lower');
+    #colorbar(); plt.xlabel('lambda [nm]'); plt.ylabel('position [um]');
+    #plt.title('TN = %s' %tt)
 
     def _saveMatrix(self, matrix, tt):
         destination_file_path = SPL._storageFolder()
@@ -322,7 +327,8 @@ class SPL():
 
     def _templateComparison(self, matrix, matrix_smooth, lambda_vector):
         '''
-        Compare the matrix obtained from the measurements with the one recreated with the synthetic data in tn_fringes.
+        Compare the matrix obtained from the measurements with
+        the one recreated with the synthetic data in tn_fringes.
 
         Parameters
         ----------
@@ -364,7 +370,7 @@ class SPL():
             file_name = os.path.join(dove, 'Fringe_%05d.fits' %i)
             hduList = pyfits.open(file_name)
             fringe = hduList[0].data
-            fringe_selected = fringe[:,idx]
+            fringe_selected = fringe[:, idx]
             if F is None:
                 F = fringe_selected
             else:
@@ -375,14 +381,14 @@ class SPL():
         R = np.zeros(delta.shape[0]-1)
         R_smooth = np.zeros(delta.shape[0]-1)
         for i in range(delta.shape[0]-1):
-            R[i] = np.sum(np.sum(Qm[:,:]*Qt[:,:,i])) / ((np.sum(np.sum(Qm[:,:]**2)))**5
-                                                    * (np.sum(np.sum(Qt[:,:,i]**2)))**5)
-            R_smooth[i] = np.sum(np.sum(Qm_smooth[:,:]*Qt[:,:,i])) / \
-                                                    ((np.sum(np.sum(Qm_smooth[:,:]**2)))**5
-                                                    * (np.sum(np.sum(Qt[:,:,i]**2)))**5)
+            R[i] = np.sum(np.sum(Qm[:, :]*Qt[:, :, i])) / ((np.sum(np.sum(Qm[:, :]**2)))**5
+                                                           * (np.sum(np.sum(Qt[:, :, i]**2)))**5)
+            R_smooth[i] = np.sum(np.sum(Qm_smooth[:, :]*Qt[:, :, i])) / \
+                                                    ((np.sum(np.sum(Qm_smooth[:, :]**2)))**5
+                                                     * (np.sum(np.sum(Qt[:, :, i]**2)))**5)
 
-        idp = np.where(R==max(R))
-        idp_smooth = np.where(R_smooth==max(R_smooth))
+        idp = np.where(R == max(R))
+        idp_smooth = np.where(R_smooth == max(R_smooth))
         piston = delta[idp]
         piston_smooth = delta[idp_smooth]
 

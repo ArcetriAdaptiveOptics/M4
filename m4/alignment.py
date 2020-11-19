@@ -4,8 +4,8 @@ Autors
 '''
 
 import os
-import numpy as np
 import logging
+import numpy as np
 from astropy.io import fits as pyfits
 from m4.utils.optical_alignment import opt_alignment
 from m4.utils.optical_calibration import opt_calibration
