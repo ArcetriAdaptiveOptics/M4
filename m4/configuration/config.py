@@ -5,7 +5,7 @@ Autors
 import os
 
 mirror_conf = '20170430'
-optical_conf= '20150730'
+optical_conf = '20150730'
 simulated = 1 # 1 per il simulatore
 
 class path_name():
@@ -24,8 +24,7 @@ class path_name():
 class fold_name(path_name):
     '''
     '''
-    OPD_IMAGES_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-    										'OPDImages')
+    OPD_IMAGES_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER, 'OPDImages')
     PHASECAM_ROOT_FOLDER = '/home/labot/4d/Zcopy/'
     LOG_ROOT_FOLDER = os.path.join(path_name.BASE_PATH,
                                    'LOGData/mylog')
@@ -55,5 +54,5 @@ class fold_name(path_name):
                                              "RotOptAlignment")
 
     PT_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                             "PTCalibration")
+                                  "PTCalibration")
     # metterci tutti i path di tutte le classi

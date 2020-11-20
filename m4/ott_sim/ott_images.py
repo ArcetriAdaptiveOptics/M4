@@ -159,7 +159,7 @@ class OttImages():
         #idtot     = where(mask[ott.idx])
         m4smap = self._ott.smap.copy()
         ww = np.dot(self._ott.zmat, self._ott.zmx_m4pos2z())
-        for i in range(0,5): 
+        for i in range(0,5):
             m4smap[self._ott.parmask == True] = m4smap[self._ott.parmask == True] + ww[:,i]* (self._ott.m4())[i]
             #m4smap[ott.idx[idtot]] = m4smap[ott.idx[idtot]] + ww[i,idtot]* ott.m4[i]
 
@@ -192,18 +192,18 @@ class OttImages():
         #parod   = 1.44
         #rmod   = 0.6
         m4 = self._ott.m4pupil.copy()
-        pixscale=OttParameters.PIXEL_SCALE
+        pixscale = OttParameters.PIXEL_SCALE
         parxy = [self._ott.slide()*pixscale,0]
         refmxy = [self._ott.rslide()*pixscale, 0]
         ang = (-30-self._ott.angle())*np.pi/180
-        rmat = np.array([[np.cos(ang),np.sin(ang)],[-np.sin(ang), np.cos(ang)]])
-        parxy = rmat.dot(parxy) 
-        refmxy = rmat.dot(refmxy) 
+        rmat = np.array([[np.cos(ang), np.sin(ang)], [-np.sin(ang), np.cos(ang)]])
+        parxy = rmat.dot(parxy)
+        refmxy = rmat.dot(refmxy)
         ss = np.array(np.shape(m4))
         m4c = (ss-1)/2
         parcircle = geo.draw_mask(m4*0, parxy[0]+m4c[0],parxy[1]+m4c[1],OttParameters.parab_radius*pixscale)
         refmcircle = geo.draw_mask(m4*0, refmxy[0]+m4c[0],refmxy[1]+m4c[1],OttParameters.rflat_radius*pixscale)
-        ottimg=m4+parcircle+refmcircle
+        ottimg = m4+parcircle+refmcircle
         if show != None:
             plt.imshow(ottimg)
 

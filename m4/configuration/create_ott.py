@@ -1,13 +1,13 @@
 '''
-Autors
+Authors
   - C. Selmi: written in 2020
 '''
 
 import logging
+from astropy.io import fits as pyfits
 from m4.configuration import config as conf
 from m4.configuration.config import *
 from m4.configuration.ott_parameters import *
-from astropy.io import fits as pyfits
 from m4.ground import object_from_fits_file_name as obj
 from m4.utils.roi import ROI
 from m4.ground.zernikeGenerator import ZernikeGenerator
@@ -37,20 +37,26 @@ class OTT():
         self.smap = np.zeros((Interferometer.N_PIXEL[0], Interferometer.N_PIXEL[1]))
         self.rmap = np.zeros(((2*OttParameters.rflat_radius*OttParameters.pscale).astype(int),
                               (2*OttParameters.rflat_radius*OttParameters.pscale).astype(int)))
-        self.m4pupil = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER, conf.mirror_conf,
-                                                      'm4_mech_pupil-bin2.fits'))
+        self.m4pupil = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
+                                                        conf.mirror_conf,
+                                                        'm4_mech_pupil-bin2.fits'))
         self.m4ima = self.m4pupil * 0.
-        self.mask = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER, conf.mirror_conf,
+        self.mask = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
+                                                     conf.mirror_conf,
                                                      'ott_mask.fits'))
-        self.parmask = np.ma.make_mask(obj.readFits_object(os.path.join(conf.path_name.OPTICAL_FOLDER,
-                                                                        conf.optical_conf, 'ottmask.fits')))
-#         self.segmask1 = np.ma.make_mask(obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
-#                                                                       conf.mirror_conf, 'py-sect4-mask.fits')))
-#         self.ifmat = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,conf.mirror_conf,
+        self.parmask = np.ma.make_mask(obj.readFits_object(
+                                        os.path.join(conf.path_name.OPTICAL_FOLDER,
+                                        conf.optical_conf, 'ottmask.fits')))
+#         self.segmask1 = np.ma.make_mask(obj.readFits_object(
+#                                         os.path.join(conf.path_name.MIRROR_FOLDER,
+#                                         conf.mirror_conf, 'py-sect4-mask.fits')))
+#         self.ifmat = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
+#                                                     conf.mirror_conf,
 #                                                    'if_sect4_rot-bin2.fits'))
-#         self.vmat = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,conf.mirror_conf,
-#                                                    'ff_v_matrix.fits'))
-        self.zmat = obj.readFits_object(os.path.join(conf.path_name.OPTICAL_FOLDER, conf.optical_conf,
+#         self.vmat = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
+#                                                    conf.mirror_conf, 'ff_v_matrix.fits'))
+        self.zmat = obj.readFits_object(os.path.join(conf.path_name.OPTICAL_FOLDER,
+                                                     conf.optical_conf,
                                                      'Zmat.fits'))
 
 # Elements position
@@ -253,7 +259,8 @@ class OTT():
 
 ### Sensitivity matrices
     def _readMatFromTxt(self, file_name):
-        ''' Function to read matrix of 11 Zernike x 6 displacements, m RMS, per 1 m displacement - or 1 radiant rotation
+        ''' Function to read matrix of 11 Zernike x 6 displacements,
+        m RMS, per 1 m displacement - or 1 radiant rotation
 
         Parameters
         ----------
@@ -266,7 +273,7 @@ class OTT():
                     matrix from txt file
         '''
         file = open(file_name, 'r')
-        triplets=file.read().split()
+        triplets = file.read().split()
         x = np.array(triplets)
         mat = x.reshape(11, 6)
         return mat.astype(float)
@@ -278,7 +285,8 @@ class OTT():
                 mat: numpy array [11,6]
                     matrix parable positions to zernike
         '''
-        file_name = os.path.join(conf.path_name.OPTICAL_FOLDER, conf.optical_conf, 'PAR_pos2z.txt')
+        file_name = os.path.join(conf.path_name.OPTICAL_FOLDER,
+                                 conf.optical_conf, 'PAR_pos2z.txt')
         #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_PAR_pos2z.txt'
         mat = self._readMatFromTxt(file_name)
         return mat
@@ -290,7 +298,8 @@ class OTT():
                 mat: numpy array [11,6]
                     matrix reference flat positions to zernike
         '''
-        file_name = os.path.join(conf.path_name.OPTICAL_FOLDER, conf.optical_conf, 'M4_pos2z.txt')
+        file_name = os.path.join(conf.path_name.OPTICAL_FOLDER,
+                                 conf.optical_conf, 'M4_pos2z.txt')
         #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_FM_pos2z.txt'
         mat = self._readMatFromTxt(file_name)
         return mat
@@ -302,7 +311,8 @@ class OTT():
                 mat: numpy array [11,6]
                     matrix deformable mirror positions to zernike
         '''
-        file_name = os.path.join(conf.path_name.OPTICAL_FOLDER, conf.optical_conf, 'M4_pos2z.txt')
+        file_name = os.path.join(conf.path_name.OPTICAL_FOLDER,
+                                 conf.optical_conf, 'M4_pos2z.txt')
         #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_M4_pos2z.txt'
         mat = self._readMatFromTxt(file_name)
         return mat
@@ -320,7 +330,7 @@ class OTT():
 
         prova = np.ma.masked_array(np.ones(((2*OttParameters.parab_radius*OttParameters.pscale).astype(int),
                                             (2*OttParameters.parab_radius*OttParameters.pscale).astype(int))),
-                                            mask=final_mask)
+                                   mask=final_mask)
         zernike_mode = np.arange(2, 12)
         zmat_nopist = np.zeros((prova.compressed().shape[0], zernike_mode.size))
         for i in range(0, zernike_mode.size):
@@ -335,9 +345,10 @@ class OTT():
 class DMmirror():
     def __init__(self):
         """The constructor """
-        curr_conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER, tnconf_mirror)
-        self.vmat = obj.readFits_object(os.path.join(curr_conffolder,'vmat.fits'))
-        self.ff = obj.readFits_object(os.path.join(curr_conffolder,'ff_matrix.fits'))
+        curr_conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER,
+                                       tnconf_mirror)
+        self.vmat = obj.readFits_object(os.path.join(curr_conffolder, 'vmat.fits'))
+        self.ff = obj.readFits_object(os.path.join(curr_conffolder, 'ff_matrix.fits'))
 
         self.m4od = OttParameters.m4od
         self.m4optod = OttParameters.m4optod
