@@ -7,9 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from m4.configuration.create_ott import OTT
-from m4.utils.interface_4D import comm4d
 from m4.ott_sim.ott_images import OttImages
- 
+
 from guietta import Gui, M, _, ___, III, VS
 from guietta import Ax
 from guietta import Empty

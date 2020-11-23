@@ -92,6 +92,23 @@ class OpcUaParameters():
     RA = 0 #angolo di rotazione
     CAR = 1 #carrello dell RM
     ST = 2 #slitta della parabola
+    RM1 = 3
+    RM2 = 4
+    RM3 = 5
+    PAR1 = 6
+    PAR2 = 7
+    PAR3 = 8
+
+    RM_PISTON = 9
+    RM_TILP = 10
+    RM_TILT = 11
+    PAR_PISTON = 12
+    PAR_TIP = 13
+    PAR_TILT = 14
+
+    RM_KIN = 9
+    PAR_KIN = 10
+
     zabbix_variables_name = ['RA', 'CAR', 'ST',
                              'RM1', 'RM2', 'RM3',
                              'PAR1', 'PAR2', 'PAR3',

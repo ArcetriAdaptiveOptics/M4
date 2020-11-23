@@ -133,7 +133,7 @@ class OpcUaController():
 
         Returns
         -------
-            value: boolean 
+            value: boolean
                     position of the requested object
         """
         self._client.connect()
