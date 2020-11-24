@@ -2,6 +2,8 @@
 Author: C. Selmi
 '''
 import numpy as np
+import itertools as it
+from matplotlib import pyplot as plt
 from m4.configuration.ott_parameters import OpcUaParameters
 
 
@@ -33,3 +35,25 @@ def setParActsPosition(opc, piston, tip, tilt):
 
 def commandParActsPosition(opc):
     opc.move_object(OpcUaParameters.PAR_KIN)
+
+def spirale(n):
+    x = np.array([0])
+    y = np.array([0])
+
+    j = -1
+    for k in range(0, n-1):
+        for i in range(2):
+            j += 1
+            p0 = np.zeros(k+1)
+            p1 = (p0+1)*(-1)**k
+            p = np.array(list(it.accumulate(p1)))
+            print(j)
+            print(p0, p)
+            if i == 0:
+                x = np.append(x, p+x[j])
+                y = np.append(y, p0+y[j])
+            else:
+                x = np.append(x, p0+x[j])
+                y = np.append(y, p+y[j])
+
+    plt.figure(figsize=(5,5))
