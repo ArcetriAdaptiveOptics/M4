@@ -20,6 +20,8 @@ def main():
     print(par_position)
 
     commandParActsPosition(opc)
+    
+    opc.stop_single_command(OpcUaParameters.PAR_KIN)
 
 
 def readParActsPosition(opc):
@@ -35,6 +37,8 @@ def setParActsPosition(opc, piston, tip, tilt):
 
 def commandParActsPosition(opc):
     opc.move_object(OpcUaParameters.PAR_KIN)
+
+
 
 def spirale(n):
     x = np.array([0])
