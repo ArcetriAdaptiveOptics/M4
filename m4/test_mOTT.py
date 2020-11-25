@@ -20,7 +20,7 @@ def main():
     print(par_position)
 
     commandParActsPosition(opc)
-    
+
     opc.stop_single_command(OpcUaParameters.PAR_KIN)
 
 

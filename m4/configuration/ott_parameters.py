@@ -99,12 +99,12 @@ class OpcUaParameters():
     PAR2 = 7
     PAR3 = 8
 
-    RM_PISTON = 9
-    RM_TILP = 10
-    RM_TILT = 11
-    PAR_PISTON = 12
-    PAR_TIP = 13
-    PAR_TILT = 14
+    RM_PISTON = 11
+    RM_TIP = 9
+    RM_TILT = 10
+    PAR_PISTON = 14
+    PAR_TIP = 12
+    PAR_TILT = 13
 
     RM_KIN = 9
     PAR_KIN = 10
