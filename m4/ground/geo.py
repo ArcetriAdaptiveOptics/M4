@@ -33,7 +33,7 @@ def draw_mask(img, cx, cy, r, out=0):
         img1[pp] = 0
     else:
         img1[pp] = 1
-    plt.imshow(img1)
+    #plt.imshow(img1)
     return img1
 
 def qpupil(mask, xx=None, yy=None, nocircle=0):
