@@ -29,6 +29,7 @@ def main(x0, y0, n_step, move):
 
         if move==1:
             opc.move_object(OpcUaParameters.PAR_KIN)
+            opc.wait_for_stop(OpcUaParameters.PAR_KIN)
         time.sleep(2)
         plotthespiral(x[0:i], y[0:i])
 
