@@ -7,17 +7,18 @@ import itertools as it
 import numpy as np
 from matplotlib import pyplot as plt
 from m4.configuration.ott_parameters import OpcUaParameters
-
+plt.figure(figsize=(5,5))
 
 ### TEST COMANDI PAR ###
-def main():
+def main(x0, y0, n_step, move):
     from m4.utils.opc_ua_controller import OpcUaController
     opc = OpcUaController()
 
-    x0 = 0
-    y0 = 1
-    x, y = spiral(7, x0, y0)
-
+ #   x0 = 261
+ #   y0 = 68
+    x, y = spiral(n_step, x0, y0)
+    #plt.figure(figsize=(5,5))
+    #plt.show()
     for i in range(x.size):
         par_position = readParPosition(opc)
         print(par_position)
@@ -26,8 +27,11 @@ def main():
         par_position = readParPosition(opc)
         print(par_position)
 
-        opc.move_object(OpcUaParameters.PAR_KIN)
+        if move==1:
+           opc.move_object(OpcUaParameters.PAR_KIN)
         time.sleep(2)
+        plotthespiral(x[0:i], y[0:i])
+        
 
 
 
@@ -42,7 +46,9 @@ def setParPosition(opc, piston, tip, tilt):
     opc.set_target_position(OpcUaParameters.PAR_TIP, tip)
     opc.set_target_position(OpcUaParameters.PAR_TILT, tilt)
 
-
+def plotthespiral(x,y):
+	plt.plot(x,y,'-x', color='blue')
+	
 
 def spiral(n, x0, y0):
     x = np.array([0])
@@ -54,7 +60,7 @@ def spiral(n, x0, y0):
             j = x.size - 1
             p0 = np.zeros(k+1)
             p1 = (p0+1)*(-1)**k
-            p = np.array(list(it.accumulate(p1)))
+            p = np.cumsum(p1)
 #             print(j)
 #             print(p0, p)
             if i == 0:
@@ -66,8 +72,8 @@ def spiral(n, x0, y0):
 
     x = x + x0
     y = y + y0
-    plt.figure(figsize=(5,5))
-    plt.plot(x, y, '.-')
+    #plt.figure(figsize=(5,5))
+    #plt.plot(x, y, '.-')
     return x, y
 
 # def spiral(X, Y):
