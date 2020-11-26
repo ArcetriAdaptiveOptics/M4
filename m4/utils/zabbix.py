@@ -37,6 +37,7 @@ def mainZabbix():
     result2 = ZabbixSender(zserver, port, use_config=None).send(packet)
     return result1, result2
 
+
 def _createZabbixAPI():
     zapi = ZabbixAPI(url='http://192.168.22.22/zabbix/', user='Admin', password='zabbix')
     return zapi
@@ -127,3 +128,7 @@ def _getZabbixMetrics(zapi, host, key):
     avehist = reduce((lambda x,y: float(x)+float(y)), [d['value'] for d in (history['result'])] ) /len(history['result'])
     print( "Avehist {}.".format(avehist))
     return avehist
+
+if __name__ == '__main__':
+    mainZabbix()
+

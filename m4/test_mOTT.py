@@ -2,9 +2,9 @@
 Author: C. Selmi
 '''
 
+import time
 import itertools as it
 import numpy as np
-import time
 from matplotlib import pyplot as plt
 from m4.configuration.ott_parameters import OpcUaParameters
 
