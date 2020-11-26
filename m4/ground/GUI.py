@@ -52,36 +52,36 @@ def main():
 
 def setPlot(gui, image, cmap='viridis'):
     with Ax(gui.plot) as ax:
-            ax.clear()
-            ax.set_title('Titolo')
-            im = ax.imshow(image, origin='lower', cmap=cmap)
-            #ax.figure.colorbar(im, ax=ax)
+        ax.clear()
+        ax.set_title('Titolo')
+        im = ax.imshow(image, origin='lower', cmap=cmap)
+        #ax.figure.colorbar(im, ax=ax)
 
 def setPlot2(gui, oi, smap1, smask, cmap='viridis'):
     image = oi.pwrap(smap1, smask)
     with Ax(gui.plot2) as ax:
-            ax.clear()
-            ax.set_title('Titolo')
-            im = ax.imshow(image, origin='lower', cmap=cmap)
-            #ax.figure.colorbar(im, ax=ax)
+        ax.clear()
+        ax.set_title('Titolo')
+        im = ax.imshow(image, origin='lower', cmap=cmap)
+        #ax.figure.colorbar(im, ax=ax)
 
 def setPlot3(gui, oi, cmap='viridis'):
     with Ax(gui.plot3) as ax:
-            ax.clear()
-            ax.set_title('Titolo')
-            im = ax.imshow(oi.ott_view(), origin='lower', cmap=cmap)
-            #ax.figure.colorbar(im, ax=ax)
+        ax.clear()
+        ax.set_title('Titolo')
+        im = ax.imshow(oi.ott_view(), origin='lower', cmap=cmap)
+        #ax.figure.colorbar(im, ax=ax)
 
 def setPlot4(gui, oi, smap1, cmap='hot'):
     with Ax(gui.plot4) as ax:
-            ax.clear()
-            ax.set_title('Titolo')
-            im = ax.imshow(smap1, origin='lower', cmap=cmap)
-            #ax.figure.colorbar(im, ax=ax
+        ax.clear()
+        ax.set_title('Titolo')
+        im = ax.imshow(smap1, origin='lower', cmap=cmap)
+        #ax.figure.colorbar(im, ax=ax
 
 
 # class GuiCreator():
-# 
+#
 #     def __init__(self):
 #         """The constructor """
 #         self._gui = Gui(
@@ -90,14 +90,14 @@ def setPlot4(gui, oi, smap1, cmap='hot'):
 #               [     III    , III ,  III ,     III      ],
 #               [     III    , III ,  III ,     III],
 #              )
-# 
+#
 #     def create_one_image(self, image):
 #         with Ax(self._gui.plot) as ax:
 #             #ax.clear()
 #             ax.set_title('Titolo')
 #             im = ax.imshow(image, origin='lower', cmap='Reds')
 #             ax.figure.colorbar(im, ax=ax)
-# 
+#
 #     def plot_image(self, image):
 #         self._gui.events(
 #             [  _            ,  _ , _ ,   self.create_one_image ],
@@ -105,4 +105,3 @@ def setPlot4(gui, oi, smap1, cmap='hot'):
 #             [  _            ,  _ , _ ,   _          ], )
 #         self.create_one_image(image)
 #         self._gui.run()
-

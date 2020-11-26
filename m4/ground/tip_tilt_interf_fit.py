@@ -1,5 +1,5 @@
 """
-Autors
+Authors
   - C. Selmi:  written in September 2020
 
 Function for calculating tip and tilt coefficients in interferometer units::
@@ -26,24 +26,24 @@ def fit(image):
     """
     dim_x, dim_y = [image.shape[0], image.shape[1]]
     mask = np.invert(image.mask).astype(int)
-    mm = image.mask.astype(int)
-    ll = np.array(np.where(mm[250]==0))
-    ll1 = ll[0]
-    pixel_dim = ll1[ll1.size-1] - ll1[0]
+    mask_int = image.mask.astype(int)
+    vector = np.array(np.where(mask_int[250] == 0))
+    vector1 = vector[0]
+    pixel_dim = vector1[vector1.size-1] - vector1[0]
 
     x = np.linspace(1, dim_x, dim_x)
-    y =  np.linspace(1, dim_y, dim_y)
+    y = np.linspace(1, dim_y, dim_y)
     xv, yv = np.meshgrid(y, x)
 
-    aa = xv[np.where(mask==1)]
-    bb = yv[np.where(mask==1)]
+    aa = xv[np.where(mask == 1)]
+    bb = yv[np.where(mask == 1)]
     cc = np.ones(aa.size)
-    z = np.zeros((aa.size, 3))
-    z[:,0] = aa
-    z[:,1] = bb
-    z[:,2] = cc
+    z_mat = np.zeros((aa.size, 3))
+    z_mat[:, 0] = aa
+    z_mat[:, 1] = bb
+    z_mat[:, 2] = cc
 
-    inv = np.linalg.pinv(z)
+    inv = np.linalg.pinv(z_mat)
     c = np.dot(inv, image.compressed())
     #c slope per pixel
     #c*pixel/4/lamba*2

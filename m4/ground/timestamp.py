@@ -9,8 +9,11 @@ __version__ = "$Id: timestamp.py 25 2018-01-26 19:00:40Z lbusoni $"
 
 
 class Timestamp():
+    ''' Class for tracking numbers generation
+    '''
 
     def __init__(self):
+        """The constructor """
         self._now = datetime.datetime.now()
 
 

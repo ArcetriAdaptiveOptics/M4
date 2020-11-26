@@ -9,7 +9,8 @@ Function for reading file fits::
     or
     numpy_masked_array_data = obj.readFits_maskedImage(fits_file_path)
     or
-    amplitude, mode_vector, cmd_matrix = obj.readObjectFitsFileName('ampName.fits', 'mvec.fits', 'cmdMatrix.fits')
+    amplitude, mode_vector, cmd_matrix = obj.readObjectFitsFileName(
+                                'ampName.fits', 'mvec.fits', 'cmdMatrix.fits')
 """
 import os
 from astropy.io import fits as pyfits
@@ -128,5 +129,5 @@ def _readImageFromRunaIFFs(fits_file_path):
                              fits_file_path)
     hduList = pyfits.open(file_name)
     cube = hduList[0].data
-    immagine = np.ma.masked_array(cube[0,:,:], mask=np.invert(cube[1,:,:].astype(bool)))
+    immagine = np.ma.masked_array(cube[0, :, :], mask=np.invert(cube[1, :, :].astype(bool)))
     return immagine

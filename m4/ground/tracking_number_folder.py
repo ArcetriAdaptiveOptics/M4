@@ -9,7 +9,7 @@ class TtFolder():
     """ Create a new folder using the generation of the tracking number"""
 
     def __init__(self, store_in_folder):
-        """The constructor 
+        """The constructor
 
         Parameters
         ----------

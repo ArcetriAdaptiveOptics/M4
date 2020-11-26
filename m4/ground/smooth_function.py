@@ -17,7 +17,7 @@ def smooth(a, WSZ):
 
     Parameters
     ----------
-    a: NumPy 1-D array 
+    a: NumPy 1-D array
         containing the data to be smoothed
     WSZ: int
         smoothing window size needs, which must be odd number,
@@ -28,8 +28,8 @@ def smooth(a, WSZ):
     smooth: numpy array
             smoothd data
     '''
-    out0 = np.convolve(a,np.ones(WSZ,dtype=int),'valid')/WSZ
-    r = np.arange(1,WSZ-1,2)
+    out0 = np.convolve(a, np.ones(WSZ, dtype=int), 'valid')/WSZ
+    r = np.arange(1, WSZ-1, 2)
     start = np.cumsum(a[:WSZ-1])[::2]/r
     stop = (np.cumsum(a[:-WSZ:-1])[::2]/r)[::-1]
-    return np.concatenate((  start , out0, stop  ))
+    return np.concatenate((start, out0, stop))

@@ -3,7 +3,7 @@ Author: C. Selmi
 '''
 
 import time
-import itertools as it
+#import itertools as it
 import numpy as np
 from matplotlib import pyplot as plt
 from m4.configuration.ott_parameters import OpcUaParameters
@@ -14,8 +14,8 @@ def main(x0, y0, n_step, move):
     from m4.utils.opc_ua_controller import OpcUaController
     opc = OpcUaController()
 
- #   x0 = 261
- #   y0 = 68
+#   x0 = 261
+#   y0 = 68
     x, y = spiral(n_step, x0, y0)
     #plt.figure(figsize=(5,5))
     #plt.show()
@@ -28,10 +28,9 @@ def main(x0, y0, n_step, move):
         print(par_position)
 
         if move==1:
-           opc.move_object(OpcUaParameters.PAR_KIN)
+            opc.move_object(OpcUaParameters.PAR_KIN)
         time.sleep(2)
         plotthespiral(x[0:i], y[0:i])
-        
 
 
 
@@ -47,8 +46,8 @@ def setParPosition(opc, piston, tip, tilt):
     opc.set_target_position(OpcUaParameters.PAR_TILT, tilt)
 
 def plotthespiral(x,y):
-	plt.plot(x,y,'-x', color='blue')
-	
+    plt.plot(x,y,'-x', color='blue')
+
 
 def spiral(n, x0, y0):
     x = np.array([0])
