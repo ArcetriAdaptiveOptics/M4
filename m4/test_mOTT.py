@@ -10,13 +10,16 @@ from m4.configuration.ott_parameters import OpcUaParameters
 plt.figure(figsize=(5,5))
 
 ### TEST COMANDI PAR ###
-def main(x0, y0, n_step, move):
+def main(x0, y0, n_step, step,move):
     from m4.utils.opc_ua_controller import OpcUaController
     opc = OpcUaController()
 
 #   x0 = 261
 #   y0 = 68
-    x, y = spiral(n_step, x0, y0)
+    x, y = spiral(n_step)
+    x = x*step+x0
+    y = y*step+y0
+    
     #plt.figure(figsize=(5,5))
     #plt.show()
     for i in range(x.size):
@@ -29,6 +32,7 @@ def main(x0, y0, n_step, move):
 
         if move==1:
             opc.move_object(OpcUaParameters.PAR_KIN)
+            opc.wait_for_stop(OpcUaParameters.PAR_KIN)
         time.sleep(2)
         plotthespiral(x[0:i], y[0:i])
 
@@ -49,7 +53,7 @@ def plotthespiral(x,y):
     plt.plot(x,y,'-x', color='blue')
 
 
-def spiral(n, x0, y0):
+def spiral(n):
     x = np.array([0])
     y = np.array([0])
 
@@ -69,8 +73,8 @@ def spiral(n, x0, y0):
                 x = np.append(x, p0+x[j])
                 y = np.append(y, p+y[j])
 
-    x = x + x0
-    y = y + y0
+    x = (x)
+    y = (y)
     #plt.figure(figsize=(5,5))
     #plt.plot(x, y, '.-')
     return x, y
