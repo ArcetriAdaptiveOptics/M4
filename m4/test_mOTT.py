@@ -15,10 +15,11 @@ def main(x0, y0, n_step, move):
     from m4.utils.opc_ua_controller import OpcUaController
     opc = OpcUaController()
 
-#   x0 = 261
-#   y0 = 68
+#   coordinate
     x, y = spiral(n_step, x0, y0)
-    plt.figure(figsize=(5,5))
+#     no_move = 'non muovo'
+#     x, y = spaz(opc, x0, y0, step, intervallo, no_move)
+    plt.figure(figsize=(5, 5))
     #plt.show()
     for i in range(x.size):
         par_position = readParPosition(opc)
@@ -80,19 +81,28 @@ def spiral(n, x0, y0):
     #plt.plot(x, y, '.-')
     return x, y
 
-def spaz(opc, x0, y0, step, range):
-    epsilon = 2 * range / step
-    
-    for i in range(step):
-        y = (y0 - range) + (epsilon * step)
+def spaz(opc, x0, y0, step, intervallo, move=None):
+    epsilon = 2 * intervallo / step
 
-        setParPosition(opc, 0, x0-range, y)
-        opc.move_object(OpcUaParameters.PAR_KIN)
-        opc.wait_for_stop(OpcUaParameters.PAR_KIN)
+    x_list = []
+    y_list = []
+    for i in range(0, step):
+        y = (y0 - intervallo) + (epsilon * i)
 
-        setParPosition(opc, 0, x0+range, y)
-        opc.move_object(OpcUaParameters.PAR_KIN)
-        opc.wait_for_stop(OpcUaParameters.PAR_KIN)
+        if move is None:
+            setParPosition(opc, 0, x0-intervallo, y)
+            opc.move_object(OpcUaParameters.PAR_KIN)
+            opc.wait_for_stop(OpcUaParameters.PAR_KIN)
+        x_list.append(x0-intervallo)
+        y_list.append(y)
+
+        if move is None:
+            setParPosition(opc, 0, x0+intervallo, y)
+            opc.move_object(OpcUaParameters.PAR_KIN)
+            opc.wait_for_stop(OpcUaParameters.PAR_KIN)
+        x_list.append(x0+intervallo)
+        y_list.append(y)
+    return np.array(x_list), np.array(y_list)
 
 
 
