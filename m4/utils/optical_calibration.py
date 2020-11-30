@@ -125,7 +125,7 @@ class opt_calibration():
             par0 = self._ott.parab()
             rm0 = self._ott.refflat()
             for l in range(self._nPushPull):
-				for m in range(np.int(len(command_list)/self._nPushPull)):
+                for m in range(np.int(len(command_list)/self._nPushPull)):
                     k = 2 * l * self._dofIndex.size + m
                     if k <= 2 * l * self._dofIndex.size + self._dofIndex.size:
                         self._ott.parab(par0 + command_list[k])
@@ -146,7 +146,7 @@ class opt_calibration():
 #             self._ott.slide(0.75)
 #             self._ott.angle(90.)
 #             self._ott.rslide(0.6)
-			m40 = self._ott.m4()
+            m40 = self._ott.m4()
             for k in range(len(command_list)):
                 self._ott.m4(m40-command_list[i])
                 masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
