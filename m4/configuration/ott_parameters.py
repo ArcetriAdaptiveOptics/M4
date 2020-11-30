@@ -55,7 +55,7 @@ class OttParameters():
     PARABOLA_PUPIL_XYRADIUS = np.array([256, 256, 256]) #per il simulatore
     #PARABOLA_PUPIL_XYRADIUS = np.array([250, 250, 250])
     PARABOLA_DOF = np.array([2, 3, 4])
-    RM_DOF = np.array([3, 4])
+    RM_DOF = np.array([2, 3]) #erano 3 e 4: attenzione
     PIXEL_SCALE = 360.5 #PIXEL/METRI
     RADIUS_FIDUCIAL_POINT = 0.3
 
