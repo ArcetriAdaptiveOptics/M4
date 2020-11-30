@@ -123,3 +123,10 @@ def test_calib(commandAmpVector, nPushPull, move):
         plt.imshow(mat, origin='lower')
         plt.colorbar()
         return mat
+
+def pippo(tt):
+    from m4.utils.optical_alignment import opt_alignment
+    al = opt_alignment(tt)
+    intMat, rec, mask = al._loadAlignmentInfo()
+    return intMat, rec, mask
+
