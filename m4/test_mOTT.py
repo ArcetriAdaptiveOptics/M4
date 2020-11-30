@@ -108,12 +108,11 @@ def spaz(opc, x0, y0, step, intervallo, move=None):
 
 ### TEST ###
 
-def test_calib(commandAmpVector, nPushPull=None, move=None):
+def test_calib(commandAmpVector, nPushPull, move):
     ott = start.create_ott()
     a = Alignment(ott)
-    if nPushPull is None:
-        nPushPull = 3
-    if move is None:
+
+    if move == 1:
         tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 3)
         return tt_tower
     else:

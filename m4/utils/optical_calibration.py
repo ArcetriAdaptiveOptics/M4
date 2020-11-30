@@ -122,19 +122,21 @@ class opt_calibration():
 #             self._ott.slide(0.75)
 #             self._ott.angle(90.)
 #             self._ott.rslide(0.6)
+            par0 = self._ott.parab()
+            rm0 = self._ott.refflat()
             for l in range(self._nPushPull):
-                for m in range(np.int(len(command_list)/self._nPushPull)):
+				for m in range(np.int(len(command_list)/self._nPushPull)):
                     k = 2 * l * self._dofIndex.size + m
                     if k <= 2 * l * self._dofIndex.size + self._dofIndex.size:
-                        self._ott.parab(command_list[k])
+                        self._ott.parab(par0 + command_list[k])
                     elif 2 * l * self._dofIndex.size + self._dofIndex.size < k < 2 * (l+1) * self._dofIndex.size:
-                        self._ott.parab(np.zeros(6))
-                        self._ott.refflat(command_list[k])
+                        self._ott.parab(par0)
+                        self._ott.refflat(rm0 + command_list[k])
                     masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
                     #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
                     name = 'Frame_%04d.fits' %k
                     self._saveSimulatedInterf(dove, name, masked_ima)
-                self._ott.refflat(np.zeros(6))
+                self._ott.refflat(rm0)
 
         elif who == 1:
             pass
@@ -144,12 +146,13 @@ class opt_calibration():
 #             self._ott.slide(0.75)
 #             self._ott.angle(90.)
 #             self._ott.rslide(0.6)
+			m40 = self._ott.m4()
             for k in range(len(command_list)):
-                self._ott.m4(-command_list[i])
+                self._ott.m4(m40-command_list[i])
                 masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
                 name = 'Frame_%04d.fits' %k
                 self._saveSimulatedInterf(dove, name, masked_ima)
-            self._ott.m4(np.zeros(6))
+            self._ott.m4(m40)
 
     def _saveSimulatedInterf(self, dove, file_name, image):
         fits_file_name = os.path.join(dove, file_name)
