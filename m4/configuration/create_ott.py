@@ -200,10 +200,12 @@ class OTT():
             if start_position is None:
                 self.par_start_position = self._readParPosition()
             else:
+                n_opc = np.array([OpcUaParameters.PAR_PISTON,
+                                  OpcUaParameters.PAR_TIP,
+                                  OpcUaParameters.PAR_TILT])
                 for i in range(OttParameters.PARABOLA_DOF.size):
                     j = OttParameters.PARABOLA_DOF[i]
-                    n_opc = i + OpcUaParameters.PAR_TIP
-                    self._opcUa.set_target_position(n_opc, start_position[j])
+                    self._opcUa.set_target_position(n_opc[i], start_position[j])
                     #print(start_position[j])
                 self._opcUa.move_object(OpcUaParameters.PAR_KIN)
                 self._opcUa.wait_for_stop(OpcUaParameters.PAR_KIN)
@@ -218,7 +220,7 @@ class OTT():
         piston = self._opcUa.get_position(OpcUaParameters.PAR_PISTON)
         tip = self._opcUa.get_position(OpcUaParameters.PAR_TIP)
         tilt = self._opcUa.get_position(OpcUaParameters.PAR_TILT)
-        return np.array([0, 0, tip, tilt, piston, 0])
+        return np.array([0, 0, piston, tip, tilt, 0])
 
     def refflat(self, start_position=None):
         '''Function to set the start position of the reference flat
@@ -247,10 +249,11 @@ class OTT():
             if start_position is None:
                 self.refflat_start_position = self._readRMPosition()
             else:
+                n_opc = np.array([OpcUaParameters.RM_TIP,
+                                  OpcUaParameters.RM_TILT])
                 for i in range(OttParameters.RM_DOF.size):
                     j = OttParameters.RM_DOF[i]
-                    n_opc = i + OpcUaParameters.RM_TIP
-                    self._opcUa.set_target_position(n_opc, start_position[j])
+                    self._opcUa.set_target_position(n_opc[i], start_position[j])
                     #print(start_position[j])
                 self._opcUa.move_object(OpcUaParameters.RM_KIN)
                 self._opcUa.wait_for_stop(OpcUaParameters.RM_KIN)
@@ -265,7 +268,7 @@ class OTT():
         piston = self._opcUa.get_position(OpcUaParameters.RM_PISTON)
         tip = self._opcUa.get_position(OpcUaParameters.RM_TIP)
         tilt = self._opcUa.get_position(OpcUaParameters.RM_TILT)
-        return np.array([0, 0, tip, tilt, piston, 0])
+        return np.array([0, 0, piston, tip, tilt, 0])
 
     def m4(self, start_position=None):
         '''Function to set the start position of the deformable mirror
