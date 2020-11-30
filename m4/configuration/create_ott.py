@@ -204,6 +204,7 @@ class OTT():
                     j = OttParameters.PARABOLA_DOF[i]
                     n_opc = i + OpcUaParameters.PAR_TIP
                     self._opcUa.set_target_position(n_opc, start_position[j])
+                    #print(start_position[j])
                 self._opcUa.move_object(OpcUaParameters.PAR_KIN)
                 self._opcUa.wait_for_stop(OpcUaParameters.PAR_KIN)
                 self.par_start_position = self._readParPosition()
@@ -250,6 +251,7 @@ class OTT():
                     j = OttParameters.RM_DOF[i]
                     n_opc = i + OpcUaParameters.RM_TIP
                     self._opcUa.set_target_position(n_opc, start_position[j])
+                    #print(start_position[j])
                 self._opcUa.move_object(OpcUaParameters.RM_KIN)
                 self._opcUa.wait_for_stop(OpcUaParameters.RM_KIN)
                 self.refflat_start_position = self._readRMPosition()
