@@ -9,6 +9,8 @@ from IPython.display import clear_output
 from matplotlib import pyplot as plt
 from m4.configuration.ott_parameters import OpcUaParameters
 #plt.figure(figsize=(5,5))
+from m4.configuration import start
+from m4.alignment import Alignment
 
 ### TEST COMANDI PAR ###
 def main(x0, y0, n_step, move):
@@ -104,23 +106,12 @@ def spaz(opc, x0, y0, step, intervallo, move=None):
         y_list.append(y)
     return np.array(x_list), np.array(y_list)
 
+### TEST ###
 
-
-# def spiral(X, Y):
-#     x = y = 0
-#     dx = 0
-#     dy = -1
-#     x_list = []
-#     y_list = []
-#     for i in range(max(X, Y)**2):
-#         if (-X/2 < x <= X/2) and (-Y/2 < y <= Y/2):
-#             x_list.append(x)
-#             y_list.append(y)
-#         if x == y or (x < 0 and x == -y) or (x > 0 and x == 1-y):
-#             dx, dy = -dy, dx
-#             x, y = x+dx, y+dy
-#     x = np.array(x_list)
-#     y = np.array(y_list)
-#     plt.figure(figsize=(5,5))
-#     plt.plot(x, y, '.-')
-#     return
+def test_calib(commandAmpVector, nPushPull=None):
+    ott = start.create_ott()
+    a = Alignment(ott)
+    if nPushPull is None:
+        nPushPull = 3
+    tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 3)
+    return tt_tower

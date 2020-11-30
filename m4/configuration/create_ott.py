@@ -190,16 +190,34 @@ class OTT():
         self._logger.debug('About PARAB')
         #if type(start_position) is np.ndarray:
         #if start_position.size == 6:
-        if start_position is None:
-            self.par_start_position = self.par_start_position
+        if conf.simulated == 1:
+            if start_position is None:
+                self.par_start_position = self.par_start_position
+            else:
+                self.par_start_position = start_position
+            self._logger.debug(self.par_start_position)
         else:
-            self.par_start_position = start_position
-        self._logger.debug(self.par_start_position)
+            if start_position is None:
+                self.par_start_position = self._readParPosition()
+            else:
+                for i in range(OttParameters.PARABOLA_DOF.size):
+                    j = OttParameters.PARABOLA_DOF[i]
+                    n_opc = i + OpcUaParameters.PAR_TIP
+                    self._opcUa.set_target_position(n_opc, start_position[j])
+                self._opcUa.move_object(OpcUaParameters.PAR_KIN)
+                self._opcUa.wait_for_stop(OpcUaParameters.PAR_KIN)
+                self.par_start_position = self._readParPosition()
         #else:
             #raise OSError('Incorrect length of the vector')
         #else:
             #raise OSError('Data is not a numpy array')
         return self.par_start_position
+
+    def _readParPosition(self):
+        piston = self._opcUa.get_position(OpcUaParameters.PAR_PISTON)
+        tip = self._opcUa.get_position(OpcUaParameters.PAR_TIP)
+        tilt = self._opcUa.get_position(OpcUaParameters.PAR_TILT)
+        return np.array([0, 0, tip, tilt, piston, 0])
 
     def refflat(self, start_position=None):
         '''Function to set the start position of the reference flat
@@ -218,16 +236,34 @@ class OTT():
         self._logger.debug('About REFFLAT')
         #if type(start_position) is np.ndarray:
         #if start_position.size == 6:
-        if start_position is None:
-            self.refflat_start_position = self.refflat_start_position
+        if conf.simulated == 1:
+            if start_position is None:
+                self.refflat_start_position = self.refflat_start_position
+            else:
+                self.refflat_start_position = start_position
+            self._logger.debug(self.refflat_start_position)
         else:
-            self.refflat_start_position = start_position
-        self._logger.debug(self.refflat_start_position)
+            if start_position is None:
+                self.refflat_start_position = self._readRMPosition()
+            else:
+                for i in range(OttParameters.RM_DOF.size):
+                    j = OttParameters.RM_DOF[i]
+                    n_opc = i + OpcUaParameters.RM_TIP
+                    self._opcUa.set_target_position(n_opc, start_position[j])
+                self._opcUa.move_object(OpcUaParameters.RM_KIN)
+                self._opcUa.wait_for_stop(OpcUaParameters.RM_KIN)
+                self.refflat_start_position = self._readRMPosition()
         #else:
             #raise OSError('Incorrect length of the vector')
         #else:
             #raise OSError('Data is not a numpy array')
         return self.refflat_start_position
+
+    def _readRMPosition(self):
+        piston = self._opcUa.get_position(OpcUaParameters.RM_PISTON)
+        tip = self._opcUa.get_position(OpcUaParameters.RM_TIP)
+        tilt = self._opcUa.get_position(OpcUaParameters.RM_TILT)
+        return np.array([0, 0, tip, tilt, piston, 0])
 
     def m4(self, start_position=None):
         '''Function to set the start position of the deformable mirror
