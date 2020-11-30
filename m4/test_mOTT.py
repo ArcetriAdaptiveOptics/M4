@@ -113,9 +113,9 @@ def test_calib(commandAmpVector, nPushPull, move):
     a = Alignment(ott)
 
     if move == 1:
-        #tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 3)
-        tt_tower = a._cal.measureCalibrationMatrix(ott, 0, commandAmpVector,
-                                                      nPushPull)
+        tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 0)
+#         tt_tower = a._cal.measureCalibrationMatrix(ott, 0, commandAmpVector,
+#                                                       nPushPull)
         return tt_tower
     else:
         mat = a._cal._createCommandMatrix(0, commandAmpVector, nPushPull)
