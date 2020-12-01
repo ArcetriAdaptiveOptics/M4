@@ -123,8 +123,8 @@ class opt_alignment():
         returns:
                 cmd = command for the dof
         """
-        image = np.ma.masked_array(img.data, mask=self._mask)
-        new_image = ie.imageExtender(image)
+        #image = np.ma.masked_array(img.data, mask=self._mask)
+        new_image = ie.imageExtender(img)
         zernike_vector = self._zernikeCoeff(new_image)
         if piston is None:
             zernike_vector = zernike_vector
