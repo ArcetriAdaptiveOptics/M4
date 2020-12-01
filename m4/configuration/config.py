@@ -55,4 +55,6 @@ class fold_name(path_name):
 
     PT_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
                                   "PTCalibration")
+    OPD_SERIES_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
+                                  "OPD_series")
     # metterci tutti i path di tutte le classi

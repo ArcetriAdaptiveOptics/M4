@@ -87,7 +87,7 @@ def ott_alignment_calibration(commandAmpVector=None, nPushPull=None):
     tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 3)
     return tt_tower
 
-def ott_alignment(tt_tower):
+def ott_alignment(tt_tower, move=1):
     '''
     Parameters
     ----------
@@ -100,19 +100,20 @@ def ott_alignment(tt_tower):
     print(rm_cmd)
     #check
     #applicare comando (separare l'aplycmd e decidere dove metterlo)
-    for i in range(OttParameters.PARABOLA_DOF.size):
-        if par_cmd[OttParameters.PARABOLA_DOF[i]] < OttParameters.parab_max_displacement[OttParameters.PARABOLA_DOF[i]]:
-            lala=0
-        else:
-            raise OSError('Par command to large')
-    for i in range(OttParameters.RM_DOF.size):
-        if rm_cmd[OttParameters.RM_DOF[i]] < OttParameters.rm_max_displacement[OttParameters.RM_DOF[i]]:
-            lala=1
-        else:
-            raise OSError('Rm command to large')
+    if move == 1:
+	    for i in range(OttParameters.PARABOLA_DOF.size):
+	        if par_cmd[OttParameters.PARABOLA_DOF[i]] < OttParameters.parab_max_displacement[OttParameters.PARABOLA_DOF[i]]:
+	            lala=0
+	        else:
+	            raise OSError('Par command to large')
+	    for i in range(OttParameters.RM_DOF.size):
+	        if rm_cmd[OttParameters.RM_DOF[i]] < OttParameters.rm_max_displacement[OttParameters.RM_DOF[i]]:
+	            lala=1
+	        else:
+	            raise OSError('Rm command to large')
 
-    a._write_par(par_cmd)
-    a._write_rm(rm_cmd)
+	    a._write_par(par_cmd)
+	    a._write_rm(rm_cmd)
 
 
 def m4_alignment_calibration(commandAmpVector_ForM4Calibration=None,

@@ -14,6 +14,7 @@ from m4.utils.optical_calibration import opt_calibration
 from m4.utils.interface_4D import comm4d
 from m4.configuration.ott_parameters import OttParameters
 from m4.configuration import config as conf
+from m4.utils import image_extender as ie
 
 
 class opt_alignment():
@@ -62,7 +63,7 @@ class opt_alignment():
         """
         par_position = ott.parab()
         rm_position = ott.refflat()
-        m4_position = ott.m4()
+        #m4_position = ott.m4()
         self._logger.info('Calculation of the alignment command for %s',
                           self._tt)
         self._intMat, self._rec, self._mask = self._loadAlignmentInfo()
@@ -123,7 +124,8 @@ class opt_alignment():
                 cmd = command for the dof
         """
         image = np.ma.masked_array(img.data, mask=self._mask)
-        zernike_vector = self._zernikeCoeff(image)
+        new_image = ie.imageExtender(image)
+        zernike_vector = self._zernikeCoeff(new_image)
         if piston is None:
             zernike_vector = zernike_vector
         else:
