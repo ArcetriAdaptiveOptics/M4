@@ -87,7 +87,7 @@ def ott_alignment_calibration(commandAmpVector=None, nPushPull=None):
     tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 3)
     return tt_tower
 
-def ott_alignment(tt_tower, move=1):
+def ott_alignment(tt_tower, n_images, move=1):
     '''
     Parameters
     ----------
@@ -95,7 +95,7 @@ def ott_alignment(tt_tower, move=1):
             calibration measurement to use for alignment
     '''
     print('Ott alignemnt')
-    par_cmd, rm_cmd = a.ott_alignment(tt_tower)
+    par_cmd, rm_cmd = a.ott_alignment(n_images, tt_tower)
     print(par_cmd)
     print(rm_cmd)
     #check

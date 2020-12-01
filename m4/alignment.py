@@ -66,7 +66,7 @@ class Alignment():
                                                                 mask_index)
         return self._tt
 
-    def ott_alignment(self, tt=None):
+    def ott_alignment(self, n_images, tt=None):
         """
         Parameters
         ----------
@@ -85,7 +85,7 @@ class Alignment():
             al = opt_alignment(self._tt)
         else:
             al = opt_alignment(tt)
-        par_cmd, rm_cmd = al.opt_align(self._ott)
+        par_cmd, rm_cmd = al.opt_align(self._ott, n_images)
         #self._applyCmd(par_cmd, rm_cmd)
         return par_cmd, rm_cmd
 
