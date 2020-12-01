@@ -45,7 +45,7 @@ class opt_alignment():
         return fold_name.ALIGNMENT_ROOT_FOLDER
 
 
-    def opt_align(self, ott, piston=None):
+    def opt_align(self, ott, n_images, piston=None):
         """
         Parameters
         ----------
@@ -67,7 +67,7 @@ class opt_alignment():
         self._logger.info('Calculation of the alignment command for %s',
                           self._tt)
         self._intMat, self._rec, self._mask = self._loadAlignmentInfo()
-        img = self._measureOTTPhaseMap(ott)
+        img = self._measureOTTPhaseMap(ott, n_images)
 
         if self._cal._who=='PAR + RM':
             cmd = self._commandGenerator(img)
@@ -135,13 +135,20 @@ class opt_alignment():
         cmd = - np.dot(self._rec, zernike_vector)
         return cmd
 
-    def _measureOTTPhaseMap(self, ott):
+    def _measureOTTPhaseMap(self, ott, n_images):
         #acquisir e salver l'interferogramma
         self._logger.debug('Measure of phase map')
 #         imgf, imgt = self._testAlignment_loadMeasureFromFileFits(0)
 #         img = self._testAlignment_loadMeasureFromFileFits(1)
-        masked_ima = self._c4d.acq4d(ott, 1, show=1)
-        return masked_ima
+        cube_images = None
+        for i in range(n_images):
+            masked_ima = self._c4d.acq4d(ott, 1, show=0)
+            if cube_images is None:
+                cube_images = masked_ima
+            else:
+                cube_images = np.ma.dstack((cube_images, masked_ima))
+        final_ima = np.ma.mean(cube_images, axis=2)
+        return final_ima
 
     def _zernikeCoeff(self, img):
         """
