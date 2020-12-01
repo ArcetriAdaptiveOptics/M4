@@ -126,6 +126,8 @@ class opt_alignment():
         #image = np.ma.masked_array(img.data, mask=self._mask)
         new_image = ie.imageExtender(img)
         zernike_vector = self._zernikeCoeff(new_image)
+        print('zernike:')
+        print(zernike_vector)
         if piston is None:
             zernike_vector = zernike_vector
         else:
@@ -133,6 +135,8 @@ class opt_alignment():
             zernike_vector[3] = cc + piston
         #sommare il coma a questo zernike vector
         cmd = - np.dot(self._rec, zernike_vector)
+        print('mix command:')
+        print(cmd)
         return cmd
 
     def _measureOTTPhaseMap(self, ott, n_images):
