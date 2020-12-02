@@ -105,7 +105,7 @@ def ott_alignment(tt_tower, n_images, move=1):
 #	    for i in range(OttParameters.PARABOLA_DOF.size):
 #	        if par_cmd[OttParameters.PARABOLA_DOF[i]] < OttParameters.parab_max_displacement[OttParameters.PARABOLA_DOF[i]]:
 #	            lala=0
-#	        else:
+#	        else:20200811_125303
 #	            raise OSError('Par command to large')
 #	    for i in range(OttParameters.RM_DOF.size):
 #	        if rm_cmd[OttParameters.RM_DOF[i]] < OttParameters.rm_max_displacement[OttParameters.RM_DOF[i]]:
