@@ -85,13 +85,13 @@ class Alignment():
             al = opt_alignment(self._tt)
         else:
             al = opt_alignment(tt)
-        par_cmd, rm_cmd = al.opt_align(self._ott, n_images)
+        par_cmd, rm_cmd, dove = al.opt_align(self._ott, n_images)
         if move == 1:
             self._write_par(par_cmd)
             self._write_rm(rm_cmd)
-            image = al._measureOTTPhaseMap(self._ott, 1)
+            image = al._measureOTTPhaseMap(self._ott, n_images)
             name = 'FinalPosition.fits'
-            al._saveFrame(image, name)
+            al._saveFrame(dove, image, name)
         return par_cmd, rm_cmd
 
 

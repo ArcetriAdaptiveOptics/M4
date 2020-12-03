@@ -69,13 +69,15 @@ class opt_alignment():
         self._intMat, self._rec, self._mask = self._loadAlignmentInfo()
         img = self._measureOTTPhaseMap(ott, n_images)
         name = 'StartPosition.fits'
-        self._saveFrame(img, name)
+        save = tracking_number_folder.TtFolder(self._storageFolder())
+        dove, self._align_tt = save._createFolderToStoreMeasurements()
+        self._saveFrame(dove, img, name)
 
         if self._cal._who=='PAR + RM':
             cmd = self._commandGenerator(img)
             par_command, rm_command = self._reorgCmdMix(cmd)
-            self._saveAllDataMix(par_position, rm_position, par_command, rm_command)
-            return par_command, rm_command
+            self._saveAllDataMix(dove, par_position, rm_position, par_command, rm_command)
+            return par_command, rm_command, dove
         elif self._cal._who=='M4':
             cmd = self._commandGenerator(img, piston)
             m4_command = self._reorgCmdM4(cmd)
@@ -171,9 +173,9 @@ class opt_alignment():
             final_coef[i] = coef[j]
         return final_coef
 
-    def _saveAllDataMix(self, par_position, rm_position, par_command, rm_command):
-        save = tracking_number_folder.TtFolder(self._storageFolder())
-        dove, self._align_tt = save._createFolderToStoreMeasurements()
+    def _saveAllDataMix(self, dove, par_position, rm_position, par_command, rm_command):
+        #save = tracking_number_folder.TtFolder(self._storageFolder())
+        #dove, self._align_tt = save._createFolderToStoreMeasurements()
         name = 'par0.fits'
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, par_position)
@@ -197,9 +199,8 @@ class opt_alignment():
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, m4_command)
 
-    def _saveFrame(self, image, name):
-        save = tracking_number_folder.TtFolder(self._storageFolder())
-        dove, self._align_tt = save._createFolderToStoreMeasurements()
+    def _saveFrame(self, dove, image, name):
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, image.data)
         pyfits.append(fits_file_name, image.mask.astype(int))
+        return
