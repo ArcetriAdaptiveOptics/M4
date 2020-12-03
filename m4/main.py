@@ -95,17 +95,17 @@ def ott_alignment(tt_tower, n_images, move=1):
             calibration measurement to use for alignment
     '''
     print('Ott alignemnt')
-    par_cmd, rm_cmd = a.ott_alignment(n_images, tt_tower)
+    par_cmd, rm_cmd = a.ott_alignment(n_images, move, tt_tower)
     print('comandi separati')
     print(par_cmd)
     print(rm_cmd)
     #check
     #applicare comando (separare l'aplycmd e decidere dove metterlo)
-    if move == 1:
+#    if move == 1:
 #	    for i in range(OttParameters.PARABOLA_DOF.size):
 #	        if par_cmd[OttParameters.PARABOLA_DOF[i]] < OttParameters.parab_max_displacement[OttParameters.PARABOLA_DOF[i]]:
 #	            lala=0
-#	        else:20200811_125303
+#	        else:
 #	            raise OSError('Par command to large')
 #	    for i in range(OttParameters.RM_DOF.size):
 #	        if rm_cmd[OttParameters.RM_DOF[i]] < OttParameters.rm_max_displacement[OttParameters.RM_DOF[i]]:
@@ -113,8 +113,8 @@ def ott_alignment(tt_tower, n_images, move=1):
 #	        else:
 #	            raise OSError('Rm command to large')
 
-	    a._write_par(par_cmd)
-	    a._write_rm(rm_cmd)
+# 	    a._write_par(par_cmd)
+# 	    a._write_rm(rm_cmd)
 
 
 def m4_alignment_calibration(commandAmpVector_ForM4Calibration=None,

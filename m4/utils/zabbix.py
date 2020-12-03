@@ -54,7 +54,7 @@ def _read_var_pos_from_OpcUa():
 
 def _read_temperature_from_zabbix(zapi, hostname):
     temp_list = []
-    for i in range(24):
+    for i in range(OpcUaParameters.num_PT_sensor):
         temp = _getZabbixMetrics(zapi, hostname, 'PT%02d' %i)
         temp_list.append(temp)
     return np.array(temp_list)

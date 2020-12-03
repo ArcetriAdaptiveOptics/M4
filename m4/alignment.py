@@ -66,7 +66,7 @@ class Alignment():
                                                                 mask_index)
         return self._tt
 
-    def ott_alignment(self, n_images, tt=None):
+    def ott_alignment(self, n_images, move, tt=None):
         """
         Parameters
         ----------
@@ -86,7 +86,12 @@ class Alignment():
         else:
             al = opt_alignment(tt)
         par_cmd, rm_cmd = al.opt_align(self._ott, n_images)
-        #self._applyCmd(par_cmd, rm_cmd)
+        if move == 1:
+            self._write_par(par_cmd)
+            self._write_rm(rm_cmd)
+            image = al._measureOTTPhaseMap(self._ott, 1)
+            name = 'FinalPosition.fits'
+            al._saveFrame(image, name)
         return par_cmd, rm_cmd
 
 

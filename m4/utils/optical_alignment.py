@@ -68,6 +68,8 @@ class opt_alignment():
                           self._tt)
         self._intMat, self._rec, self._mask = self._loadAlignmentInfo()
         img = self._measureOTTPhaseMap(ott, n_images)
+        name = 'StartPosition.fits'
+        self._saveFrame(img, name)
 
         if self._cal._who=='PAR + RM':
             cmd = self._commandGenerator(img)
@@ -172,16 +174,16 @@ class opt_alignment():
     def _saveAllDataMix(self, par_position, rm_position, par_command, rm_command):
         save = tracking_number_folder.TtFolder(self._storageFolder())
         dove, self._align_tt = save._createFolderToStoreMeasurements()
-        name = 'par_position.fits'
+        name = 'par0.fits'
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, par_position)
-        name = 'rm_position.fits'
+        name = 'rm0.fits'
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, rm_position)
-        name = 'par_command.fits'
+        name = 'par_deltacommand.fits'
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, par_command)
-        name = 'rm_command.fits'
+        name = 'rm_deltacommand.fits'
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, rm_command)
 
@@ -194,3 +196,10 @@ class opt_alignment():
         name = 'm4_command.fits'
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, m4_command)
+
+    def _saveFrame(self, image, name):
+        save = tracking_number_folder.TtFolder(self._storageFolder())
+        dove, self._align_tt = save._createFolderToStoreMeasurements()
+        fits_file_name = os.path.join(dove, name)
+        pyfits.writeto(fits_file_name, image.data)
+        pyfits.append(fits_file_name, image.mask.astype(int))
