@@ -62,7 +62,7 @@ def start_log(logging_level):
 ott = start.create_ott()
 a = Alignment(ott)
 
-def ott_alignment_calibration(commandAmpVector=None, nPushPull=None):
+def ott_alignment_calibration(commandAmpVector, nPushPull, move):
     '''
     Other Parameters
     ----------------
@@ -71,6 +71,9 @@ def ott_alignment_calibration(commandAmpVector=None, nPushPull=None):
                                   of the 5 degrees of freedom
             n_push_pull: int
                         number of push pull for each degree of freedom
+            move: int
+                1 to move the tower
+                other to show matrix delta command
 
     Returns
     -------
@@ -78,14 +81,20 @@ def ott_alignment_calibration(commandAmpVector=None, nPushPull=None):
                     calibration measurement
     '''
     print('PAR + RM calibration')
-    a._moveSegmentView(0.75, 90.)
-    a._moveRM(0.6)
-    if commandAmpVector is None:
-        commandAmpVector = np.array([5.0e-06, 5.0e-06, 5.0e-05, 5.0e-06, 5.0e-06])
-    if nPushPull is None:
-        nPushPull = 3
-    tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 3)
-    return tt_tower
+#     if commandAmpVector is None:
+#         commandAmpVector = np.array([5.0e-06, 5.0e-06, 5.0e-05, 5.0e-06, 5.0e-06])
+#     if nPushPull is None:
+#         nPushPull = 3
+    if move == 1:
+        tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 0)
+    #mask_index = 3 per il simulatore  e 0 per la mott
+        return tt_tower
+    else:
+        mat = a._cal._createCommandMatrix(0, commandAmpVector, nPushPull)
+        plt.clf()
+        plt.imshow(mat, origin='lower')
+        plt.colorbar()
+        return mat
 
 def ott_alignment(tt_tower, n_images, move=1):
     '''
@@ -100,7 +109,6 @@ def ott_alignment(tt_tower, n_images, move=1):
     print(par_cmd)
     print(rm_cmd)
     #check
-    #applicare comando (separare l'aplycmd e decidere dove metterlo)
 #    if move == 1:
 #	    for i in range(OttParameters.PARABOLA_DOF.size):
 #	        if par_cmd[OttParameters.PARABOLA_DOF[i]] < OttParameters.parab_max_displacement[OttParameters.PARABOLA_DOF[i]]:
@@ -112,9 +120,6 @@ def ott_alignment(tt_tower, n_images, move=1):
 #	            lala=1
 #	        else:
 #	            raise OSError('Rm command to large')
-
-# 	    a._write_par(par_cmd)
-# 	    a._write_rm(rm_cmd)
 
 
 def m4_alignment_calibration(commandAmpVector_ForM4Calibration=None,

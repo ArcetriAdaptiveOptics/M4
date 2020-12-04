@@ -150,8 +150,8 @@ def stability_test(n_images, delay):
     vect_list = []
     t0 = time.time()
     for i in range(n_images):
-    	ti = time.time()
-    	dt = ti -t0
+        ti = time.time()
+        dt = ti -t0
         masked_ima = interf.acq4d(ott, 1, 0)
         name = Timestamp.now()
         fits_file_name = os.path.join(dove, name)

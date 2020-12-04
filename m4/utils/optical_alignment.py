@@ -15,6 +15,7 @@ from m4.utils.interface_4D import comm4d
 from m4.configuration.ott_parameters import OttParameters
 from m4.configuration import config as conf
 from m4.utils import image_extender as ie
+from m4.ground.timestamp import Timestamp
 
 
 class opt_alignment():
@@ -69,8 +70,11 @@ class opt_alignment():
         self._intMat, self._rec, self._mask = self._loadAlignmentInfo()
         img = self._measureOTTPhaseMap(ott, n_images)
         name = 'StartPosition.fits'
-        save = tracking_number_folder.TtFolder(self._storageFolder())
-        dove, self._align_tt = save._createFolderToStoreMeasurements()
+#         save = tracking_number_folder.TtFolder(self._storageFolder())
+#         dove, self._align_tt = save._createFolderToStoreMeasurements()
+        tt = Timestamp.now()
+        dove = os.path.join(self._storageFolder(), tt+'--'+self._tt)
+        os.makedirs(dove)
         self._saveFrame(dove, img, name)
 
         if self._cal._who=='PAR + RM':
@@ -148,14 +152,15 @@ class opt_alignment():
         self._logger.debug('Measure of phase map')
 #         imgf, imgt = self._testAlignment_loadMeasureFromFileFits(0)
 #         img = self._testAlignment_loadMeasureFromFileFits(1)
-        cube_images = None
-        for i in range(n_images):
-            masked_ima = self._c4d.acq4d(ott, 1, show=0)
-            if cube_images is None:
-                cube_images = masked_ima
-            else:
-                cube_images = np.ma.dstack((cube_images, masked_ima))
-        final_ima = np.ma.mean(cube_images, axis=2)
+#         cube_images = None
+#         for i in range(n_images):
+#             masked_ima = self._c4d.acq4d(ott, 1, show=0)
+#             if cube_images is None:
+#                 cube_images = masked_ima
+#             else:
+#                 cube_images = np.ma.dstack((cube_images, masked_ima))
+#         final_ima = np.ma.mean(cube_images, axis=2)
+        final_ima = self._c4d.acq4d(ott, n_images, 0)
         return final_ima
 
     def _zernikeCoeff(self, img):
