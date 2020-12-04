@@ -332,7 +332,7 @@ class Noise():
         '''
         #data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
         list = os.listdir(data_file_path)
-        image_number = len(list) -1
+        image_number = len(list) - 2
         #tau_vector = np.arange(80)+1
         i_max = np.int((image_number - tau_vector[tau_vector.shape[0]-1]) /
                        (tau_vector[tau_vector.shape[0]-1] * 2))
