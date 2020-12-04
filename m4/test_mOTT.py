@@ -185,6 +185,8 @@ def repeatability_test(n_meas, piston_value, n_frames):
     rm_list = []
     cube = None
     for i in range(n_meas):
+        ott.parab(pos_par)
+        ott.refflat(pos_rm)
         par0 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
         rm0 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
         masked_ima0 = interf.acq4d(ott, n_frames, 0)
@@ -231,6 +233,33 @@ def readRepData(tt):
     hduList = pyfits.open(os.path.join(file_name, 'images.fits'))
     cube = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
     return par, rm, cube
+
+def analyserRepData(tt):
+    par, rm, cube = readRepData(tt)
+    
+    pos01_list_std = []
+    pos02_list_std = []
+    pos01_list_mean = []
+    pos02_list_mean = []
+    pos0_list = []
+    for i in range(par.shape[2]):
+        pos01 = par[:, 0, i] - par[:, 1, i]
+        pos02 = par[:, 0, i] - par[:, 2, i]
+        pos01_list_std.append(pos01.std())
+        pos02_list_std.append(pos02.std())
+        pos01_list_mean.append(pos01.mean())
+        pos02_list_mean.append(pos02.mean())
+        
+        pos0 = par[:,0,i]
+        pos0_list.append(pos0.std())
+        
+
+    pos01_std = np.array(pos01_list_std)
+    pos02_std = np.array(pos02_list_std)
+    pos01_mean = np.array(pos01_list_mean)
+    pos02_mean = np.array(pos02_list_mean)
+    pos0 = np.array(pos0_list)
+    return pos01_std, pos02_std, pos01_mean, pos02_mean, pos0
 
 def _readActs(n1, n2, n3):
     from m4.utils.opc_ua_controller import OpcUaController
