@@ -162,7 +162,7 @@ def stability_test(n_images, delay):
         coef, mat = zOnM4.zernikeFit(new_ima, np.arange(2, 12))
         vect = np.append(dt, coef)
         vect_list.append(vect)
-        
+
         fits_file_name = os.path.join(dove, 'zernike.fits')
         pyfits.writeto(fits_file_name, np.array(vect_list), overwrite=True)
 
