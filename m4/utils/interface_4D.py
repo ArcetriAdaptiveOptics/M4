@@ -59,7 +59,18 @@ class comm4d():
             print('Frame acquisition')
             from oaautils import i4d
             interf = i4d.I4D()
-            masked_ima = self._getMeasurementOnTheFly(interf)
+            if nframes == 1:
+                masked_ima = self._getMeasurementOnTheFly(interf)
+            else:
+                cube_images = None
+                for i in range(nframes):
+                    ima = self._getMeasurementOnTheFly(interf)
+                    if cube_images is None:
+                        cube_images = ima
+                    else:
+                        cube_images = np.ma.dstack((cube_images, ima))
+                masked_ima = np.ma.mean(cube_images, axis=2)
+
             if show ==0:
                 pass
             else:

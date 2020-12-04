@@ -10,6 +10,7 @@ from astropy.io import fits as pyfits
 from IPython.display import clear_output
 from matplotlib import pyplot as plt
 from m4.configuration.ott_parameters import OpcUaParameters
+from m4.configuration.config import fold_name
 #plt.figure(figsize=(5,5))
 from m4.configuration import start
 from m4.alignment import Alignment
@@ -17,7 +18,6 @@ from m4.utils.interface_4D import comm4d
 from m4.ground import tracking_number_folder
 from m4.utils import image_extender as ie
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
-from m4.configuration.config import *
 from m4.ground.timestamp import Timestamp
 
 ### TEST COMANDI PAR ###
@@ -170,4 +170,49 @@ def stability_test(n_images, delay):
 
     return tt
 
+def repeatability_test(n_meas, piston_value):
+    ott = start.create_ott()
+    interf = comm4d()
+    store_in_folder = fold_name.REPEATABILITY_ROOT_FOLDER
+    save = tracking_number_folder.TtFolder(store_in_folder)
+    dove, tt = save._createFolderToStoreMeasurements()
 
+    piston = np.array([0, 0, piston_value, 0, 0, 0])
+
+    for i in range(n_meas):
+        par0 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
+        rm0 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
+        masked_ima0 = interf.acq4d(ott, 1, 0)
+
+        ott.parab(piston)
+        ott.refflat(piston)
+
+        par1 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
+        rm1 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
+        masked_ima1 = interf.acq4d(ott, 1, 0)
+
+        ott.parab(-piston)
+        ott.refflat(-piston)
+
+        par2 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
+        rm2 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
+        masked_ima2 = interf.acq4d(ott, 1, 0)
+
+        par = np.array([par0, par1, par2])
+        rm = np.array([rm0, rm1, rm2])
+        cube = np.ma.dstack((masked_ima0, masked_ima1, masked_ima2))
+        pyfits.writeto(os.path.join(dove, 'par_%d.fits' %i), par)
+        pyfits.writeto(os.path.join(dove, 'rm_%d.fits' %i), rm)
+        pyfits.writeto(os.path.join(dove, 'images_%d.fits' %i), cube.data)
+        pyfits.append(os.path.join(dove, 'images_%d.fits' %i), cube.mask.astype(int))
+    return tt
+
+
+def _readActs(n1, n2, n3):
+    from m4.utils.opc_ua_controller import OpcUaController
+    opc = OpcUaController()
+    
+    act1 = opc.get_position(n1)
+    act2 = opc.get_position(n2)
+    act3 = opc.get_position(n3)
+    return np.array([act1, act2, act3])

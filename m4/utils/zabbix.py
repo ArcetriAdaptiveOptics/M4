@@ -1,5 +1,5 @@
 '''
-Autors
+Authors
   - C. Selmi:  written in September 2020
 '''
 

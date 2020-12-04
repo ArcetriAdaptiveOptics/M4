@@ -249,10 +249,11 @@ class OTT():
             if start_position is None:
                 self.refflat_start_position = self._readRMPosition()
             else:
-                n_opc = np.array([OpcUaParameters.RM_TIP,
+                n_opc = np.array([OpcUaParameters.RM_PISTON,
+                                  OpcUaParameters.RM_TIP,
                                   OpcUaParameters.RM_TILT])
-                for i in range(OttParameters.RM_DOF.size):
-                    j = OttParameters.RM_DOF[i]
+                for i in range(OttParameters.RM_DOF_PISTON.size):
+                    j = OttParameters.RM_DOF_PISTON[i]
                     self._opcUa.set_target_position(n_opc[i], start_position[j])
                     #print(start_position[j])
                 self._opcUa.move_object(OpcUaParameters.RM_KIN)
