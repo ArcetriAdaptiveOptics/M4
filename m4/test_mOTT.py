@@ -170,7 +170,7 @@ def stability_test(n_images, delay):
 
     return tt
 
-def repeatability_test(n_meas, piston_value):
+def repeatability_test(n_meas, piston_value, n_frames):
     ott = start.create_ott()
     interf = comm4d()
     store_in_folder = fold_name.REPEATABILITY_ROOT_FOLDER
@@ -178,35 +178,59 @@ def repeatability_test(n_meas, piston_value):
     dove, tt = save._createFolderToStoreMeasurements()
 
     piston = np.array([0, 0, piston_value, 0, 0, 0])
+    pos_par = ott.parab()
+    pos_rm = ott.refflat()
 
+    par_list = []
+    rm_list = []
+    cube = None
     for i in range(n_meas):
         par0 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
         rm0 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
-        masked_ima0 = interf.acq4d(ott, 1, 0)
+        masked_ima0 = interf.acq4d(ott, n_frames, 0)
 
-        ott.parab(piston)
-        ott.refflat(piston)
+        ott.parab(pos_par + piston)
+        #ott.refflat(pos_rm + piston)
 
         par1 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
         rm1 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
-        masked_ima1 = interf.acq4d(ott, 1, 0)
+        masked_ima1 = interf.acq4d(ott, n_frames, 0)
 
-        ott.parab(-piston)
-        ott.refflat(-piston)
+        ott.parab(pos_par - piston)
+        #ott.refflat(pos_rm - piston)
 
         par2 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
         rm2 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
-        masked_ima2 = interf.acq4d(ott, 1, 0)
+        masked_ima2 = interf.acq4d(ott, n_frames, 0)
 
         par = np.array([par0, par1, par2])
         rm = np.array([rm0, rm1, rm2])
-        cube = np.ma.dstack((masked_ima0, masked_ima1, masked_ima2))
-        pyfits.writeto(os.path.join(dove, 'par_%d.fits' %i), par)
-        pyfits.writeto(os.path.join(dove, 'rm_%d.fits' %i), rm)
-        pyfits.writeto(os.path.join(dove, 'images_%d.fits' %i), cube.data)
-        pyfits.append(os.path.join(dove, 'images_%d.fits' %i), cube.mask.astype(int))
+        cubetto = np.ma.dstack((masked_ima0, masked_ima1, masked_ima2))
+        if cube is None:
+        	cube = cubetto
+        else:
+        	cube = np.ma.dstack((cube, cubetto))
+        
+        par_list.append(par)
+        rm_list.append(rm)
+        pyfits.writeto(os.path.join(dove, 'par.fits'), np.array(par_list), overwrite=True)
+        pyfits.writeto(os.path.join(dove, 'rm.fits'), np.array(rm_list), overwrite=True)
+        pyfits.writeto(os.path.join(dove, 'images.fits'), cube.data, overwrite=True)
+        pyfits.append(os.path.join(dove, 'images.fits'), cube.mask.astype(int), overwrite=True)
+
+    ott.parab(pos_par)
+    ott.refflat(pos_rm)
     return tt
 
+def readRepData(tt):
+    file_name = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER, tt)
+    hduList = pyfits.open(os.path.join(file_name, 'par.fits'))
+    par = hduList[0].data
+    hduList = pyfits.open(os.path.join(file_name, 'rm.fits'))
+    rm = hduList[0].data
+    hduList = pyfits.open(os.path.join(file_name, 'images.fits'))
+    cube = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
+    return par, rm, cube
 
 def _readActs(n1, n2, n3):
     from m4.utils.opc_ua_controller import OpcUaController
