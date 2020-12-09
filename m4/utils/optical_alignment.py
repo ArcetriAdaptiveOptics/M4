@@ -72,7 +72,7 @@ class opt_alignment():
         img = self._c4d.acq4d(ott, n_images, 0)
         name = 'StartImage.fits'
         tt = Timestamp.now()
-        dove = os.path.join(self._storageFolder(), tt + '--' + self._tt)
+        dove = os.path.join(self._storageFolder(), self._tt + '--' + tt)
         os.makedirs(dove)
         self._saveFrame(dove, img, name)
 
