@@ -153,7 +153,7 @@ def stability_test(n_images, delay):
         ti = time.time()
         dt = ti -t0
         masked_ima = interf.acq4d(ott, 1, 0)
-        name = Timestamp.now()
+        name = Timestamp.now() + '.fits'
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, masked_ima.data)
         pyfits.append(fits_file_name, masked_ima.mask.astype(int))
@@ -212,7 +212,7 @@ def repeatability_test(n_meas, piston_value, n_frames):
         	cube = cubetto
         else:
         	cube = np.ma.dstack((cube, cubetto))
-        
+
         par_list.append(par)
         rm_list.append(rm)
         pyfits.writeto(os.path.join(dove, 'par.fits'), np.array(par_list), overwrite=True)
@@ -236,7 +236,7 @@ def readRepData(tt):
 
 def analyserRepData(tt):
     par, rm, cube = readRepData(tt)
-    
+
     pos01_list_std = []
     pos02_list_std = []
     pos01_list_mean = []
@@ -249,10 +249,9 @@ def analyserRepData(tt):
         pos02_list_std.append(pos02.std())
         pos01_list_mean.append(pos01.mean())
         pos02_list_mean.append(pos02.mean())
-        
+
         pos0 = par[:,0,i]
         pos0_list.append(pos0.std())
-        
 
     pos01_std = np.array(pos01_list_std)
     pos02_std = np.array(pos02_list_std)
@@ -264,7 +263,7 @@ def analyserRepData(tt):
 def _readActs(n1, n2, n3):
     from m4.utils.opc_ua_controller import OpcUaController
     opc = OpcUaController()
-    
+
     act1 = opc.get_position(n1)
     act2 = opc.get_position(n2)
     act3 = opc.get_position(n3)

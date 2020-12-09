@@ -68,25 +68,26 @@ class opt_alignment():
         self._logger.info('Calculation of the alignment command for %s',
                           self._tt)
         self._intMat, self._rec, self._mask = self._loadAlignmentInfo()
-        img = self._measureOTTPhaseMap(ott, n_images)
-        name = 'StartPosition.fits'
-#         save = tracking_number_folder.TtFolder(self._storageFolder())
-#         dove, self._align_tt = save._createFolderToStoreMeasurements()
+
+        img = self._c4d.acq4d(ott, n_images, 0)
+        name = 'StartImage.fits'
         tt = Timestamp.now()
-        dove = os.path.join(self._storageFolder(), tt+'--'+self._tt)
+        dove = os.path.join(self._storageFolder(), tt + '--' + self._tt)
         os.makedirs(dove)
         self._saveFrame(dove, img, name)
 
         if self._cal._who=='PAR + RM':
-            cmd = self._commandGenerator(img)
+            cmd, zernike_vector = self._commandGenerator(img)
             par_command, rm_command = self._reorgCmdMix(cmd)
             self._saveAllDataMix(dove, par_position, rm_position, par_command, rm_command)
+            self._saveZernikeVector(dove, zernike_vector)
             return par_command, rm_command, dove
         elif self._cal._who=='M4':
-            cmd = self._commandGenerator(img, piston)
+            cmd, zernike_vector = self._commandGenerator(img, piston)
             m4_command = self._reorgCmdM4(cmd)
-            self._saveAllDataM4(m4_position, m4_command)
-            return m4_command
+            self._saveAllDataM4(dove, m4_position, m4_command)
+            self._saveZernikeVector(dove, zernike_vector)
+            return m4_command, dove
 
 
     def _loadAlignmentInfo(self):
@@ -145,23 +146,8 @@ class opt_alignment():
         cmd = - np.dot(self._rec, zernike_vector)
         print('mix command:')
         print(cmd)
-        return cmd
+        return cmd, zernike_vector
 
-    def _measureOTTPhaseMap(self, ott, n_images):
-        #acquisir e salver l'interferogramma
-        self._logger.debug('Measure of phase map')
-#         imgf, imgt = self._testAlignment_loadMeasureFromFileFits(0)
-#         img = self._testAlignment_loadMeasureFromFileFits(1)
-#         cube_images = None
-#         for i in range(n_images):
-#             masked_ima = self._c4d.acq4d(ott, 1, show=0)
-#             if cube_images is None:
-#                 cube_images = masked_ima
-#             else:
-#                 cube_images = np.ma.dstack((cube_images, masked_ima))
-#         final_ima = np.ma.mean(cube_images, axis=2)
-        final_ima = self._c4d.acq4d(ott, n_images, 0)
-        return final_ima
 
     def _zernikeCoeff(self, img):
         """
@@ -179,30 +165,39 @@ class opt_alignment():
         return final_coef
 
     def _saveAllDataMix(self, dove, par_position, rm_position, par_command, rm_command):
-        #save = tracking_number_folder.TtFolder(self._storageFolder())
-        #dove, self._align_tt = save._createFolderToStoreMeasurements()
-        name = 'par0.fits'
+        name = 'PositionAndDeltaCommand.fits'
+        vector = np.array([par_position, rm_position, par_command, rm_command])
         fits_file_name = os.path.join(dove, name)
-        pyfits.writeto(fits_file_name, par_position)
-        name = 'rm0.fits'
-        fits_file_name = os.path.join(dove, name)
-        pyfits.writeto(fits_file_name, rm_position)
-        name = 'par_deltacommand.fits'
-        fits_file_name = os.path.join(dove, name)
-        pyfits.writeto(fits_file_name, par_command)
-        name = 'rm_deltacommand.fits'
-        fits_file_name = os.path.join(dove, name)
-        pyfits.writeto(fits_file_name, rm_command)
+        pyfits.writeto(fits_file_name, vector)
+#         name = 'par0.fits'
+#         fits_file_name = os.path.join(dove, name)
+#         pyfits.writeto(fits_file_name, par_position)
+#         name = 'rm0.fits'
+#         fits_file_name = os.path.join(dove, name)
+#         pyfits.writeto(fits_file_name, rm_position)
+#         name = 'par_deltacommand.fits'
+#         fits_file_name = os.path.join(dove, name)
+#         pyfits.writeto(fits_file_name, par_command)
+#         name = 'rm_deltacommand.fits'
+#         fits_file_name = os.path.join(dove, name)
+#         pyfits.writeto(fits_file_name, rm_command)
 
-    def _saveAllDataM4(self, m4_position, m4_command):
-        save = tracking_number_folder.TtFolder(self._storageFolder())
-        dove, self._align_tt = save._createFolderToStoreMeasurements()
-        name = 'm4_position.fits'
+    def _saveAllDataM4(self, dove, m4_position, m4_command):
+        name = 'PositionAndDeltaCommand.fits'
+        vector = np.array([m4_position, m4_command])
         fits_file_name = os.path.join(dove, name)
-        pyfits.writeto(fits_file_name, m4_position)
-        name = 'm4_command.fits'
+        pyfits.writeto(fits_file_name, vector)
+#         name = 'm4_position.fits'
+#         fits_file_name = os.path.join(dove, name)
+#         pyfits.writeto(fits_file_name, m4_position)
+#         name = 'm4_command.fits'
+#         fits_file_name = os.path.join(dove, name)
+#         pyfits.writeto(fits_file_name, m4_command)
+
+    def _saveZernikeVector(self, dove, zernike_vector):
+        name = 'Zernike.fits'
         fits_file_name = os.path.join(dove, name)
-        pyfits.writeto(fits_file_name, m4_command)
+        pyfits.writeto(fits_file_name, zernike_vector)
 
     def _saveFrame(self, dove, image, name):
         fits_file_name = os.path.join(dove, name)

@@ -292,32 +292,34 @@ def _createTemplateList(numbers_array):
         if i % 2 == 0:
             #pari
             k = i-2
-            temp = np.tile(vec, k)
+            temp = np.tile(vec, np.int(i/2))
         elif i %2 == 1:
             #dispari
             k = i-2
             if k == 1:
                 temp_pari = vec
             else:
-                temp_pari = np.tile(vec, k-1)
+                temp_pari = np.tile(vec, np.int((i-1)/2))
             temp = np.append(temp_pari, 1)
         template_list.append(temp)
     return template_list
 
-def stability_vibrations(data_file_path, template_list, tidy_or_shuffle):
+def stability_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
     '''
     Parameters
     ----------
         data_file_path: string
                         measurement data folder
-        template_list: list
-                     list of template to use in the analysis
+        numbers_array: numpy array
+                    vector containing integers numbers for
+                    template creation
         tidy_or_shuffle: int
                         0 for tidy, 1 for shuffle
     '''
     print('Noise analysis using template')
     n = Noise()
     dove = _path_noise_results(data_file_path)
+    template_list = _createTemplateList(numbers_array)
 
     tt_list = []
     for temp in template_list:

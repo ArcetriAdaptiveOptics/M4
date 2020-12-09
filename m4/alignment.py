@@ -89,8 +89,8 @@ class Alignment():
         if move == 1:
             self._write_par(par_cmd)
             self._write_rm(rm_cmd)
-            image = al._measureOTTPhaseMap(self._ott, n_images)
-            name = 'FinalPosition.fits'
+            image = self._c4d.acq4d(self._ott, n_images)
+            name = 'FinalImage.fits'
             al._saveFrame(dove, image, name)
         return par_cmd, rm_cmd
 
