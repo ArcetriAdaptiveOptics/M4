@@ -206,7 +206,7 @@ class AnalyzerIFF():
                     tt = TipTiltDetrend()
                     img_if = tt.tipTiltDetrend(img_if, roi, 3)
 
-                if_push_pull_kth = img_if-np.ma.median(img_if)
+                if_push_pull_kth = img_if
 
                 if k == 0:
                     all_push_pull_act_jth = if_push_pull_kth
@@ -255,6 +255,7 @@ class AnalyzerIFF():
                                                    self._cmdAmplitude,
                                                    self._nPushPull)
         for i in range(self._actsVector.shape[0]):
+            print(i)
             for k in range(self._nPushPull):
                 p = self._nPushPull * i + k
                 n = where[p][0][0]
@@ -264,15 +265,15 @@ class AnalyzerIFF():
 
                 name = 'img_%04d.h5' %mis
                 file_name = os.path.join(data_file_path, name)
-                image_for_dim = self._ic.from4D(file_name)
+                image = self._ic.from4D(file_name)
 
-                image_sum = np.zeros((image_for_dim.shape[0],
-                                      image_for_dim.shape[1]))
+#                 image_sum = np.zeros((image_for_dim.shape[0],
+#                                       image_for_dim.shape[1]))
                 for l in range(1, self._template.shape[0]):
                     name = 'img_%04d.h5' %(mis+l)
                     file_name = os.path.join(data_file_path, name)
                     ima = self._ic.from4D(file_name)
-                    image = image_sum + ima * self._template[l]
+                    image = image + ima * self._template[l]
                 img_if = image / (2 * ampl_reorg[mis_amp] * (self._template.shape[0] - 1))
                 if tiptilt_detrend is None:
                     img_if = img_if
@@ -282,7 +283,7 @@ class AnalyzerIFF():
                     tt = TipTiltDetrend()
                     img_if = tt.tipTiltDetrend(img_if, roi, 3)
 
-                if_push_pull_kth = img_if-np.ma.median(img_if)
+                if_push_pull_kth = img_if
 
                 if k == 0:
                     all_push_pull_act_jth = if_push_pull_kth

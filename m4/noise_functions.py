@@ -6,6 +6,7 @@ Autors
 import os
 import logging
 import numpy as np
+import glob
 from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
 from m4.configuration.config import fold_name
@@ -45,7 +46,7 @@ class Noise():
 
 ### IFF spostate in C_noise dell'altro m4
 
-    def _defAnalyzer(self, tidy_or_shuffle, template, actsVector=None, n_push_pull=None):
+    def _defAnalyzer(self, data_file_path, tidy_or_shuffle, template, n_push_pull=None, actsVector=None):
         '''
         arg:
             tidy_or_shuffle = (int) 0 per tidy, 1 per shuffle
@@ -63,10 +64,14 @@ class Noise():
             an._nPushPull = n_push_pull
         an._template = template
         if actsVector is None:
-            an._actsVector = np.arange(25)
+            list = glob.glob(os.path.join(data_file_path,'*.h5'))
+            n_tot = len(list)
+            n_acts = np.int(n_tot / (an._template.size * an._nPushPull))
+            an._actsVector = np.arange(n_acts)
             an._modeVector = np.copy(an._actsVector)
         else:
             an._actsVector = actsVector
+            an._modeVector = np.copy(an._actsVector)
         an._cmdAmplitude = np.ones(an._actsVector.shape[0])
 
         indexingList = []
@@ -82,7 +87,7 @@ class Noise():
 
 
     def noise_analysis_from_hdf5_folder(self, data_file_path, tidy_or_shuffle, template,
-                                        actsVector=None, n_push_pull=None):
+                                        n_push_pull=None, actsVector=None):
         '''
         Parameters
         ----------
@@ -106,7 +111,7 @@ class Noise():
         '''
         #data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
 
-        an = self._defAnalyzer(tidy_or_shuffle, template, actsVector, n_push_pull)
+        an = self._defAnalyzer(data_file_path, tidy_or_shuffle, template, actsVector, n_push_pull)
 
         store_in_folder = self._storageFolder()
         save = tracking_number_folder.TtFolder(store_in_folder)
@@ -164,10 +169,10 @@ class Noise():
         return rms_mean, quad_tt
 
     def _spectrumAllData(self, data_file_path):
-        list = os.listdir(data_file_path)
+        list = glob.glob(os.path.join(data_file_path,'*.h5'))
         coef_tilt_list = []
         coef_tip_list = []
-        for i in range(len(list)-2):
+        for i in range(len(list)):
             name = 'img_%04d.h5' %i
             file_name = os.path.join(data_file_path, name)
             start_image = self._ic.from4D(file_name)
@@ -331,8 +336,8 @@ class Noise():
                     of the images
         '''
         #data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
-        list = os.listdir(data_file_path)
-        image_number = len(list) - 2
+        list = glob.glob(os.path.join(data_file_path,'*.h5'))
+        image_number = len(list)
         #tau_vector = np.arange(80)+1
         i_max = np.int((image_number - tau_vector[tau_vector.shape[0]-1]) /
                        (tau_vector[tau_vector.shape[0]-1] * 2))
@@ -392,8 +397,8 @@ class Noise():
             time: numpy array
                 vector of the time at which the image were taken
         '''
-        list = os.listdir(data_file_path)
-        image_number = len(list) - 2
+        list = glob.glob(os.path.join(data_file_path,'*.h5'))
+        image_number = len(list)
         time = np.arange(image_number) * (1/27.58)
 
         mean_list = []
