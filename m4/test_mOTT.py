@@ -230,12 +230,12 @@ def readRepData(tt):
     par = hduList[0].data
     hduList = pyfits.open(os.path.join(file_name, 'rm.fits'))
     rm = hduList[0].data
-    hduList = pyfits.open(os.path.join(file_name, 'images.fits'))
-    cube = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
-    return par, rm, cube
+    #hduList = pyfits.open(os.path.join(file_name, 'images.fits'))
+    #cube = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
+    return par, rm
 
 def analyserRepData(tt):
-    par, rm, cube = readRepData(tt)
+    par, rm = readRepData(tt)
 
     pos01_list_std = []
     pos02_list_std = []
