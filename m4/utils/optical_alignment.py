@@ -95,7 +95,7 @@ class opt_alignment():
         new_intMat = np.zeros((intMatModesVector.size, intMat.shape[1]))
         for i in range(intMatModesVector.size):
             k = intMatModesVector[i]
-            new_intMat[k,:] = intMat[k,:]
+            new_intMat[i,:] = intMat[k,:]
         new_rec = np.linalg.pinv(new_intMat)
         return new_intMat, new_rec, mask
 
@@ -175,7 +175,7 @@ class opt_alignment():
         final_coef_selected = np.zeros(self._intMatModesVector.size)
         for i in range(self._intMatModesVector.size):
             final_coef_selected[i] = final_coef[self._intMatModesVector[i]]
-        return final_coef
+        return final_coef_selected
 
     def _saveAllDataMix(self, dove, par_position, rm_position, par_command, rm_command):
         name = 'PositionAndDeltaCommand.fits'
