@@ -68,6 +68,7 @@ class opt_alignment():
         self._logger.info('Calculation of the alignment command for %s',
                           self._tt)
         self._intMat, self._rec, self._mask = self._selectModesInIntMatAndRecConstruction(intMatModesVector)
+        self._intMatModesVector = intMatModesVector
 
         img = self._c4d.acq4d(ott, n_images, 0)
         name = 'StartImage.fits'
@@ -170,6 +171,10 @@ class opt_alignment():
         zipped = zip(aa, z)
         for i, j in zipped:
             final_coef[i] = coef[j]
+
+        final_coef_selected = np.zeros(self._intMatModesVector.size)
+        for i in range(self._intMatModesVector.size):
+            final_coef_selected[i] = final_coef[self._intMatModesVector[i]]
         return final_coef
 
     def _saveAllDataMix(self, dove, par_position, rm_position, par_command, rm_command):
