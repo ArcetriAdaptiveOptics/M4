@@ -92,10 +92,10 @@ class opt_alignment():
 
     def _selectModesInIntMatAndRecConstruction(self, intMatModesVector):
         intMat, rec, mask = self._loadAlignmentInfo()
-        new_intMat = np.zeros((intMatModesVector.size, intMat.shape[1]))
+        new_intMat = np.zeros((intMat.shape[1], intMatModesVector.size))
         for i in range(intMatModesVector.size):
             k = intMatModesVector[i]
-            new_intMat[i,:] = intMat[k,:]
+            new_intMat[:, i] = intMat[:, k]
         new_rec = np.linalg.pinv(new_intMat)
         return new_intMat, new_rec, mask
 
@@ -152,7 +152,8 @@ class opt_alignment():
             cc = zernike_vector[3]
             zernike_vector[3] = cc + piston
         #sommare il coma a questo zernike vector
-        cmd = - np.dot(self._rec, zernike_vector)
+        cmd = - np.dot(self._rec.T, zernike_vector) #sbagliato
+        #cmd = - np.dot(self._rec, zernike_vector) #giusto
         print('mix command:')
         print(cmd)
         return cmd, zernike_vector
