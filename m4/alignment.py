@@ -66,7 +66,7 @@ class Alignment():
                                                                 mask_index)
         return self._tt
 
-    def ott_alignment(self, n_images, move, tt=None):
+    def ott_alignment(self, n_images, move, intMatModesVector, tt=None):
         """
         Parameters
         ----------
@@ -85,7 +85,7 @@ class Alignment():
             al = opt_alignment(self._tt)
         else:
             al = opt_alignment(tt)
-        par_cmd, rm_cmd, dove = al.opt_align(self._ott, n_images)
+        par_cmd, rm_cmd, dove = al.opt_align(self._ott, n_images, intMatModesVector)
         if move == 1:
             self._write_par(par_cmd)
             self._write_rm(rm_cmd)

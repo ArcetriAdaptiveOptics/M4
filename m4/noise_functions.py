@@ -174,6 +174,7 @@ class Noise():
         coef_tip_list = []
         for i in range(len(list)):
             name = 'img_%04d.h5' %i
+            print(name)
             file_name = os.path.join(data_file_path, name)
             start_image = self._ic.from4D(file_name)
             image = self._imageExtender(start_image)

@@ -96,15 +96,23 @@ def ott_alignment_calibration(commandAmpVector, nPushPull, move):
         plt.colorbar()
         return mat
 
-def ott_alignment(tt_tower, n_images, move=1):
+def ott_alignment(tt_tower, n_images, intMatModesVector,
+                  move=1):
     '''
     Parameters
     ----------
     tt_tower: string
             calibration measurement to use for alignment
+    n_images: int
+            number of interferometers frames
+    intMatModesVecor: numpy array
+                    np.array([0,1,2,3,4,5]) for tip, tilt, fuoco,
+                                                coma, coma
+    move: int
+        1 to move
     '''
     print('Ott alignemnt')
-    par_cmd, rm_cmd = a.ott_alignment(n_images, move, tt_tower)
+    par_cmd, rm_cmd = a.ott_alignment(n_images, move, intMatModesVector, tt_tower)
     print('comandi separati')
     print(par_cmd)
     print(rm_cmd)

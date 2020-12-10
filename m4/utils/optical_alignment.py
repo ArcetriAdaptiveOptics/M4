@@ -46,7 +46,7 @@ class opt_alignment():
         return fold_name.ALIGNMENT_ROOT_FOLDER
 
 
-    def opt_align(self, ott, n_images, piston=None):
+    def opt_align(self, ott, n_images, intMatModesVector, piston=None):
         """
         Parameters
         ----------
@@ -67,7 +67,7 @@ class opt_alignment():
         #m4_position = ott.m4()
         self._logger.info('Calculation of the alignment command for %s',
                           self._tt)
-        self._intMat, self._rec, self._mask = self._loadAlignmentInfo()
+        self._intMat, self._rec, self._mask = self._selectModesInIntMatAndRecConstruction(intMatModesVector)
 
         img = self._c4d.acq4d(ott, n_images, 0)
         name = 'StartImage.fits'
@@ -89,6 +89,14 @@ class opt_alignment():
             self._saveZernikeVector(dove, zernike_vector)
             return m4_command, dove
 
+    def _selectModesInIntMatAndRecConstruction(self, intMatModesVector):
+        intMat, rec, mask = self._loadAlignmentInfo()
+        new_intMat = np.zeros((intMatModesVector.size, intMat.shape[1]))
+        for i in range(intMatModesVector.size):
+            k = intMatModesVector[i]
+            new_intMat[k,:] = intMat[k,:]
+        new_rec = np.linalg.pinv(new_intMat)
+        return new_intMat, new_rec, mask
 
     def _loadAlignmentInfo(self):
         """ Returns interaction matrix, reconstructor and mask """
