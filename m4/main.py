@@ -32,6 +32,7 @@ OTT procedures
 
 import os
 import numpy as np
+import time
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 #from m4.ground.configuration import Configuration
@@ -333,6 +334,7 @@ def stability_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
     for temp in template_list:
         tt = n.noise_analysis_from_hdf5_folder(data_file_path, tidy_or_shuffle,
                                                temp)
+        time.sleep(1)
         tt_list.append(tt)
 
     fits_file_name = os.path.join(dove, 'trackingnumbers_%d.txt' %tidy_or_shuffle)
