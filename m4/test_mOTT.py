@@ -230,9 +230,20 @@ def readRepData(tt):
     par = hduList[0].data
     hduList = pyfits.open(os.path.join(file_name, 'rm.fits'))
     rm = hduList[0].data
-    #hduList = pyfits.open(os.path.join(file_name, 'images.fits'))
-    #cube = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
-    return par, rm
+    hduList = pyfits.open(os.path.join(file_name, 'images.fits'))
+    cube = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
+    return par, rm, cube
+
+def analyzeOptRep(tt):
+    zOnM4 = ZernikeOnM4()
+    par, rm, cube = readRepData(tt)
+    z_list=[]
+    for i in range(cube.shape[2]):
+        masked_ima = cube[:,:,i]
+        new_ima = ie.imageExtender(masked_ima)
+        coef, mat = zOnM4.zernikeFit(new_ima, np.arange(2, 7))
+        z_list.append(coef)
+    return np.array(z_list)
 
 def analyserRepData(tt):
     par, rm = readRepData(tt)

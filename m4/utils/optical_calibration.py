@@ -347,6 +347,7 @@ class opt_calibration():
         for i in range(self._cube.shape[2]):
             ima = np.ma.masked_array(self._cube[:,:,i], mask=mask)
             new_ima = ie.imageExtender(ima)
+            new_ima = new_ima - np.mean(new_ima)
             coef, mat = self._zOnM4.zernikeFit(new_ima, np.arange(2, 11))
             #z= np.array([2,3,4,7,8])
             z = np.array([0, 1, 2, 5, 6])

@@ -16,6 +16,7 @@ from m4.configuration.ott_parameters import OttParameters
 from m4.configuration import config as conf
 from m4.utils import image_extender as ie
 from m4.ground.timestamp import Timestamp
+from matplotlib import pyplot as plt
 
 
 class opt_alignment():
@@ -92,10 +93,7 @@ class opt_alignment():
 
     def _selectModesInIntMatAndRecConstruction(self, intMatModesVector):
         intMat, rec, mask = self._loadAlignmentInfo()
-        new_intMat = np.zeros((intMat.shape[1], intMatModesVector.size))
-        for i in range(intMatModesVector.size):
-            k = intMatModesVector[i]
-            new_intMat[:, i] = intMat[:, k]
+        new_intMat = intMat[intMatModesVector, :]
         new_rec = np.linalg.pinv(new_intMat)
         return new_intMat, new_rec, mask
 
@@ -104,6 +102,12 @@ class opt_alignment():
         self._intMat = self._readInfo('InteractionMatrix.fits')
         self._rec = self._readInfo('Reconstructor.fits')
         self._mask = self._readInfo('Mask.fits')
+        #y = ['PAR_PIST', 'PAR_TIP', 'PAR_TILT', 'RM_TIP', 'RM_TILT']
+        plt.clf()
+        plt.imshow(self._intMat, origin='lower')
+        plt.colorbar()
+        plt.xlabel('Commands')
+        plt.ylabel('Zernike Modes')
         return self._intMat, self._rec, self._mask
 
 
@@ -143,6 +147,7 @@ class opt_alignment():
         """
         #image = np.ma.masked_array(img.data, mask=self._mask)
         new_image = ie.imageExtender(img)
+        new_image = new_image - np.mean(new_image)
         zernike_vector = self._zernikeCoeff(new_image)
         print('zernike:')
         print(zernike_vector)
@@ -152,8 +157,7 @@ class opt_alignment():
             cc = zernike_vector[3]
             zernike_vector[3] = cc + piston
         #sommare il coma a questo zernike vector
-        cmd = - np.dot(self._rec.T, zernike_vector) #sbagliato
-        #cmd = - np.dot(self._rec, zernike_vector) #giusto
+        cmd = - np.dot(self._rec, zernike_vector) #giusto
         print('mix command:')
         print(cmd)
         return cmd, zernike_vector
