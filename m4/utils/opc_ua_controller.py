@@ -155,6 +155,7 @@ class OpcUaController():
         while value == True:
             time.sleep(0.1)
             value = self._get_command_state(int_number)
+        
 
 ###
 #     def stop_single_command(self, int_number):
