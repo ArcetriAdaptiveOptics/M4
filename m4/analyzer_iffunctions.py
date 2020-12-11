@@ -265,15 +265,30 @@ class AnalyzerIFF():
 
                 name = 'img_%04d.h5' %mis
                 file_name = os.path.join(data_file_path, name)
-                image = self._ic.from4D(file_name)
+                image0 = self._ic.from4D(file_name)
 
 #                 image_sum = np.zeros((image_for_dim.shape[0],
 #                                       image_for_dim.shape[1]))
+                image_list = [image0]
                 for l in range(1, self._template.shape[0]):
                     name = 'img_%04d.h5' %(mis+l)
                     file_name = os.path.join(data_file_path, name)
                     ima = self._ic.from4D(file_name)
-                    image = image + ima * self._template[l]
+                    image_list.append(ima)
+                
+                image = np.zeros((image0.shape[0], image0.shape[1]))
+                for p in range(1, len(image_list)):
+                    #opd2add   = opdtemp[*,*,p]*form[p]+opdtemp[*,*,p-1]*form[p-1]
+                    #opd      += opd2add
+                    opd2add = image_list[p] * self._template[p] + image_list[p-1] * self._template[p-1]
+                    master_mask2add = np.ma.mask_or(image_list[p].mask, image_list[p-1].mask)
+                    if p==1:
+                        master_mask = master_mask2ad
+                    else:
+                        master_mask = np.ma.mask_or(master_mask, master_mask2add)
+                    image += opd2add
+                image = np.ma.masked_array(image, mask=master_mask)
+                    #image = image + ima * self._template[l] #sbagliato
                 img_if = image / (2 * ampl_reorg[mis_amp] * (self._template.shape[0] - 1))
                 if tiptilt_detrend is None:
                     img_if = img_if
