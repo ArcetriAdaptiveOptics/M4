@@ -133,7 +133,7 @@ class opt_calibration():
                     elif 2 * l * self._dofIndex.size + self._dofIndex.size < k < 2 * (l+1) * self._dofIndex.size:
                         self._ott.parab(par0)
                         self._ott.refflat(rm0 + command_list[k])
-                    masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
+                    masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
                     #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
                     name = 'Frame_%04d.fits' %k
                     self._saveSimulatedInterf(dove, name, masked_ima)

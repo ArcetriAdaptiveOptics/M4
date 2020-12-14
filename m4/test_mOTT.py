@@ -122,15 +122,17 @@ def test_calib(commandAmpVector):
 
     nPushPull = 4
     tt_list = []
+    file_name = os.path.join(fold_name.CALIBRATION_ROOT_FOLDER, 'TtForStandardCalib.txt')
+    file = open(file_name, 'w+')
     for i in range(15):
         tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 0)
         tt_list.append(tt_tower)
         print(tt_tower)
+        file.write('%s' %tt_tower)
+    file.close()
 
     tt_list.append(commandAmpVector)
     ttAmpVector = np.array(tt_list)
-    fits_file_name = os.path.join(fold_name.CALIBRATION_ROOT_FOLDER, 'TtForStandardCalib.fits')
-    pyfits.writeto(fits_file_name, np.array(ttAmpVector))
 
     return ttAmpVector
 
