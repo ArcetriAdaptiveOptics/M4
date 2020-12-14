@@ -136,12 +136,36 @@ def test_calib(commandAmpVector):
 
     return ttAmpVector
 
+def anlyzerTestCalib():
+    tts1 = np.array(['20201214_091212', '20201214_092528', '20201214_093842',
+                    '20201214_095152', '20201214_100508', '20201214_101821',
+                    '20201214_103128', '20201214_104441', '20201214_105754',
+                    '20201214_111110', '20201214_112435', '20201214_113749'])
+    tts2 = np.array(['20201214_115451', '20201214_120323', '20201214_121200',
+                     '20201214_122040', '20201214_122922', '20201214_123807',
+                     '20201214_124640', '20201214_125504', '20201214_130327',
+                     '20201214_131134', '20201214_131950', '20201214_132822'])
+    intMat1 = None
+    intMat2 = None
+    for i in range(tts1.size):
+        mat1 = pippo(tts1[i])
+        mat2 = pippo(tts2[i])
+        if intMat1 is None:
+            intMat1 = mat1
+        else:
+            intMat1 = np.stack((intMat1, mat1))
+        if intMat2 is None:
+            intMat2 = mat2
+        else:
+            intMat2 = np.stack((intMat2, mat2))
+    return intMat1, intMat2
+
 
 def pippo(tt):
     from m4.utils.optical_alignment import opt_alignment
     al = opt_alignment(tt)
     intMat, rec, mask = al._loadAlignmentInfo()
-    return intMat, rec, mask
+    return intMat
 
 
 def stability_test(n_images, delay):
