@@ -122,7 +122,7 @@ def test_calib(commandAmpVector):
 
     nPushPull = 4
     tt_list = []
-    file_name = os.path.join(fold_name.CALIBRATION_ROOT_FOLDER, 'TtForStandardCalib.txt')
+    file_name = os.path.join(fold_name.CALIBRATION_ROOT_FOLDER, 'TtSleepCalib.txt')
     file = open(file_name, 'w+')
     for i in range(15):
         tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 0)
