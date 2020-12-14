@@ -4,6 +4,7 @@ Authors
 '''
 import os
 import logging
+import time
 from astropy.io import fits as pyfits
 import numpy as np
 from m4.configuration.config import fold_name
@@ -120,9 +121,6 @@ class opt_calibration():
             cmd = command_matrix[:,i]
             command_list.append(cmd)
         if who == 0:
-#             self._ott.slide(0.75)
-#             self._ott.angle(90.)
-#             self._ott.rslide(0.6)
             par0 = self._ott.parab()
             rm0 = self._ott.refflat()
             for l in range(self._nPushPull):
@@ -133,6 +131,8 @@ class opt_calibration():
                     elif 2 * l * self._dofIndex.size + self._dofIndex.size < k < 2 * (l+1) * self._dofIndex.size:
                         self._ott.parab(par0)
                         self._ott.refflat(rm0 + command_list[k])
+                    time.sleep(5)
+                    print('5 secondi di attesa')
                     masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
                     #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
                     name = 'Frame_%04d.fits' %k
@@ -144,9 +144,6 @@ class opt_calibration():
         elif who == 2:
             pass
         elif who == 3:
-#             self._ott.slide(0.75)
-#             self._ott.angle(90.)
-#             self._ott.rslide(0.6)
             m40 = self._ott.m4()
             for k in range(len(command_list)):
                 self._ott.m4(m40-command_list[i])
