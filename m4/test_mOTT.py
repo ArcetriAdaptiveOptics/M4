@@ -116,21 +116,24 @@ def spaz(opc, x0, y0, step, intervallo, move=None):
 
 ### TEST ###
 
-def test_calib(commandAmpVector, nPushPull, move):
+def test_calib(commandAmpVector):
     ott = start.create_ott()
     a = Alignment(ott)
 
-    if move == 1:
+    nPushPull = 4
+    tt_list = []
+    for i in range(15):
         tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 0)
-#         tt_tower = a._cal.measureCalibrationMatrix(ott, 0, commandAmpVector,
-#                                                       nPushPull)
-        return tt_tower
-    else:
-        mat = a._cal._createCommandMatrix(0, commandAmpVector, nPushPull)
-        plt.clf()
-        plt.imshow(mat, origin='lower')
-        plt.colorbar()
-        return mat
+        tt_list.append(tt_tower)
+        print(tt_tower)
+
+    tt_list.append(commandAmpVector)
+    ttAmpVector = np.array(tt_list)
+    fits_file_name = os.path.join(fold_name.CALIBRATION_ROOT_FOLDER, 'TtForStandardCalib.fits')
+    pyfits.writeto(fits_file_name, np.array(ttAmpVector))
+
+    return ttAmpVector
+
 
 def pippo(tt):
     from m4.utils.optical_alignment import opt_alignment
@@ -230,9 +233,9 @@ def readRepData(tt):
     par = hduList[0].data
     hduList = pyfits.open(os.path.join(file_name, 'rm.fits'))
     rm = hduList[0].data
-    hduList = pyfits.open(os.path.join(file_name, 'images.fits'))
-    cube = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
-    return par, rm, cube
+    #hduList = pyfits.open(os.path.join(file_name, 'images.fits'))
+    #cube = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
+    return par, rm
 
 def analyzeOptRep(tt):
     zOnM4 = ZernikeOnM4()
