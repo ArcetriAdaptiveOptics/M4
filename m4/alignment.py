@@ -66,7 +66,7 @@ class Alignment():
                                                                 mask_index)
         return self._tt
 
-    def ott_alignment(self, n_images, move, intMatModesVector, tt=None):
+    def ott_alignment(self, n_images, move, intMatModesVector=None, tt=None):
         """
         Parameters
         ----------

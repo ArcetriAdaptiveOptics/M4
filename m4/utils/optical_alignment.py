@@ -7,7 +7,6 @@ import os
 import logging
 from astropy.io import fits as pyfits
 import numpy as np
-from m4.ground import tracking_number_folder
 from m4.configuration.config import fold_name
 from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.utils.optical_calibration import opt_calibration
@@ -47,7 +46,7 @@ class opt_alignment():
         return fold_name.ALIGNMENT_ROOT_FOLDER
 
 
-    def opt_align(self, ott, n_images, intMatModesVector, piston=None):
+    def opt_align(self, ott, n_images, intMatModesVector=None, piston=None):
         """
         Parameters
         ----------
@@ -91,10 +90,14 @@ class opt_alignment():
             self._saveZernikeVector(dove, zernike_vector)
             return m4_command, dove
 
-    def _selectModesInIntMatAndRecConstruction(self, intMatModesVector):
+    def _selectModesInIntMatAndRecConstruction(self, intMatModesVector=None):
         intMat, rec, mask = self._loadAlignmentInfo()
-        new_intMat = intMat[intMatModesVector, :]
-        new_rec = np.linalg.pinv(new_intMat)
+        if intMatModesVector is None:
+            new_intMat = intMat
+            new_rec = rec
+        else:
+            new_intMat = intMat[intMatModesVector, :]
+            new_rec = np.linalg.pinv(new_intMat)
         return new_intMat, new_rec, mask
 
     def _loadAlignmentInfo(self):
@@ -177,9 +180,12 @@ class opt_alignment():
         for i, j in zipped:
             final_coef[i] = coef[j]
 
-        final_coef_selected = np.zeros(self._intMatModesVector.size)
-        for i in range(self._intMatModesVector.size):
-            final_coef_selected[i] = final_coef[self._intMatModesVector[i]]
+        if self._intMatModesVector is None:
+            final_coef_selected = final_coef
+        else:
+            final_coef_selected = np.zeros(self._intMatModesVector.size)
+            for i in range(self._intMatModesVector.size):
+                final_coef_selected[i] = final_coef[self._intMatModesVector[i]]
         return final_coef_selected
 
     def _saveAllDataMix(self, dove, par_position, rm_position, par_command, rm_command):
@@ -187,18 +193,6 @@ class opt_alignment():
         vector = np.array([par_position, rm_position, par_command, rm_command])
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, vector)
-#         name = 'par0.fits'
-#         fits_file_name = os.path.join(dove, name)
-#         pyfits.writeto(fits_file_name, par_position)
-#         name = 'rm0.fits'
-#         fits_file_name = os.path.join(dove, name)
-#         pyfits.writeto(fits_file_name, rm_position)
-#         name = 'par_deltacommand.fits'
-#         fits_file_name = os.path.join(dove, name)
-#         pyfits.writeto(fits_file_name, par_command)
-#         name = 'rm_deltacommand.fits'
-#         fits_file_name = os.path.join(dove, name)
-#         pyfits.writeto(fits_file_name, rm_command)
 
     def _saveAllDataM4(self, dove, m4_position, m4_command):
         name = 'PositionAndDeltaCommand.fits'

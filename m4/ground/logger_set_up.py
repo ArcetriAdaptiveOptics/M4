@@ -26,7 +26,7 @@ def set_up_logger(file_path, logging_level):
     formato = logging.Formatter(fmt=FORMAT)
     handler = logging.handlers.RotatingFileHandler(file_path,
                                                    encoding='utf8',
-                                                   maxBytes=10000,
+                                                   maxBytes=10000000,
                                                    backupCount=3)
     root_logger = logging.getLogger()
     root_logger.setLevel(logging_level)
