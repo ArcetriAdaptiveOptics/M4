@@ -12,15 +12,10 @@ Function for simulation or data acquisition from the interferometer::
     image = c4d.acq4d(ott, nframes, 0)
     
 """
-# from importlib import reload
-# import os
+import os
 from matplotlib import pyplot as plt
 # a='D:\Astro\ARCETRI\Python\M4-master'
-# os.chdir(a)
-# from m4.configuration.create_ott import *
-# from m4.configuration import start
-# ott=start.create_ott()
-#from m4.ott_sim.ott_images import *
+from astropy.io import fits as pyfits
 from m4.configuration import config as conf
 from m4.configuration.ott_parameters import *
 from m4.ott_sim.ott_images import OttImages
@@ -104,3 +99,8 @@ class comm4d():
         _measureAndStoreH5(interf, '/tmp/prova4d')
         return InterferometerConverter.from4D('/tmp/prova4d_m00.h5')
 
+
+    def save_phasemap(self, dove, name, image):
+        fits_file_name = os.path.join(dove, name)
+        pyfits.writeto(fits_file_name, image.data)
+        pyfits.append(fits_file_name, image.mask.astype(int))

@@ -136,7 +136,7 @@ class opt_calibration():
                     masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
                     #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
                     name = 'Frame_%04d.fits' %k
-                    self._saveSimulatedInterf(dove, name, masked_ima)
+                    self._c4d.save_phasemap(dove, name, masked_ima)
                 self._ott.refflat(rm0)
 
         elif who == 1:
@@ -149,13 +149,8 @@ class opt_calibration():
                 self._ott.m4(m40-command_list[i])
                 masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
                 name = 'Frame_%04d.fits' %k
-                self._saveSimulatedInterf(dove, name, masked_ima)
+                self._c4d.save_phasemap(dove, name, masked_ima)
             self._ott.m4(m40)
-
-    def _saveSimulatedInterf(self, dove, file_name, image):
-        fits_file_name = os.path.join(dove, file_name)
-        pyfits.writeto(fits_file_name, image.data)
-        pyfits.append(fits_file_name, image.mask.astype(int))
 
 
     def _createCommandMatrix(self, who, command_amp_vector, n_push_pull):

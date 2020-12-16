@@ -91,7 +91,7 @@ class Alignment():
             self._write_rm(rm_cmd)
             image = self._c4d.acq4d(self._ott, n_images)
             name = 'FinalImage.fits'
-            al._saveFrame(dove, image, name)
+            self._c4d.save_phasemap(dove, name, image)
         return par_cmd, rm_cmd
 
 

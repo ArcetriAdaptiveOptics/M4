@@ -75,7 +75,7 @@ class opt_alignment():
         tt = Timestamp.now()
         dove = os.path.join(self._storageFolder(), self._tt + '--' + tt)
         os.makedirs(dove)
-        self._saveFrame(dove, img, name)
+        self._c4d.save_phasemap(dove, name, img)
 
         if self._cal._who=='PAR + RM':
             cmd, zernike_vector = self._commandGenerator(img)
@@ -210,9 +210,3 @@ class opt_alignment():
         name = 'Zernike.fits'
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, zernike_vector)
-
-    def _saveFrame(self, dove, image, name):
-        fits_file_name = os.path.join(dove, name)
-        pyfits.writeto(fits_file_name, image.data)
-        pyfits.append(fits_file_name, image.mask.astype(int))
-        return
