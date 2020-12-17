@@ -21,11 +21,12 @@ http://creativecommons.org/licenses/by-sa/3.0/
 import numpy as np
 fac = np.math.factorial
 
-def surf_fit(xx,yy,zz,zlist, ordering='noll'):
-    A = zernike.getZernike(xx, yyz, zlist, ordering)
-    B = transpose(zz.copy())
-    coeff = (linalg.lstsq(A, B, rcond=-1))[0]
+def surf_fit(xx, yy, zz, zlist, ordering='noll'):
+    A = getZernike(xx, yy, zlist, ordering)
+    B = np.transpose(zz.copy())
+    coeff = (np.linalg.lstsq(A, B, rcond=-1))[0]
     return coeff
+
 
 ### Init functions
 def getZernike(xx,yy,zlist,ordering='noll'):
@@ -141,6 +142,11 @@ def _l2mn_noll(j):
         m *= s
 
     return [m, n]
+
+
+
+
+##### TEST
 
 def test():
     from matplotlib.pyplot import imshow,show

@@ -7,6 +7,8 @@ import numpy as np
 from m4.configuration.ott_parameters import *
 from m4.ground.zernikeGenerator import ZernikeGenerator
 from m4.ground.zernikeMask import CircularMask
+from m4.ground import geo
+from m4.ground import zernike
 
 
 class ZernikeOnM4():
@@ -45,8 +47,39 @@ class ZernikeOnM4():
         self._pupilXYRadius = np.array([centerX, centerY, radius])
         self._zg = ZernikeGenerator(2*radius)
 
+    def zernikeFit(self, img, zernike_index_vector):
+        mask = np.invert(img.mask).astype(int)
+        x, y, r, xx, yy = geo.qpupil(mask)
+        mm = (xx**2 + yy**2) < 1
+        coeff = zernike.surf_fit(xx[mm], yy[mm], img[mm], zernike_index_vector)
+        return coeff
 
-    def zernikeFit(self, img, zernike_mode):
+    def zernikeSurface(self, img, zernike_index_vector):
+        mask = np.invert(img.mask).astype(int)
+        x, y, r, xx, yy = geo.qpupil(mask)
+        mm = (xx**2 + yy**2) < 1
+        aa = zernike.getZernike(xx[mm], yy[mm], zernike_index_vector)
+        coeff = zernike.surf_fit(xx[mm], yy[mm], img[mm], zernike_index_vector)
+        zernike_surface = np.zeros((img.shape[0], img.shape[1]))
+
+        zernike_surface_map = None
+        for i in range(zernike_index_vector.shape):
+            zernike_surface[mm] = aa[:, i] * coeff[i]
+            if zernike_surface_map is None:
+                    zernike_surface_map = zernike_surface
+            else:
+                zernike_surface_map = zernike_surface_map + zernike_surface
+
+        surf = np.ma.masked_array(zernike_surface_map, mask=img.mask)
+        return surf
+
+
+
+
+
+ ### Funzioni vecchie #####       
+
+    def _zernikeFit(self, img, zernike_mode):
         '''
         Parameters
         ----------
@@ -72,7 +105,7 @@ class ZernikeOnM4():
         a = np.dot(inv, img.compressed())
         return a, mat
 
-    def zernikeSurface(self, surface_zernike_coeff_array, ima_mask,
+    def _zernikeSurface(self, surface_zernike_coeff_array, ima_mask,
                        mat, index=None):
         '''
         Parameters
