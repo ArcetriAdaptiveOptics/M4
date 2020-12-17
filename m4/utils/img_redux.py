@@ -8,8 +8,7 @@ import numpy as np
 #from matplotlib.mlab import find
 from m4.configuration.ott_parameters import *
 from m4.utils.roi import ROI
-from m4.utils.zernike_on_m_4 import ZernikeOnM4
-from m4.ground.zernikeGenerator import ZernikeGenerator
+from m4.ground import zernike
 
 
 class TipTiltDetrend():
@@ -26,9 +25,9 @@ class TipTiltDetrend():
         """The constructor """
         self._logger = logging.getLogger('TIP_TILT_DETREND:')
         self._pupilXYRadius = OttParameters.PARABOLA_PUPIL_XYRADIUS
-        self._zOnM4 = ZernikeOnM4()
         self._totalMatList = None
 
+#tutta da rivedere
     def tipTiltDetrend(self, image, roi, final_index, analysis_ind=None):
         """
         Parameters
@@ -56,7 +55,7 @@ class TipTiltDetrend():
         for r in roi:
             imag = np.ma.masked_array(image.data, mask=r)
             ima = np.ma.MaskedArray.copy(imag)
-            coef, mat = self._zOnM4.zernikeFit(ima, np.array([2, 3]))
+            coef, mat = zernike.zernikeFit(ima, np.array([2, 3]))
             self._totalMatList.append(mat)
             coefList.append(coef)
 
@@ -73,9 +72,10 @@ class TipTiltDetrend():
         tip, tilt = np.average(coef_list, axis=0)
 
         surfcoef = np.array([tip, tilt])
-        surface_map = \
-                    self._zOnM4.zernikeSurface(surfcoef, roi_copy[final_index],
-                                               self._totalMatList[final_index])
+#         surface_map = \
+#                     self._zOnM4.zernikeSurface(surfcoef, roi_copy[final_index],
+#                                                self._totalMatList[final_index])
+        surface_map = zernike.zernikeSurface(image, surfcoef, self._totalMatList[final_index])
 
         cx = self._pupilXYRadius[0]
         cy = self._pupilXYRadius[1]
@@ -86,24 +86,24 @@ class TipTiltDetrend():
 
         return image_ttr
 
-    def ttRemoverFromCoeff(self, zernike_coeff_array, image):
-        '''
-        Parameters
-        ----------
-            zernike_coeff_array: np.array([coeff_Z2, coeff_Z3])
-                                vector of zernike coefficients
-            image: masked array
-                image to be analyzed
-
-        Returns
-        -------
-            image_ttr: numpy array
-                         image without tip and tilt
-        '''
-        self._zg = ZernikeGenerator(image.shape[1])
-        zernike_surface_map = self._createZernikeSurface(zernike_coeff_array)
-        image_ttr = image - zernike_surface_map
-        return image_ttr
+#     def ttRemoverFromCoeff(self, zernike_coeff_array, image):
+#         '''
+#         Parameters
+#         ----------
+#             zernike_coeff_array: np.array([coeff_Z2, coeff_Z3])
+#                                 vector of zernike coefficients
+#             image: masked array
+#                 image to be analyzed
+# 
+#         Returns
+#         -------
+#             image_ttr: numpy array
+#                          image without tip and tilt
+#         '''
+#         self._zg = ZernikeGenerator(image.shape[1])
+#         zernike_surface_map = self._createZernikeSurface(zernike_coeff_array)
+#         image_ttr = image - zernike_surface_map
+#         return image_ttr
 
     def _createZernikeSurface(self, zernike_coeff_array):
         ''' Creates the Zernike mode on a circular surface with the diameter...

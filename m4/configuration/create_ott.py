@@ -10,22 +10,17 @@ from m4.configuration.config import *
 from m4.configuration.ott_parameters import *
 from m4.ground import object_from_fits_file_name as obj
 from m4.utils.roi import ROI
-from m4.ground.zernikeGenerator import ZernikeGenerator
+from m4.ground import zernike
 from m4.utils.opc_ua_controller import OpcUaController
 
 class OTT():
-
-#ss = mask.shape
-#img = np.ones(ss)
-#img = ma.masked_array(img, mask=img-mask)
-
 
     def __init__(self):
         """The constructor """
         self._logger = logging.getLogger('OTT:')
         self._opcUa = OpcUaController()
         self._r = ROI()
-        self._zg = ZernikeGenerator(2*OttParameters.parab_radius*OttParameters.pscale)
+#        self._zg = ZernikeGenerator(2*OttParameters.parab_radius*OttParameters.pscale)
         self._slide = 0
         self._rslide = 0
         self._angle = 0

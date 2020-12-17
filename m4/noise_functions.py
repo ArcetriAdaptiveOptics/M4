@@ -10,10 +10,9 @@ import glob
 from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
 from m4.configuration.config import fold_name
-from m4.utils.img_redux import TipTiltDetrend
 from m4.ground.interferometer_converter import InterferometerConverter
 from m4.analyzer_iffunctions import AnalyzerIFF
-from m4.utils.zernike_on_m_4 import ZernikeOnM4
+from m4.ground import zernike
 
 
 class Noise():
@@ -34,8 +33,6 @@ class Noise():
         """The constructor """
         self._logger = logging.getLogger('NOISE:')
         self._ic = InterferometerConverter()
-        self._zOnM4 = ZernikeOnM4()
-        self._ttd = TipTiltDetrend()
         self._numberOfNoiseIma = None
         self._cubeFromAnalysis = None
 
@@ -151,10 +148,10 @@ class Noise():
         coef_tip_list = []
         quad_list = []
         for i in range(cube_to_process.shape[2]):
-            image = self._imageExtender(cube_to_process[:, :, i])
-            coef, mat = self._zOnM4.zernikeFit(image,
-                                               np.array([2, 3]))
-            image_ttr = self._ttd.ttRemoverFromCoeff(coef, image)
+            image = cube_to_process[:, :, i]
+            coef, mat = zernike.zernikeFit(image, np.array([2, 3]))
+            sur = zernike.zernikeSurface(image, coef, mat)
+            image_ttr = image - sur
             rms = image_ttr.std()
             rms_list.append(rms)
             coef_tip_list.append(coef[0])
@@ -177,9 +174,7 @@ class Noise():
             print(name)
             file_name = os.path.join(data_file_path, name)
             start_image = self._ic.from4D(file_name)
-            image = self._imageExtender(start_image)
-            coef, mat = self._zOnM4.zernikeFit(image,
-                                               np.array([2, 3]))
+            coef, mat = zernike.zernikeFit(start_image, np.array([2, 3]))
             coef_tip_list.append(coef[0])
             coef_tilt_list.append(coef[1])
         tip = np.array(coef_tip_list)
@@ -202,31 +197,6 @@ class Noise():
 #         qq = res.real**2+res.imag**2
         return spe, freq
 
-    def _imageExtender(self, cube_element):
-        ''' Funzione usata per estendere le dimenzioni delle immagini acquisite a
-        quelle della pupilla su cui costruisco gli zernike
-        args:
-            cube_element = an image from cube image
-
-        returns:
-            image = cube_element extended to the size of the Zernike pupil
-        '''
-        dim_y = (2 * self._zOnM4._zg.getRadius() - cube_element.shape[0]).astype(int) #512-500
-        vv = np.ma.masked_array(np.zeros((dim_y, cube_element.shape[1])),
-                                mask=np.ones((dim_y, cube_element.shape[1])).astype(bool)) #496
-        dim_x = (2 * self._zOnM4._zg.getRadius() - cube_element.shape[1]).astype(int)   #512-496
-        vv2 = np.ma.masked_array(np.zeros(((2 * self._zOnM4._zg.getRadius()).astype(int), dim_x)),
-                                 mask=np.ones(((2 * self._zOnM4._zg.getRadius()).astype(int),
-                                               dim_x)).astype(bool))
-        pp = np.ma.append(cube_element, vv, axis=0)
-
-        #v = vv2[:,0:vv2.shape[1]/2]
-        #ll = np.ma.append(v, pp, axis=1)
-        #ll2 = np.ma.append(ll,v,axis=1)
-        #image=ll2
-
-        image = np.ma.append(pp, vv2, axis=1)
-        return image
 
     def _saveResults(self, rms_mean, quad_mean, destination_file_path):
         ''' Save results as text file
@@ -360,10 +330,9 @@ class Noise():
                 image_dist = self._ic.from4D(file_name)
 
                 image_diff = image_k - image_dist
-                image = self._imageExtender(image_diff)
-                zernike_coeff_array, mat = self._zOnM4.zernikeFit(image,
-                                                                  np.array([2, 3]))
-                image_ttr = self._ttd.ttRemoverFromCoeff(zernike_coeff_array, image)
+                zernike_coeff_array, mat = zernike.zernikeFit(image_diff, np.array([2, 3]))
+                sur = zernike.zernikeSurface(image_diff, zernike_coeff_array, mat)
+                image_ttr = image_diff - sur
                 quad = np.sqrt(zernike_coeff_array[0]**2 + zernike_coeff_array[1]**2)
 
                 rms = image_ttr.std()
@@ -407,10 +376,10 @@ class Noise():
             name = 'img_%04d.h5' %j
             file_name = os.path.join(data_file_path, name)
             image = self._ic.from4D(file_name)
-            image_ex = self._imageExtender(image)
-            zernike_coeff_array, mat = self._zOnM4.zernikeFit(image_ex,
+            zernike_coeff_array, mat = zernike.zernikeFit(image,
                                                               np.array([2, 3]))
-            image_ttr = self._ttd.ttRemoverFromCoeff(zernike_coeff_array, image_ex)
+            sur = zernike.zernikeSurface(image, zernike_coeff_array, mat)
+            image_ttr = image - sur
             mean = image_ttr.mean()
             mean_list.append(mean)
         return np.array(mean_list), time
