@@ -9,6 +9,8 @@ import numpy as np
 from functools import *
 from pyzabbix import ZabbixAPI
 from pyzabbix import ZabbixMetric, ZabbixSender
+import sys
+sys.path.insert(0,'/home/m4/git/M4')
 from m4.utils.opc_ua_controller import OpcUaController
 from m4.configuration.ott_parameters import OpcUaParameters
 

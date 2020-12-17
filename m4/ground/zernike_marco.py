@@ -155,8 +155,8 @@ def test():
 def testMio(image):
     x_dim = image.shape[0]
     y_dim = image.shape[1]
-    x = np.arange(-1, 1, 2/x_dim)
-    y = np.arange(-1, 1, 2/y_dim)
+    x = np.arange(-1, 1, 2./x_dim)
+    y = np.arange(-1, 1, 2./y_dim)
     yy = np.tile(x,(x_dim,1))
     xx = np.transpose(np.tile(y,(y_dim,1)))
     mm = (xx**2+yy**2) < 1

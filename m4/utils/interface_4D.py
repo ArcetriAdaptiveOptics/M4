@@ -86,7 +86,7 @@ class comm4d():
             interf.produce('DM_temp')
             interf.disconnect()
             time.sleep(1.0)
-            fName = '/home/labot/4d/Zcopy/DM_temp'
+            fName = '/home/m4/4d/Zcopy/DM_temp'
 
             for i in range(nMeasure):
                 shutil.move(fName + '/hdf5/img_%04d.h5' %i,

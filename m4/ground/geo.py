@@ -39,9 +39,9 @@ def draw_mask(img, cx, cy, r, out=0):
 def qpupil(mask, xx=None, yy=None, nocircle=0):
     idx = np.where(mask == 1)
     ss = np.shape(mask)
-    x = np.arange(ss[0])
+    x = np.arange(ss[0]).astype(float)
     x = np.transpose(np.tile(x, [ss[1], 1]))
-    y = np.arange(ss[1])
+    y = np.arange(ss[1]).astype(float)
     y = np.tile(y, [ss[0], 1])
     xx = x
     yy = y
@@ -65,7 +65,7 @@ def qpupil(mask, xx=None, yy=None, nocircle=0):
         r = np.mean([r1, r2])
         my = [minv, maxv]
         #imgout  = image[mx[0]:mx[1],my[0]:my[1]]
-    return [x0, y0, r]
+    return x0, y0, r, xx, yy
 
 def rotate(img, angle):
     ''' Function to rotate the image
