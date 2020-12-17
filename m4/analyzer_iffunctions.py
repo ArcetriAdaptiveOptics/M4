@@ -283,7 +283,7 @@ class AnalyzerIFF():
                     opd2add = image_list[p] * self._template[p] + image_list[p-1] * self._template[p-1]
                     master_mask2add = np.ma.mask_or(image_list[p].mask, image_list[p-1].mask)
                     if p==1:
-                        master_mask = master_mask2ad
+                        master_mask = master_mask2add
                     else:
                         master_mask = np.ma.mask_or(master_mask, master_mask2add)
                     image += opd2add
