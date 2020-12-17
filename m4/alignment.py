@@ -10,7 +10,7 @@ from astropy.io import fits as pyfits
 from m4.utils.optical_alignment import opt_alignment
 from m4.utils.optical_calibration import opt_calibration
 from m4.utils.roi import ROI
-from m4.utils.zernike_on_m_4 import ZernikeOnM4
+from m4.ground import zernike
 from m4.utils.interface_4D import comm4d
 
 class Alignment():
@@ -37,7 +37,6 @@ class Alignment():
         self._logger = logging.getLogger('ALIGNMENT:')
         self._cal = opt_calibration()
         self._roi = ROI()
-        self._zOnM4 = ZernikeOnM4()
         self._ott = ott
         self._c4d = comm4d()
 
@@ -88,8 +87,10 @@ class Alignment():
             al = opt_alignment(tt)
         par_cmd, rm_cmd, dove = al.opt_align(self._ott, n_images, intMatModesVector, commandId)
         if move == 1:
-            self._write_par(par_cmd)
-            self._write_rm(rm_cmd)
+            pos_par = self._ott.parab()
+            self._ott.parab(pos_par + par_cmd)
+            pos_rm = self._ott.refflat()
+            self._ott.refflat(pos_rm + rm_cmd)
             image = self._c4d.acq4d(self._ott, n_images)
             name = 'FinalImage.fits'
             self._c4d.save_phasemap(dove, name, image)
@@ -97,7 +98,8 @@ class Alignment():
 
 
     def m4_calibration(self, commandAmpVector_ForM4Calibration,
-                       nPushPull_ForM4Calibration, maskIndex_ForM4Alignement):
+                       nPushPull_ForM4Calibration, maskIndex_ForM4Alignement,
+                       nFrames):
         """ Calibration of the deformable mirror
 
         Parameters
@@ -119,7 +121,7 @@ class Alignment():
             coma_surface: numpy array
                             reconstructed surface
         """
-        zernike_coef_coma, coma_surface = self._measureComaOnSegmentMask()
+        zernike_coef_coma, coma_surface = self._measureComaOnSegmentMask(nFrames)
         print(zernike_coef_coma)
         self._tt = self._cal.measureCalibrationMatrix(self._ott, 3,
                                                       commandAmpVector_ForM4Calibration,
@@ -153,40 +155,16 @@ class Alignment():
         #self._applyM4Command(m4_cmd)
         return m4_cmd
 
-    def _moveRM(self, rslide):
-        self._logger.debug('rslide = %f', rslide)
-        self._ott.rslide(rslide)
 
-    def _moveSegmentView(self, slide, angle):
-        self._logger.debug('slide = %f angle = %f', slide, angle)
-        self._ott.slide(slide)
-        self._ott.angle(angle)
-
-    def _write_par(self, par_cmd):
-        pos_par = self._ott.parab()
-        self._ott.parab(pos_par + par_cmd)
-
-    def _write_rm(self, rm_cmd):
-        pos_rm = self._ott.refflat()
-        self._ott.refflat(pos_rm + rm_cmd)
-        #p,m = self._c4d.acq4d(self._ott, 1, show=1)
-
-    def _write_m4(self, m4_cmd):
-        pos_m4 = self._ott.m4()
-        self._ott.m4(pos_m4 + m4_cmd)
-        #p,m = self._c4d.acq4d(self._ott, 1, show=1)
-
-    def _measureComaOnSegmentMask(self):
+    def _measureComaOnSegmentMask(self, nFrames):
         #ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
-        ima = self._c4d.acq4d(self._ott, 1, show=1)
+        ima = self._c4d.acq4d(self._ott, nFrames)
         roi = self._roi.roiGenerator(ima)
         segment_ima = np.ma.masked_array(ima.data, mask=roi[5])
 
-        coef, mat = self._zOnM4.zernikeFit(segment_ima, np.arange(2, 11))
-        coma = coef[5]
-        coma_surface = self._zOnM4.zernikeSurface(np.array([coma]),
-                                                  segment_ima.mask, mat,
-                                                  np.array([5]))
+        coef, mat = zernike.zernikeFit(segment_ima, np.arange(10)+1)
+        coma = coef[6]
+        coma_surface = zernike.zernikeSurface(segment_ima, coma, mat)
         return coma, coma_surface
 
     def _saveZcoef(self, zernike_coef_coma, coma_surface):
@@ -201,7 +179,6 @@ class Alignment():
         pyfits.writeto(fits_file_name, coma_surface.data, header)
         pyfits.append(fits_file_name, coma_surface.mask.astype(int), header)
 
-# fare un fits e via
     def _readZcoef(self, tt):
         dove = os.path.join(self._cal._storageFolder(), tt)
         fits_file_name = os.path.join(dove, 'z_coma.fits')

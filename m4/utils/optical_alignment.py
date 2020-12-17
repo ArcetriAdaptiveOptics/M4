@@ -8,12 +8,10 @@ import logging
 from astropy.io import fits as pyfits
 import numpy as np
 from m4.configuration.config import fold_name
-from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.utils.optical_calibration import opt_calibration
 from m4.utils.interface_4D import comm4d
+from m4.ground import zernike
 from m4.configuration.ott_parameters import OttParameters
-from m4.configuration import config as conf
-from m4.utils import image_extender as ie
 from m4.ground.timestamp import Timestamp
 from matplotlib import pyplot as plt
 
@@ -34,7 +32,6 @@ class opt_alignment():
         self._logger = logging.getLogger('OPT_ALIGN:')
         self._tt = tt
         self._cal = opt_calibration.loadCommandMatrixFromFits(tt)
-        self._zOnM4 = ZernikeOnM4()
         self._c4d = comm4d()
         self._rec = None
         self._intMat = None
@@ -90,18 +87,19 @@ class opt_alignment():
             self._saveZernikeVector(dove, zernike_vector)
             return m4_command, dove
 
-    def _selectModesInIntMatAndRecConstruction(self, intMatModesVector=None, commandId=None):
+    def _selectModesInIntMatAndRecConstruction(self, intMatModesVector=None,
+                                               commandId=None):
         intMat, rec, mask = self._loadAlignmentInfo()
         if intMatModesVector is None:
             new_intMat = intMat
         else:
             new_intMat = intMat[intMatModesVector, :]
-        
+
         if commandId is not None:
             new_intMat = new_intMat[:,commandId]
-        
+
         new_rec = np.linalg.pinv(new_intMat)
-            
+
         return new_intMat, new_rec, mask
 
     def _loadAlignmentInfo(self):
@@ -130,20 +128,21 @@ class opt_alignment():
         dofIndex = np.append(OttParameters.PARABOLA_DOF, OttParameters.RM_DOF)
         par_command = np.zeros(6)
         rm_command = np.zeros(6)
-        
+
         if commandId is not None:
             mycomm = np.zeros(5)
             mycomm[commandId]=cmd
             cmd = mycomm
-        
+
         for i in range(cmd.size):
             if i < OttParameters.PARABOLA_DOF.size:
                 par_command[dofIndex[i]] = cmd[i]
             else:
                 rm_command[dofIndex[i]] = cmd[i]
-        
+
         return par_command, rm_command
 
+#va riscritta
     def _reorgCmdM4(self, cmd):
         dofIndex = OttParameters.M4_DOF
         m4_command = np.zeros(6)
@@ -159,7 +158,6 @@ class opt_alignment():
         returns:
                 cmd = command for the dof
         """
-        #image = np.ma.masked_array(img.data, mask=self._mask)
         zernike_vector = self._zernikeCoeff(img)
         print('zernike:')
         print(zernike_vector)
@@ -204,12 +202,6 @@ class opt_alignment():
         vector = np.array([m4_position, m4_command])
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, vector)
-#         name = 'm4_position.fits'
-#         fits_file_name = os.path.join(dove, name)
-#         pyfits.writeto(fits_file_name, m4_position)
-#         name = 'm4_command.fits'
-#         fits_file_name = os.path.join(dove, name)
-#         pyfits.writeto(fits_file_name, m4_command)
 
     def _saveZernikeVector(self, dove, zernike_vector):
         name = 'Zernike.fits'

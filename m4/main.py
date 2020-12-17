@@ -31,11 +31,10 @@ OTT procedures
 '''
 
 import os
-import numpy as np
 import time
+import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
-#from m4.ground.configuration import Configuration
 from m4.configuration import config
 from m4.noise_functions import Noise
 from m4.alignment import Alignment
@@ -82,10 +81,6 @@ def ott_alignment_calibration(commandAmpVector, nPushPull, move):
                     calibration measurement
     '''
     print('PAR + RM calibration')
-#     if commandAmpVector is None:
-#         commandAmpVector = np.array([5.0e-06, 5.0e-06, 5.0e-05, 5.0e-06, 5.0e-06])
-#     if nPushPull is None:
-#         nPushPull = 3
     if move == 1:
         tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 0)
     #mask_index = 3 per il simulatore  e 0 per la mott
@@ -130,7 +125,7 @@ def ott_alignment(tt_tower, n_images, move=1, intMatModesVector=None, commandId=
 #	            raise OSError('Rm command to large')
 
 
-def m4_alignment_calibration(commandAmpVector_ForM4Calibration=None,
+def m4_alignment_calibration(nFrames, commandAmpVector_ForM4Calibration=None,
                      nPushPull_ForM4Calibration=None):
     """
     Other Parameters
@@ -139,6 +134,8 @@ def m4_alignment_calibration(commandAmpVector_ForM4Calibration=None,
                                             amplitude to be applied to m4
             nPushPull_ForM4Calibration: int
                                         number of push pull for m4 dof
+            nFrames = int
+                    frames for 4D
 
     Returns
     -------
@@ -146,14 +143,12 @@ def m4_alignment_calibration(commandAmpVector_ForM4Calibration=None,
                     calibration measurement
     """
     print('M4 calibration')
-    a._moveSegmentView(0.75, 90.)
-    a._moveRM(0.6)
     if commandAmpVector_ForM4Calibration is None:
         commandAmpVector_ForM4Calibration = np.array([5.0e-06, 5.0e-06])
     if nPushPull_ForM4Calibration is None:
         nPushPull_ForM4Calibration = 3
     tt_m4, zCoefComa, comaSurface = a.m4_calibration(commandAmpVector_ForM4Calibration,
-                                                     nPushPull_ForM4Calibration, 5)
+                                                     nPushPull_ForM4Calibration, 5, nFrames)
     return tt_m4
 
 def m4_alignment(tt_m4):
@@ -174,7 +169,7 @@ def m4_alignment(tt_m4):
             lala=0
         else:
             raise OSError('Command to large')
-    a._write_m4(cmd_m4)
+    #a._write_m4(cmd_m4)
     return cmd_m4
 
 def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
@@ -204,30 +199,6 @@ def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
     print(centro, axs, raggio)
     #le immagini le fa l'analyzer
     return ro, tt
-
-def _plotExCuori(ro):
-    tt1 = '20200917_085915'
-    tt2 =  '20200917_091754'
-    tt3 = '20200917_094242'
-    tt4 ='20200917_102244'
-    tt5 = '20200917_105957'
-    tt6 = '20200917_115201'
-    tt7 = '20200917_122431'
-    tt8 = '20200917_144404'
-    tt9 = '20200923_153946'
-    tt10 = '20200923_162320'
-    tt11 = '20200924_092753'
-    tt12 = '20200924_094520'
-    tt13 = '20200924_095743'
-    tt14 = '20200924_101445'
-    tt = [tt1, tt2, tt3, tt4, tt5, tt6, tt7, tt8, tt9, tt10,
-        tt11, tt12, tt13, tt14]
-
-    plt.figure(figsize=(7,7))
-    for t in tt:
-        cube = ro._readCube(t)
-        tip, tilt = ro._tipTiltCalculator(cube)
-        plt.plot(tip, tilt, '-o')
 
 
 ######### Misure di noise ##########

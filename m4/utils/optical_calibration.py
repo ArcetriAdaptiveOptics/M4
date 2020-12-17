@@ -9,10 +9,8 @@ from astropy.io import fits as pyfits
 import numpy as np
 from m4.configuration.config import fold_name
 from m4.configuration.ott_parameters import OttParameters
-from m4.utils.zernike_on_m_4 import ZernikeOnM4
 from m4.ground import tracking_number_folder
 from m4.utils.interface_4D import comm4d
-from m4.utils import image_extender as ie
 
 
 class opt_calibration():
@@ -28,7 +26,6 @@ class opt_calibration():
     def __init__(self):
         """The constructor """
         self._logger = logging.getLogger('OPT_CALIB:')
-        self._zOnM4 = ZernikeOnM4()
         self._c4d = comm4d()
         self._rec = None
         self._intMat = None
@@ -133,7 +130,7 @@ class opt_calibration():
                         self._ott.refflat(rm0 + command_list[k])
                     time.sleep(5)
                     print('5 secondi di attesa')
-                    masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
+                    masked_ima = self._c4d.acq4d(self._ott, 1)
                     #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
                     name = 'Frame_%04d.fits' %k
                     self._c4d.save_phasemap(dove, name, masked_ima)
@@ -147,7 +144,7 @@ class opt_calibration():
             m40 = self._ott.m4()
             for k in range(len(command_list)):
                 self._ott.m4(m40-command_list[i])
-                masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
+                masked_ima = self._c4d.acq4d(self._ott, 1)
                 name = 'Frame_%04d.fits' %k
                 self._c4d.save_phasemap(dove, name, masked_ima)
             self._ott.m4(m40)
@@ -259,27 +256,6 @@ class opt_calibration():
         theObject._commandMatrix = hduList[1].data
         return theObject
 
-    def _testCalibration_createCubeMeasurefromFileFitsMeasure(self):
-        """
-        Test function for the cube measure creation
-        """
-        cube_measure = None
-        fold_my_pc = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/MixingIntMat/20190930_162714'
-        #fold_m4_pc = os.path.join(Configuration.OPD_DATA_FOLDER, 'TestData', 'MixingIntMat')
-        amp = np.array([5.0e-06, 5.0e-06, 2.5e-05, 5.0e-06, 5.0e-06, 5.0e-06])
-        for i in range(5):
-            name = 'Frame_%04d.fits' %i
-            file = os.path.join(fold_my_pc, name)
-            hduList = pyfits.open(file)
-            aa = hduList[0].data
-            mode = np.ma.masked_array(aa[0,:,:], mask=np.invert(aa[1,:,:].astype(bool)))
-            mode_norm = mode/amp[i]
-            if cube_measure is None:
-                cube_measure = mode_norm
-            else:
-                cube_measure = np.ma.dstack((cube_measure, mode_norm))
-        return cube_measure
-
     def createCube(self, tt):
         """
         Parameters
@@ -287,10 +263,6 @@ class opt_calibration():
             tt = tracking number
         """
         self._logger.info('Creation of the cube relative to %s', tt)
-#         cube_from_measure = self._testCalibration_createCubeMeasurefromFileFitsMeasure()
-#         for i in range(cube_from_measure.shape[2]):
-#             cube_from_measure[:,:,i] = cube_from_measure[:,:,i] / self._commandAmpVector[i]
-#         self._cube = cube_from_measure
         self._cube = None
         fold = os.path.join(opt_calibration._storageFolder(), tt)
         for i in range(self._commandAmpVector.shape[0]):
@@ -332,6 +304,8 @@ class opt_calibration():
         cube: numpy masked array
             analyzed measurements
         '''
+        if self._cube is None:
+            self._cube = self.createCube(self._tt)
         return self._cube
 
     def _createInteractionMatrixAndReconstructor(self, mask):
@@ -391,9 +365,9 @@ class opt_calibration():
             dove = path that indicates where to save the files
         """
         fits_file_name = os.path.join(dove, 'InteractionMatrix.fits')
-        pyfits.writeto(fits_file_name, self._intMat, overwrite= True)
+        pyfits.writeto(fits_file_name, self._intMat, overwrite=True)
         fits_file_name = os.path.join(dove, 'Reconstructor.fits')
-        pyfits.writeto(fits_file_name, self._rec, overwrite= True)
+        pyfits.writeto(fits_file_name, self._rec, overwrite=True)
 
     def _saveMask(self, dove, mask):
         """
@@ -401,4 +375,4 @@ class opt_calibration():
             dove = path that indicates where to save the mask file
         """
         fits_file_name = os.path.join(dove, 'Mask.fits')
-        pyfits.writeto(fits_file_name, mask.astype(int), overwrite= True)
+        pyfits.writeto(fits_file_name, mask.astype(int), overwrite=True)

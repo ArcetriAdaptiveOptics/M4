@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Autors
+Authors
   - C. Selmi:  written in March 2020
 
 Function for simulation or data acquisition from the interferometer::
@@ -13,13 +13,14 @@ Function for simulation or data acquisition from the interferometer::
     
 """
 import os
+import numpy as np
 from matplotlib import pyplot as plt
 # a='D:\Astro\ARCETRI\Python\M4-master'
 from astropy.io import fits as pyfits
 from m4.configuration import config as conf
-from m4.configuration.ott_parameters import *
 from m4.ott_sim.ott_images import OttImages
 from m4.ground.interferometer_converter import InterferometerConverter
+from m4.configuration.config import fold_name
 
 
 class comm4d():
@@ -66,7 +67,7 @@ class comm4d():
                         cube_images = np.ma.dstack((cube_images, ima))
                 masked_ima = np.ma.mean(cube_images, axis=2)
 
-            if show ==0:
+            if show==0:
                 pass
             else:
                 plt.clf()
@@ -86,7 +87,8 @@ class comm4d():
             interf.produce('DM_temp')
             interf.disconnect()
             time.sleep(1.0)
-            fName = '/home/m4/4d/Zcopy/DM_temp'
+            fName = os.path.join(fold_name.PHASECAM_ROOT_FOLDER, 'DM_temp')
+            #fName = '/home/m4/4d/Zcopy/DM_temp'
 
             for i in range(nMeasure):
                 shutil.move(fName + '/hdf5/img_%04d.h5' %i,

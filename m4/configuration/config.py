@@ -25,7 +25,7 @@ class fold_name(path_name):
     '''
     '''
     OPD_IMAGES_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER, 'OPDImages')
-    PHASECAM_ROOT_FOLDER = '/home/labot/4d/Zcopy/'
+    PHASECAM_ROOT_FOLDER = '/home/m4/4d/Zcopy/'
     LOG_ROOT_FOLDER = os.path.join(path_name.BASE_PATH,
                                    'LOGData/mylog')
     IFFUNCTIONS_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,

@@ -19,7 +19,30 @@ http://creativecommons.org/licenses/by-sa/3.0/
 ### Libraries
 
 import numpy as np
+from m4.ground import geo
 fac = np.math.factorial
+
+def zernikeFit(img, zernike_index_vector):
+    img1 = img.data
+    mask = np.invert(img.mask).astype(int)
+    x, y, r, xx, yy = geo.qpupil(mask)
+    mm = (mask==1)
+    coeff = surf_fit(xx[mm], yy[mm], img1[mm], zernike_index_vector)
+    mat = getZernike(xx[mm], yy[mm], zernike_index_vector)
+    return coeff, mat
+
+def zernikeSurface(img, coef, mat):
+#     img1 = img.data
+#     mask = np.invert(img.mask).astype(int)
+#     x, y, r, xx, yy = geo.qpupil(mask)
+#     mm = (mask==1)
+#     aa = getZernike(xx[mm], yy[mm], zernike_index_vector)
+#     coeff = surf_fit(xx[mm], yy[mm], img1[mm], zernike_index_vector)
+    mm = np.where(img.mask == 0)
+    zernike_surface = np.zeros((img.shape[0], img.shape[1]))
+    zernike_surface[mm] = np.dot(mat, coef)
+    surf = np.ma.masked_array(zernike_surface, mask=img.mask)
+    return surf
 
 def surf_fit(xx, yy, zz, zlist, ordering='noll'):
     A = getZernike(xx, yy, zlist, ordering)
@@ -142,8 +165,6 @@ def _l2mn_noll(j):
         m *= s
 
     return [m, n]
-
-
 
 
 ##### TEST
