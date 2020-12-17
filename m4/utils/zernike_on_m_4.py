@@ -48,29 +48,24 @@ class ZernikeOnM4():
         self._zg = ZernikeGenerator(2*radius)
 
     def zernikeFit(self, img, zernike_index_vector):
+        img1 = img.data
         mask = np.invert(img.mask).astype(int)
         x, y, r, xx, yy = geo.qpupil(mask)
-        mm = (xx**2 + yy**2) < 1
-        coeff = zernike.surf_fit(xx[mm], yy[mm], img[mm], zernike_index_vector)
-        return coeff
+        mm = (mask==1)
+        coeff = zernike.surf_fit(xx[mm], yy[mm], img1[mm], zernike_index_vector)
+        mat = zernike.getZernike(xx[mm], yy[mm], zernike_index_vector)
+        return coeff, mat
 
     def zernikeSurface(self, img, zernike_index_vector):
+        img1 = img.data
         mask = np.invert(img.mask).astype(int)
         x, y, r, xx, yy = geo.qpupil(mask)
-        mm = (xx**2 + yy**2) < 1
+        mm = (mask==1)
         aa = zernike.getZernike(xx[mm], yy[mm], zernike_index_vector)
-        coeff = zernike.surf_fit(xx[mm], yy[mm], img[mm], zernike_index_vector)
+        coeff = zernike.surf_fit(xx[mm], yy[mm], img1[mm], zernike_index_vector)
         zernike_surface = np.zeros((img.shape[0], img.shape[1]))
-
-        zernike_surface_map = None
-        for i in range(zernike_index_vector.shape):
-            zernike_surface[mm] = aa[:, i] * coeff[i]
-            if zernike_surface_map is None:
-                    zernike_surface_map = zernike_surface
-            else:
-                zernike_surface_map = zernike_surface_map + zernike_surface
-
-        surf = np.ma.masked_array(zernike_surface_map, mask=img.mask)
+        zernike_surface[mm] = np.dot(aa, coeff)
+        surf = np.ma.masked_array(zernike_surface, mask=img.mask)
         return surf
 
 

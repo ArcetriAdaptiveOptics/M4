@@ -97,7 +97,7 @@ def ott_alignment_calibration(commandAmpVector, nPushPull, move):
         plt.colorbar()
         return mat
 
-def ott_alignment(tt_tower, n_images, move=1, intMatModesVector=None):
+def ott_alignment(tt_tower, n_images, move=1, intMatModesVector=None, commandId=None):
     '''
     Parameters
     ----------
@@ -112,7 +112,7 @@ def ott_alignment(tt_tower, n_images, move=1, intMatModesVector=None):
         1 to move
     '''
     print('Ott alignemnt')
-    par_cmd, rm_cmd = a.ott_alignment(n_images, move, intMatModesVector, tt_tower)
+    par_cmd, rm_cmd = a.ott_alignment(n_images, move, intMatModesVector, commandId, tt_tower)
     print('comandi separati')
     print(par_cmd)
     print(rm_cmd)

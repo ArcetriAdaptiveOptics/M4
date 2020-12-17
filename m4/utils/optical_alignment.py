@@ -46,7 +46,7 @@ class opt_alignment():
         return fold_name.ALIGNMENT_ROOT_FOLDER
 
 
-    def opt_align(self, ott, n_images, intMatModesVector=None, piston=None):
+    def opt_align(self, ott, n_images, intMatModesVector=None, commandId=None, piston=None):
         """
         Parameters
         ----------
@@ -67,7 +67,7 @@ class opt_alignment():
         #m4_position = ott.m4()
         self._logger.info('Calculation of the alignment command for %s',
                           self._tt)
-        self._intMat, self._rec, self._mask = self._selectModesInIntMatAndRecConstruction(intMatModesVector)
+        self._intMat, self._rec, self._mask = self._selectModesInIntMatAndRecConstruction(intMatModesVector, commandId)
         self._intMatModesVector = intMatModesVector
 
         img = self._c4d.acq4d(ott, n_images, 0)
@@ -79,7 +79,7 @@ class opt_alignment():
 
         if self._cal._who=='PAR + RM':
             cmd, zernike_vector = self._commandGenerator(img)
-            par_command, rm_command = self._reorgCmdMix(cmd)
+            par_command, rm_command = self._reorgCmdMix(cmd, commandId)
             self._saveAllDataMix(dove, par_position, rm_position, par_command, rm_command)
             self._saveZernikeVector(dove, zernike_vector)
             return par_command, rm_command, dove
@@ -90,14 +90,18 @@ class opt_alignment():
             self._saveZernikeVector(dove, zernike_vector)
             return m4_command, dove
 
-    def _selectModesInIntMatAndRecConstruction(self, intMatModesVector=None):
+    def _selectModesInIntMatAndRecConstruction(self, intMatModesVector=None, commandId=None):
         intMat, rec, mask = self._loadAlignmentInfo()
         if intMatModesVector is None:
             new_intMat = intMat
-            new_rec = rec
         else:
             new_intMat = intMat[intMatModesVector, :]
-            new_rec = np.linalg.pinv(new_intMat)
+        
+        if commandId is not None:
+            new_intMat = new_intMat[:,commandId]
+        
+        new_rec = np.linalg.pinv(new_intMat)
+            
         return new_intMat, new_rec, mask
 
     def _loadAlignmentInfo(self):
@@ -122,15 +126,22 @@ class opt_alignment():
         info = hduList[0].data
         return info
 
-    def _reorgCmdMix(self, cmd):
+    def _reorgCmdMix(self, cmd, commandId=None):
         dofIndex = np.append(OttParameters.PARABOLA_DOF, OttParameters.RM_DOF)
         par_command = np.zeros(6)
         rm_command = np.zeros(6)
+        
+        if commandId is not None:
+            mycomm = np.zeros(5)
+            mycomm[commandId]=cmd
+            cmd = mycomm
+        
         for i in range(cmd.size):
             if i < OttParameters.PARABOLA_DOF.size:
                 par_command[dofIndex[i]] = cmd[i]
             else:
                 rm_command[dofIndex[i]] = cmd[i]
+        
         return par_command, rm_command
 
     def _reorgCmdM4(self, cmd):
@@ -149,9 +160,7 @@ class opt_alignment():
                 cmd = command for the dof
         """
         #image = np.ma.masked_array(img.data, mask=self._mask)
-        new_image = ie.imageExtender(img)
-        new_image = new_image - np.mean(new_image)
-        zernike_vector = self._zernikeCoeff(new_image)
+        zernike_vector = self._zernikeCoeff(img)
         print('zernike:')
         print(zernike_vector)
         if piston is None:
@@ -172,13 +181,9 @@ class opt_alignment():
                 final_coef = zernike coeff on the image
                             (zernike modes 2,3,4,7,8)
         """
-        coef, mat = self._zOnM4.zernikeFit(img, np.arange(2, 11))
-        z = np.array([0, 1, 2, 5, 6])
-        final_coef = np.zeros(z.shape[0])
-        aa = np.arange(final_coef.shape[0])
-        zipped = zip(aa, z)
-        for i, j in zipped:
-            final_coef[i] = coef[j]
+        coef, mat = self._zOnM4.zernikeFit(img, np.arange(10)+1)
+        z = np.array([1, 2, 3, 6, 7])
+        final_coef = coef[z]
 
         if self._intMatModesVector is None:
             final_coef_selected = final_coef

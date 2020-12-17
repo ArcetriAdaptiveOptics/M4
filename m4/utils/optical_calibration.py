@@ -338,16 +338,11 @@ class opt_calibration():
         coefList = []
         for i in range(self._cube.shape[2]):
             ima = np.ma.masked_array(self._cube[:,:,i], mask=mask)
-            new_ima = ie.imageExtender(ima)
-            new_ima = new_ima - np.mean(new_ima)
-            coef, mat = self._zOnM4.zernikeFit(new_ima, np.arange(2, 11))
+            coef, mat = self._zOnM4.zernikeFit(ima, np.arange(10)+1)
             #z= np.array([2,3,4,7,8])
-            z = np.array([0, 1, 2, 5, 6])
+            z = np.array([1, 2, 3, 6, 7])
             final_coef = np.zeros(z.shape[0])
-            aa = np.arange(final_coef.shape[0])
-            zipped = zip(aa, z)
-            for i, j in zipped:
-                final_coef[i] = coef[j]
+            final_coef = coef[z]
             self._mat = mat
             coefList.append(final_coef)
 
@@ -396,9 +391,9 @@ class opt_calibration():
             dove = path that indicates where to save the files
         """
         fits_file_name = os.path.join(dove, 'InteractionMatrix.fits')
-        pyfits.writeto(fits_file_name, self._intMat)
+        pyfits.writeto(fits_file_name, self._intMat, overwrite= True)
         fits_file_name = os.path.join(dove, 'Reconstructor.fits')
-        pyfits.writeto(fits_file_name, self._rec)
+        pyfits.writeto(fits_file_name, self._rec, overwrite= True)
 
     def _saveMask(self, dove, mask):
         """
@@ -406,4 +401,4 @@ class opt_calibration():
             dove = path that indicates where to save the mask file
         """
         fits_file_name = os.path.join(dove, 'Mask.fits')
-        pyfits.writeto(fits_file_name, mask.astype(int))
+        pyfits.writeto(fits_file_name, mask.astype(int), overwrite= True)
