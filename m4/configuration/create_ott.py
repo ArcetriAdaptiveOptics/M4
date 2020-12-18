@@ -8,10 +8,10 @@ from astropy.io import fits as pyfits
 from m4.configuration import config as conf
 from m4.configuration.config import *
 from m4.configuration.ott_parameters import *
-from m4.ground import object_from_fits_file_name as obj
+from m4.ground import read_data
 from m4.utils.roi import ROI
-from m4.ground import zernike
-from m4.utils.opc_ua_controller import OpcUaController
+from m4.ground import zernike, geo
+from m4.ground.opc_ua_controller import OpcUaController
 
 class OTT():
 
@@ -32,14 +32,14 @@ class OTT():
         self.smap = np.zeros((Interferometer.N_PIXEL[0], Interferometer.N_PIXEL[1]))
         self.rmap = np.zeros(((2*OttParameters.rflat_radius*OttParameters.pscale).astype(int),
                               (2*OttParameters.rflat_radius*OttParameters.pscale).astype(int)))
-        self.m4pupil = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
+        self.m4pupil = read_data.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
                                                         conf.mirror_conf,
                                                         'm4_mech_pupil-bin2.fits'))
         self.m4ima = self.m4pupil * 0.
-        self.mask = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
+        self.mask = read_data.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
                                                      conf.mirror_conf,
                                                      'ott_mask.fits'))
-        self.parmask = np.ma.make_mask(obj.readFits_object(
+        self.parmask = np.ma.make_mask(read_data.readFits_object(
                                         os.path.join(conf.path_name.OPTICAL_FOLDER,
                                         conf.optical_conf, 'ottmask.fits')))
 #         self.segmask1 = np.ma.make_mask(obj.readFits_object(
@@ -50,7 +50,7 @@ class OTT():
 #                                                    'if_sect4_rot-bin2.fits'))
 #         self.vmat = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
 #                                                    conf.mirror_conf, 'ff_v_matrix.fits'))
-        self.zmat = obj.readFits_object(os.path.join(conf.path_name.OPTICAL_FOLDER,
+        self.zmat = read_data.readFits_object(os.path.join(conf.path_name.OPTICAL_FOLDER,
                                                      conf.optical_conf,
                                                      'Zmat.fits'))
 
@@ -368,15 +368,18 @@ class OTT():
         prova = np.ma.masked_array(np.ones(((2*OttParameters.parab_radius*OttParameters.pscale).astype(int),
                                             (2*OttParameters.parab_radius*OttParameters.pscale).astype(int))),
                                    mask=final_mask)
-        zernike_mode = np.arange(2, 12)
-        zmat_nopist = np.zeros((prova.compressed().shape[0], zernike_mode.size))
-        for i in range(0, zernike_mode.size):
-            z = self._zg.getZernike(zernike_mode[i])
-            aa = np.ma.masked_array(z, mask=final_mask)
-            zmat_nopist.T[i] = aa.compressed()
-        zmat = np.ones((zmat_nopist.shape[0], zmat_nopist.shape[1]+1))
-        for j in range(1, zmat_nopist.shape[1]):
-            zmat[:, j] = zmat_nopist[:, j-1]
+        zernike_mode = np.arange(10)+1
+        mm = np.where(final_mask == False)
+        x, y, r, xx, yy = geo.qpupil(final_mask)
+        zmat = zernike.getZernike(xx[mm], yy[mm], zernike_mode)
+#         zmat_nopist = np.zeros((prova.compressed().shape[0], zernike_mode.size))
+#         for i in range(0, zernike_mode.size):
+#             z = self._zg.getZernike(zernike_mode[i])
+#             aa = np.ma.masked_array(z, mask=final_mask)
+#             zmat_nopist.T[i] = aa.compressed()
+#         zmat = np.ones((zmat_nopist.shape[0], zmat_nopist.shape[1]+1))
+#         for j in range(1, zmat_nopist.shape[1]):
+#             zmat[:, j] = zmat_nopist[:, j-1]
         return zmat
 
 class DMmirror():
@@ -384,8 +387,8 @@ class DMmirror():
         """The constructor """
         curr_conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER,
                                        tnconf_mirror)
-        self.vmat = obj.readFits_object(os.path.join(curr_conffolder, 'vmat.fits'))
-        self.ff = obj.readFits_object(os.path.join(curr_conffolder, 'ff_matrix.fits'))
+        self.vmat = read_data.readFits_object(os.path.join(curr_conffolder, 'vmat.fits'))
+        self.ff = read_data.readFits_object(os.path.join(curr_conffolder, 'ff_matrix.fits'))
 
         self.m4od = OttParameters.m4od
         self.m4optod = OttParameters.m4optod

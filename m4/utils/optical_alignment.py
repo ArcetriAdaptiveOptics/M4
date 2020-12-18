@@ -9,7 +9,7 @@ from astropy.io import fits as pyfits
 import numpy as np
 from m4.configuration.config import fold_name
 from m4.utils.optical_calibration import opt_calibration
-from m4.utils.interface_4D import comm4d
+from m4.ground.interface_4D import comm4d
 from m4.ground import zernike
 from m4.configuration.ott_parameters import OttParameters
 from m4.ground.timestamp import Timestamp
@@ -179,7 +179,7 @@ class opt_alignment():
                 final_coef = zernike coeff on the image
                             (zernike modes 2,3,4,7,8)
         """
-        coef, mat = self._zOnM4.zernikeFit(img, np.arange(10)+1)
+        coef, mat = zernike.zernikeFit(img, np.arange(10)+1)
         z = np.array([1, 2, 3, 6, 7])
         final_coef = coef[z]
 

@@ -10,7 +10,8 @@ import numpy as np
 from m4.configuration.config import fold_name
 from m4.configuration.ott_parameters import OttParameters
 from m4.ground import tracking_number_folder
-from m4.utils.interface_4D import comm4d
+from m4.ground.interface_4D import comm4d
+from m4.ground import zernike
 
 
 class opt_calibration():
@@ -27,6 +28,7 @@ class opt_calibration():
         """The constructor """
         self._logger = logging.getLogger('OPT_CALIB:')
         self._c4d = comm4d()
+        self._cube = None
         self._rec = None
         self._intMat = None
 
@@ -312,7 +314,7 @@ class opt_calibration():
         coefList = []
         for i in range(self._cube.shape[2]):
             ima = np.ma.masked_array(self._cube[:,:,i], mask=mask)
-            coef, mat = self._zOnM4.zernikeFit(ima, np.arange(10)+1)
+            coef, mat = zernike.zernikeFit(ima, np.arange(10)+1)
             #z= np.array([2,3,4,7,8])
             z = np.array([1, 2, 3, 6, 7])
             final_coef = np.zeros(z.shape[0])

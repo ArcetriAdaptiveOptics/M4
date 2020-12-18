@@ -8,7 +8,7 @@ import logging
 import h5py
 from astropy.io import fits as pyfits
 import numpy as np
-from m4.ground.interferometer_converter import InterferometerConverter
+from m4.ground.read_data import InterferometerConverter
 from m4.influence_functions_maker import IFFunctionsMaker
 from m4.utils.roi import ROI
 from m4.utils.img_redux import TipTiltDetrend

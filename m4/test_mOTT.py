@@ -11,13 +11,11 @@ from IPython.display import clear_output
 from matplotlib import pyplot as plt
 from m4.configuration.ott_parameters import OpcUaParameters
 from m4.configuration.config import fold_name
-#plt.figure(figsize=(5,5))
 from m4.configuration import start
 from m4.alignment import Alignment
 from m4.utils.interface_4D import comm4d
 from m4.ground import tracking_number_folder
-from m4.utils import image_extender as ie
-from m4.utils.zernike_on_m_4 import ZernikeOnM4
+from m4.ground import zernike
 from m4.ground.timestamp import Timestamp
 
 ### TEST COMANDI PAR ###
@@ -171,7 +169,6 @@ def pippo(tt):
 def stability_test(n_images, delay):
     interf = comm4d()
     ott = start.create_ott()
-    zOnM4 = ZernikeOnM4()
     store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
     save = tracking_number_folder.TtFolder(store_in_folder)
     dove, tt = save._createFolderToStoreMeasurements()
@@ -187,8 +184,7 @@ def stability_test(n_images, delay):
         pyfits.writeto(fits_file_name, masked_ima.data)
         pyfits.append(fits_file_name, masked_ima.mask.astype(int))
 
-        new_ima = ie.imageExtender(masked_ima)
-        coef, mat = zOnM4.zernikeFit(new_ima, np.arange(2, 12))
+        coef, mat = zernike.zernikeFit(masked_ima, np.arange(10)+1)
         vect = np.append(dt, coef)
         vect_list.append(vect)
 
@@ -264,13 +260,11 @@ def readRepData(tt):
     return par, rm
 
 def analyzeOptRep(tt):
-    zOnM4 = ZernikeOnM4()
     par, rm, cube = readRepData(tt)
     z_list=[]
     for i in range(cube.shape[2]):
         masked_ima = cube[:,:,i]
-        new_ima = ie.imageExtender(masked_ima)
-        coef, mat = zOnM4.zernikeFit(new_ima, np.arange(2, 7))
+        coef, mat = zernike.zernikeFit(masked_ima, np.arange(2, 7))
         z_list.append(coef)
     return np.array(z_list)
 

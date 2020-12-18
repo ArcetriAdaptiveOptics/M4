@@ -12,7 +12,7 @@ from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
 from m4.configuration.config import fold_name
 from m4.type.commandHistory import CmdHistory
-from m4.ground import object_from_fits_file_name
+from m4.ground import read_data
 
 
 class IFFunctionsMaker():
@@ -88,9 +88,9 @@ class IFFunctionsMaker():
                     tracking number of measurements made
         '''
         amplitude, modes_vector, cmd_matrix = \
-        object_from_fits_file_name.readObjectFitsFileName(amplitude_fits_file_name,
-                                                          modes_vector_fits_file_name,
-                                                          cmd_matrix_fits_file_name)
+                                read_data.readTypeFromFitsName(amplitude_fits_file_name,
+                                                         modes_vector_fits_file_name,
+                                                         cmd_matrix_fits_file_name)
         self._nPushPull = n_push_pull
         if template is None:
             self._template = np.array([1, -1])

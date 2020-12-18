@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 from astropy.io import fits as pyfits
 from m4.configuration import config as conf
 from m4.ott_sim.ott_images import OttImages
-from m4.ground.interferometer_converter import InterferometerConverter
+from m4.ground.read_data import InterferometerConverter
 from m4.configuration.config import fold_name
 
 

@@ -1,10 +1,9 @@
 '''
-Autors
+Authors
   - C. Selmi: written in 2019
 '''
 
 import logging
-import numpy as np
 from skimage.draw import circle
 from scipy import ndimage as ndi
 from m4.configuration.ott_parameters import *

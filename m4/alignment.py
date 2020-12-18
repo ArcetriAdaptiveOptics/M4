@@ -11,7 +11,7 @@ from m4.utils.optical_alignment import opt_alignment
 from m4.utils.optical_calibration import opt_calibration
 from m4.utils.roi import ROI
 from m4.ground import zernike
-from m4.utils.interface_4D import comm4d
+from m4.ground.interface_4D import comm4d
 
 class Alignment():
     """

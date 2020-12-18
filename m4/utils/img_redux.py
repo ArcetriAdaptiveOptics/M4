@@ -1,10 +1,9 @@
 '''
-Autors
+Authors
   - C. Selmi: written in 2019
 '''
 
 import logging
-import numpy as np
 #from matplotlib.mlab import find
 from m4.configuration.ott_parameters import *
 from m4.utils.roi import ROI

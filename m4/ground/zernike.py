@@ -169,7 +169,7 @@ def _l2mn_noll(j):
 
 ##### TEST
 
-def test():
+def _test():
     from matplotlib.pyplot import imshow,show
     import numpy as np
     x = np.arange(-1,1,0.01)
@@ -179,7 +179,7 @@ def test():
     aa = getZernike(xx[mm],yy[mm],np.arange(11)+1);
     ii=xx*0;ii[mm]=aa[:,9];imshow(ii);show()
 
-def testMio(image):
+def _testMio(image):
     x_dim = image.shape[0]
     y_dim = image.shape[1]
     x = np.arange(-1, 1, 2./x_dim)

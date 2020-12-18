@@ -1,25 +1,41 @@
 """
-Autors
+Authors
   - C. Selmi:  written in 2019
 
 Function for reading file fits::
 
-    from m4.ground import object_from_fits_file_name as obj
-    numpy_array_data = obj.readFits_object(fits_file_path)
+    from m4.ground import read_data
+    numpy_array_data = read_data.readFits_object(fits_file_path)
     or
-    numpy_masked_array_data = obj.readFits_maskedImage(fits_file_path)
+    numpy_masked_array_data = read_data.readFits_maskedImage(fits_file_path)
     or
-    amplitude, mode_vector, cmd_matrix = obj.readObjectFitsFileName(
+    amplitude, mode_vector, cmd_matrix = read_data.readTypeFromFitsName(
                                 'ampName.fits', 'mvec.fits', 'cmdMatrix.fits')
 """
 import os
 from astropy.io import fits as pyfits
 import numpy as np
+import h5py
 from m4.type.modalAmplitude import ModalAmplitude
 from m4.type.modalBase import ModalBase
 from m4.type.modesVector import ModesVector
-from m4.configuration.config import *
+from m4.configuration.config import fold_name
 
+
+def read_phasemap(file_path, ext=0):
+    ''' deve leggere sia fits che h5
+    '''
+    if ext == 0:
+        image = readFits_maskedImage(file_path)
+    else:
+        hf = h5py.File(file_path, 'r')
+        hf.keys()
+        data1 = hf.get('dataset_1')
+        data2 = hf.get('dataset_2')
+        image = np.ma.masked_array(np.array(data1),
+                                   np.array(data2.astype(bool)))
+    return image
+    
 ### Generiche
 def readFits_object(fits_file_path):
     '''
@@ -53,28 +69,10 @@ def readFits_maskedImage(fits_file_path):
     return immagine
 ###
 
-def _readImageFromFitsFileName(fits_file_path):
-    """
-    Parameters
-    ----------
-        fits_file_path : string
-                        file path of the image.fits to read
 
-    Returns
-    -------
-            immagine: numpy masked array
-                        masked array of the image
-    """
-    file_name = os.path.join(path_name.CALIBRATION_ROOT_FOLDER,
-                             fits_file_path)
-    hduList = pyfits.open(file_name)
-    ima = hduList[0].data
-    immagine = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
-    return immagine
-
-def readObjectFitsFileName(amplitude_fits_file_name,
-                           mode_vector_fits_file_name,
-                           cmd_matrix_fits_file_name):
+def readTypeFromFitsName(amplitude_fits_file_name,
+                         mode_vector_fits_file_name,
+                         cmd_matrix_fits_file_name):
     '''
     Parameters
     ----------
@@ -106,23 +104,6 @@ def readObjectFitsFileName(amplitude_fits_file_name,
     cmd_matrix = mb.getModalBase()
     return amplitude, mode_vector, cmd_matrix
 
-def _readDataFromFileFits(fits_file_path):
-    """
-    Parameters
-    ----------
-        fits_file_path: string
-                    file path of the data to read
-
-    Returns
-    -------
-            data: numpy array
-                    data included in file path
-    """
-    file_name = os.path.join(path_name.OPT_DATA_FOLDER,
-                             fits_file_path)
-    hduList = pyfits.open(file_name)
-    data = hduList[0].data
-    return data
 
 def _readImageFromRunaIFFs(fits_file_path):
     file_name = os.path.join(fold_name.IFFUNCTIONS_ROOT_FOLDER,
@@ -131,3 +112,28 @@ def _readImageFromRunaIFFs(fits_file_path):
     cube = hduList[0].data
     immagine = np.ma.masked_array(cube[0, :, :], mask=np.invert(cube[1, :, :].astype(bool)))
     return immagine
+
+class InterferometerConverter():
+    """ Class to use to convert H5 files to masked array"""
+
+    @staticmethod
+    def from4D(h5filename):
+        """
+        Parameters
+        ----------
+            h5filename: string
+                 path of h5 file to convert
+
+        Returns
+        -------
+                ima: numpy masked array
+                     masked array image
+        """
+        file = h5py.File(h5filename, 'r')
+        genraw = file['measurement0']['genraw']['data']
+        data = np.array(genraw)
+        mask = np.zeros(data.shape, dtype=np.bool)
+        mask[np.where(data == data.max())] = True
+        ima = np.ma.masked_array(data * 632.8e-9, mask=mask)
+        return ima
+

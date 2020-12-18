@@ -1,12 +1,12 @@
 '''
-Autors
+Authors
   - C. Selmi:  written in October 2020
 '''
 
 from m4.configuration.ott_parameters import *
 from astropy.io import fits as pyfits
 from skimage.draw import circle as draw_circle
-from m4.utils.zernike_on_m_4 import ZernikeOnM4
+from m4.ground import zernike
 from scipy.ndimage.interpolation import shift
 
 def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patches=None):
@@ -234,10 +234,9 @@ def surf_fit(ima):
     if ima is None:
         pass
     else:
-        zOnM4 = ZernikeOnM4()
-        coef, mat = zOnM4.zernikeFit(ima,
+        coef, mat = zernike.zernikeFit(ima,
                                     np.array([2, 3]))
-        new_image = zOnM4.zernikeSurface(coef, ima.mask, mat)
+        new_image = zernike.zernikeSurface(ima, coef, mat)
         pp = np.ma.masked_array(new_image, mask=ima.mask) 
         return pp
 

@@ -8,7 +8,7 @@ import numpy as np
 import time
 from opcua import Client
 from opcua import ua
-from m4.configuration.ott_parameters import OttParameters, OpcUaParameters
+from m4.configuration.ott_parameters import OpcUaParameters
 
 server = OpcUaParameters.server
 
@@ -155,21 +155,3 @@ class OpcUaController():
         while value == True:
             time.sleep(0.1)
             value = self._get_command_state(int_number)
-        
-
-###
-#     def stop_single_command(self, int_number):
-#         """
-#         Parameters
-#         ----------
-#             int_number: int
-#                     number of the chosen object
-# 
-#         Returns
-#         -------
-#         """
-#         self._client.connect()
-#         node = self._client.get_node("ns=7;s=MAIN.b_MoveCmd[%d]" %int_number)
-#         node_type = node.get_data_type_as_variant_type()
-#         node.set_value(ua.DataValue(ua.Variant(False, node_type)))
-#         self._client.disconnect()

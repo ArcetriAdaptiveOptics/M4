@@ -208,7 +208,7 @@ def immaginiProvaTTDetrendAll():
     return mode_0, mode_1
 
 def loadTestCubeFromRunaIFF(tt, n_measure):
-    import m4.ground.object_from_fits_file_name as obj
+    import m4.ground.read_data as obj
     cube = None
 
     for i in range(n_measure):
