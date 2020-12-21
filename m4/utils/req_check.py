@@ -3,7 +3,8 @@ Authors
   - C. Selmi:  written in October 2020
 '''
 
-from m4.configuration.ott_parameters import *
+import numpy as np
+from m4.configuration.ott_parameters import OttParameters
 from astropy.io import fits as pyfits
 from skimage.draw import circle as draw_circle
 from m4.ground import zernike
@@ -37,7 +38,7 @@ def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patches
             tidy std of every patches
     '''
     diameter = image.shape[0]
-    OttParameters.PARABOLA_PUPIL_XYRADIUS[2] = np.int(diameter/2)
+    #OttParameters.PARABOLA_PUPIL_XYRADIUS[2] = np.int(diameter/2)
     #metri = 0.05
     if pixelscale is None:
         ps = 1/OttParameters.pscale

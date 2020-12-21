@@ -25,9 +25,6 @@ PT sensors
 - :func:`PT_calibration`
 - :func:`analyzer_PT_meas`
 
-OTT procedures
-++++++++++++++
-- tutte le altre (da fare)
 '''
 
 import os
@@ -40,7 +37,7 @@ from m4.noise_functions import Noise
 from m4.alignment import Alignment
 from m4.ground import logger_set_up as lsu
 from m4.configuration import start
-from m4.configuration.ott_parameters import *
+from m4.configuration.ott_parameters import OttParameters, OpcUaParameters
 
 
 
@@ -64,7 +61,7 @@ a = Alignment(ott)
 
 def ott_alignment_calibration(commandAmpVector, nPushPull, move):
     '''
-    Other Parameters
+    Parameters
     ----------------
             command_amp_vector: numpy array
                                   vector containing the movement values
@@ -100,11 +97,16 @@ def ott_alignment(tt_tower, n_images, move=1, intMatModesVector=None, commandId=
             calibration measurement to use for alignment
     n_images: int
             number of interferometers frames
-    intMatModesVecor: numpy array
-                    np.array([0,1,2,3,4,5]) for tip, tilt, fuoco,
-                                                coma, coma
     move: int
-        1 to move
+        1 to move the tower
+        other to show commands
+    Other Parameters
+    ----------
+    intMatModesVecor: numpy array
+                    None is equal to np.array([0,1,2,3,4,5])
+                    for tip, tilt, fuoco, coma, coma
+    commandId: numpy array
+            array containing the number of degrees of freedom to be commanded
     '''
     print('Ott alignemnt')
     par_cmd, rm_cmd = a.ott_alignment(n_images, move, intMatModesVector, commandId, tt_tower)
@@ -115,12 +117,12 @@ def ott_alignment(tt_tower, n_images, move=1, intMatModesVector=None, commandId=
 #    if move == 1:
 #	    for i in range(OttParameters.PARABOLA_DOF.size):
 #	        if par_cmd[OttParameters.PARABOLA_DOF[i]] < OttParameters.parab_max_displacement[OttParameters.PARABOLA_DOF[i]]:
-#	            lala=0
+#	            print('ok')
 #	        else:
 #	            raise OSError('Par command to large')
 #	    for i in range(OttParameters.RM_DOF.size):
 #	        if rm_cmd[OttParameters.RM_DOF[i]] < OttParameters.rm_max_displacement[OttParameters.RM_DOF[i]]:
-#	            lala=1
+#	            print('ok')
 #	        else:
 #	            raise OSError('Rm command to large')
 
@@ -166,7 +168,7 @@ def m4_alignment(tt_m4):
     #applicare comando
     for i in range(OttParameters.M4_DOF.size):
         if cmd_m4[OttParameters.M4_DOF[i]] < OttParameters.m4_max_displacement[OttParameters.M4_DOF[i]]:
-            lala=0
+            print('ok')
         else:
             raise OSError('Command to large')
     #a._write_m4(cmd_m4)
@@ -199,6 +201,7 @@ def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
     print(centro, axs, raggio)
     #le immagini le fa l'analyzer
     return ro, tt
+
 
 
 ######### Misure di noise ##########
@@ -503,62 +506,3 @@ def analyzer_PT_meas(tt):
     plt.plot(t, matrix_s/100)
     plt.xlabel('Time [s]'); plt.ylabel('Temperature [C]'); 
     plt.title('PT Calibration')
-
-
-#PROCEDURE OTT#
-def RS_verification():
-    #caliball
-
-# Mount the reference sphere in front on the RS
-# Align the reference sphere to the RS
-# Acquire a measurement
-# Rotate the reference sphere
-# Acquire a measurement
-# Repeat points 4-5 until the residual measurement noise is below Test Pass Criteria
-# Average the result to obtain the RS cavity
-    pass
-
-def PAR_verification():
-# Mount the PAR
-# Mount the INT
-# Mount the CGH in front of the interferometer
-# Align the CGH to the INT
-# Align the INT+CGH to the PAR
-# Acquire the measurement
-# Post process the phasemaps to average WFE and WFE noise
-    pass
-
-def LAI_verification():
-# To null the fringes:
-#
-# Mount the PAR
-# Mount the RM and place it at the PAR center
-# Remove the reference sphere
-# Place a pinhole at the L1 focus
-# Align the RM to have beam and return passing through the pinhole
-# Align the RM to null the tilt fringes on the interferometer screen
-# Align the PM and RM together to null coma on the interferometer
-#
-#
-# To center the pupil:
-#
-# Identify the markers of the PM and its center.
-# Adjust the pupil relay table to move it to the CCD center. Move table XY.
-# Adjust the table tip/tilt to null the fringes.
-    pass
-
-def SAI_verification():
-# Mount the flat reference mirror in front on the SAI. Adjust the flat tip/tilt
-# Align the flat to the SAI
-# Acquire a measurement
-# Repeat point 3 until the residual measurement noise is below the Test Pass Criteria
-# Average the result to obtain the SAI cavity WFE
-    pass
-
-def SPL_verification():
-    #test 0087
-    pass
-
-# prendere ispirazione dal sito adoptica
-def acquire_IFFunction():
-    pass

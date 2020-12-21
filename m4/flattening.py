@@ -4,8 +4,9 @@
 
 import os
 import logging
+import numpy as np
 from astropy.io import fits as pyfits
-from m4.configuration.ott_parameters import *
+from m4.configuration.ott_parameters import OttParameters
 from m4.utils.roi import ROI
 from m4.type.deformable_mirror import Mirror
 from m4.ground.timestamp import Timestamp

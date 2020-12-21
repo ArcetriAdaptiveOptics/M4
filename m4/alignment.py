@@ -52,7 +52,8 @@ class Alignment():
                 n_push_pull: int
                             number of push pull for each degree of freedom
                 mask_index: int
-                            3 for the RM mask (non ruotate 2)
+                            3 for the simulatore's RM mask (non ruotate 2)
+                            0 for standard mask in real ott
 
         Returns
         -------
@@ -70,7 +71,19 @@ class Alignment():
         """
         Parameters
         ----------
-            tt: string, None
+            n_images: int
+                number of interferometers frames
+            move: int
+                1 to move the tower
+                other to show commands
+        Other Parameters
+        ----------
+        intMatModesVecor: numpy array
+                        None is equal to np.array([0,1,2,3,4,5])
+                        for tip, tilt, fuoco, coma, coma
+        commandId: numpy array
+                array containing the number of degrees of freedom to be commanded
+        tt: string, None
                 tracking number of measurement of which you want to use the
                 interaction matrix and reconstructor
                 None for the last measurement made

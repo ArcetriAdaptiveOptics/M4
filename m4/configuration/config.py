@@ -1,5 +1,5 @@
 '''
-Autors
+Authors
   - C. Selmi: written in 2020
 '''
 import os

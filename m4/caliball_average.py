@@ -9,12 +9,11 @@ import logging
 import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
-from m4.utils import image_extender
 from m4.utils.img_redux import TipTiltDetrend
-from m4.utils.zernike_on_m_4 import ZernikeOnM4
+from m4.ground import zernike
 from m4.configuration.config import fold_name
-from m4.ground.interferometer_converter import InterferometerConverter
-from m4.ground import tip_tilt_interf_fit
+from m4.ground.read_data import InterferometerConverter
+from m4.utils import tip_tilt_interf_fit
 
 class Caliball():
     """
@@ -37,7 +36,6 @@ class Caliball():
         self._rmsthreshold = 3
         self._logger = logging.getLogger('CALIBALL:')
         self._ic = InterferometerConverter()
-        self._zOnM4 = ZernikeOnM4()
         self._ttd = TipTiltDetrend()
 
         self._cube = None
@@ -93,9 +91,9 @@ class Caliball():
         (without tip/tilt) together with RMS of the average frame
         '''
         rs_img = self._readRsImg()
-        rs = image_extender.imageExtender(rs_img)
-        coef, mat = self._zOnM4.zernikeFit(rs, np.array([2, 3]))
-        rs_ttr = self._ttd.ttRemoverFromCoeff(coef, rs)
+        coef, mat = zernike.zernikeFit(rs_img, np.array([2, 3]))
+        surf = zernike.zernikeSurface(rs_img, coef, mat)
+        rs_ttr = rs_img - surf
         r0 = rs_ttr.std()
 
         cube_ttr = self._readCube(1)
@@ -183,9 +181,10 @@ class Caliball():
         cube_ttr = None
         if fitEx is None:
             for i in range(self._cube.shape[2]):
-                image = image_extender.imageExtender(self._cube[:, :, i])
-                coef, mat = self._zOnM4.zernikeFit(image, np.array([2, 3]))
-                image_ttr = self._ttd.ttRemoverFromCoeff(coef, image)
+                image = self._cube[:, :, i]
+                coef, mat = zernike.zernikeFit(image, np.array([2, 3]))
+                surf = zernike.zernikeSurface(image, coef, mat)
+                image_ttr = image - surf
                 if cube_ttr is None:
                     cube_ttr = image_ttr
                 else:

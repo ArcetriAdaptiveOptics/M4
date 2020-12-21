@@ -23,7 +23,7 @@ class TipTiltDetrend():
     def __init__(self):
         """The constructor """
         self._logger = logging.getLogger('TIP_TILT_DETREND:')
-        self._pupilXYRadius = OttParameters.PARABOLA_PUPIL_XYRADIUS
+        #self._pupilXYRadius = OttParameters.PARABOLA_PUPIL_XYRADIUS
         self._totalMatList = None
 
 #tutta da rivedere

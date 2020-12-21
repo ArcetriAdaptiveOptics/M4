@@ -1,5 +1,5 @@
 '''
-Autors
+Authors
   - C. Selmi:  written in September 2020
 '''
 
@@ -9,11 +9,11 @@ import numpy as np
 import logging
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
-from m4.ground import tip_tilt_interf_fit
-from m4.utils.interface_4D import comm4d
+from m4.utils import tip_tilt_interf_fit
+from m4.ground.interface_4D import comm4d
 from m4.configuration.config import fold_name
 from m4.ground import tracking_number_folder
-from m4.utils.zernike_on_m_4 import ZernikeOnM4
+from m4.ground import zernike
 from m4.utils.parabola_identification import ParabolIdent
 from m4.noise_functions import Noise
 from m4.configuration.ott_parameters import OpcUaParameters
@@ -34,7 +34,6 @@ class RotOptAlign():
         self._logger = logging.getLogger('ROTOPTALIGN')
         self._c4d = comm4d()
         self._ott = ott
-        self._zOnM4 = ZernikeOnM4()
         self._parab = ParabolIdent()
         self._n = Noise()
 
@@ -92,7 +91,7 @@ class RotOptAlign():
             time.sleep(5)
             masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
             name = 'Frame_%04d.fits' %k
-            self._saveInterfData(dove, name, masked_ima)
+            self._c4d.save_phasemap(dove, name, masked_ima)
             if self._cube is None:
                 self._cube = masked_ima
             else:
@@ -128,11 +127,6 @@ class RotOptAlign():
         plt.figure(figsize=(7,7))
         plt.plot(tip, tilt, '-o')
 
-    def _saveInterfData(self, dove, file_name, image):
-        fits_file_name = os.path.join(dove, file_name)
-        pyfits.writeto(fits_file_name, image.data)
-        pyfits.append(fits_file_name, image.mask.astype(int))
-
     def _saveAngles(self, angle_list, tt):
         fits_file_name = os.path.join(RotOptAlign._storageFolder(), tt, 'angle_list.txt')
         file = open(fits_file_name, 'w+')
@@ -165,9 +159,8 @@ class RotOptAlign():
         coef_tip_list = []
         for i in range(cube.shape[2]):
             image = cube[:,:,i]
-            image_ex = self._n._imageExtender(image)
-            coef, mat = self._zOnM4.zernikeFit(image_ex,
-                                               np.array([2, 3]))
+            coef, mat = zernike.zernikeFit(image,
+                                            np.array([2, 3]))
             coef_tip_list.append(-coef[0]/(633e-9) *np.sqrt(2))
             coef_tilt_list.append(coef[1]/(633e-9) *np.sqrt(2))
         tip = np.array(coef_tip_list)
@@ -198,9 +191,8 @@ class RotOptAlign():
             masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
         else:
             masked_ima = masked_ima
-        image_ex = self._n._imageExtender(masked_ima)
-        coef, mat = self._zOnM4.zernikeFit(image_ex,
-                                           np.array([2, 3]))
+        coef, mat = zernike.zernikeFit(masked_ima,
+                                       np.array([2, 3]))
         tip = -coef[0]/(633e-9) *np.sqrt(2)
         tilt = coef[1]/(633e-9) *np.sqrt(2)
 
@@ -214,51 +206,3 @@ class RotOptAlign():
         rot_mat[1,0] = np.sin(theta)
         rot_mat[1,1] = np.cos(theta)
         return rot_mat
-
-    def _tipTiltRotation(self, theta, tip, tilt):
-        new_tt_mat = np.zeros((26,2))
-        aa = np.dstack((tip,tilt))
-        bb = aa[0]
-        for i in range(theta.size):
-            rot_mat = self._rotationMatrix(theta[i])
-            new_tt = np.dot(bb[0], rot_mat)
-            new_tt_mat[i,:] = new_tt
-        return new_tt_mat
-
-
-    def _tipTiltCorrector(self, tip_or_tilt):
-        rot_coef = self._tipOrTiltRotation(tip_or_tilt)
-        if tip_or_tilt==0:
-            posToBeCorrected = 4
-        elif tip_or_tilt==1:
-            posToBeCorrected = 3
-        self._applyCorrection(rot_coef, posToBeCorrected)
-        return self._ott.m4()
-
-    def _tipOrTiltRotation(self, tip_or_tilt):
-        '''
-        Parameters
-        ----------
-        tip_or_tilt: int
-                    0 for tip
-                    1 for tilt
-        Returns
-        -------
-        rot_coef: int
-        '''
-        theta = self._ott.angle()
-        masked_ima = self._c4d.acq4d(self._ott, 1, show=1)
-        coef, mat = self._zOnM4.zernikeFit(masked_ima,
-                                            np.array([2, 3]))
-        if tip_or_tilt==0:
-            rot_mat = self._rotationMatrix(theta)
-        elif tip_or_tilt==1:
-            rot_mat = self._rotationMatrix(-theta)
-        rot_coef = np.dot(coef, rot_mat)
-        return rot_coef[tip_or_tilt]
-
-    def _applyCorrection(self, rot_coef, posToBeCorrected):
-        start_position = self._ott.m4()
-        new_position = start_position
-        new_position[posToBeCorrected] = start_position[posToBeCorrected] + rot_coef
-        self._ott.m4(new_position)

@@ -6,14 +6,13 @@ Autors
 import numpy as np
 #import cv2
 from numpy.linalg import eig, inv
-#from m4.ground import fit_ellipse
 from skimage.draw import circle as draw_circle
 from skimage.draw import ellipse as draw_ellipse
 from skimage.measure import label
 from astropy.io import fits as pyfits
 import sklearn.feature_extraction as skf_e
 import sklearn.cluster as skc
-from m4.configuration.ott_parameters import *
+from m4.configuration.ott_parameters import OttParameters
 
 class ParabolIdent():
     ''' Class to be used to determine the position of the parable

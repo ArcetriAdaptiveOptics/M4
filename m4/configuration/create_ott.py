@@ -4,10 +4,12 @@ Authors
 '''
 
 import logging
+import os
+import numpy as np
 from astropy.io import fits as pyfits
-from m4.configuration import config as conf
-from m4.configuration.config import *
-from m4.configuration.ott_parameters import *
+from m4.configuration import config as conf, ott_parameters
+from m4.configuration.config import path_name
+from m4.configuration.ott_parameters import OttParameters, Interferometer, OpcUaParameters
 from m4.ground import read_data
 from m4.utils.roi import ROI
 from m4.ground import zernike, geo
@@ -32,14 +34,14 @@ class OTT():
         self.smap = np.zeros((Interferometer.N_PIXEL[0], Interferometer.N_PIXEL[1]))
         self.rmap = np.zeros(((2*OttParameters.rflat_radius*OttParameters.pscale).astype(int),
                               (2*OttParameters.rflat_radius*OttParameters.pscale).astype(int)))
-        self.m4pupil = read_data.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
+        self.m4pupil = read_data.readFits_data(os.path.join(conf.path_name.MIRROR_FOLDER,
                                                         conf.mirror_conf,
                                                         'm4_mech_pupil-bin2.fits'))
         self.m4ima = self.m4pupil * 0.
-        self.mask = read_data.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
+        self.mask = read_data.readFits_data(os.path.join(conf.path_name.MIRROR_FOLDER,
                                                      conf.mirror_conf,
                                                      'ott_mask.fits'))
-        self.parmask = np.ma.make_mask(read_data.readFits_object(
+        self.parmask = np.ma.make_mask(read_data.readFits_data(
                                         os.path.join(conf.path_name.OPTICAL_FOLDER,
                                         conf.optical_conf, 'ottmask.fits')))
 #         self.segmask1 = np.ma.make_mask(obj.readFits_object(
@@ -50,7 +52,7 @@ class OTT():
 #                                                    'if_sect4_rot-bin2.fits'))
 #         self.vmat = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
 #                                                    conf.mirror_conf, 'ff_v_matrix.fits'))
-        self.zmat = read_data.readFits_object(os.path.join(conf.path_name.OPTICAL_FOLDER,
+        self.zmat = read_data.readFits_data(os.path.join(conf.path_name.OPTICAL_FOLDER,
                                                      conf.optical_conf,
                                                      'Zmat.fits'))
 
@@ -283,11 +285,15 @@ class OTT():
         self._logger.debug('About M4')
         #if type(start_position) is np.ndarray:
         #if start_position.size == 6:
-        if start_position is None:
-            self.m4_start_position = self.m4_start_position
+        if conf.simulated == 1:
+            if start_position is None:
+                self.m4_start_position = self.m4_start_position
+            else:
+                self.m4_start_position = start_position
+            self._logger.debug(self.m4_start_position)
         else:
-            self.m4_start_position = start_position
-        self._logger.debug(self.m4_start_position)
+            print('Sw to be developed')
+            self.m4_start_position = self.m4_start_position
         #else:
             #raise OSError('Incorrect length of the vector')
         #else:
@@ -372,30 +378,52 @@ class OTT():
         mm = np.where(final_mask == False)
         x, y, r, xx, yy = geo.qpupil(final_mask)
         zmat = zernike.getZernike(xx[mm], yy[mm], zernike_mode)
-#         zmat_nopist = np.zeros((prova.compressed().shape[0], zernike_mode.size))
-#         for i in range(0, zernike_mode.size):
-#             z = self._zg.getZernike(zernike_mode[i])
-#             aa = np.ma.masked_array(z, mask=final_mask)
-#             zmat_nopist.T[i] = aa.compressed()
-#         zmat = np.ones((zmat_nopist.shape[0], zmat_nopist.shape[1]+1))
-#         for j in range(1, zmat_nopist.shape[1]):
-#             zmat[:, j] = zmat_nopist[:, j-1]
         return zmat
 
 class DMmirror():
     def __init__(self):
         """The constructor """
         curr_conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER,
-                                       tnconf_mirror)
-        self.vmat = read_data.readFits_object(os.path.join(curr_conffolder, 'vmat.fits'))
-        self.ff = read_data.readFits_object(os.path.join(curr_conffolder, 'ff_matrix.fits'))
+                                       ott_parameters.tnconf_mirror)
+#         self.vmat = read_data.readFits_data(os.path.join(curr_conffolder, 'vmat.fits'))
+#         self.ff = read_data.readFits_data(os.path.join(curr_conffolder, 'ff_matrix.fits'))
 
         self.m4od = OttParameters.m4od
         self.m4optod = OttParameters.m4optod
         self.m4id = OttParameters.m4id
+        self._activeSegment = 0
 
-class Parabola():
-    def __init__(self):
-        """The constructor """
-        self.radius = OttParameters.parab_radius
-        self.dof = OttParameters.PARABOLA_DOF
+    def mirror_command(self, command, seg=None):
+        command_input = np.copy(command)
+        pos = self._measurePosition()
+        if seg is None:
+            if command_input.shape[0]==OttParameters.N_ACTS_TOT:
+                command = command_input
+            elif command_input.shape[0] < OttParameters.N_ACTS_TOT:
+                cmd = np.zeros(OttParameters.N_ACTS_TOT)
+                for j in range(command_input.shape[0]):
+                    act = j + (OttParameters.N_ACT_SEG * self._activeSegment)
+                    cmd[act] = command_input[j]
+                command = cmd
+            delta_command = pos + command
+        else:
+            command_list = []
+            for i in range(seg.shape[0]):
+                cmd = np.zeros(OttParameters.N_ACTS_TOT)
+                for j in range(OttParameters.N_ACT_SEG):
+                    act = j + (OttParameters.N_ACT_SEG * seg[i])
+                    k = i * OttParameters.N_ACT_SEG
+                    cmd[act] = command_input[k]
+                    command = cmd
+                command_list.append(command)
+            command = np.zeros(OttParameters.N_ACTS_TOT)
+            for cmd in command_list:
+                command = command + cmd
+            delta_command = command
+        #forza = self._mirror._ff * delta_command
+        return delta_command
+
+    def _measurePosition(self):
+        #dall'opc ua va letta la posizione degli attuatori
+        pos = np.zeros(OttParameters.N_ACTS_TOT)+7
+        return pos

@@ -10,7 +10,6 @@ Function for simulation or data acquisition from the interferometer::
     from m4.utils.interface_4D import comm4d
     c4d = comm4d()
     image = c4d.acq4d(ott, nframes, 0)
-    
 """
 import os
 import numpy as np
@@ -45,9 +44,9 @@ class comm4d():
             masked_ima: numpy masked array
                     interferometer image
         """
-        ottIma = OttImages(ott)
 
         if conf.simulated ==1:
+            ottIma = OttImages(ott)
             opd, mask = ottIma.ott_smap(show=show)
             masked_ima = np.ma.masked_array(opd.T, mask=np.invert(mask.astype(bool)).T)
 

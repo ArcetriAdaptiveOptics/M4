@@ -14,7 +14,7 @@ from m4.ground import smooth_function as sf
 from m4.ground import tracking_number_folder
 from astropy.io import fits as pyfits
 from m4.configuration.config import fold_name
-from m4.configuration.ott_parameters import *
+from m4.configuration.ott_parameters import OttParameters
 
 class SPL():
     ''' Class used to obtain the piston value for two segments
@@ -109,8 +109,7 @@ class SPL():
         tt: string
             tracking number of measurements
         '''
-        store_in_folder = self._storageFolder()
-        save = tracking_number_folder.TtFolder(store_in_folder)
+        save = tracking_number_folder.TtFolder(self._storageFolder())
         self._dove, self._tt = save._createFolderToStoreMeasurements()
         fits_file_name = os.path.join(self._dove, 'lambda_vector.fits')
         pyfits.writeto(fits_file_name, lambda_vector)

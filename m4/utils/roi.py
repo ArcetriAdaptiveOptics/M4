@@ -3,10 +3,11 @@ Authors
   - C. Selmi: written in 2019
 '''
 
+import numpy as np
 import logging
 from skimage.draw import circle
 from scipy import ndimage as ndi
-from m4.configuration.ott_parameters import *
+from m4.configuration.ott_parameters import OttParameters
 
 
 class ROI():

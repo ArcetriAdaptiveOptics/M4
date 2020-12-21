@@ -1,19 +1,20 @@
 '''
-Autors
+Authors
   - C. Selmi:  written in 2020
 '''
 
 import os
+import numpy as np
 import logging
 from scipy import ndimage
 from astropy.io import fits as pyfits
 from m4.configuration.config import fold_name
-from m4.configuration.ott_parameters import *
-from m4.ground.zernikeGenerator import ZernikeGenerator
+from m4.configuration.ott_parameters import OttParameters
+from m4.ground import zernike
 from m4.flattening import Flattenig
 from m4.analyzer_iffunctions import AnalyzerIFF
 from m4.ground import tracking_number_folder
-from m4.ground.interferometer_converter import InterferometerConverter
+from m4.ground.read_data import InterferometerConverter
 
 class ZernikeCommand():
     ''' Class created to control Zernike modes at all m4
@@ -36,7 +37,6 @@ class ZernikeCommand():
         self._ttListForAn = tt_list_for_an
         self._ic = InterferometerConverter()
         self._pupilXYRadius = OttParameters.M4_MECHANICAL_PUPIL_XYRADIUS
-        self._zg = ZernikeGenerator(2*self._pupilXYRadius[2])
         self._diameterInPixelForSegmentImages = OttParameters.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES
         self._bigDiameter = OttParameters.BIG_IMAGE_DIAMETER
         self._measure = None
@@ -83,9 +83,8 @@ class ZernikeCommand():
                 m4ImagesCube: numpy array [512, 512, n_modes]
                     cube consisting of the 6 images of the segments
         '''
-        self._ampVector = zernike_modes_vector_amplitude
-        store_in_folder = self._storageFolder()
-        save = tracking_number_folder.TtFolder(store_in_folder)
+        self._ampVector = zernike_modes_vector_amplitude 
+        save = tracking_number_folder.TtFolder(self._storageFolder())
         self._dove, self._tt = save._createFolderToStoreMeasurements()
 
         self._saveMeasurementInfo()

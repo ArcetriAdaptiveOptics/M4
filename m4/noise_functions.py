@@ -1,12 +1,12 @@
 '''
-Autors
+Authors
   - C. Selmi:  written in 2020
 '''
 
 import os
 import logging
-import numpy as np
 import glob
+import numpy as np
 from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
 from m4.configuration.config import fold_name
@@ -40,8 +40,6 @@ class Noise():
     def _storageFolder():
         """ Creates the path where to save measurement data"""
         return fold_name.NOISE_ROOT_FOLDER
-
-### IFF spostate in C_noise dell'altro m4
 
     def _defAnalyzer(self, data_file_path, tidy_or_shuffle, template, n_push_pull=None, actsVector=None):
         '''
@@ -106,12 +104,9 @@ class Noise():
                 tt: string
                     tracking number of measurements made
         '''
-        #data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
-
         an = self._defAnalyzer(data_file_path, tidy_or_shuffle, template, actsVector, n_push_pull)
 
-        store_in_folder = self._storageFolder()
-        save = tracking_number_folder.TtFolder(store_in_folder)
+        save = tracking_number_folder.TtFolder(self._storageFolder())
         dove, tt = save._createFolderToStoreMeasurements()
 
         self._logger.info('Creating analysis in %s', tt)
@@ -166,7 +161,7 @@ class Noise():
         return rms_mean, quad_tt
 
     def _spectrumAllData(self, data_file_path):
-        list = glob.glob(os.path.join(data_file_path,'*.h5'))
+        list = glob.glob(os.path.join(data_file_path, '*.h5'))
         coef_tilt_list = []
         coef_tip_list = []
         for i in range(len(list)):
@@ -185,10 +180,6 @@ class Noise():
         dt = 35e-3
         n = vector.size
         T = n*dt
-#         t = np.linspace(0, T, n)
-#         freq = np.fft.fftfreq(t.size, d=dt)
-#         f = np.fft.fftshift(freq)
-#         df = freq[1]-freq[0]
 
         spe = np.fft.fftshift(np.fft.rfft(vector, norm='ortho'))
         freq = np.fft.fftshift(np.fft.rfftfreq(vector.size, d=dt))
@@ -306,10 +297,8 @@ class Noise():
                      squaring sum of tip and tilt calculated on the difference
                     of the images
         '''
-        #data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
-        list = glob.glob(os.path.join(data_file_path,'*.h5'))
+        list = glob.glob(os.path.join(data_file_path, '*.h5'))
         image_number = len(list)
-        #tau_vector = np.arange(80)+1
         i_max = np.int((image_number - tau_vector[tau_vector.shape[0]-1]) /
                        (tau_vector[tau_vector.shape[0]-1] * 2))
         if i_max <= 20:
@@ -367,7 +356,7 @@ class Noise():
             time: numpy array
                 vector of the time at which the image were taken
         '''
-        list = glob.glob(os.path.join(data_file_path,'*.h5'))
+        list = glob.glob(os.path.join(data_file_path, '*.h5'))
         image_number = len(list)
         time = np.arange(image_number) * (1/27.58)
 

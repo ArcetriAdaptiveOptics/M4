@@ -1,5 +1,5 @@
 '''
-Autors
+Authors
   - C. Selmi: written in 2019
 '''
 import os
@@ -10,6 +10,7 @@ import h5py
 import numpy as np
 from m4.ground import tracking_number_folder
 from m4.configuration.config import fold_name
+from m4.configuration.ott_parameters import OttParameters
 
 
 class CmdHistory():
@@ -22,12 +23,10 @@ class CmdHistory():
         cmdH = CmdHistory()
     '''
 
-    def __init__(self, device):
+    def __init__(self):
         """The constructor """
-        self._device = device
         self._logger = logging.getLogger('CMD_HISTORY:')
-        self._who = self._device._who 
-        self._nActs = self._device.nActs()
+        self._nActs = OttParameters.N_ACT_SEG
         self._modeVector = None
         self._nPushPull = None
         self._cmdMatrix = None
@@ -74,7 +73,7 @@ class CmdHistory():
                         number of push pull for actuatores 
         Other Parameters
         ----------
-            template: numpy array  , optional         
+            template: numpy array  , optional
                     vector composed by 1 and -1
                     (es. np.array([1, -1, 1]))
         Returns
@@ -91,7 +90,7 @@ class CmdHistory():
         zipped = zip(aa, bb)
         matrix_to_apply = self._cmdHistoryToApply(zipped, template)
         self._cmdHToApply = matrix_to_apply
-        tt = self.saveAsFits()
+        tt = self.saveInfo(0)
         self._logger.info('Creation of the ordered commandHistoryMatrix %s', tt)
         print(tt)
 
@@ -114,7 +113,7 @@ class CmdHistory():
                         number of push pull for actuatores 
         Other Parameters
         ----------
-            template: numpy array  , optional         
+            template: numpy array  , optional
                     vector composed by 1 and -1
                     (es. np.array([1, -1, 1]))
         Returns
@@ -130,7 +129,7 @@ class CmdHistory():
         zipped = self._zippedAmplitude(amp_vector)
         matrix_to_apply = self._cmdHistoryToApply(zipped, template)
         self._cmdHToApply = matrix_to_apply
-        tt = self.saveAsFits()
+        tt = self.saveInfo(0)
         self._logger.info('Creation of the shuffle commandHistoryMatrix %s', tt)
         print(tt)
 
@@ -246,7 +245,7 @@ class CmdHistory():
         return matrix_to_apply
 
 
-    def saveAsFits(self):
+    def saveInfo(self, fits_or_h5):
         """ Save the data in fits format
 
         Returns
@@ -258,42 +257,28 @@ class CmdHistory():
         save = tracking_number_folder.TtFolder(store_in_folder)
         dove, tt = save._createFolderToStoreMeasurements()
 
-        fits_file_name = os.path.join(dove, 'info.fits')
-        header = pyfits.Header()
-        header['NPUSHPUL'] = self._nPushPull
-        header['WHO'] = self._who
-        pyfits.writeto(fits_file_name, self._modeVector, header)
-        pyfits.append(fits_file_name, self._indexingList, header)
-        pyfits.append(fits_file_name, self._cmdMatrix, header)
-        pyfits.append(fits_file_name, self._cmdHToApply, header)
-        pyfits.append(fits_file_name, self._ampVect, header)
-        return tt
-
-    def saveAsH5(self):
-        """ Save the data in h5 format
-
-        Returns
-        -------
-        tt: string
-            tracking number
-        """
-        store_in_folder = CmdHistory._storageFolder()
-        save = tracking_number_folder.TtFolder(store_in_folder)
-        dove, tt = save._createFolderToStoreMeasurements()
-
-        fits_file_name = os.path.join(dove, 'info.h5')
-        hf = h5py.File(fits_file_name, 'w')
-        hf.create_dataset('dataset_1', data=self._modeVector)
-        hf.create_dataset('dataset_2', data=self._indexingList)
-        hf.create_dataset('dataset_3', data=self._cmdHToApply)
-        hf.create_dataset('dataset_4', data=self._ampVect)
-        hf.attrs['NPUSHPUL'] = self._nPushPull
-        hf.attrs['WHO'] = self._who
-        hf.close()
+        if fits_or_h5 == 0:
+            fits_file_name = os.path.join(dove, 'info.fits')
+            header = pyfits.Header()
+            header['NPUSHPUL'] = self._nPushPull
+            pyfits.writeto(fits_file_name, self._modeVector, header)
+            pyfits.append(fits_file_name, self._indexingList, header)
+            pyfits.append(fits_file_name, self._cmdMatrix, header)
+            pyfits.append(fits_file_name, self._cmdHToApply, header)
+            pyfits.append(fits_file_name, self._ampVect, header)
+        else:
+            fits_file_name = os.path.join(dove, 'info.h5')
+            hf = h5py.File(fits_file_name, 'w')
+            hf.create_dataset('dataset_1', data=self._modeVector)
+            hf.create_dataset('dataset_2', data=self._indexingList)
+            hf.create_dataset('dataset_3', data=self._cmdHToApply)
+            hf.create_dataset('dataset_4', data=self._ampVect)
+            hf.attrs['NPUSHPUL'] = self._nPushPull
+            hf.close()
         return tt
 
     @staticmethod
-    def loadFromFits(device, tt):
+    def load(tt, fits_or_h5=0):
         """ Creates the object from the info.fits file located in tt
 
         Parameters
@@ -306,55 +291,35 @@ class CmdHistory():
         theObject: object
                 command history class object
         """
-        theObject = CmdHistory(device)
+        theObject = CmdHistory()
         theObject._tt = tt
         store_in_folder = CmdHistory._storageFolder()
         folder = os.path.join(store_in_folder, tt)
-        additional_info_fits_file_name = os.path.join(folder, 'info.fits')
-        header = pyfits.getheader(additional_info_fits_file_name)
-        hduList = pyfits.open(additional_info_fits_file_name)
-        theObject._modeVector = hduList[0].data
-        theObject._indexingList = hduList[1].data
-        theObject._cmdMatrix = hduList[2].data
-        theObject._cmdHToApply = hduList[3].data
-        theObject._ampVect = hduList[4].data
-        theObject._who = header['WHO']
-        try:
-            theObject._nPushPull = header['NPUSHPUL']
-        except KeyError:
-            theObject._nPushPull = 1
-        return theObject
-
-    @staticmethod
-    def loadFromH5(device, tt):
-        """ Creates the object from the info.fits file located in tt
-
-        Parameters
-        ----------
-        tt: string
-            tracking number
-
-        Returns
-        -------
-        theObject: object
-                command history class object
-        """
-        theObject = CmdHistory(device)
-        theObject._tt = tt
-        store_in_folder = CmdHistory._storageFolder()
-        folder = os.path.join(store_in_folder, tt)
-        file_name = os.path.join(folder, 'info.h5')
-        hf = h5py.File(file_name, 'r')
-        hf.keys()
-        data1 = hf.get('dataset_1')
-        data2 = hf.get('dataset_2')
-        data3 = hf.get('dataset_3')
-        data4 = hf.get('dataset_4')
-        theObject._nPushPull = hf.attrs['NPUSHPUL']
-        theObject._who = hf.attrs['WHO']
-        theObject._modeVector = np.array(data1)
-        theObject._indexingList = np.array(data2)
-        theObject._cmdHToApply = np.array(data3)
-        theObject._ampVect = np.array(data4)
-        hf.close()
+        if fits_or_h5 == 0:
+            additional_info_fits_file_name = os.path.join(folder, 'info.fits')
+            header = pyfits.getheader(additional_info_fits_file_name)
+            hduList = pyfits.open(additional_info_fits_file_name)
+            theObject._modeVector = hduList[0].data
+            theObject._indexingList = hduList[1].data
+            theObject._cmdMatrix = hduList[2].data
+            theObject._cmdHToApply = hduList[3].data
+            theObject._ampVect = hduList[4].data
+            try:
+                theObject._nPushPull = header['NPUSHPUL']
+            except KeyError:
+                theObject._nPushPull = 1
+        else:
+            file_name = os.path.join(folder, 'info.h5')
+            hf = h5py.File(file_name, 'r')
+            hf.keys()
+            data1 = hf.get('dataset_1')
+            data2 = hf.get('dataset_2')
+            data3 = hf.get('dataset_3')
+            data4 = hf.get('dataset_4')
+            theObject._nPushPull = hf.attrs['NPUSHPUL']
+            theObject._modeVector = np.array(data1)
+            theObject._indexingList = np.array(data2)
+            theObject._cmdHToApply = np.array(data3)
+            theObject._ampVect = np.array(data4)
+            hf.close()
         return theObject

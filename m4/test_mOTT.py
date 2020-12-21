@@ -13,14 +13,14 @@ from m4.configuration.ott_parameters import OpcUaParameters
 from m4.configuration.config import fold_name
 from m4.configuration import start
 from m4.alignment import Alignment
-from m4.utils.interface_4D import comm4d
+from m4.ground.interface_4D import comm4d
 from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.ground.timestamp import Timestamp
 
 ### TEST COMANDI PAR ###
 def main(x0, y0, n_step, move):
-    from m4.utils.opc_ua_controller import OpcUaController
+    from m4.ground.opc_ua_controller import OpcUaController
     opc = OpcUaController()
 
 #   coordinate
@@ -295,7 +295,7 @@ def analyserRepData(tt):
     return pos01_std, pos02_std, pos01_mean, pos02_mean, pos0
 
 def _readActs(n1, n2, n3):
-    from m4.utils.opc_ua_controller import OpcUaController
+    from m4.ground.opc_ua_controller import OpcUaController
     opc = OpcUaController()
 
     act1 = opc.get_position(n1)

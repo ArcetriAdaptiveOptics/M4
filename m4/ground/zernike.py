@@ -27,7 +27,7 @@ def zernikeFit(img, zernike_index_vector):
     mask = np.invert(img.mask).astype(int)
     x, y, r, xx, yy = geo.qpupil(mask)
     mm = (mask==1)
-    coeff = surf_fit(xx[mm], yy[mm], img1[mm], zernike_index_vector)
+    coeff = _surf_fit(xx[mm], yy[mm], img1[mm], zernike_index_vector)
     mat = getZernike(xx[mm], yy[mm], zernike_index_vector)
     return coeff, mat
 
@@ -44,7 +44,7 @@ def zernikeSurface(img, coef, mat):
     surf = np.ma.masked_array(zernike_surface, mask=img.mask)
     return surf
 
-def surf_fit(xx, yy, zz, zlist, ordering='noll'):
+def _surf_fit(xx, yy, zz, zlist, ordering='noll'):
     A = getZernike(xx, yy, zlist, ordering)
     B = np.transpose(zz.copy())
     coeff = (np.linalg.lstsq(A, B, rcond=-1))[0]

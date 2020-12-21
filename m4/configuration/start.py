@@ -8,6 +8,4 @@ def create_ott():
     ''' Function for the ott creation
     '''
     ott = OTT()
-#     dm_mirror = DMmirror()
-#     parabola = Parabola()
     return ott

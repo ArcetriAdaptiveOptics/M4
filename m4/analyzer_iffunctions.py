@@ -1,5 +1,5 @@
 '''
-Autors
+Authors
   - C. Selmi: written in 2019
 '''
 
@@ -8,6 +8,7 @@ import logging
 import h5py
 from astropy.io import fits as pyfits
 import numpy as np
+from m4.ground import read_data
 from m4.ground.read_data import InterferometerConverter
 from m4.influence_functions_maker import IFFunctionsMaker
 from m4.utils.roi import ROI
@@ -44,7 +45,6 @@ class AnalyzerIFF():
         self._cmdAmplitude = None
         self._cmdMatrix = None
         self._actsVector = None
-        self._who = None
         self._nPushPull = None
         self._template = None
         self._h5Folder = None
@@ -57,13 +57,13 @@ class AnalyzerIFF():
         return self._tt
 
     @staticmethod
-    def loadInfoFromTtFolder(h5Folder):
+    def loadInfoFromIFFsTtFolder(tt):
         """ Creates the object using information about path measurements
 
         Parameters
         ----------
-                h5Folder: string
-                        measurement folder path
+                tt: string
+                        measurement tracking number
 
         Returns
         -------
@@ -71,15 +71,11 @@ class AnalyzerIFF():
                         analyzerIFF class object
         """
         theObject = AnalyzerIFF()
-        theObject._h5Folder = h5Folder
-        a = IFFunctionsMaker.loadInfoFromFits(h5Folder)
-        theObject._who = a[0]
-        theObject._tt = a[1]
-        theObject._actsVector = a[2]
-        theObject._cmdMatrix = a[3]
-        theObject._cmdAmplitude = a[4]
-        theObject._nPushPull = a[5]
-        theObject._indexingList = a[6]
+        theObject = IFFunctionsMaker.loadInfo(tt)
+        theObject._cmdAmplitude, theObject._actsVector, theObject._cmdMatrix = \
+            read_data.readTypeFromFitsName(theObject._amplitudeTag,
+                                           theObject._modesVectorTag,
+                                           theObject._cmdMatrixTag) 
         return theObject
 
 
@@ -93,15 +89,6 @@ class AnalyzerIFF():
         '''
         return self._cube
 
-    def getIFShape(self):
-        '''
-        Returns
-        -------
-                shape: int
-                    number of images
-        '''
-        return self.getCube()[:, :, 0].shape
-
     def getMasterMask(self):
         '''
         Returns
@@ -114,7 +101,6 @@ class AnalyzerIFF():
         master_mask[np.where(aa > 0)] = True
         return master_mask
 
-
     def _indexReorganization(self):
         """ Returns the index position """
         indv = np.array(self._indexingList)
@@ -122,7 +108,7 @@ class AnalyzerIFF():
         for ind in self._actsVector:
             for j in range(self._nPushPull):
                 a = np.where(indv[j] == ind)
-                where.append(a)
+                where.append(a[0][0])
         return where
 
     def _amplitudeReorganization(self, indexing_input, indexing_list,
@@ -152,82 +138,12 @@ class AnalyzerIFF():
         for i in range(amplitude.shape[0]):
             for k in range(n_push_pull):
                 p = n_push_pull * i + k
-                indvect = where[p][0][0]+ indexing_input.shape[0] * k
+                indvect = where[p]+ indexing_input.shape[0] * k
                 vect[indvect] = amplitude[i]
         return vect
 
 
-    def createCube(self, tiptilt_detrend=None, phase_ambiguity=None):
-        '''
-        Other Parameters
-        ----------
-                ttDetrend: optional
-                            in the creation of the cube the images are reduced
-                            removing tip tilt on the central segment
-
-                phaseSolve: optional
-
-        Returns
-        -------
-                cube = masked array [pixels, pixels, number of images]
-                        cube from analysis
-        '''
-        cube_all_act = None
-        self._ttData()
-        self._logCubeCreation(tiptilt_detrend, phase_ambiguity)
-        where = self._indexReorganization()
-        #misure_pos, misure_neg = self._splitMeasureFromFits(self._cubeMeasure)
-        ampl_reorg = self._amplitudeReorganization(self._actsVector,
-                                                   self._indexingList,
-                                                   self._cmdAmplitude,
-                                                   self._nPushPull)
-
-
-        for i in range(self._actsVector.shape[0]):
-            for k in range(self._nPushPull):
-                p = self._nPushPull * i + k
-                n = where[p][0][0]
-                mis_amp = k* self._indexingList.shape[1] + n
-                mis = k * self._indexingList.shape[1] * self._template.shape[0] \
-                        + n * self._template.shape[0]
-
-                #img_pos = misure_pos[:,:,mis]
-                #img_neg = misure_neg[:,:,mis]
-                image_sum = np.zeros((self._cubeMeasure.shape[0],
-                                      self._cubeMeasure.shape[1]))
-                for l in range(1, self._template.shape[0]):
-                    image = image_sum + self._cubeMeasure[:, :, mis+l] * self._template[l]
-                img_if = image / (2 * ampl_reorg[mis_amp] * (self._template.shape[0] - 1))
-                if tiptilt_detrend is None:
-                    img_if = img_if
-                else:
-                    r = ROI()
-                    roi = r.roiGenerator(img_if)
-                    tt = TipTiltDetrend()
-                    img_if = tt.tipTiltDetrend(img_if, roi, 3)
-
-                if_push_pull_kth = img_if
-
-                if k == 0:
-                    all_push_pull_act_jth = if_push_pull_kth
-                else:
-                    all_push_pull_act_jth = np.ma.dstack((all_push_pull_act_jth,
-                                                          if_push_pull_kth))
-
-            if self._nPushPull == 1:
-                if_act_jth = all_push_pull_act_jth
-            else:
-                if_act_jth = np.ma.mean(all_push_pull_act_jth, axis=2)
-
-            if cube_all_act is None:
-                cube_all_act = if_act_jth
-            else:
-                cube_all_act = np.ma.dstack((cube_all_act, if_act_jth))
-        self._cube = cube_all_act
-
-        return self._cube
-
-    def createCubeFromImageFolder(self, data_file_path, tiptilt_detrend=None,
+    def createCubeFromImageFolder(self, data_file_path=None, tiptilt_detrend=None,
                                   phase_ambiguity=None):
         '''
         Parameters
@@ -248,6 +164,10 @@ class AnalyzerIFF():
                 cube = masked array [pixels, pixels, number of images]
                         cube from analysis
         '''
+        if data_file_path is None:
+            data_file_path = self._h5Folder #viene da loadInfoFromIFFsTtFolder
+        else:
+            data_file_path = data_file_path
         cube_all_act = None
         where = self._indexReorganization()
         ampl_reorg = self._amplitudeReorganization(self._actsVector,
@@ -258,7 +178,7 @@ class AnalyzerIFF():
             print(i)
             for k in range(self._nPushPull):
                 p = self._nPushPull * i + k
-                n = where[p][0][0]
+                n = where[p]
                 mis_amp = k* self._indexingList.shape[1] + n
                 mis = k * self._indexingList.shape[1] * self._template.shape[0] \
                         + n * self._template.shape[0]
@@ -275,7 +195,7 @@ class AnalyzerIFF():
                     file_name = os.path.join(data_file_path, name)
                     ima = self._ic.from4D(file_name)
                     image_list.append(ima)
-                
+
                 image = np.zeros((image0.shape[0], image0.shape[1]))
                 for p in range(1, len(image_list)):
                     #opd2add   = opdtemp[*,*,p]*form[p]+opdtemp[*,*,p-1]*form[p-1]
@@ -319,58 +239,34 @@ class AnalyzerIFF():
 
         return self._cube
 
-    def _splitMeasureFromFits(self, misure):
-        """ Divides the cube of measurements into two cubes
-
-            Args:
-                misure= cube of measurements
-
-            Returns:
-                misure_pos = positive measurements
-                misure_neg = negative measurements
-        """
-        misure_pos = None
-        misure_neg = None
-        for j in range(misure.shape[2]):
-            if j%2 == 0:
-                if misure_pos is None:
-                    misure_pos = misure[:, :, j]
-                else:
-                    misure_pos = np.ma.dstack((misure_pos, misure[:, :, j]))
-            else:
-                if misure_neg is None:
-                    misure_neg = misure[:, :, j]
-                else:
-                    misure_neg = np.ma.dstack((misure_neg, misure[:, :, j]))
-
-        return misure_pos, misure_neg
 
     def _logCubeCreation(self, tiptilt_detrend=None, phase_ambiguity=None):
         """ Use logging function to keep a record of
         how the cube was created """
+        who = 'Chissa!'
         if (tiptilt_detrend is None and phase_ambiguity is None):
             self._logger.info('Creation of the IFF cube for %s. Location: %s',
-                              self._who, self._tt)
+                              who, self._tt)
             self._logger.debug('(Tip and tilt= ignored, \
                                     Phase ambiguity= ignored)')
         elif tiptilt_detrend is None:
             self._logger.info('Creation of the IFF cube for %s. Location: %s',
-                              self._who, self._tt)
+                              who, self._tt)
             self._logger.debug('(Tip and tilt= ignored, \
                                     Phase ambiguity= resolved)')
         elif phase_ambiguity is None:
             self._logger.info('Creation of the IFF cube for %s. Location: %s',
-                              self._who, self._tt)
+                              who, self._tt)
             self._logger.debug('(Tip and tilt= removed, \
                                      Phase ambiguity= ignored)')
         else:
             self._logger.info('Creation of the IFF cube for %s. Location: %s',
-                              self._who, self._tt)
+                              who, self._tt)
             self._logger.debug('(Tip and tilt= removed, \
                                     Phase ambiguity= resolved)')
 
 
-    def saveCubeAsFits(self, cube_name):
+    def saveCube(self, cube_name, fits_or_h5=0):
         """
         Parameters
         ----------
@@ -380,38 +276,26 @@ class AnalyzerIFF():
         """
         tt = self._ttData()
         dove = os.path.join(fold_name.IFFUNCTIONS_ROOT_FOLDER, tt)
-        fits_file_name = os.path.join(dove, cube_name)
-        header = pyfits.Header()
-        header['NPUSHPUL'] = self._nPushPull
-        header['WHO'] = self._who
-        pyfits.writeto(fits_file_name, self._cube.data, header)
-        pyfits.append(fits_file_name, self._cube.mask.astype(int))
-        pyfits.append(fits_file_name, self._cmdAmplitude)
-        pyfits.append(fits_file_name, self._actsVector)
-
-    def saveCubeAsH5(self, cube_name):
-        """
-        Parameters
-        ----------
-                cube_name: string
-                            name to save the cube
-                            example 'Cube.h5'
-        """
-        tt = self._ttData()
-        dove = os.path.join(fold_name.IFFUNCTIONS_ROOT_FOLDER, tt)
-        fits_file_name = os.path.join(dove, cube_name)
-        hf = h5py.File(fits_file_name, 'w')
-        hf.create_dataset('dataset_1', data=self._cube.data)
-        hf.create_dataset('dataset_2', data=self._cube.mask.astype(int))
-        hf.create_dataset('dataset_3', data=self._cmdAmplitude)
-        hf.create_dataset('dataset_4', data=self._actsVector)
-        hf.attrs['NPUSHPUL'] = self._nPushPull
-        hf.attrs['WHO'] = self._who
-        hf.close()
+        file_name = os.path.join(dove, cube_name)
+        if fits_or_h5 == 0:
+            header = pyfits.Header()
+            header['NPUSHPUL'] = self._nPushPull
+            pyfits.writeto(file_name, self._cube.data, header)
+            pyfits.append(file_name, self._cube.mask.astype(int))
+            pyfits.append(file_name, self._cmdAmplitude)
+            pyfits.append(file_name, self._actsVector)
+        else:
+            hf = h5py.File(file_name, 'w')
+            hf.create_dataset('dataset_1', data=self._cube.data)
+            hf.create_dataset('dataset_2', data=self._cube.mask.astype(int))
+            hf.create_dataset('dataset_3', data=self._cmdAmplitude)
+            hf.create_dataset('dataset_4', data=self._actsVector)
+            hf.attrs['NPUSHPUL'] = self._nPushPull
+            hf.close()
 
 
     @staticmethod
-    def loadCubeFromFits(fits_file_name):
+    def loadAnalyzer(file_name, fits_or_h5=0):
         """ Creates the object using information contained in Cube
 
         Parameters
@@ -424,98 +308,37 @@ class AnalyzerIFF():
                 theObject: object
                             analyzerIFF class object
         """
-        header = pyfits.getheader(fits_file_name)
-        hduList = pyfits.open(fits_file_name)
-        cube = np.ma.masked_array(hduList[0].data,
-                                  hduList[1].data.astype(bool))
-        acts_vector = hduList[3].data
-        cmd_amplitude = hduList[2].data
-        who = header['WHO']
-        try:
-            n_push_pull = header['NPUSHPUL']
-        except KeyError:
-            n_push_pull = 1
-
         theObject = AnalyzerIFF()
-        theObject._actsVector = acts_vector
-        theObject._cmdAmplitude = cmd_amplitude
-        theObject._nPushPull = n_push_pull
-        theObject._who = who
-        theObject._cube = cube
+        if fits_or_h5 == 0:
+            header = pyfits.getheader(file_name)
+            hduList = pyfits.open(file_name)
+            cube = np.ma.masked_array(hduList[0].data,
+                                      hduList[1].data.astype(bool))
+            acts_vector = hduList[3].data
+            cmd_amplitude = hduList[2].data
+            try:
+                n_push_pull = header['NPUSHPUL']
+            except KeyError:
+                n_push_pull = 1
+
+            theObject._actsVector = acts_vector
+            theObject._cmdAmplitude = cmd_amplitude
+            theObject._nPushPull = n_push_pull
+            theObject._cube = cube
+        else:
+            hf = h5py.File(file_name, 'r')
+            hf.keys()
+            data1 = hf.get('dataset_1')
+            data2 = hf.get('dataset_2')
+            data3 = hf.get('dataset_3')
+            data4 = hf.get('dataset_4')
+            theObject._cube = np.ma.masked_array(np.array(data1),
+                                                 np.array(data2.astype(bool)))
+            theObject._actsVector = np.array(data4)
+            theObject._cmdAmplitude = np.array(data3)
+            theObject._nPushPull = hf.attrs['NPUSHPUL']
+            hf.close()
         return theObject
-
-    @staticmethod
-    def loadCubeFromH5(file_name):
-        """ Creates the object using information contained in Cube
-
-        Parameters
-        ----------
-                file_name: string
-                            cube file name path
-
-        Returns
-        -------
-                theObject: object
-                            analyzerIFF class object
-        """
-        theObject = AnalyzerIFF()
-        hf = h5py.File(file_name, 'r')
-        hf.keys()
-        data1 = hf.get('dataset_1')
-        data2 = hf.get('dataset_2')
-        data3 = hf.get('dataset_3')
-        data4 = hf.get('dataset_4')
-        theObject._cube = np.ma.masked_array(np.array(data1),
-                                             np.array(data2.astype(bool)))
-        theObject._actsVector = np.array(data4)
-        theObject._cmdAmplitude = np.array(data3)
-        theObject._nPushPull = hf.attrs['NPUSHPUL']
-        theObject._who = hf.attrs['WHO']
-        hf.close()
-        return theObject
-
-### FUNZIONI STATICHE PER CREARE AN PER I TEST ###
-    @staticmethod
-    def _loadTestMeasureFromFits(dove):
-        """
-        Creates the AnalyzerIFF object using specific informations
-        """
-        #dove = os.path.join(Configuration.IFFUNCTIONS_ROOT_FOLDER, tt)
-        fits_file_name = os.path.join(dove, 'misure.fits')
-        header = pyfits.getheader(fits_file_name)
-        hduList = pyfits.open(fits_file_name)
-        theObject = AnalyzerIFF()
-        theObject._h5Folder = dove
-        theObject._cubeMeasure = \
-            np.ma.masked_array(hduList[4].data, hduList[5].data.astype(bool))
-        theObject._actsVector = hduList[0].data
-        theObject._cmdMatrix = hduList[1].data
-        theObject._cmdAmplitude = hduList[2].data
-        theObject._indexingList = hduList[3].data
-        theObject._template = hduList[6].data
-        who = header['WHO']
-        tt_cmdH = header['TT_CMDH']
-        try:
-            n_push_pull = header['NPUSHPUL']
-        except KeyError:
-            n_push_pull = 1
-        theObject._who = who
-        theObject._tt_cmdH = tt_cmdH
-        theObject._nPushPull = n_push_pull
-        return theObject
-
-    @staticmethod
-    def _loadCubeFromIFFMeasureToCreateAn(tt):
-        dove = os.path.join(fold_name.IFFUNCTIONS_ROOT_FOLDER, tt)
-        fits_file_name = os.path.join(dove, 'CubeMeasure.fits')
-        hduList = pyfits.open(fits_file_name)
-        theObject = AnalyzerIFF()
-        cube = np.ma.masked_array(hduList[0].data,
-                                  hduList[1].data.astype(bool))
-        theObject._cube = cube
-        theObject._who = 'Un segmento'
-        return theObject
-### FINE ###
 
     def setAnalysisMask(self, analysis_mask):
         ''' Set the analysis mask chosen
@@ -536,7 +359,7 @@ class AnalyzerIFF():
 
         Parameters
         ----------
-                    detector_mask: numpy array [pixels, pixels]
+        detector_mask: numpy array [pixels, pixels]
         '''
         self._analysisMask = None
         self._rec = None
@@ -593,75 +416,3 @@ class AnalyzerIFF():
         if self._rec is None:
             self._createSurfaceReconstructor()
         return self._rec
-
-
-#### FUNZIONI PER TEST ###
-
-    def _createTestCubeMeasure_forTestDataInOpdImages(self):
-        tt = '20191210_143625'
-        fold = os.path.join(fold_name.OPT_DATA_FOLDER,
-                            'OPDImages', tt, 'hdf5')
-
-        hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
-        self._cmdAmplitude = hduList[0].data
-        hduList = pyfits.open(os.path.join(fold, 'modeRange.fits'))
-        self._actsVector = hduList[0].data
-        self._nPushPull = 1 #per runa sarebbe il vettore array([ 1, -1,  1]), ossia 1.5 per me!
-        indList = []
-        for i in range(self._nPushPull):
-            indList.append(self._actsVector)
-        self._indexingList = np.array(indList)
-
-        self._h5Folder = fold
-        self._who = 'Bho'
-#         for i in range(2675):
-#             file_name = os.path.join(fold, 'img_%04d.h5') %i
-#             ima = self._ic.from4D(file_name)
-#             if self._cubeMeasure is None:
-#                 self._cubeMeasure = ima
-#             else:
-#                 self._cubeMeasure = np.ma.dstack((self._cubeMeasure, ima))
-#
-        cube_name = 'CubeMeasure.fits'
-        fits_file_name = os.path.join(fold, cube_name)
-        hduList = pyfits.open(fits_file_name)
-        cube_measure = np.ma.masked_array(hduList[0].data,
-                                          hduList[1].data.astype(bool))
-        self._cubeMeasure = cube_measure
-        return self._cubeMeasure
-
-    def _createCube_forTestDataInOpdImages(self):
-        tt = '20191210_143625'
-        fold = os.path.join(fold_name.OPT_DATA_FOLDER,
-                            'OPDImages', tt, 'hdf5')
-
-        hduList = pyfits.open(os.path.join(fold, 'ampVect.fits'))
-        self._cmdAmplitude = hduList[0].data
-        hduList = pyfits.open(os.path.join(fold, 'modeRange.fits'))
-        self._actsVector = hduList[0].data
-        hduList = pyfits.open(os.path.join(fold, 'template.fits'))
-        vector_of_push_pull = hduList[0].data
-
-        cube = None
-        tip_til_det = TipTiltDetrend()
-        r = ROI()
-#         for i in range(self._actsVector.shape[0]):
-        for i in range(7):
-            k = i * vector_of_push_pull.shape[0]
-            imaList = []
-            for j in range(vector_of_push_pull.shape[0]):
-                l = k + j
-                file_name = os.path.join(fold, 'img_%04d.h5') %l
-                img = self._ic.from4D(file_name)
-                roi = r.roiGenerator(img)
-                ima_tt = tip_til_det.tipTiltDetrend(img, roi, 3)
-                imaList.append(ima_tt)
-
-            image = imaList[0] + imaList[1] - imaList[2]
-
-            if cube is None:
-                cube = image
-            else:
-                cube = np.ma.dstack((cube, image))
-
-        return cube

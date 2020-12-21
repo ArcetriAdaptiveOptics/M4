@@ -37,7 +37,7 @@ def read_phasemap(file_path, ext=0):
     return image
     
 ### Generiche
-def readFits_object(fits_file_path):
+def readFits_data(fits_file_path):
     '''
     Parameters
     ----------
