@@ -38,7 +38,7 @@ class opt_calibration():
         return fold_name.CALIBRATION_ROOT_FOLDER
 
 
-    def measureCalibrationMatrix(self, ott, who, command_amp_vector, n_push_pull):
+    def measureCalibrationMatrix(self, ott, who, command_amp_vector, n_push_pull, n_frames):
         '''
         Parameters
         ----------
@@ -77,7 +77,7 @@ class opt_calibration():
                                                         self._nPushPull)
         self._saveCommandMatrixAsFits(dove)
 
-        self._measureAndStoreCommandMatrix(who, self._commandMatrix, dove)
+        self._measureAndStoreCommandMatrix(who, self._commandMatrix, dove, n_frames)
         return self._tt
 
     def analyzerCalibrationMeasurement(self, tt, mask_index):
@@ -113,7 +113,7 @@ class opt_calibration():
         return self._intMat, self._rec
 
 
-    def _measureAndStoreCommandMatrix(self, who, command_matrix, dove):
+    def _measureAndStoreCommandMatrix(self, who, command_matrix, dove, n_frames):
         #deve applicare la matrice e salvare gli interferogrammi
         command_list = []
         for i in range(command_matrix.shape[1]):
@@ -130,9 +130,9 @@ class opt_calibration():
                     elif 2 * l * self._dofIndex.size + self._dofIndex.size < k < 2 * (l+1) * self._dofIndex.size:
                         self._ott.parab(par0)
                         self._ott.refflat(rm0 + command_list[k])
-                    time.sleep(5)
-                    print('5 secondi di attesa')
-                    masked_ima = self._c4d.acq4d(self._ott, 1)
+                    #time.sleep(5)
+                    #print('5 secondi di attesa')
+                    masked_ima = self._c4d.acq4d(self._ott, n_frames)
                     #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
                     name = 'Frame_%04d.fits' %k
                     self._c4d.save_phasemap(dove, name, masked_ima)

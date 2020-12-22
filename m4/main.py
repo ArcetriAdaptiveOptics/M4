@@ -59,7 +59,7 @@ def start_log(logging_level):
 ott = start.create_ott()
 a = Alignment(ott)
 
-def ott_alignment_calibration(commandAmpVector, nPushPull, move):
+def ott_alignment_calibration(n_frames, commandAmpVector, nPushPull, move):
     '''
     Parameters
     ----------------
@@ -79,7 +79,7 @@ def ott_alignment_calibration(commandAmpVector, nPushPull, move):
     '''
     print('PAR + RM calibration')
     if move == 1:
-        tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 0)
+        tt_tower = a.ott_calibration(n_frames, commandAmpVector, nPushPull, 0)
     #mask_index = 3 per il simulatore  e 0 per la mott
         return tt_tower
     else:
