@@ -18,34 +18,11 @@ m4.utils.geometrical\_transforms module
     :undoc-members:
     :show-inheritance:
 
-m4.utils.image\_extender module
--------------------------------
-
-.. automodule:: m4.utils.image_extender
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 m4.utils.img\_redux module
 --------------------------
 
 .. automodule:: m4.utils.img_redux
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-m4.utils.interface\_4D module
------------------------------
-
-.. automodule:: m4.utils.interface_4D
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-m4.utils.opc\_ua\_controller module
------------------------------------
-
-.. automodule:: m4.utils.opc_ua_controller
     :members:
     :undoc-members:
     :show-inheritance:
@@ -75,7 +52,7 @@ m4.utils.parabola\_identification module
     :show-inheritance:
 
 m4.utils.req\_check module
-----------------------------------------
+---------------------------
 
 .. automodule:: m4.utils.req_check
     :members:
@@ -98,18 +75,10 @@ m4.utils.rotation\_and\_optical\_axis\_alignment module
     :undoc-members:
     :show-inheritance:
 
-m4.utils.zabbix module
-----------------------
+m4.utils.tip\_tilt\_interf\_fit module
+---------------------------------------
 
-.. automodule:: m4.utils.zabbix
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-m4.utils.zernike\_on\_m\_4 module
----------------------------------
-
-.. automodule:: m4.utils.zernike_on_m_4
+.. automodule:: m4.utils.tip_tilt_interf_fit
     :members:
     :undoc-members:
     :show-inheritance:

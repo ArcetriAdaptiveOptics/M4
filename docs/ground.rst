@@ -2,10 +2,18 @@ m4.ground package
 =================
 
 
-m4.ground.interferometer\_converter module
-------------------------------------------
+m4.ground.GUI module
+--------------------
 
-.. automodule:: m4.ground.interferometer_converter
+.. automodule:: m4.ground.GUI
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.ground.interface\_4D module
+-------------------------------
+
+.. automodule:: m4.ground.interface_4D
     :members:
     :undoc-members:
     :show-inheritance:
@@ -18,10 +26,18 @@ m4.ground.logger\_set\_up module
     :undoc-members:
     :show-inheritance:
 
-m4.ground.object\_from\_fits\_file\_name module
------------------------------------------------
+m4.ground.opc\_ua\_controller module
+------------------------------------
 
-.. automodule:: m4.ground.object_from_fits_file_name
+.. automodule:: m4.ground.opc_ua_controller
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.ground.read\_data module
+------------------------------------
+
+.. automodule:: m4.ground.read_data
     :members:
     :undoc-members:
     :show-inheritance:
@@ -34,27 +50,18 @@ m4.ground.smooth\_function module
     :undoc-members:
     :show-inheritance:
 
+m4.ground.zabbix module
+----------------------
 
-m4.ground.tip\_tilt\_interf\_fit module
----------------------------------------
-
-.. automodule:: m4.ground.tip_tilt_interf_fit
+.. automodule:: m4.ground.zabbix
     :members:
     :undoc-members:
     :show-inheritance:
 
-m4.ground.zernikeGenerator module
----------------------------------
+m4.ground.zernike module
+-------------------------
 
-.. automodule:: m4.ground.zernikeGenerator
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-m4.ground.zernikeMask module
-----------------------------
-
-.. automodule:: m4.ground.zernikeMask
+.. automodule:: m4.ground.zernike
     :members:
     :undoc-members:
     :show-inheritance:

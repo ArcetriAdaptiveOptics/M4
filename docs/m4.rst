@@ -50,6 +50,14 @@ m4.main module
     :undoc-members:
     :show-inheritance:
 
+m4.main\_ottProcedure module
+----------------------------
+
+.. automodule:: m4.main._ottProcedure
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 m4.noise\_functions module
 --------------------------
 

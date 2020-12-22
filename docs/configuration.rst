@@ -10,6 +10,13 @@ m4.configuration.config module
     :undoc-members:
     :show-inheritance:
 
+m4.configuration.create\_ott module
+-----------------------------------
+
+.. automodule:: m4.configuration.create_ott
+    :members:
+    :undoc-members:
+    :show-inheritance
 
 m4.configuration.ott\_parameters module
 ---------------------------------------
@@ -19,3 +26,10 @@ m4.configuration.ott\_parameters module
     :undoc-members:
     :show-inheritance:
 
+m4.configuration.start module
+------------------------------
+
+.. automodule:: m4.configuration.start
+    :members:
+    :undoc-members:
+    :show-inheritance:
