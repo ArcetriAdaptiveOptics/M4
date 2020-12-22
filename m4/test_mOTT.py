@@ -302,3 +302,16 @@ def _readActs(n1, n2, n3):
     act2 = opc.get_position(n2)
     act3 = opc.get_position(n3)
     return np.array([act1, act2, act3])
+
+def test_align():
+    p0 = np.array([120, -114, -279,1319])
+    p1 = np.array([194, 553, -438, -62])
+    p = np.vstack((p0,p1))
+    r0 = np.array([-9.2, -3])
+    r1 = np.array([0.54, 5.8])
+    r = np.vstack((r0,r1))
+
+    ip = np.linalg.pinv(p)
+    a = np.dot(ip, r)
+    u,s,v = np.linalg.svd(a)
+    return

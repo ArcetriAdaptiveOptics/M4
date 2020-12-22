@@ -110,7 +110,7 @@ class Alignment():
         return par_cmd, rm_cmd
 
 
-    def m4_calibration(self, commandAmpVector_ForM4Calibration,
+    def m4_calibration(self, n_frames, commandAmpVector_ForM4Calibration,
                        nPushPull_ForM4Calibration, maskIndex_ForM4Alignement,
                        nFrames):
         """ Calibration of the deformable mirror
@@ -138,7 +138,7 @@ class Alignment():
         print(zernike_coef_coma)
         self._tt = self._cal.measureCalibrationMatrix(self._ott, 3,
                                                       commandAmpVector_ForM4Calibration,
-                                                      nPushPull_ForM4Calibration)
+                                                      nPushPull_ForM4Calibration, n_frames)
         self._saveZcoef(zernike_coef_coma, coma_surface)
         intMat, rec = self._cal.analyzerCalibrationMeasurement(self._tt,
                                                                maskIndex_ForM4Alignement)
