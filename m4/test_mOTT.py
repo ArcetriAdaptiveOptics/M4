@@ -119,11 +119,12 @@ def test_calib(commandAmpVector):
     a = Alignment(ott)
 
     nPushPull = 4
+    n_frames = 5
     tt_list = []
     file_name = os.path.join(fold_name.CALIBRATION_ROOT_FOLDER, 'TtSleepCalib.txt')
     file = open(file_name, 'w+')
     for i in range(15):
-        tt_tower = a.ott_calibration(commandAmpVector, nPushPull, 0)
+        tt_tower = a.ott_calibration(n_frames, commandAmpVector, nPushPull, 0)
         tt_list.append(tt_tower)
         print(tt_tower)
         file.write('%s' %tt_tower)
@@ -315,3 +316,55 @@ def test_align():
     a = np.dot(ip, r)
     u,s,v = np.linalg.svd(a)
     return
+
+def piston_test(piston_value, dx, dy, tt_for_align, iteration):
+    ott = start.create_ott()
+    interf = comm4d()
+    a = Alignment(ott)
+    save = tracking_number_folder.TtFolder(fold_name.PISTON_TEST_ROOT_FOLDER)
+    dove, tt = save._createFolderToStoreMeasurements()
+    par0 = ott.parab()
+    rm0 = ott.refflat()
+    n_frames = 5
+
+    coef_list = []
+    par_list = []
+    rm_list = []
+    for i in range(iteration):
+        if i == 0:
+            print('Iteration 0')
+        else:
+            print('Iteration %d' %iteration)
+            par_new = par0.copy()
+            rm_new = rm0.copy()
+            par_new[3] += dx[i]
+            rm_new[4] += -2*dx[i]
+            par_new[4] += dy[i]
+            rm_new[3] += -2*dy[i]
+            ott.parab(par_new)
+            ott.refflat(rm_new)
+            par_cmd, rm_cmd = a.ott_alignment(n_frames, 1, np.array([0,1]), np.array([3, 4]), tt_for_align)
+
+        par = ott.parab()
+        rm = ott.refflat()
+        par_list.append(par)
+        rm_list.append(rm)
+        masked_ima0 = interf.acq4d(ott, n_frames)
+        par[2] += piston_value
+        ott.parab(par)
+        masked_ima1 = interf.acq4d(ott, n_frames)
+        par[2] -= piston_value
+        ott.parab(par)
+        diff = masked_ima1 - masked_ima0
+        name = 'diff_%04d' %i
+        interf.save_phasemap(dove, name, diff)
+        coef, mat = zernike.zernikeFit(diff, np.arange(3)+1)
+        coef_list.append(coef)
+
+        fits_file_name = os.path.join(dove, 'Zernike.fits')
+        pyfits.writeto(fits_file_name, np.array(coef_list), overwrite=True)
+        fits_file_name = os.path.join(dove, 'PAR_Positions.fits')
+        pyfits.writeto(fits_file_name, np.array(par_list), overwrite=True)
+        fits_file_name = os.path.join(dove, 'RM_Positions.fits')
+        pyfits.writeto(fits_file_name, np.array(rm_list), overwrite=True)
+    

@@ -59,4 +59,6 @@ class fold_name(path_name):
                                   "OPD_series")
     REPEATABILITY_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
                                   "Repeatability")
+    PISTON_TEST_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
+                                  "PistonTest")
     # metterci tutti i path di tutte le classi
