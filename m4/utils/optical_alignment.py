@@ -82,11 +82,12 @@ class opt_alignment():
         self._c4d.save_phasemap(dove, name, img)
 
         if self._cal._who=='PAR + RM':
-            cmd, zernike_vector = self._commandGenerator(img)
+            cmd, zernike_vector, total_coef = self._commandGenerator(img)
             par_command, rm_command = self._reorgCmdMix(cmd, commandId)
             self._saveAllDataMix(dove, par_position, rm_position, par_command, rm_command,
                                  intMatModesVector, commandId)
             self._saveZernikeVector(dove, zernike_vector)
+            self._alignmentLog(total_coef, tt, commandId)
             return par_command, rm_command, dove
         elif self._cal._who=='M4':
             cmd, zernike_vector = self._commandGenerator(img, piston)
@@ -94,6 +95,20 @@ class opt_alignment():
             self._saveAllDataM4(dove, m4_position, m4_command)
             self._saveZernikeVector(dove, zernike_vector)
             return m4_command, dove
+   
+    def _alignmentLog(self, start_total_coef, tt, commandId):
+        fits_file_name = os.path.join(self._storageFolder(), 'AlignmentLog.txt')
+        file = open(fits_file_name, 'a+')
+        file.write('%s ' %self._tt)
+        for i in range(start_total_coef.size):
+            file.write('%9.3e ' %start_total_coef[i])
+        file.write('\n')
+        file.write('%s ' %tt)
+#         for i in range(total_coef.size):
+#             file.write('%9.3e ' %total_coef[i])
+#         file.write('\n')
+#         file.write('%s \n ************\n' %commandId)
+        file.close()
 
     def _selectModesInIntMatAndRecConstruction(self, intMatModesVector=None,
                                                commandId=None):
@@ -177,7 +192,7 @@ class opt_alignment():
         returns:
                 cmd = command for the dof
         """
-        zernike_vector = self._zernikeCoeff(img)
+        total_coef, zernike_vector = self._zernikeCoeff(img)
         print('zernike:')
         print(zernike_vector)
         if piston is None:
@@ -189,7 +204,7 @@ class opt_alignment():
         cmd = - np.dot(self._rec, zernike_vector) #giusto
         print('mix command:')
         print(cmd)
-        return cmd, zernike_vector
+        return cmd, zernike_vector, total_coef
 
 
     def _zernikeCoeff(self, img):
@@ -208,7 +223,7 @@ class opt_alignment():
             final_coef_selected = np.zeros(self._intMatModesVector.size)
             for i in range(self._intMatModesVector.size):
                 final_coef_selected[i] = final_coef[self._intMatModesVector[i]]
-        return final_coef_selected
+        return final_coef, final_coef_selected
 
     def _saveAllDataMix(self, dove, par_position, rm_position,
                         par_command, rm_command, intMatModesVector,

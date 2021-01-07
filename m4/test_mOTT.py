@@ -317,7 +317,12 @@ def test_align():
     u,s,v = np.linalg.svd(a)
     return
 
-def piston_test(piston_value, dx, dy, tt_for_align, iteration):
+def piston_test(piston_value, deltapos_filepath, amp, tt_for_align):
+    # '/home/m4/pardeltapos.fits'
+    hduList = pyfits.open(deltapos_filepath)
+    deltapos = hduList[0].data
+    dx = deltapos[:, 0] * amp
+    dy = deltapos[:, 1] * amp
     ott = start.create_ott()
     interf = comm4d()
     a = Alignment(ott)
@@ -330,17 +335,17 @@ def piston_test(piston_value, dx, dy, tt_for_align, iteration):
     coef_list = []
     par_list = []
     rm_list = []
-    for i in range(iteration):
+    for i in range(dx.size):
         if i == 0:
             print('Iteration 0')
         else:
-            print('Iteration %d' %iteration)
+            print('Iteration %d' %i)
             par_new = par0.copy()
             rm_new = rm0.copy()
             par_new[3] += dx[i]
-            rm_new[4] += -2*dx[i]
+            rm_new[3] += -2*dx[i]
             par_new[4] += dy[i]
-            rm_new[3] += -2*dy[i]
+            rm_new[4] += -2*dy[i]
             ott.parab(par_new)
             ott.refflat(rm_new)
             par_cmd, rm_cmd = a.ott_alignment(n_frames, 1, np.array([0,1]), np.array([3, 4]), tt_for_align)
@@ -356,7 +361,7 @@ def piston_test(piston_value, dx, dy, tt_for_align, iteration):
         par[2] -= piston_value
         ott.parab(par)
         diff = masked_ima1 - masked_ima0
-        name = 'diff_%04d' %i
+        name = 'diff_%04d.fits' %i
         interf.save_phasemap(dove, name, diff)
         coef, mat = zernike.zernikeFit(diff, np.arange(3)+1)
         coef_list.append(coef)
@@ -367,4 +372,4 @@ def piston_test(piston_value, dx, dy, tt_for_align, iteration):
         pyfits.writeto(fits_file_name, np.array(par_list), overwrite=True)
         fits_file_name = os.path.join(dove, 'RM_Positions.fits')
         pyfits.writeto(fits_file_name, np.array(rm_list), overwrite=True)
-    
+        return tt

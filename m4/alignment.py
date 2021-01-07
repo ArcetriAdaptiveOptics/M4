@@ -104,11 +104,23 @@ class Alignment():
             self._ott.parab(pos_par + par_cmd)
             pos_rm = self._ott.refflat()
             self._ott.refflat(pos_rm + rm_cmd)
-            image = self._c4d.acq4d(self._ott, n_images)
-            name = 'FinalImage.fits'
-            self._c4d.save_phasemap(dove, name, image)
+        image = self._c4d.acq4d(self._ott, n_images)
+        name = 'FinalImage.fits'
+        total_coef, zernike_vector = al._zernikeCoeff(image)
+        self._alignmentLog(al, total_coef, commandId, move)
+        self._c4d.save_phasemap(dove, name, image)
         return par_cmd, rm_cmd
-
+    
+    def _alignmentLog(self, al, total_coef, commandId, move):
+        fits_file_name = os.path.join(al._storageFolder(), 'AlignmentLog.txt')
+        file = open(fits_file_name, 'a+')
+        for i in range(total_coef.size):
+            file.write('%9.3e ' %total_coef[i])
+        file.write('\n')
+        if move==0:
+            commandId = -1
+        file.write('%s \n ************\n' %commandId)
+        file.close()
 
     def m4_calibration(self, n_frames, commandAmpVector_ForM4Calibration,
                        nPushPull_ForM4Calibration, maskIndex_ForM4Alignement,
