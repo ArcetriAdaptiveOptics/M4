@@ -304,17 +304,8 @@ def _readActs(n1, n2, n3):
     act3 = opc.get_position(n3)
     return np.array([act1, act2, act3])
 
-def test_align():
-    p0 = np.array([120, -114, -279,1319])
-    p1 = np.array([194, 553, -438, -62])
-    p = np.vstack((p0,p1))
-    r0 = np.array([-9.2, -3])
-    r1 = np.array([0.54, 5.8])
-    r = np.vstack((r0,r1))
-
-    ip = np.linalg.pinv(p)
-    a = np.dot(ip, r)
-    u,s,v = np.linalg.svd(a)
+def test_align(tt):
+    
     return
 
 def piston_test(piston_value, deltapos_filepath, amp, tt_for_align):
@@ -330,7 +321,9 @@ def piston_test(piston_value, deltapos_filepath, amp, tt_for_align):
     dove, tt = save._createFolderToStoreMeasurements()
     par0 = ott.parab()
     rm0 = ott.refflat()
-    n_frames = 5
+    n_frames_meas = 10
+    n_frames_alignment = 3
+    rmcoeff = -2.04
 
     coef_list = []
     par_list = []
@@ -343,27 +336,27 @@ def piston_test(piston_value, deltapos_filepath, amp, tt_for_align):
             par_new = par0.copy()
             rm_new = rm0.copy()
             par_new[3] += dx[i]
-            rm_new[3] += -2*dx[i]
+            rm_new[3] += rmcoeff*dx[i]
             par_new[4] += dy[i]
-            rm_new[4] += -2*dy[i]
+            rm_new[4] += rmcoeff*dy[i]
             ott.parab(par_new)
             ott.refflat(rm_new)
-            par_cmd, rm_cmd = a.ott_alignment(n_frames, 1, np.array([0,1]), np.array([3, 4]), tt_for_align)
+            par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1, np.array([0,1]), np.array([3, 4]), tt_for_align)
 
         par = ott.parab()
         rm = ott.refflat()
         par_list.append(par)
         rm_list.append(rm)
-        masked_ima0 = interf.acq4d(ott, n_frames)
+        masked_ima0 = interf.acq4d(ott, n_frames_meas)
         par[2] += piston_value
         ott.parab(par)
-        masked_ima1 = interf.acq4d(ott, n_frames)
+        masked_ima1 = interf.acq4d(ott, n_frames_meas)
         par[2] -= piston_value
         ott.parab(par)
         diff = masked_ima1 - masked_ima0
         name = 'diff_%04d.fits' %i
         interf.save_phasemap(dove, name, diff)
-        coef, mat = zernike.zernikeFit(diff, np.arange(3)+1)
+        coef, mat = zernike.zernikeFit(diff, np.arange(10)+1)
         coef_list.append(coef)
 
         fits_file_name = os.path.join(dove, 'Zernike.fits')
@@ -372,4 +365,4 @@ def piston_test(piston_value, deltapos_filepath, amp, tt_for_align):
         pyfits.writeto(fits_file_name, np.array(par_list), overwrite=True)
         fits_file_name = os.path.join(dove, 'RM_Positions.fits')
         pyfits.writeto(fits_file_name, np.array(rm_list), overwrite=True)
-        return tt
+    return tt
