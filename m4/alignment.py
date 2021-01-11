@@ -104,13 +104,13 @@ class Alignment():
             self._ott.parab(pos_par + par_cmd)
             pos_rm = self._ott.refflat()
             self._ott.refflat(pos_rm + rm_cmd)
-        image = self._c4d.acq4d(self._ott, n_images)
+        image = self._c4d.acq4d(n_images, self._ott)
         name = 'FinalImage.fits'
         total_coef, zernike_vector = al._zernikeCoeff(image)
         self._alignmentLog(al, total_coef, commandId, move)
         self._c4d.save_phasemap(dove, name, image)
         return par_cmd, rm_cmd
-    
+
     def _alignmentLog(self, al, total_coef, commandId, move):
         fits_file_name = os.path.join(al._storageFolder(), 'AlignmentLog.txt')
         file = open(fits_file_name, 'a+')
@@ -183,7 +183,7 @@ class Alignment():
 
     def _measureComaOnSegmentMask(self, nFrames):
         #ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
-        ima = self._c4d.acq4d(self._ott, nFrames)
+        ima = self._c4d.acq4d(nFrames, self._ott)
         roi = self._roi.roiGenerator(ima)
         segment_ima = np.ma.masked_array(ima.data, mask=roi[5])
 

@@ -13,7 +13,6 @@ from m4.configuration.ott_parameters import OpcUaParameters
 from m4.configuration.config import fold_name
 from m4.configuration import start
 from m4.alignment import Alignment
-from m4.ground.interface_4D import comm4d
 from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.ground.timestamp import Timestamp
@@ -168,8 +167,7 @@ def pippo(tt):
 
 
 def stability_test(n_images, delay):
-    interf = comm4d()
-    ott = start.create_ott()
+    ott, interf = start.create_ott()
     store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
     save = tracking_number_folder.TtFolder(store_in_folder)
     dove, tt = save._createFolderToStoreMeasurements()
@@ -179,7 +177,7 @@ def stability_test(n_images, delay):
     for i in range(n_images):
         ti = time.time()
         dt = ti -t0
-        masked_ima = interf.acq4d(ott, 1, 0)
+        masked_ima = interf.acq4d(1, ott)
         name = Timestamp.now() + '.fits'
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, masked_ima.data)
@@ -197,8 +195,7 @@ def stability_test(n_images, delay):
     return tt
 
 def repeatability_test(n_meas, piston_value, n_frames):
-    ott = start.create_ott()
-    interf = comm4d()
+    ott, interf = start.create_ott()
     store_in_folder = fold_name.REPEATABILITY_ROOT_FOLDER
     save = tracking_number_folder.TtFolder(store_in_folder)
     dove, tt = save._createFolderToStoreMeasurements()
@@ -215,21 +212,21 @@ def repeatability_test(n_meas, piston_value, n_frames):
         ott.refflat(pos_rm)
         par0 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
         rm0 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
-        masked_ima0 = interf.acq4d(ott, n_frames, 0)
+        masked_ima0 = interf.acq4d(n_frames, ott)
 
         ott.parab(pos_par + piston)
         #ott.refflat(pos_rm + piston)
 
         par1 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
         rm1 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
-        masked_ima1 = interf.acq4d(ott, n_frames, 0)
+        masked_ima1 = interf.acq4d(n_frames, ott)
 
         ott.parab(pos_par - piston)
         #ott.refflat(pos_rm - piston)
 
         par2 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
         rm2 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
-        masked_ima2 = interf.acq4d(ott, n_frames, 0)
+        masked_ima2 = interf.acq4d(n_frames, ott)
 
         par = np.array([par0, par1, par2])
         rm = np.array([rm0, rm1, rm2])
@@ -314,8 +311,7 @@ def piston_test(piston_value, deltapos_filepath, amp, tt_for_align):
     deltapos = hduList[0].data
     dx = deltapos[:, 0] * amp
     dy = deltapos[:, 1] * amp
-    ott = start.create_ott()
-    interf = comm4d()
+    ott, interf = start.create_ott()
     a = Alignment(ott)
     save = tracking_number_folder.TtFolder(fold_name.PISTON_TEST_ROOT_FOLDER)
     dove, tt = save._createFolderToStoreMeasurements()
@@ -347,10 +343,10 @@ def piston_test(piston_value, deltapos_filepath, amp, tt_for_align):
         rm = ott.refflat()
         par_list.append(par)
         rm_list.append(rm)
-        masked_ima0 = interf.acq4d(ott, n_frames_meas)
+        masked_ima0 = interf.acq4d(n_frames_meas, ott)
         par[2] += piston_value
         ott.parab(par)
-        masked_ima1 = interf.acq4d(ott, n_frames_meas)
+        masked_ima1 = interf.acq4d(n_frames_meas, ott)
         par[2] -= piston_value
         ott.parab(par)
         diff = masked_ima1 - masked_ima0

@@ -28,7 +28,7 @@ class comm4d():
     phcam_datapath = ''
     phcam_conf = ''
 
-    def acq4d(self, ott, nframes=1, show=0):
+    def acq4d(self, nframes=1, show=0, ott=None):
         """
         Parameters
         ----------
@@ -45,7 +45,8 @@ class comm4d():
                     interferometer image
         """
 
-        if conf.simulated ==1:
+        #if conf.simulated ==1:
+        if ott is not None:
             ottIma = OttImages(ott)
             opd, mask = ottIma.ott_smap(show=show)
             masked_ima = np.ma.masked_array(opd.T, mask=np.invert(mask.astype(bool)).T)

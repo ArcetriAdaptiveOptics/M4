@@ -132,7 +132,7 @@ class opt_calibration():
                         self._ott.refflat(rm0 + command_list[k])
                     #time.sleep(5)
                     #print('5 secondi di attesa')
-                    masked_ima = self._c4d.acq4d(self._ott, n_frames)
+                    masked_ima = self._c4d.acq4d(n_frames, self._ott)
                     #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
                     name = 'Frame_%04d.fits' %k
                     self._c4d.save_phasemap(dove, name, masked_ima)
@@ -146,7 +146,7 @@ class opt_calibration():
             m40 = self._ott.m4()
             for k in range(len(command_list)):
                 self._ott.m4(m40-command_list[i])
-                masked_ima = self._c4d.acq4d(self._ott, 1)
+                masked_ima = self._c4d.acq4d(1, self._ott)
                 name = 'Frame_%04d.fits' %k
                 self._c4d.save_phasemap(dove, name, masked_ima)
             self._ott.m4(m40)

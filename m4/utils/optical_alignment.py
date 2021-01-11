@@ -74,7 +74,7 @@ class opt_alignment():
         self._intMat, self._rec, self._mask = self._selectModesInIntMatAndRecConstruction(intMatModesVector, commandId)
         self._intMatModesVector = intMatModesVector
 
-        img = self._c4d.acq4d(ott, n_images, 0)
+        img = self._c4d.acq4d(n_images, ott)
         name = 'StartImage.fits'
         tt = Timestamp.now()
         dove = os.path.join(self._storageFolder(), self._tt + '--' + tt)
@@ -95,7 +95,7 @@ class opt_alignment():
             self._saveAllDataM4(dove, m4_position, m4_command)
             self._saveZernikeVector(dove, zernike_vector)
             return m4_command, dove
-   
+
     def _alignmentLog(self, start_total_coef, tt, commandId):
         fits_file_name = os.path.join(self._storageFolder(), 'AlignmentLog.txt')
         file = open(fits_file_name, 'a+')

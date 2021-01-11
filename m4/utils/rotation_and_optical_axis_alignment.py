@@ -89,7 +89,7 @@ class RotOptAlign():
             self._ott.angle(start_angle + k*rot_angle*direction)
             angle_list.append(start_angle + k*rot_angle*direction)
             time.sleep(5)
-            masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
+            masked_ima = self._c4d.acq4d(1, self._ott)
             name = 'Frame_%04d.fits' %k
             self._c4d.save_phasemap(dove, name, masked_ima)
             if self._cube is None:
@@ -188,7 +188,7 @@ class RotOptAlign():
                     Interferometers values
         """
         if masked_ima is None:
-            masked_ima = self._c4d.acq4d(self._ott, 1, show=0)
+            masked_ima = self._c4d.acq4d(1, self._ott)
         else:
             masked_ima = masked_ima
         coef, mat = zernike.zernikeFit(masked_ima,
