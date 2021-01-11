@@ -1,4 +1,4 @@
 '''
-Autors
+Auhtors
   - C. Selmi:
 '''

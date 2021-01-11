@@ -380,7 +380,7 @@ class OTT():
         zmat = zernike.getZernike(xx[mm], yy[mm], zernike_mode)
         return zmat
 
-class DMmirror():
+class DMirror():
     def __init__(self):
         """The constructor """
         curr_conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER,

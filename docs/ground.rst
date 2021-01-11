@@ -51,7 +51,7 @@ m4.ground.smooth\_function module
     :show-inheritance:
 
 m4.ground.zabbix module
-----------------------
+-----------------------
 
 .. automodule:: m4.ground.zabbix
     :members:

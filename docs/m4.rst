@@ -53,7 +53,7 @@ m4.main module
 m4.main\_ottProcedure module
 ----------------------------
 
-.. automodule:: m4.main._ottProcedure
+.. automodule:: m4.main_ottProcedure
     :members:
     :undoc-members:
     :show-inheritance:

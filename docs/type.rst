@@ -12,14 +12,6 @@ m4.type.commandHistory module
     :undoc-members:
     :show-inheritance:
 
-m4.type.deformable\_mirror module
----------------------------------
-
-.. automodule:: m4.type.deformable_mirror
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 m4.type.modalAmplitude module
 -----------------------------
 

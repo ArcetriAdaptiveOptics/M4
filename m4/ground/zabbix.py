@@ -6,11 +6,11 @@ Authors
 import sys
 import time
 import numpy as np
-from functools import *
+from functools import reduce
 from pyzabbix import ZabbixAPI
 from pyzabbix import ZabbixMetric, ZabbixSender
 sys.path.insert(0,'/home/m4/git/M4')
-from m4.utils.opc_ua_controller import OpcUaController
+from m4.ground.opc_ua_controller import OpcUaController
 from m4.configuration.ott_parameters import OpcUaParameters
 
 
@@ -97,9 +97,9 @@ def _getZabbixMetrics(zapi, host, key):
     # now look for item within that host
     itemId = None
     for item in thehost['result'][0]['items']:
-      # for debugging
-      #print( "item[{}] -> {}".format(item['itemid'],item['key_']))
-      # if match, then get out int id and type (0=float,1=char,3=unsign,4=text)
+        # for debugging
+        #print( "item[{}] -> {}".format(item['itemid'],item['key_']))
+        # if match, then get out int id and type (0=float,1=char,3=unsign,4=text)
         if item['key_'] == key:
             itemId = item['itemid']
             itemType = item['value_type']

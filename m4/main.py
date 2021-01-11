@@ -56,7 +56,7 @@ def start_log(logging_level):
 
 ####### Allineamento Torre ########
 
-ott = start.create_ott()
+ott, interf = start.create_ott()
 a = Alignment(ott)
 
 def ott_alignment_calibration(n_frames, commandAmpVector, nPushPull, move):

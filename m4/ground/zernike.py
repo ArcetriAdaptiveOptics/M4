@@ -23,15 +23,44 @@ from m4.ground import geo
 fac = np.math.factorial
 
 def zernikeFit(img, zernike_index_vector):
+    '''
+    Parameters
+    ----------
+    img: numpy masked array
+        image for zernike fit
+    zernike_index_vector: numpy array
+        vector containing the index of Zernike modes to be fitted starting from 1
+
+    Returns
+    -------
+    coeff: numpy array
+        vector of zernike coefficients
+    mat: numpy array
+    '''
     img1 = img.data
     mask = np.invert(img.mask).astype(int)
     x, y, r, xx, yy = geo.qpupil(mask)
     mm = (mask==1)
     coeff = _surf_fit(xx[mm], yy[mm], img1[mm], zernike_index_vector)
-    mat = getZernike(xx[mm], yy[mm], zernike_index_vector)
+    mat = _getZernike(xx[mm], yy[mm], zernike_index_vector)
     return coeff, mat
 
 def zernikeSurface(img, coef, mat):
+    '''
+    Parameters
+    ----------
+    img: numpy masked array
+        image for zernike fit
+    coeff: numpy array
+        vector of zernike coefficients
+    mat: numpy array
+
+    Returns
+    -------
+    surf: numpy masked array
+        zernike surface generate by coeff
+        
+    '''
 #     img1 = img.data
 #     mask = np.invert(img.mask).astype(int)
 #     x, y, r, xx, yy = geo.qpupil(mask)
@@ -45,17 +74,17 @@ def zernikeSurface(img, coef, mat):
     return surf
 
 def _surf_fit(xx, yy, zz, zlist, ordering='noll'):
-    A = getZernike(xx, yy, zlist, ordering)
+    A = _getZernike(xx, yy, zlist, ordering)
     B = np.transpose(zz.copy())
     coeff = (np.linalg.lstsq(A, B, rcond=-1))[0]
     return coeff
 
 
 ### Init functions
-def getZernike(xx,yy,zlist,ordering='noll'):
+def _getZernike(xx,yy,zlist,ordering='noll'):
     if min(zlist) ==0:
-        print("Zernike index must be greater or equal to 1")
-        raise
+        #print("Zernike index must be greater or equal to 1")
+        raise OSError("Zernike index must be greater or equal to 1")
     rho = np.sqrt(yy**2 + xx**2)
     phi = np.arctan2(yy, xx)
 
@@ -179,16 +208,4 @@ def _test():
     aa = getZernike(xx[mm],yy[mm],np.arange(11)+1);
     ii=xx*0;ii[mm]=aa[:,9];imshow(ii);show()
 
-def _testMio(image):
-    x_dim = image.shape[0]
-    y_dim = image.shape[1]
-    x = np.arange(-1, 1, 2./x_dim)
-    y = np.arange(-1, 1, 2./y_dim)
-    yy = np.tile(x,(x_dim,1))
-    xx = np.transpose(np.tile(y,(y_dim,1)))
-    mm = (xx**2+yy**2) < 1
-    aa = getZernike(xx[mm],yy[mm],np.arange(11)+1)
-    ii = np.zeros((x_dim, y_dim))
-    ii[mm]=aa[:,9]
-    return aa
 

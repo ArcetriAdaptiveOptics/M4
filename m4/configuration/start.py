@@ -7,6 +7,13 @@ from m4.ground.interface_4D import comm4d
 
 def create_ott():
     ''' Function for the ott creation
+
+    Returns
+    -------
+    ott: object
+        tower
+    interf: object
+        interferometer
     '''
     ott = OTT()
     interf = comm4d()

@@ -135,7 +135,7 @@ class PhaseSolve():
     Class for ...
 
     HOW TO USE IT::
-    
+
         from m4.utils.img_redux import PhaseSolve
         PS = PhaseSolve()
     """

@@ -103,6 +103,16 @@ class comm4d():
 
 
     def save_phasemap(self, dove, name, image):
+        """
+        Parameters
+        ----------
+        dove: string
+            measurement file path
+        name: string
+            measuremnet fits file name
+        image: numpy masked array
+            data to save
+        """
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, image.data)
         pyfits.append(fits_file_name, image.mask.astype(int))
