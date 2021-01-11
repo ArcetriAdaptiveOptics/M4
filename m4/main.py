@@ -205,47 +205,6 @@ def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
 
 
 ######### Misure di noise ##########
-
-def opto_mech_disturbances_acquisition(nFrame, name=None, produce=0):
-    ''' Function for image acquisition with interferometer
-
-    Parameters
-    ----------
-        nFrame: int
-            number of frames
-        produce: int
-            0 for not h5 production
-
-    Other Parameters
-    ----------
-        name: string
-            folder name
-            If not passed, the function generates a folder with the tracking number
-
-    Returns
-    -------
-        data_file_path: string
-            data file path for the measurements
-    '''
-    #data_file_path = os.path.join(Noise._storageFolder(), 'hdf5')
-    print('Frame acquisition')
-    from oaautils import i4d
-    from m4.ground.timestamp import Timestamp
-    tt = Timestamp.now()
-
-    interf = i4d.I4D()
-    interf.connect()
-    if name is None:
-    	name = tt
-
-    interf.capture(nFrame, name= name)
-    if produce == 1:
-    	interf.produce(name)
-    interf.disconnect()
-
-    data_file_path = os.path.join(config.fold_name.PHASECAM_ROOT_FOLDER, name)
-    return data_file_path
-
 def _path_noise_results(data_file_path):
     results_path = os.path.join(config.path_name.OUT_FOLDER, 'Noise')
     x = data_file_path.split("/")
@@ -449,7 +408,6 @@ def PT_calibration(n_meas):
     '''
     from m4.ground import tracking_number_folder
     from opcua import Client
-    import time
     server = OpcUaParameters.server
     client = Client(url=server)
     client.connect()

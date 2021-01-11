@@ -377,7 +377,7 @@ class OTT():
         zernike_mode = np.arange(10)+1
         mm = np.where(final_mask == False)
         x, y, r, xx, yy = geo.qpupil(final_mask)
-        zmat = zernike.getZernike(xx[mm], yy[mm], zernike_mode)
+        zmat = zernike._getZernike(xx[mm], yy[mm], zernike_mode)
         return zmat
 
 class DMirror():
