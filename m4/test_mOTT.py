@@ -301,6 +301,7 @@ def _readActs(n1, n2, n3):
     act3 = opc.get_position(n3)
     return np.array([act1, act2, act3])
 
+
 def test_align(tt):
     
     return
@@ -362,3 +363,28 @@ def piston_test(piston_value, deltapos_filepath, amp, tt_for_align):
         fits_file_name = os.path.join(dove, 'RM_Positions.fits')
         pyfits.writeto(fits_file_name, np.array(rm_list), overwrite=True)
     return tt
+
+def tilt_test(act, val_vec):
+    from m4.ground.opc_ua_controller import OpcUaController
+    ott, interf = start.create_ott()
+    opc = OpcUaController()
+    image0 = interf.acq4d(10, 0)
+    delta_list = []
+    sum_list = []
+    coef_list = []
+    for i in range(val_vec.size):
+        opc._setAct(act, val_vec[i])
+        image = interf.acq4d(10, 0)
+        delta = image - image0
+        delta_list.append(delta)
+        coef, mat = zernike.zernikeFit(delta, np.arange(10)+1)
+        coef_list.append(coef)
+        sum = np.sqrt(coef[1]**2+coef[2]**2)
+        sum_list.append(sum)
+    quad = np.array(sum_list)
+    plt.plot(val_vec, quad, '-o')
+    return quad, np.array(coef_list), image0, delta_list
+        
+        
+        
+        

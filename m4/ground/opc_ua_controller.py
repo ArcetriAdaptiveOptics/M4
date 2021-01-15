@@ -155,3 +155,24 @@ class OpcUaController():
         while value == True:
             time.sleep(0.1)
             value = self._get_command_state(int_number)
+
+    def readActsPositions(self, n1, n2, n3):
+        act1 = self.get_position(n1)
+        act2 = self.get_position(n2)
+        act3 = self.get_position(n3)
+        return np.array([act1, act2, act3])
+
+    def setActsPositions(self, n1, n2, n3, v1, v2, v3):
+        act1 = self._setAct(n1, v1)
+        act2 = self._setAct(n2, v2)
+        act3 = self._setAct(n3, v3)
+        return np.array([act1, act2, act3])
+    
+    def _setAct(self, number, value):
+        self.set_target_position(number, value)
+        self.move_object(number)
+        time.sleep(10)
+        #self.wait_for_stop(number)
+        act = self.get_position(number)
+        return act
+
