@@ -38,7 +38,7 @@ class opt_calibration():
         return fold_name.CALIBRATION_ROOT_FOLDER
 
 
-    def measureCalibrationMatrix(self, ott, who, command_amp_vector, n_push_pull, n_frames):
+    def measureCalibrationMatrix(self, ott, who, command_amp_vector, n_push_pull, n_frames, old=1):
         '''
         Parameters
         ----------
@@ -72,15 +72,21 @@ class opt_calibration():
         self._logger.info('Measure of calibration. Location: %s', self._tt)
         self._saveCommandAmplitudeAsFits(dove)
 
-        self._commandMatrix = self._createCommandMatrix(who,
-                                                        self._commandAmpVector,
-                                                        self._nPushPull)
-        self._saveCommandMatrixAsFits(dove)
-
-        self._measureAndStoreCommandMatrix(who, self._commandMatrix, dove, n_frames)
+        if old==1:
+            self._commandMatrix = self._createCommandMatrix(who,
+                                                            self._commandAmpVector,
+                                                            self._nPushPull)
+            self._saveCommandMatrixAsFits(dove)
+            self._measureAndStoreCommandMatrix(who, self._commandMatrix, dove, n_frames)
+        else:
+            self._commandMatrix, self._commandList = self._createCommandMatrix(who,
+                                                            self._commandAmpVector,
+                                                            self._nPushPull, old)
+            self._saveCommandMatrixAsFits(dove)
+            self._measureAndStoreMix(self._commandList, self._nPushPull, dove, n_frames)
         return self._tt
 
-    def analyzerCalibrationMeasurement(self, tt, mask_index):
+    def analyzerCalibrationMeasurement(self, tt, mask_index, norm=1):
         '''
         Parameters
         ----------
@@ -98,7 +104,7 @@ class opt_calibration():
         '''
         #mask_index per il simulatore: 2 (se le ruoto: 3)
         a = opt_calibration.loadCommandMatrixFromFits(tt)
-        a.createCube(tt)
+        a.createCube(tt, norm)
         cube = a.getCube()
         ima = cube[:,:,0]
         from m4.utils.roi import ROI
@@ -111,6 +117,53 @@ class opt_calibration():
         self._rec = a.getReconstructor(mask)
         self._saveIntMatAndRec(dove)
         return self._intMat, self._rec
+
+    def _measureAndStoreMix(self, command_list, n_push_pull, dove, n_frames):
+        vec_push_pull = np.array((1, -1))
+        #mis = (len(command_list)-2) * n_push_pull * vec_push_pull.size
+        par0 = self._ott.parab()
+        rm0 = self._ott.refflat()
+        for k in range(n_push_pull):
+            for i in range(len(command_list)-2):
+                j = (len(command_list)-2)*k *2
+                mis = np.array([j , j +1])
+                if i==0:
+                    pcmd = np.array(command_list[i])
+                    for v in range(vec_push_pull.size):
+                        par1 = pcmd * vec_push_pull[v]
+                        print(par1)
+                        self._ott.parab(par0+par1)
+                        masked_ima = self._c4d.acq4d(n_frames, 0, self._ott)
+                        name = 'Frame_%04d.fits' %(2*i+mis[v])
+                        print(name)
+                        self._c4d.save_phasemap(dove, name, masked_ima)
+                        self._ott.parab(par0)
+                elif i==1 or i==2:
+                    pcmd = np.array(command_list[i])
+                    rcmd = np.array(command_list[i+1])
+                    for v in range(vec_push_pull.size):
+                        par1 = pcmd * vec_push_pull[v]
+                        rm1 = rcmd * vec_push_pull[v]
+                        self._ott.parab(par0+par1)
+                        self._ott.refflat(rm0+rm1)
+                        print(par1, rm1)
+                        masked_ima = self._c4d.acq4d(n_frames, 0, self._ott)
+                        name = 'Frame_%04d.fits' %(2*i+mis[v])
+                        print(name)
+                        self._c4d.save_phasemap(dove, name, masked_ima)
+                        self._ott.parab(par0)
+                        self._ott.refflat(rm0)
+                else:
+                    rcmd = np.array(command_list[i+2])
+                    for v in range(vec_push_pull.size):
+                        rm1 = rcmd * vec_push_pull[v]
+                        self._ott.refflat(rm0+rm1)
+                        print(rm1)
+                        masked_ima = self._c4d.acq4d(n_frames, 0, self._ott)
+                        name = 'Frame_%04d.fits' %(2*i+mis[v])
+                        print(name)
+                        self._c4d.save_phasemap(dove, name, masked_ima)
+                        self._ott.refflat(rm0)
 
 
     def _measureAndStoreCommandMatrix(self, who, command_matrix, dove, n_frames):
@@ -152,7 +205,7 @@ class opt_calibration():
             self._ott.m4(m40)
 
 
-    def _createCommandMatrix(self, who, command_amp_vector, n_push_pull):
+    def _createCommandMatrix(self, who, command_amp_vector, n_push_pull, old=1):
         '''
             args:
                 who=
@@ -182,11 +235,43 @@ class opt_calibration():
             raise OSError('Who= %s doesnt exists' % who)
 
         self._logger.info('Creation of the command matrix for %s', self._who)
-        self._commandMatrix = self._createCommandHistoryMatrix(self._dofIndex,
-                                                               command_amp_vector,
-                                                               n_push_pull)
-        return self._commandMatrix
+        if old==1:
+            self._commandMatrix = self._createCommandHistoryMatrix(self._dofIndex,
+                                                                   command_amp_vector,
+                                                                   n_push_pull)
+            return self._commandMatrix
+        else:
+            self._commandMatrix, self._commandList = self._createCommandMatrixMix(command_amp_vector, self._dofIndex)
+            return self._commandMatrix, self._commandList
 
+    def _createCommandMatrixMix(self, command_amp_vector, dofIndex_vector):
+        #crea matrice 5 x 5
+        command_matrix = np.zeros((command_amp_vector.size, command_amp_vector.size))
+        for i in range(command_amp_vector.shape[0]):
+            j = i
+            if i==1 or i==2:
+                command_matrix[i,j] = command_amp_vector[i]
+                command_matrix[i,j+2] = -2.5*command_amp_vector[i]
+            else:
+                command_matrix[i,j] = command_amp_vector[i]
+        #crea i comandi
+        command_list = []
+        for i in range(command_matrix.shape[0]):
+            if i==1 or i==2:
+                cmd = np.zeros(6)
+                cmd[dofIndex_vector[i]] = command_matrix[i,i]
+                command_list.append(cmd)
+                cmd1 = np.zeros(6)
+                cmd1[dofIndex_vector[i+2]] = command_matrix[i,i+2]
+                command_list.append(cmd1)
+            else:
+                cmd_amp = command_matrix[i,i]
+                cmd = np.zeros(6)
+                cmd[dofIndex_vector[i]] = command_matrix[i,i]
+                command_list.append(cmd)
+#         par_cmd = [command_list[0], command_list[1], command_list[3]]
+#         rm_cmd = [command_list[2], command_list[4], command_list[5], command_list[6]]  
+        return command_matrix, command_list
 
     def _createCommandHistoryMatrix(self, dofIndex_vector, command_amp_vector, n_push_pull):
         '''
@@ -258,12 +343,14 @@ class opt_calibration():
         theObject._commandMatrix = hduList[1].data
         return theObject
 
-    def createCube(self, tt):
+    def createCube(self, tt, norm=1):
         """
         Parameters
         ----------
             tt = tracking number
         """
+        if norm !=1:
+            self._commandAmpVector = np.ones(self._commandAmpVector.size)
         self._logger.info('Creation of the cube relative to %s', tt)
         self._cube = None
         fold = os.path.join(opt_calibration._storageFolder(), tt)
