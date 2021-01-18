@@ -292,6 +292,63 @@ def analyserRepData(tt):
     pos0 = np.array(pos0_list)
     return pos01_std, pos02_std, pos01_mean, pos02_mean, pos0
 
+def meas_astigm_coma(stepamp, nstep, nframes=10): #by RB 20210117. 
+    #goal: to measure coma and astigmatism at different PAR position, spanning 500 arcsec
+    ott, interf = start.create_ott()
+    a = Alignment(ott)
+    store_in_folder = fold_name.
+    save = tracking_number_folder.TtFolder(store_in_folder)
+    dove, tt = save._createFolderToStoreMeasurements()
+    par2rm = -2.05
+    zern_vect = []
+    parpos = []
+    rmpos = []
+    par0 = ott.parab()
+    rm0 = ott.parab()
+    n2move = np.array([3,4])
+    thedirection = np.array([-1,1])
+    n_frames_alignment = 3
+    tt_for_align = '20210111_152430''
+
+    for k in n2move:
+        for v in thedirection:
+                    
+            for i in range(nstep):
+                par1 = par0.copy()
+                parmove = stepamp*i*v
+                par1[k] += parmove
+                print('Moving PAR[%d] by %d' %k %parmove)
+                ott.parab(par1)
+                rm1 = rm0.copy()
+                rmmove = stepamp*i*v*par2rm
+                rm1[k] += rmmove
+                print('Moving RM[%d] by %d' %k %rmmove)
+                par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1, np.array([0,1]), np.array([3, 4]), tt_for_align)
+                par2 = ott.parab()
+                rm2 = ott.refflat()
+                masked_ima = interf.acq4d(nframes, 0)
+                name = Timestamp.now() + '.fits'
+                fits_file_name = os.path.join(dove, name)
+                pyfits.writeto(fits_file_name, masked_ima.data)
+                pyfits.append(fits_file_name, masked_ima.mask.astype(int))
+        
+                coef, mat = zernike.zernikeFit(masked_ima, np.arange(10)+1)
+                zern_vec.append(coef)
+                parpos.append(par2)
+                rmpos.append(rm2)
+        
+                fits_file_name = os.path.join(dove, 'zernike.fits')
+                pyfits.writeto(fits_file_name, np.array(zern_vect), overwrite=True)
+                fits_file_name = os.path.join(dove, 'PAR_positions.fits')
+                pyfits.writeto(fits_file_name, np.array(parpos), overwrite=True)
+                fits_file_name = os.path.join(dove, 'RM_positions.fits')
+                pyfits.writeto(fits_file_name, np.array(rmpos), overwrite=True)
+
+        
+
+    return tt
+
+
 def _readActs(n1, n2, n3):
     from m4.ground.opc_ua_controller import OpcUaController
     opc = OpcUaController()
