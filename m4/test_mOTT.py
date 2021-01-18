@@ -296,7 +296,7 @@ def meas_astigm_coma(stepamp, nstep, nframes=10): #by RB 20210117.
     #goal: to measure coma and astigmatism at different PAR position, spanning 500 arcsec
     ott, interf = start.create_ott()
     a = Alignment(ott)
-    store_in_folder = fold_name.
+    store_in_folder = fold_name.CALIBRATION_ROOT_FOLDER
     save = tracking_number_folder.TtFolder(store_in_folder)
     dove, tt = save._createFolderToStoreMeasurements()
     par2rm = -2.05
@@ -304,11 +304,11 @@ def meas_astigm_coma(stepamp, nstep, nframes=10): #by RB 20210117.
     parpos = []
     rmpos = []
     par0 = ott.parab()
-    rm0 = ott.parab()
-    n2move = np.array([3,4])
-    thedirection = np.array([-1,1])
+    rm0 = ott.refflat()
+    n2move = np.array([3, 4])
+    thedirection = np.array([-1, 1])
     n_frames_alignment = 3
-    tt_for_align = '20210111_152430''
+    tt_for_align = '20210111_152430'
 
     for k in n2move:
         for v in thedirection:
@@ -317,12 +317,13 @@ def meas_astigm_coma(stepamp, nstep, nframes=10): #by RB 20210117.
                 par1 = par0.copy()
                 parmove = stepamp*i*v
                 par1[k] += parmove
-                print('Moving PAR[%d] by %d' %k %parmove)
+                print('Moving PAR[%d] by %d' %(k, parmove))
                 ott.parab(par1)
                 rm1 = rm0.copy()
                 rmmove = stepamp*i*v*par2rm
                 rm1[k] += rmmove
-                print('Moving RM[%d] by %d' %k %rmmove)
+                ott.refflat(rm1)
+                print('Moving RM[%d] by %d' %(k, rmmove))
                 par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1, np.array([0,1]), np.array([3, 4]), tt_for_align)
                 par2 = ott.parab()
                 rm2 = ott.refflat()
@@ -333,7 +334,7 @@ def meas_astigm_coma(stepamp, nstep, nframes=10): #by RB 20210117.
                 pyfits.append(fits_file_name, masked_ima.mask.astype(int))
         
                 coef, mat = zernike.zernikeFit(masked_ima, np.arange(10)+1)
-                zern_vec.append(coef)
+                zern_vect.append(coef)
                 parpos.append(par2)
                 rmpos.append(rm2)
         
@@ -343,11 +344,20 @@ def meas_astigm_coma(stepamp, nstep, nframes=10): #by RB 20210117.
                 pyfits.writeto(fits_file_name, np.array(parpos), overwrite=True)
                 fits_file_name = os.path.join(dove, 'RM_positions.fits')
                 pyfits.writeto(fits_file_name, np.array(rmpos), overwrite=True)
-
-        
-
     return tt
 
+def analyze_astig_coma(tn):
+    dove = os.path.join(fold_name.CALIBRATION_ROOT_FOLDER, tn)
+    name = os.path.join(dove, 'zernike.fits')
+    hduList = pyfits.open(name)
+    zer = hduList[0].data
+    name = os.path.join(dove, 'PAR_positions.fits')
+    hduList = pyfits.open(name)
+    par_pos = hduList[0].data
+    name = os.path.join(dove, 'RM_positions.fits')
+    hduList = pyfits.open(name)
+    rm_pos = hduList[0].data
+    return zer, par_pos, rm_pos
 
 def _readActs(n1, n2, n3):
     from m4.ground.opc_ua_controller import OpcUaController
@@ -441,7 +451,23 @@ def tilt_test(act, val_vec):
     quad = np.array(sum_list)
     plt.plot(val_vec, quad, '-o')
     return quad, np.array(coef_list), image0, delta_list
-        
-        
-        
-        
+
+
+
+def gui():
+    from m4.configuration import start
+    ott, interf = start.create_ott()
+    from m4.ott_sim.ott_images import OttImages
+    for i in range(10000):
+        oi = OttImages(ott)
+        smap1, smask = oi.ott_smap()
+        plt.figure(7)
+        plt.clf()
+        plt.imshow(oi.ott_view())
+        plt.show()
+        time.sleep(2)
+    
+
+if __name__ == '__main__':
+    gui()
+    
