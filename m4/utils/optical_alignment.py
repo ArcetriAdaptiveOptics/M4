@@ -5,25 +5,27 @@ Authors
 
 import os
 import logging
-from astropy.io import fits as pyfits
 import numpy as np
+from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from m4.configuration.config import fold_name
-from m4.utils.optical_calibration import opt_calibration
+from m4.configuration import config as conf
+from m4.utils.optical_calibration import OpticalCalibration
 from m4.ground.interface_4D import comm4d
 from m4.ground import zernike
-from m4.configuration.ott_parameters import OttParameters
+from m4.configuration.ott_parameters import OttParameters, OtherParameters
 from m4.ground.timestamp import Timestamp
+from m4.utils.roi import ROI
 
 
-class opt_alignment():
+class OpticalAlignment():
     """
     Class for the optical alignment
 
     HOW TO USE IT::
 
         from m4.utils.optical_alignment import opt_alignment
-        al = opt_alignment(tt)
+        al = OpticalAlignment(tt)
         command = al.opt_align(ott, piston=None)
     """
 
@@ -31,7 +33,7 @@ class opt_alignment():
         """The constructor """
         self._logger = logging.getLogger('OPT_ALIGN:')
         self._tt = tt
-        self._cal = opt_calibration.loadCommandMatrixFromFits(tt)
+        self._cal = OpticalCalibration.loadCommandMatrixFromFits(tt)
         self._c4d = comm4d()
         self._rec = None
         self._intMat = None
@@ -66,6 +68,8 @@ class opt_alignment():
                 cmd: numpy array
                     final delta command for the optical alignment
         """
+        if intMatModesVector is not None or commandId is not None:
+            old = 7
         par_position = ott.parab()
         rm_position = ott.refflat()
         m4_position = ott.m4()
@@ -74,7 +78,7 @@ class opt_alignment():
         self._intMat, self._rec, self._mask = self._selectModesInIntMatAndRecConstruction(intMatModesVector, commandId)
         self._intMatModesVector = intMatModesVector
 
-        img = self._c4d.acq4d(n_images, ott)
+        img = self._c4d.acq4d(n_images, 0, ott)
         name = 'StartImage.fits'
         tt = Timestamp.now()
         dove = os.path.join(self._storageFolder(), self._tt + '--' + tt)
@@ -82,7 +86,7 @@ class opt_alignment():
         self._c4d.save_phasemap(dove, name, img)
 
         if self._cal._who=='PAR + RM':
-            cmd, zernike_vector, total_coef = self._commandGenerator(img)
+            cmd, zernike_vector, total_coef = self._commandGenerator(img, old)
             par_command, rm_command = self._reorgCmdMix(cmd, commandId)
             self._saveAllDataMix(dove, par_position, rm_position, par_command, rm_command,
                                  intMatModesVector, commandId)
@@ -131,7 +135,6 @@ class opt_alignment():
             new_intMat = new_intMat[:,commandId]
 
         new_rec = np.linalg.pinv(new_intMat)
-
         return new_intMat, new_rec, mask
 
     def _loadAlignmentInfo(self):
@@ -157,7 +160,7 @@ class opt_alignment():
         return info
 
     def _reorgCmdMix(self, cmd, commandId=None):
-        '''reorganizes the delta command in the 
+        '''reorganizes the delta command in the
         right positions for par and rm '''
         dofIndex = np.append(OttParameters.PARABOLA_DOF, OttParameters.RM_DOF)
         par_command = np.zeros(6)
@@ -184,7 +187,7 @@ class opt_alignment():
             m4_command[dofIndex[i]] = cmd[i]
         return m4_command
 
-    def _commandGenerator(self, img, piston=None):
+    def _commandGenerator(self, img, old=1, piston=None):
         """
         args:
             img = image
@@ -201,7 +204,11 @@ class opt_alignment():
             cc = zernike_vector[3]
             zernike_vector[3] = cc + piston
         #sommare il coma a questo zernike vector
-        cmd = - np.dot(self._rec, zernike_vector) #giusto
+        if old==1:
+            cmd = - np.dot(self._rec, zernike_vector)
+        else:
+            M = np.dot(self._cal._commandMatrix, self._rec)
+            cmd = - np.dot(M, zernike_vector) #giusto
         print('mix command:')
         print(cmd)
         return cmd, zernike_vector, total_coef
@@ -213,7 +220,17 @@ class opt_alignment():
                 final_coef = zernike coeff on the image
                             (zernike modes 2,3,4,7,8)
         """
-        coef, mat = zernike.zernikeFit(img, np.arange(10)+1)
+        if  conf.simulated ==1:
+            mask_index = OtherParameters.MASK_INDEX_SIMULATORE
+        else:
+            mask_index = OtherParameters.MASK_INDEX_TOWER
+        r = ROI()
+        roi = r.roiGenerator(img)
+        mask = roi[mask_index]
+        mm = np.ma.mask_or(img.mask, mask)
+
+        new_image = np.ma.masked_array(img, mask=mm)
+        coef, mat = zernike.zernikeFit(new_image, np.arange(10)+1)
         z = np.array([1, 2, 3, 6, 7])
         final_coef = coef[z]
 

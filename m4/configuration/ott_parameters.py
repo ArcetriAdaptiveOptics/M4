@@ -114,3 +114,7 @@ class OpcUaParameters():
                              'PAR_TIP', 'PAR_TILT', 'PAR_PISTON']
 
 
+class OtherParameters():
+    ''' '''
+    MASK_INDEX_SIMULATORE = 4
+    MASK_INDEX_TOWER = 0

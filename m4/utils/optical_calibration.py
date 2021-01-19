@@ -14,14 +14,14 @@ from m4.ground.interface_4D import comm4d
 from m4.ground import zernike
 
 
-class opt_calibration():
+class OpticalCalibration():
     """
     Class for the optical calibration
 
     HOW TO USE IT::
 
-        from m4.utils.optical_calibration import opt_calibration
-        cal = opt_calibration()
+        from m4.utils.optical_calibration import OpticalCalibration
+        cal = OpticalCalibration()
     """
 
     def __init__(self):
@@ -76,15 +76,23 @@ class opt_calibration():
             self._commandMatrix = self._createCommandMatrix(who,
                                                             self._commandAmpVector,
                                                             self._nPushPull)
+            self._commandMatrixToSave = self._createCommandMatrixToSave(self._commandAmpVector)
             self._saveCommandMatrixAsFits(dove)
             self._measureAndStoreCommandMatrix(who, self._commandMatrix, dove, n_frames)
         else:
             self._commandMatrix, self._commandList = self._createCommandMatrix(who,
                                                             self._commandAmpVector,
                                                             self._nPushPull, old)
+            self._commandMatrixToSave = self._commandMatrix.copy()
             self._saveCommandMatrixAsFits(dove)
             self._measureAndStoreMix(self._commandList, self._nPushPull, dove, n_frames)
         return self._tt
+
+    def _createCommandMatrixToSave(self, command_amp_vector):
+        matrix = np.zeros((command_amp_vector.size, command_amp_vector.size))
+        for i in range(command_amp_vector.shape[0]):
+            matrix[i, i] = command_amp_vector[i]
+        return matrix
 
     def analyzerCalibrationMeasurement(self, tt, mask_index, norm=1):
         '''
@@ -103,7 +111,7 @@ class opt_calibration():
                          reconstructor
         '''
         #mask_index per il simulatore: 2 (se le ruoto: 3)
-        a = opt_calibration.loadCommandMatrixFromFits(tt)
+        a = OpticalCalibration.loadCommandMatrixFromFits(tt)
         a.createCube(tt, norm)
         cube = a.getCube()
         ima = cube[:,:,0]
@@ -139,8 +147,12 @@ class opt_calibration():
                         self._c4d.save_phasemap(dove, name, masked_ima)
                         self._ott.parab(par0)
                 elif i==1 or i==2:
-                    pcmd = np.array(command_list[i])
-                    rcmd = np.array(command_list[i+1])
+                    if i==1:
+                        l=i
+                    else:
+                        l=i+1
+                    pcmd = np.array(command_list[l])
+                    rcmd = np.array(command_list[l+1])
                     for v in range(vec_push_pull.size):
                         par1 = pcmd * vec_push_pull[v]
                         rm1 = rcmd * vec_push_pull[v]
@@ -185,7 +197,7 @@ class opt_calibration():
                         self._ott.refflat(rm0 + command_list[k])
                     #time.sleep(5)
                     #print('5 secondi di attesa')
-                    masked_ima = self._c4d.acq4d(n_frames, self._ott)
+                    masked_ima = self._c4d.acq4d(n_frames, 0, self._ott)
                     #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
                     name = 'Frame_%04d.fits' %k
                     self._c4d.save_phasemap(dove, name, masked_ima)
@@ -251,7 +263,7 @@ class opt_calibration():
             j = i
             if i==1 or i==2:
                 command_matrix[i,j] = command_amp_vector[i]
-                command_matrix[i,j+2] = -2.5*command_amp_vector[i]
+                command_matrix[i,j+2] = -2.*command_amp_vector[i]
             else:
                 command_matrix[i,j] = command_amp_vector[i]
         #crea i comandi
@@ -315,7 +327,7 @@ class opt_calibration():
         header['NPUSHPUL'] = self._nPushPull
         header['WHO'] = self._who
         pyfits.writeto(fits_file_name, self._commandAmpVector, header)
-        pyfits.append(fits_file_name, self._commandMatrix, header)
+        pyfits.append(fits_file_name, self._commandMatrixToSave.T, header)
 
     @staticmethod
     def loadCommandMatrixFromFits(tt):
@@ -331,7 +343,7 @@ class opt_calibration():
                 theObject: ibjecct
                          opt_calibration class object
         """
-        theObject = opt_calibration()
+        theObject = OpticalCalibration()
         theObject._tt = tt
         dove = os.path.join(theObject._storageFolder(), tt)
         file = os.path.join(dove, 'CommandMatrixInfo.fits')
@@ -353,7 +365,7 @@ class opt_calibration():
             self._commandAmpVector = np.ones(self._commandAmpVector.size)
         self._logger.info('Creation of the cube relative to %s', tt)
         self._cube = None
-        fold = os.path.join(opt_calibration._storageFolder(), tt)
+        fold = os.path.join(OpticalCalibration._storageFolder(), tt)
         for i in range(self._commandAmpVector.shape[0]):
             for j in range(self._nPushPull):
                 k = 2*i + 2*self._commandAmpVector.shape[0]*j

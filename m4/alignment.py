@@ -7,8 +7,8 @@ import os
 import logging
 import numpy as np
 from astropy.io import fits as pyfits
-from m4.utils.optical_alignment import opt_alignment
-from m4.utils.optical_calibration import opt_calibration
+from m4.utils.optical_alignment import OpticalAlignment
+from m4.utils.optical_calibration import OpticalCalibration
 from m4.utils.roi import ROI
 from m4.ground import zernike
 from m4.ground.interface_4D import comm4d
@@ -35,7 +35,7 @@ class Alignment():
     def __init__(self, ott):
         """The constructor """
         self._logger = logging.getLogger('ALIGNMENT:')
-        self._cal = opt_calibration()
+        self._cal = OpticalCalibration()
         self._roi = ROI()
         self._ott = ott
         self._c4d = comm4d()
@@ -95,16 +95,16 @@ class Alignment():
                     vector of command to apply to RM dof
         """
         if tt is None:
-            al = opt_alignment(self._tt)
+            al = OpticalAlignment(self._tt)
         else:
-            al = opt_alignment(tt)
+            al = OpticalAlignment(tt)
         par_cmd, rm_cmd, dove = al.opt_align(self._ott, n_images, intMatModesVector, commandId)
         if move == 1:
             pos_par = self._ott.parab()
             self._ott.parab(pos_par + par_cmd)
             pos_rm = self._ott.refflat()
             self._ott.refflat(pos_rm + rm_cmd)
-        image = self._c4d.acq4d(n_images, self._ott)
+        image = self._c4d.acq4d(n_images, 0, self._ott)
         name = 'FinalImage.fits'
         total_coef, zernike_vector = al._zernikeCoeff(image)
         self._alignmentLog(al, total_coef, commandId, move)
@@ -173,9 +173,9 @@ class Alignment():
         """
         #self._moveRM(0.)
         if tt is None:
-            al = opt_alignment(self._tt)
+            al = OpticalAlignment(self._tt)
         else:
-            al = opt_alignment(tt)
+            al = OpticalAlignment(tt)
         m4_cmd = al.opt_align(self._ott, zernike_coef_coma)
         #self._applyM4Command(m4_cmd)
         return m4_cmd
