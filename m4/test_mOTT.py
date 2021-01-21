@@ -344,6 +344,10 @@ def meas_astigm_coma(stepamp, nstep, nframes=10): #by RB 20210117.
                 pyfits.writeto(fits_file_name, np.array(parpos), overwrite=True)
                 fits_file_name = os.path.join(dove, 'RM_positions.fits')
                 pyfits.writeto(fits_file_name, np.array(rmpos), overwrite=True)
+                
+    
+    ott.parab(par0)
+    ott.refflat(rm0)
     return tt
 
 def analyze_astig_coma(tn):
@@ -357,6 +361,18 @@ def analyze_astig_coma(tn):
     name = os.path.join(dove, 'RM_positions.fits')
     hduList = pyfits.open(name)
     rm_pos = hduList[0].data
+    plt.plot(par_pos[0:20,3], zer[0:20,4],'o')
+    plt.plot(par_pos[0:20,3], zer[0:20,5],'o')
+    plt.xlabel('Par tilt [as]')
+    plt.ylabel('Astigm. Coeff [m]')
+    plt.title(tn)
+    plt.plot(par_pos[0:20,3], zer[0:20,6],'o')
+    plt.plot(par_pos[20:40,3], zer[20:40,7],'o')
+    plt.xlabel('Par tilt [as]')
+    plt.ylabel('Coma. Coeff [m]')
+    plt.legend(['X','Y'])
+    plt.title(tn)
+    
     return zer, par_pos, rm_pos
 
 def _readActs(n1, n2, n3):
