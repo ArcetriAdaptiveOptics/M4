@@ -7,6 +7,23 @@ import numpy as np
 
 class TestCalc(unittest.TestCase):
 
+    def setUp(self):
+        '''
+        qualcosa che viene eseguito prima del test
+        tipo creazione dell'oggetto che poi ci serve
+        '''
+        from m4.configuration.create_ott import OTT
+        self._ott = OTT()
+        from m4.alignment import Alignment
+        self._a = Alignment(self._ott)
+        pass
+
+    def tearDown(self):
+        ''' ammazzo quello che ho creato
+        '''
+        del(self._a, self._ott)
+        pass
+
     def test1_calibration_and_alignement_mix(self):
         ''' Calibration test for PAR + RM
         '''
