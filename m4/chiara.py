@@ -1,0 +1,90 @@
+'''
+file temporaneo
+'''
+
+import os
+import numpy as np
+from astropy.io import fits as pyfits
+from m4.configuration import start
+from m4.configuration.ott_parameters import OpcUaParameters
+from m4.alignment import Alignment
+from m4.ground.opc_ua_controller import OpcUaController
+
+class Measure_mOTT():
+
+    def __init__(self):
+        """The constructor """
+        self._ott, self._interf  = start.create_ott()
+        self._opc = OpcUaController()
+        self._a = Alignment(self._ott)
+
+    def deltaPositionVsSlide(self, n_object_to_move, shift, tt_for_align):
+        n_frames_alignment = 10
+        par0 = self._ott.parab()
+        rm0 = self._ott.refflat()
+        delta_par = []
+        delta_rm = []
+        delta_object = []
+
+        if n_object_to_move == 0:
+            n_iter = np.int((OpcUaParameters.max_angle-OpcUaParameters.min_angle)/shift)
+            angle0 = self._ott.angle()
+            for i in range(n_iter):
+                angle = self._ott.angle(angle0+((i+1)*shift))
+                par_cmd, rm_cmd = self._a.ott_alignment(n_frames_alignment, 1,
+                                                        np.array([0,1]), np.array([3, 4]),
+                                                        tt_for_align)
+                par = self._ott.parab()
+                rm = self._ott.refflat()
+                delta_par.append(par - par0)
+                delta_rm.append(rm - rm0)
+                delta_object.append(angle - angle0)
+                self._saveData(delta_par, delta_rm, delta_object, n_object_to_move)
+        elif n_object_to_move == 1:
+            n_iter = np.int((OpcUaParameters.max_r_slide-OpcUaParameters.min_r_slide)/shift)
+            r_slide0 = self._ott.rslide()
+            for i in range(n_iter):
+                rslide = self._ott.rslide(r_slide0+((i+1)*shift))
+                par_cmd, rm_cmd = self._a.ott_alignment(n_frames_alignment, 1,
+                                                        np.array([0,1]), np.array([3, 4]),
+                                                        tt_for_align)
+                par = self._ott.parab()
+                rm = self._ott.refflat()
+                delta_par.append(par - par0)
+                delta_rm.append(rm - rm0)
+                delta_object.append(rslide - r_slide0)
+                self._saveData(delta_par, delta_rm, delta_object, n_object_to_move)
+                self._saveData(delta_par, delta_rm, delta_object, n_object_to_move)
+        elif n_object_to_move == 2:
+            n_iter = np.int((OpcUaParameters.max_slide-OpcUaParameters.min_slide)/shift)
+            slide0 = self._ott.slide()
+            for i in range(n_iter):
+                slide = self._ott.slide(slide0+((i+1)*shift))
+                par_cmd, rm_cmd = self._a.ott_alignment(n_frames_alignment, 1,
+                                                        np.array([0,1]), np.array([3, 4]),
+                                                        tt_for_align)
+                par = self._ott.parab()
+                rm = self._ott.refflat()
+                delta_par.append(par - par0)
+                delta_rm.append(rm - rm0)
+                delta_object.append(slide - slide0)
+                self._saveData(delta_par, delta_rm, delta_object, n_object_to_move)
+        else:
+            raise Exception('Incorrect number of object to move')
+        return np.array(delta_object), np.array(delta_par), np.array(delta_rm)
+
+    def _saveData(self, delta_par, delta_rm, delta_object, n_object_to_move):
+        dove = '?'
+        if n_object_to_move == 0:
+            name = 'delta_angle.fits'
+        elif n_object_to_move == 1:
+            name = 'delta_rslide.fits'
+        elif n_object_to_move == 2:
+            name = 'delta_slide.fits'
+
+        fits_file_name = os.path.join(dove, name)
+        pyfits.writeto(fits_file_name, np.array(delta_object), overwrite=True)
+        fits_file_name = os.path.join(dove, 'delta_PAR_positions.fits')
+        pyfits.writeto(fits_file_name, np.array(delta_par), overwrite=True)
+        fits_file_name = os.path.join(dove, 'delta_RM_positions.fits')
+        pyfits.writeto(fits_file_name, np.array(delta_rm), overwrite=True)
