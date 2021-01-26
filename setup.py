@@ -77,7 +77,8 @@ setup(name=NAME,
       install_requires=["numpy",
                         "astropy",
                         "h5py",
-                        "scikit-image>0.15"
+                        "scikit-image>0.15",
+                        "skimage"
                         ],
       test_suite='test',
       cmdclass={'upload': UploadCommand, },
