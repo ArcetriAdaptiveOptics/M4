@@ -78,7 +78,8 @@ setup(name=NAME,
                         "astropy",
                         "h5py",
                         "scikit-image>0.15",
-                        "skimage"
+                        "skimage",
+                        "IPython"
                         ],
       test_suite='test',
       cmdclass={'upload': UploadCommand, },
