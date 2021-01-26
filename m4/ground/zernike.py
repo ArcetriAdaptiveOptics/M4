@@ -205,7 +205,7 @@ def _test():
     yy = np.tile(np.transpose(x),(200,1))
     xx = np.transpose(yy)
     mm = (xx**2+yy**2) < 1
-    aa = getZernike(xx[mm],yy[mm],np.arange(11)+1);
+    aa = _getZernike(xx[mm],yy[mm],np.arange(11)+1);
     ii=xx*0;ii[mm]=aa[:,9];imshow(ii);show()
 
 
