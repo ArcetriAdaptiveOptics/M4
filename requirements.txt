@@ -4,3 +4,5 @@ matplotlib
 astropy
 synphot
 pytest
+h5py
+skimage
