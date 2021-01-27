@@ -31,6 +31,8 @@ class OpcUaController():
         self._client.connect()
         stop_node = self._client.get_node("ns=7;s=MAIN.b_StopCmd")
         stop_type = stop_node.get_data_type_as_variant_type()
+#         import pdb
+#         pdb.set_trace()
         stop_node.set_value(ua.DataValue(ua.Variant(True, stop_type)))
         self._client.disconnect()
 
@@ -157,18 +159,49 @@ class OpcUaController():
             value = self._get_command_state(int_number)
 
     def readActsPositions(self, n1, n2, n3):
+        '''
+        Function to read actuators positions
+
+        Parameters
+        ----------
+            n1, n2, n3: int
+                    number of the chosen object
+
+        Returns
+        -------
+            acts: numpy array
+                vector of actuators position
+        '''
         act1 = self.get_position(n1)
         act2 = self.get_position(n2)
         act3 = self.get_position(n3)
         return np.array([act1, act2, act3])
 
     def setActsPositions(self, n1, n2, n3, v1, v2, v3):
+        '''
+        Function to set actuators positions
+
+        Parameters
+        ----------
+            n1, n2, n3: int
+                    number of the chosen object
+            v1, v2, v3: int, float
+                    value to pass to actuators
+
+        Returns
+        -------
+            acts: numpy array
+                vector of actuators position
+        '''
         act1 = self._setAct(n1, v1)
         act2 = self._setAct(n2, v2)
         act3 = self._setAct(n3, v3)
         return np.array([act1, act2, act3])
-    
+
     def _setAct(self, number, value):
+        ''' specific function for actuators because on these
+        does not work the wait for stop (not set the transition
+        from true to false by ads)'''
         self.set_target_position(number, value)
         self.move_object(number)
         time.sleep(10)

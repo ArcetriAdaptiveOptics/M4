@@ -5,8 +5,8 @@ Authors
 
 import sys
 import time
-import numpy as np
 from functools import reduce
+import numpy as np
 from pyzabbix import ZabbixAPI
 from pyzabbix import ZabbixMetric, ZabbixSender
 sys.path.insert(0,'/home/m4/git/M4')
@@ -24,9 +24,9 @@ def mainZabbix():
     result2: tuple
     """
     zapi = _createZabbixAPI()
-    hostname = 'M4OTT'
-    zserver = '192.168.22.22'
-    port = 10051
+    hostname = OpcUaParameters.zabbix_hostname
+    zserver = OpcUaParameters.zabbix_server
+    port = OpcUaParameters.zabbix_port
 
     temperature_vector = _read_temperature_from_OpcUa()
 #     valore2 = getZabbixMetrics(zapi, hostname, 'key')

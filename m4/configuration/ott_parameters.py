@@ -113,6 +113,9 @@ class OpcUaParameters():
                              'RM_TIP', 'RM_TILT', 'RM_PISTON'
                              'PAR_TIP', 'PAR_TILT', 'PAR_PISTON']
 
+    zabbix_hostname = 'M4OTT'
+    zabbix_server = '192.168.22.22'
+    zabbix_port = 10051
 
 class OtherParameters():
     ''' '''
