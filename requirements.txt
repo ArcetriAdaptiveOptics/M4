@@ -6,3 +6,7 @@ synphot
 pytest
 h5py
 scikit-image>0.15
+IPython
+opcua
+os
+logging
