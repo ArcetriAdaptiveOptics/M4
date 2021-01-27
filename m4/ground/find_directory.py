@@ -7,7 +7,7 @@ import os
 import fnmatch
 from m4.configuration.config import path_name
 
-def ciccio(tt):
+def findTtPath(tt):
     rootPath = path_name.OPT_DATA_FOLDER
     pattern = tt
 
