@@ -80,7 +80,8 @@ setup(name=NAME,
                         "scikit-image>0.15",
                         "skimage",
                         "IPython",
-                        "opcua"
+                        "opcua",
+                        "mock"
                         ],
       test_suite='test',
       cmdclass={'upload': UploadCommand, },
