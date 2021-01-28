@@ -88,3 +88,61 @@ class Measure_mOTT():
         pyfits.writeto(fits_file_name, np.array(delta_par), overwrite=True)
         fits_file_name = os.path.join(dove, 'delta_RM_positions.fits')
         pyfits.writeto(fits_file_name, np.array(delta_rm), overwrite=True)
+        
+        
+        
+        
+        
+        
+ttp = '20210111_152430'
+from m4.utils.optical_calibration import OpticalCalibration
+cal = OpticalCalibration.loadCommandMatrixFromFits(ttp)
+cal.createCube(ttp, 77)
+cube = cal.getCube()
+ima = cube[:,:,0]
+from m4.utils.roi import ROI
+r = ROI()
+roi = r.roiGenerator(ima)
+mask = roi[1]
+intMat = cal.getInteractionMatrix(mask)
+
+cmd0 = np.array([0,0,0,1,1])
+z0 = np.dot(intMat, cmd0)/3
+intMatModesVector = np.array([0,1])
+commandId = np.array([3,4])
+
+intMatModesVector = np.array([0,1,2,3,4])
+commandId = np.array([0,1,2,3,4])
+z_new = z0[intMatModesVector]
+
+#standard
+new_intMat = intMat[intMatModesVector, :]
+new_intMat = new_intMat[:,commandId]
+new_rec = np.linalg.pinv(new_intMat)
+z_new = z0[intMatModesVector]
+cmd_new = np.zeros(5)
+cmd_new[commandId] = np.dot(new_rec, z_new)
+
+#with cmat
+cmat = np.diag(np.array([0.8, 1.5, 1.5, 3. , 3. ]))
+new_intMat2 = intMat[intMatModesVector, :]
+cmat2 = cmat[commandId, :]
+new_rec2 = np.linalg.pinv(new_intMat2)
+M = np.dot(cmat2, new_rec2)
+cmd_new2 = np.zeros(5)
+cmd_new2[commandId] = np.dot(M, z_new)
+
+
+cmat = np.diag(np.array([0.8, 1.5, 1.5, 3. , 3. ]))
+pp = intMat[intMatModesVector, :]
+new_intMat3 = pp[:, commandId]
+cc = cmat[commandId, :]
+cmat3 = cc[:, commandId]
+new_rec3 = np.linalg.pinv(new_intMat3)
+M = np.dot(cmat3, new_rec3)
+cmd_new3 = np.zeros(5)
+cmd_new3[commandId] = np.dot(M, z_new)
+
+
+
+
