@@ -31,6 +31,8 @@ class Interferometer():
 class OttParameters():
     ''' Optical tower parameters
     '''
+    par_rm_coef_for_coma_measuremets = -2.05
+    
     parab_radius = 1.420/2 #was 1.440
     parab_dist = 5.4
     rflat_dist = 4.24

@@ -45,7 +45,7 @@ class OpticalAlignment():
         return fold_name.ALIGNMENT_ROOT_FOLDER
 
 
-    def opt_align(self, ott, n_images, intMatModesVector=None, commandId=None, piston=None):
+    def opt_align(self, ott, n_images, intMatModesVector=None, commandId=None):
         """
         Parameters
         ----------
@@ -68,14 +68,12 @@ class OpticalAlignment():
                 cmd: numpy array
                     final delta command for the optical alignment
         """
-        if intMatModesVector is not None or commandId is not None:
-            old = 7
         par_position = ott.parab()
         rm_position = ott.refflat()
         m4_position = ott.m4()
         self._logger.info('Calculation of the alignment command for %s',
                           self._tt)
-        self._intMat, self._rec, self._mask = self._selectModesInIntMatAndRecConstruction(intMatModesVector, commandId)
+        self._intMat, self._rec, self._cmat, self._mask = self._selectModesInIntMatAndRecConstruction(intMatModesVector, commandId)
         self._intMatModesVector = intMatModesVector
 
         img = self._c4d.acq4d(n_images, 0, ott)
@@ -86,7 +84,7 @@ class OpticalAlignment():
         self._c4d.save_phasemap(dove, name, img)
 
         if self._cal._who=='PAR + RM':
-            cmd, zernike_vector, total_coef = self._commandGenerator(img, old)
+            cmd, zernike_vector, total_coef = self._commandGenerator(img)
             par_command, rm_command = self._reorgCmdMix(cmd, commandId)
             self._saveAllDataMix(dove, par_position, rm_position, par_command, rm_command,
                                  intMatModesVector, commandId)
@@ -94,7 +92,7 @@ class OpticalAlignment():
             self._alignmentLog(total_coef, tt, commandId)
             return par_command, rm_command, dove
         elif self._cal._who=='M4':
-            cmd, zernike_vector = self._commandGenerator(img, piston)
+            cmd, zernike_vector = self._commandGenerator(img)
             m4_command = self._reorgCmdM4(cmd)
             self._saveAllDataM4(dove, m4_position, m4_command)
             self._saveZernikeVector(dove, zernike_vector)
@@ -114,7 +112,7 @@ class OpticalAlignment():
 #         file.write('%s \n ************\n' %commandId)
         file.close()
 
-    def _selectModesInIntMatAndRecConstruction(self, intMatModesVector=None,
+    def _selectModesInIntMatAndRecConstruction(self, zernike2control=None,
                                                commandId=None):
         '''
         Other Parameters
@@ -125,22 +123,25 @@ class OpticalAlignment():
             commandId: numpy array
                     array containing the number of degrees of freedom to be commanded
         '''
-        intMat, rec, mask = self._loadAlignmentInfo()
-        if intMatModesVector is None:
+        intMat, mask = self._loadAlignmentInfo()
+        cmat = self._cal._commandMatrix
+        if zernike2control is None:
             new_intMat = intMat
+            new_cmat = cmat
         else:
-            new_intMat = intMat[intMatModesVector, :]
+            new_intMat = intMat[zernike2control, :]
 
         if commandId is not None:
-            new_intMat = new_intMat[:,commandId]
+            new_intMat = new_intMat[:, commandId]
+            new_cmat = cmat[commandId, :]
+            new_cmat = new_cmat[:, commandId]
 
         new_rec = np.linalg.pinv(new_intMat)
-        return new_intMat, new_rec, mask
+        return new_intMat, new_rec, new_cmat, mask
 
     def _loadAlignmentInfo(self):
         """ Returns interaction matrix, reconstructor and mask """
         self._intMat = self._readInfo('InteractionMatrix.fits')
-        self._rec = self._readInfo('Reconstructor.fits')
         self._mask = self._readInfo('Mask.fits')
         #y = ['PAR_PIST', 'PAR_TIP', 'PAR_TILT', 'RM_TIP', 'RM_TILT']
         plt.clf()
@@ -148,7 +149,7 @@ class OpticalAlignment():
         plt.colorbar()
         plt.xlabel('Commands')
         plt.ylabel('Zernike Modes')
-        return self._intMat, self._rec, self._mask
+        return self._intMat, self._mask
 
 
     def _readInfo(self, fits_name):
@@ -187,7 +188,7 @@ class OpticalAlignment():
             m4_command[dofIndex[i]] = cmd[i]
         return m4_command
 
-    def _commandGenerator(self, img, old=1, piston=None):
+    def _commandGenerator(self, img):
         """
         args:
             img = image
@@ -198,17 +199,11 @@ class OpticalAlignment():
         total_coef, zernike_vector = self._zernikeCoeff(img)
         print('zernike:')
         print(zernike_vector)
-        if piston is None:
-            zernike_vector = zernike_vector
-        else:
-            cc = zernike_vector[3]
-            zernike_vector[3] = cc + piston
-        #sommare il coma a questo zernike vector
-        if old==1:
-            cmd = - np.dot(self._rec, zernike_vector)
-        else:
-            M = np.dot(self._cal._commandMatrix, self._rec)
-            cmd = - np.dot(M, zernike_vector) #giusto
+#         if old_or_new==1:
+#             cmd = - np.dot(self._rec, zernike_vector)
+#         else:
+        M = np.dot(self._cmat, self._rec) #non serve la trasposta
+        cmd = - np.dot(M, zernike_vector) #serve il meno
         print('mix command:')
         print(cmd)
         return cmd, zernike_vector, total_coef
@@ -230,6 +225,9 @@ class OpticalAlignment():
         mm = np.ma.mask_or(img.mask, mask)
 
         new_image = np.ma.masked_array(img, mask=mm)
+        if  conf.simulated ==1:
+            new_image[np.ma.where(new_image<-0.0013)] = 0.00048
+            new_image[np.ma.where(new_image>0.0013)] = -0.00043
         coef, mat = zernike.zernikeFit(new_image, np.arange(10)+1)
         z = np.array([1, 2, 3, 6, 7])
         final_coef = coef[z]

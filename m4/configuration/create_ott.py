@@ -300,6 +300,13 @@ class OTT():
             #raise OSError('Data is not a numpy array')
         return self.m4_start_position
 
+    def temperature(self):
+        if conf.simulated == 1:
+            temp_vector = np.zeros(OpcUaParameters.num_PT_sensor)
+        else:
+            temp_vector = self._opcUa.get_temperature_vector()
+        return temp_vector
+
 ### Sensitivity matrices
     def _readMatFromTxt(self, file_name):
         ''' Function to read matrix of 11 Zernike x 6 displacements,

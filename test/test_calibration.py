@@ -17,23 +17,13 @@ class TestCalc(unittest.TestCase):
         del(self.cal, self.ott)
 
     @unittest.skip('Salvataggio e lettura dati')
-    def testCalibrationOld(self):
+    def testCalibration(self):
+        old_or_new = 1
         command_amp_vector = np.ones(5)
         n_push_pull = 1
         n_frames = 1
-        mask_index = 2 #2 per il simulatore
+        mask_index = 4 #4 per il simulatore
         tt = self.cal.measureCalibrationMatrix(self.ott, 0, command_amp_vector,
-                                                n_push_pull, n_frames)
+                                                n_push_pull, n_frames, old_or_new)
         int_mat, rec = self.cal.analyzerCalibrationMeasurement(tt,
                                                                 mask_index)
-
-    @unittest.skip('Salvataggio e lettura dati')
-    def testCalibrationNew(self):
-        command_amp_vector = np.ones(5)
-        n_push_pull = 1
-        n_frames = 1
-        mask_index = 3 #3 per il simulatore
-        tt = self.cal.measureCalibrationMatrix(self.ott, 0, command_amp_vector,
-                                                n_push_pull, n_frames, old=77)
-        int_mat, rec = self.cal.analyzerCalibrationMeasurement(tt, mask_index,
-                                                               norm=0)

@@ -88,12 +88,12 @@ class Measure_mOTT():
         pyfits.writeto(fits_file_name, np.array(delta_par), overwrite=True)
         fits_file_name = os.path.join(dove, 'delta_RM_positions.fits')
         pyfits.writeto(fits_file_name, np.array(delta_rm), overwrite=True)
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
 ttp = '20210111_152430'
 from m4.utils.optical_calibration import OpticalCalibration
 cal = OpticalCalibration.loadCommandMatrixFromFits(ttp)
