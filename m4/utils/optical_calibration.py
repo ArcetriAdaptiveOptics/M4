@@ -160,7 +160,7 @@ class OpticalCalibration():
                             par1 = pcmd * vec_push_pull[v]
                             print(par1)
                             self._ott.parab(par0+par1)
-                            masked_ima = self._c4d.acq4d(n_frames, 0, self._ott)
+                            masked_ima = self._c4d.acq4d(n_frames, 0)
                             name = 'Frame_%04d.fits' %(2*i+mis[v])
                             print(name)
                             self._c4d.save_phasemap(dove, name, masked_ima)
@@ -179,7 +179,7 @@ class OpticalCalibration():
                             if np.count_nonzero(rm1) !=0:
                                 self._ott.refflat(rm0+rm1)
                             print(par1, rm1)
-                            masked_ima = self._c4d.acq4d(n_frames, 0, self._ott)
+                            masked_ima = self._c4d.acq4d(n_frames, 0)
                             name = 'Frame_%04d.fits' %(2*i+mis[v])
                             print(name)
                             self._c4d.save_phasemap(dove, name, masked_ima)
@@ -191,7 +191,7 @@ class OpticalCalibration():
                             rm1 = rcmd * vec_push_pull[v]
                             self._ott.refflat(rm0+rm1)
                             print(rm1)
-                            masked_ima = self._c4d.acq4d(n_frames, 0, self._ott)
+                            masked_ima = self._c4d.acq4d(n_frames, 0)
                             name = 'Frame_%04d.fits' %(2*i+mis[v])
                             print(name)
                             self._c4d.save_phasemap(dove, name, masked_ima)

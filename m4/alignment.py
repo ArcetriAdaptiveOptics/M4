@@ -41,7 +41,7 @@ class Alignment():
         self._c4d = comm4d()
 
 
-    def ott_calibration(self, n_frames, command_amp_vector, n_push_pull, mask_index):
+    def ott_calibration(self, n_frames, command_amp_vector, n_push_pull, old_or_new, mask_index):
         '''Calibration of the optical tower
 
         Parameters
@@ -54,6 +54,8 @@ class Alignment():
                 mask_index: int
                             3 for the simulatore's RM mask (non ruotate 2)
                             0 for standard mask in real ott
+                old_or_new: int
+                        0 for new (mixed), 1 for old (not mixed)
 
         Returns
         -------
@@ -61,7 +63,7 @@ class Alignment():
                     tracking number of measurements made
         '''
         self._tt = self._cal.measureCalibrationMatrix(self._ott, 0, command_amp_vector,
-                                                      n_push_pull, n_frames)
+                                                      n_push_pull, n_frames, old_or_new)
         int_mat, rec = self._cal.analyzerCalibrationMeasurement(self._tt,
                                                                 mask_index)
         return self._tt
@@ -104,7 +106,7 @@ class Alignment():
             self._ott.parab(pos_par + par_cmd)
             pos_rm = self._ott.refflat()
             self._ott.refflat(pos_rm + rm_cmd)
-        image = self._c4d.acq4d(n_images, 0, self._ott)
+        image = self._c4d.acq4d(n_images, 0)
         name = 'FinalImage.fits'
         total_coef, zernike_vector = al._zernikeCoeff(image)
         self._alignmentLog(al, total_coef, commandId, move)

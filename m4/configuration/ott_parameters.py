@@ -112,7 +112,7 @@ class OpcUaParameters():
     zabbix_variables_name = ['RA', 'CAR', 'ST',
                              'RM1', 'RM2', 'RM3',
                              'PAR1', 'PAR2', 'PAR3',
-                             'RM_TIP', 'RM_TILT', 'RM_PISTON'
+                             'RM_TIP', 'RM_TILT', 'RM_PISTON',
                              'PAR_TIP', 'PAR_TILT', 'PAR_PISTON']
 
     zabbix_hostname = 'M4OTT'

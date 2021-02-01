@@ -25,6 +25,7 @@ class Measure_mOTT():
         delta_par = []
         delta_rm = []
         delta_object = []
+        delta_object2 = []
 
         if n_object_to_move == 0:
             n_iter = np.int((OpcUaParameters.max_angle-OpcUaParameters.min_angle)/shift)
@@ -56,10 +57,13 @@ class Measure_mOTT():
                 self._saveData(delta_par, delta_rm, delta_object, n_object_to_move)
                 self._saveData(delta_par, delta_rm, delta_object, n_object_to_move)
         elif n_object_to_move == 2:
-            n_iter = np.int((OpcUaParameters.max_slide-OpcUaParameters.min_slide)/shift)
+            #n_iter = np.int((OpcUaParameters.max_slide-OpcUaParameters.min_slide)/shift)
+            n_iter = 20
             slide0 = self._ott.slide()
+            rslide0 = self._ott.rslide()
             for i in range(n_iter):
                 slide = self._ott.slide(slide0+((i+1)*shift))
+                rslide = self._ott.rslide(rslide0+((i+1)*shift))
                 par_cmd, rm_cmd = self._a.ott_alignment(n_frames_alignment, 1,
                                                         np.array([0,1]), np.array([3, 4]),
                                                         tt_for_align)
@@ -68,12 +72,14 @@ class Measure_mOTT():
                 delta_par.append(par - par0)
                 delta_rm.append(rm - rm0)
                 delta_object.append(slide - slide0)
-                self._saveData(delta_par, delta_rm, delta_object, n_object_to_move)
+                delta_object2.append(rslide - rslide0)
+                self._saveData(delta_par, delta_rm, delta_object, delta_object2,
+                               n_object_to_move)
         else:
             raise Exception('Incorrect number of object to move')
-        return np.array(delta_object), np.array(delta_par), np.array(delta_rm)
+        return np.array(delta_object), np.array(delta_object2), np.array(delta_par), np.array(delta_rm)
 
-    def _saveData(self, delta_par, delta_rm, delta_object, n_object_to_move):
+    def _saveData(self, delta_par, delta_rm, delta_object, delta_object2, n_object_to_move):
         dove = '?'
         if n_object_to_move == 0:
             name = 'delta_angle.fits'

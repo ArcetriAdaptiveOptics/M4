@@ -59,7 +59,7 @@ def start_log(logging_level):
 ott, interf = start.create_ott()
 a = Alignment(ott)
 
-def ott_alignment_calibration(n_frames, commandAmpVector, nPushPull, move):
+def ott_alignment_calibration(n_frames, commandAmpVector, nPushPull, old_or_new, move):
     '''
     Parameters
     ----------------
@@ -71,6 +71,8 @@ def ott_alignment_calibration(n_frames, commandAmpVector, nPushPull, move):
             move: int
                 1 to move the tower
                 other to show matrix delta command
+            old_or_new: int
+                        0 for new (mixed), 1 for old (not mixed)
 
     Returns
     -------
@@ -79,7 +81,7 @@ def ott_alignment_calibration(n_frames, commandAmpVector, nPushPull, move):
     '''
     print('PAR + RM calibration')
     if move == 1:
-        tt_tower = a.ott_calibration(n_frames, commandAmpVector, nPushPull, 0)
+        tt_tower = a.ott_calibration(n_frames, commandAmpVector, nPushPull, old_or_new, 0)
     #mask_index = 3 per il simulatore  e 0 per la mott
         return tt_tower
     else:

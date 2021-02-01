@@ -252,3 +252,64 @@ def parTiltTest(act, val_vec):
     quad = np.array(sum_list)
     plt.plot(val_vec, quad, '-o')
     return quad, np.array(coef_list), image0, delta_list
+
+def mappaturaPar(shift, n_iter, tt_for_align):
+    '''
+    shift = np.array([shift_par, shift_rm])
+    '''
+    n_object_to_move = OpcUaParameters.ST
+    n_frames_alignment = 1
+    par0 = ott.parab()
+    rm0 = ott.refflat()
+    delta_par = []
+    delta_rm = []
+    delta_object = []
+    delta_object2 = []
+    
+    save = tracking_number_folder.TtFolder(fold_name.HOMING_TEST_ROOT_FOLDER)
+    dove, tt = save._createFolderToStoreMeasurements()
+    file = open(os.path.join(dove, 'HomingInfo.txt'), "a")
+    file.write('Homing object number ' + str(n_object_to_move) +'\n')
+    file.close()
+    #n_iter = 20
+    slide0 = ott.slide()
+    rslide0 = ott.rslide()
+    slide = -1
+    rslide = -1
+    for i in range(n_iter):
+        if shift[0] != 0:
+            slide = ott.slide(slide0+((i+1)*shift[0]))
+            if slide==0:
+                raise Exception('HOMING! PAR WIN')
+        if shift[1] != 0:
+            rslide = ott.rslide(rslide0+((i+1)*shift[1]))
+            if rslide==0:
+                raise Exception('HOMING! RM WIN')
+        time.sleep(5)
+        par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1,
+                                          np.array([0,1]), np.array([3, 4]),
+                                          tt_for_align)
+        par = ott.parab()
+        rm = ott.refflat()
+        delta_par.append(par - par0)
+        delta_rm.append(rm - rm0)
+        delta_object.append(slide - slide0)
+        delta_object2.append(rslide - rslide0)
+        
+        fits_file_name = os.path.join(dove, 'delta_slide.fits')
+        pyfits.writeto(fits_file_name, np.array(delta_object), overwrite=True)
+        fits_file_name = os.path.join(dove, 'delta_rslide.fits')
+        pyfits.writeto(fits_file_name, np.array(delta_object2), overwrite=True)
+        fits_file_name = os.path.join(dove, 'delta_PAR_positions.fits')
+        pyfits.writeto(fits_file_name, np.array(delta_par), overwrite=True)
+        fits_file_name = os.path.join(dove, 'delta_RM_positions.fits')
+        pyfits.writeto(fits_file_name, np.array(delta_rm), overwrite=True)
+    
+    return tt     
+
+         
+     
+
+                
+                
+    

@@ -76,7 +76,7 @@ class OpticalAlignment():
         self._intMat, self._rec, self._cmat, self._mask = self._selectModesInIntMatAndRecConstruction(intMatModesVector, commandId)
         self._intMatModesVector = intMatModesVector
 
-        img = self._c4d.acq4d(n_images, 0, ott)
+        img = self._c4d.acq4d(n_images, 0)
         name = 'StartImage.fits'
         tt = Timestamp.now()
         dove = os.path.join(self._storageFolder(), self._tt + '--' + tt)
