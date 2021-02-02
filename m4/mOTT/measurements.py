@@ -255,9 +255,8 @@ def parTiltTest(act, val_vec):
 
 def mappaturaPar(shift, n_iter, tt_for_align):
     '''
-    shift = np.array([shift_par, shift_rm])
+    shift = np.array([shift_par, shift_rm, rot_angle])
     '''
-    n_object_to_move = OpcUaParameters.ST
     n_frames_alignment = 1
     par0 = ott.parab()
     rm0 = ott.refflat()
@@ -265,36 +264,57 @@ def mappaturaPar(shift, n_iter, tt_for_align):
     delta_rm = []
     delta_object = []
     delta_object2 = []
+    delta_object3 = []
     
-    save = tracking_number_folder.TtFolder(fold_name.HOMING_TEST_ROOT_FOLDER)
+    save = tracking_number_folder.TtFolder(fold_name.MAPPING_TEST_ROOT_FOLDER)
     dove, tt = save._createFolderToStoreMeasurements()
-    file = open(os.path.join(dove, 'HomingInfo.txt'), "a")
-    file.write('Homing object number ' + str(n_object_to_move) +'\n')
+    if shift[2] != 0:
+        shift[0] = shift[1] = 0
+        object_to_move = 'ANGLE'
+    if shift[1] != 0:
+        shift[0] = shift[2] = 0
+        object_to_move = 'RM'
+    if shift[0] != 0:
+        shift[1] = shift[0]
+        shift[2] = 0
+        object_to_move = 'PAR + RM'
+
+    file = open(os.path.join(dove, 'MappingInfo.txt'), "a")
+    file.write('Mapping object: ' + object_to_move +'\n')
     file.close()
     #n_iter = 20
     slide0 = ott.slide()
     rslide0 = ott.rslide()
+    angle0 = ott.angle()
     slide = -1
     rslide = -1
+    angle = -1
     for i in range(n_iter):
         if shift[0] != 0:
-            slide = ott.slide(slide0+((i+1)*shift[0]))
-            if slide==0:
-                raise Exception('HOMING! PAR WIN')
+            slide = ott.slide(slide0 +((i+1)*shift[0]))
+#             if slide==0:
+#                 raise Exception('HOMING! PAR WIN')
         if shift[1] != 0:
-            rslide = ott.rslide(rslide0+((i+1)*shift[1]))
-            if rslide==0:
-                raise Exception('HOMING! RM WIN')
+            rslide = ott.rslide(rslide0 +((i+1)*shift[1]))
+#             if rslide==0:
+#                 raise Exception('HOMING! RM WIN')
+        if shift[2] != 0:
+            angle = ott.angle(angle0 +((i+1)*shift[2]))
+            
         time.sleep(5)
         par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1,
                                           np.array([0,1]), np.array([3, 4]),
                                           tt_for_align)
+        image = interf.acq4d(1)
+        name = 'image_%04d.fits' % i
+        interf.save_phasemap(dove, name, image)
         par = ott.parab()
         rm = ott.refflat()
         delta_par.append(par - par0)
         delta_rm.append(rm - rm0)
         delta_object.append(slide - slide0)
         delta_object2.append(rslide - rslide0)
+        delta_object3.append(angle - angle0)
         
         fits_file_name = os.path.join(dove, 'delta_slide.fits')
         pyfits.writeto(fits_file_name, np.array(delta_object), overwrite=True)
@@ -304,6 +324,8 @@ def mappaturaPar(shift, n_iter, tt_for_align):
         pyfits.writeto(fits_file_name, np.array(delta_par), overwrite=True)
         fits_file_name = os.path.join(dove, 'delta_RM_positions.fits')
         pyfits.writeto(fits_file_name, np.array(delta_rm), overwrite=True)
+        fits_file_name = os.path.join(dove, 'delta_ANGLE_positions.fits')
+        pyfits.writeto(fits_file_name, np.array(delta_object3), overwrite=True)
     
     return tt     
 

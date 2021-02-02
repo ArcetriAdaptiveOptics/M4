@@ -62,6 +62,6 @@ class fold_name(path_name):
                                   "Repeatability")
     PISTON_TEST_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
                                   "PistonTest")
-    HOMING_TEST_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                  "Homing")
+    MAPPING_TEST_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
+                                  "Mapping")
     # metterci tutti i path di tutte le classi
