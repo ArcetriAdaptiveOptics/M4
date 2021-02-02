@@ -85,21 +85,6 @@ class OpticalCalibration():
         self._saveCommandMatrixAsFits(dove)
         self._saveCMat(dove)
         self._measureAndStore(who, self._commandList, n_push_pull, dove, n_frames)
-
-#         if old==1:
-#             self._commandMatrix = self._createCommandMatrix(who,
-#                                                             self._commandAmpVector,
-#                                                             self._nPushPull)
-#             self._commandMatrixToSave = self._createCommandMatrixToSave(self._commandAmpVector)
-#             self._saveCommandMatrixAsFits(dove)
-#             self._measureAndStoreCommandMatrix(who, self._commandMatrix, dove, n_frames)
-#         else:
-#             self._commandMatrix, self._commandList = self._createCommandMatrix(who,
-#                                                             self._commandAmpVector,
-#                                                             self._nPushPull, old)
-#             self._commandMatrixToSave = self._commandMatrix.copy()
-#             self._saveCommandMatrixAsFits(dove)
-#             self._measureAndStoreMix(self._commandList, self._nPushPull, dove, n_frames)
         return self._tt
 
     def analyzerCalibrationMeasurement(self, tt, mask_index):
@@ -205,45 +190,6 @@ class OpticalCalibration():
             pass
 
 
-#     def _measureAndStoreCommandMatrix(self, who, command_matrix, dove, n_frames):
-#         #deve applicare la matrice e salvare gli interferogrammi
-#         command_list = []
-#         for i in range(command_matrix.shape[1]):
-#             cmd = command_matrix[:,i]
-#             command_list.append(cmd)
-#         if who == 0:
-#             par0 = self._ott.parab()
-#             rm0 = self._ott.refflat()
-#             for l in range(self._nPushPull):
-#                 for m in range(np.int(len(command_list)/self._nPushPull)):
-#                     k = 2 * l * self._dofIndex.size + m
-#                     if k <= 2 * l * self._dofIndex.size + self._dofIndex.size:
-#                         self._ott.parab(par0 + command_list[k])
-#                     elif 2 * l * self._dofIndex.size + self._dofIndex.size < k < 2 * (l+1) * self._dofIndex.size:
-#                         self._ott.parab(par0)
-#                         self._ott.refflat(rm0 + command_list[k])
-#                     #time.sleep(5)
-#                     #print('5 secondi di attesa')
-#                     masked_ima = self._c4d.acq4d(n_frames, 0, self._ott)
-#                     #masked_ima = np.ma.masked_array(p, mask=np.invert(m.astype(bool)))
-#                     name = 'Frame_%04d.fits' %k
-#                     self._c4d.save_phasemap(dove, name, masked_ima)
-#                 self._ott.refflat(rm0)
-# 
-#         elif who == 1:
-#             pass
-#         elif who == 2:
-#             pass
-#         elif who == 3:
-#             m40 = self._ott.m4()
-#             for k in range(len(command_list)):
-#                 self._ott.m4(m40-command_list[i])
-#                 masked_ima = self._c4d.acq4d(1, self._ott)
-#                 name = 'Frame_%04d.fits' %k
-#                 self._c4d.save_phasemap(dove, name, masked_ima)
-#             self._ott.m4(m40)
-
-
     def _createCommandMatrix(self, who, command_amp_vector, old_or_new):
         '''
             args:
@@ -277,13 +223,7 @@ class OpticalCalibration():
         self._logger.info('Creation of the command matrix for %s', self._who)
         commandMatrix, commandList = self._createCmatAndCmdList(command_amp_vector,
                                                                 self._dofIndex, old_or_new)
-#         if old==1:
-#             self._commandMatrix = self._createCommandHistoryMatrix(self._dofIndex,
-#                                                                    command_amp_vector,
-#                                                                    n_push_pull)
-#             return self._commandMatrix
-#         else:
-#             self._commandMatrix, self._commandList = self._createCommandMatrixMix(command_amp_vector, self._dofIndex)
+
         return commandMatrix, commandList
 
     def _createCmatAndCmdList(self, command_amp_vector, dofIndex_vector, old_or_new):
@@ -323,31 +263,6 @@ class OpticalCalibration():
                 cmd[dofIndex_vector[i]] = command_matrix[i,i]
                 command_list.append(cmd)
         return command_matrix, command_list
-
-#     def _createCommandHistoryMatrix(self, dofIndex_vector, command_amp_vector, n_push_pull):
-#         '''
-#             create the command matrix using as lines
-#             the degrees of freedom chosen in rows
-# 
-#         args:
-#             rows = int
-#             command_amp_vector = vector of command amplitude
-#             n_push_pull = number of push pull
-# 
-#             returns:
-#                     command_matrix = command matrix for the dof
-#         '''
-#         vec_push_pull = np.array((1, -1))
-#         rows = 6
-#         columns = command_amp_vector.shape[0]*n_push_pull*vec_push_pull.shape[0]
-#         command_matrix = np.zeros((rows, columns))
-# 
-#         for k in range(n_push_pull):
-#             for i in range(command_amp_vector.shape[0]):
-#                 j = (command_amp_vector.shape[0]*vec_push_pull.shape[0])*k +2*i
-#                 command_matrix[dofIndex_vector[i],j] = command_amp_vector[i]*vec_push_pull[0]
-#                 command_matrix[dofIndex_vector[i],j+1] = command_amp_vector[i]*vec_push_pull[1]
-#         return command_matrix
 
     def _saveCommandAmplitudeAsFits(self, dove):
         fits_file_name = os.path.join(dove, 'CommandAmplitude.fits')
@@ -451,7 +366,8 @@ class OpticalCalibration():
             analyzed measurements
         '''
         if self._cube is None:
-            self._cube = self.createCube(self._tt)
+            self.createCube(self._tt)
+            self._cube = self.getCube()
         return self._cube
 
     def _createInteractionMatrixAndReconstructor(self, mask):
@@ -504,16 +420,6 @@ class OpticalCalibration():
         if self._rec is None:
             self._createInteractionMatrixAndReconstructor(mask)
         return self._rec
-
-#     def _saveIntMatAndRec(self, dove):
-#         """
-#         args:
-#             dove = path that indicates where to save the files
-#         """
-#         fits_file_name = os.path.join(dove, 'InteractionMatrix.fits')
-#         pyfits.writeto(fits_file_name, self._intMat, overwrite=True)
-#         fits_file_name = os.path.join(dove, 'Reconstructor.fits')
-#         pyfits.writeto(fits_file_name, self._rec, overwrite=True)
 
     def _saveMask(self, dove, mask):
         """

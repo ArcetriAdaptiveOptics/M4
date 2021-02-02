@@ -225,9 +225,6 @@ class OpticalAlignment():
         mm = np.ma.mask_or(img.mask, mask)
 
         new_image = np.ma.masked_array(img, mask=mm)
-        if  conf.simulated ==1:
-            new_image[np.ma.where(new_image<-0.0013)] = 0.00048
-            new_image[np.ma.where(new_image>0.0013)] = -0.00043
         coef, mat = zernike.zernikeFit(new_image, np.arange(10)+1)
         z = np.array([1, 2, 3, 6, 7])
         final_coef = coef[z]

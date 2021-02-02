@@ -1,6 +1,6 @@
 '''
 Authors
-  - C. Selmi: written in 2020
+  - C. Selmi: written in 2021
 '''
 import unittest
 import mock
@@ -16,6 +16,7 @@ class Test(unittest.TestCase):
     def tearDown(self):
         del self.opc
 
+    @unittest.skip('Funziona ma è lungo')
     def testName(self):
         self.opc.stop()
         self.opc.get_temperature_vector()

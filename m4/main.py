@@ -85,7 +85,7 @@ def ott_alignment_calibration(n_frames, commandAmpVector, nPushPull, old_or_new,
     #mask_index = 3 per il simulatore  e 0 per la mott
         return tt_tower
     else:
-        mat = a._cal._createCommandMatrix(0, commandAmpVector, nPushPull)
+        mat, cmdList = a._cal._createCommandMatrix(0, commandAmpVector, old_or_new)
         plt.clf()
         plt.imshow(mat, origin='lower')
         plt.colorbar()

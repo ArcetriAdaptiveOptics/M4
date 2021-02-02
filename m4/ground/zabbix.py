@@ -12,6 +12,7 @@ from pyzabbix import ZabbixMetric, ZabbixSender
 sys.path.insert(0,'/home/m4/git/M4')
 from m4.ground.opc_ua_controller import OpcUaController
 from m4.configuration.ott_parameters import OpcUaParameters
+opcUa = OpcUaController()
 
 
 def mainZabbix():
@@ -44,12 +45,10 @@ def _createZabbixAPI():
     return zapi
 
 def _read_temperature_from_OpcUa():
-    opcUa = OpcUaController()
     temperature_vector = opcUa.get_temperature_vector()
     return temperature_vector
 
 def _read_var_pos_from_OpcUa():
-    opcUa = OpcUaController()
     var_positions = opcUa.get_variables_positions()
     return var_positions
 
@@ -67,7 +66,6 @@ def _write_tempertaure(hostname, temperature_vector):
     return packet
 
 def _write_var_pos(hostname, var_pos):
-    opcUa = OpcUaController()
     zipped = zip(OpcUaParameters.zabbix_variables_name, var_pos)
     packet = []
     for name, value in zipped:

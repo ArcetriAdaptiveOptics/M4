@@ -46,7 +46,7 @@ class comm4d():
         """
 
         #if conf.simulated ==1:
-        if ott is not None:
+        if ott is not None and conf.simulated==1:
             ottIma = OttImages(ott)
             opd, mask = ottIma.ott_smap(show=show)
             masked_ima = np.ma.masked_array(opd.T, mask=np.invert(mask.astype(bool)).T)
