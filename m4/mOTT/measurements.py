@@ -40,16 +40,19 @@ def testCalib(commandAmpVector):
     return ttAmpVector
 
 def opticalMonitoring(n_images, delay):
+    opc = OpcUaController()
     store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
     save = tracking_number_folder.TtFolder(store_in_folder)
     dove, tt = save._createFolderToStoreMeasurements()
 
-    vect_list = []
+    zer_list = []
+    temp_list = []
     t0 = time.time()
     for i in range(n_images):
         ti = time.time()
         dt = ti -t0
         masked_ima = interf.acq4d(1, ott)
+        temp_vect = opc.get_temperature_vector()
         name = Timestamp.now() + '.fits'
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, masked_ima.data)
@@ -57,10 +60,13 @@ def opticalMonitoring(n_images, delay):
 
         coef, mat = zernike.zernikeFit(masked_ima, np.arange(10)+1)
         vect = np.append(dt, coef)
-        vect_list.append(vect)
+        zer_list.append(vect)
+        temp_list.append(temp_vect)
 
         fits_file_name = os.path.join(dove, 'zernike.fits')
-        pyfits.writeto(fits_file_name, np.array(vect_list), overwrite=True)
+        pyfits.writeto(fits_file_name, np.array(zer_list), overwrite=True)
+        fits_file_name = os.path.join(dove, 'temperature.fits')
+        pyfits.writeto(fits_file_name, np.array(temp_list), overwrite=True)
 
         time.sleep(delay)
     return tt

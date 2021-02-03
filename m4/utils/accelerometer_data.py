@@ -4,6 +4,12 @@ Authors
 '''
 
 import numpy as np
+import os
+import zmq
+import shutil
+import h5py
+from m4.configuration.config import fold_name
+from m4.configuration.ott_parameters import OpcUaParameters
 
 class AccData():
 
@@ -16,11 +22,30 @@ class AccData():
         """ Creates the path where to save measurement data"""
         pass
 
+    def acquireAccData(self, recording_seconds):
+        context = zmq.Context()
+        socket = context.socket(zmq.REQ)
+        socket.connect(OpcUaParameters.accelerometers_server)
+        socket.send("START %d" %recording_seconds)
+        socket.disconnect(OpcUaParameters.accelerometers_server)
+
+        list = os.listdir('/mnt/acc_data')
+        list.sort()
+        data = list[len(list)-1]
+        shutil.copy(os.path.join('/mnt/acc_data', data),
+                    os.path.join(fold_name.ACC_ROOT_FOLDER, data))
+    
+    def readAccData(self, h5_file_path):
+        hf = h5py.File(name, 'r')
+        hf.keys()
+        data = hf.get('Accelerometers')
+        return data
+
     def create_test_signal(self):
         T = 10
         n = int(T/self._dt)
         t = np.linspace(0, T, n)
-        freqSin = 30
+        freqSin = 2
         ampSin = 1
         vector = ampSin * np.sin(2*np.pi*freqSin*t)
 #         spe = np.fft.fftshift(np.fft.fft(vector, norm='ortho'))

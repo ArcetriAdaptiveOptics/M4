@@ -118,6 +118,7 @@ class OpcUaParameters():
     zabbix_hostname = 'M4OTT'
     zabbix_server = '192.168.22.22'
     zabbix_port = 10051
+    accelerometers_server = 'tcp://192.168.22.100:6660'
 
 class OtherParameters():
     ''' '''
