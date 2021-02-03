@@ -3,10 +3,10 @@ Authors
   - C. Selmi: written in 2020
 '''
 
-import numpy as np
-import os
-import zmq
 import shutil
+import os
+import numpy as np
+import zmq
 import h5py
 from m4.configuration.config import fold_name
 from m4.configuration.ott_parameters import OpcUaParameters
@@ -20,9 +20,20 @@ class AccData():
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
-        pass
+        return fold_name.ACC_ROOT_FOLDER
 
     def acquireAccData(self, recording_seconds):
+        '''
+        Parameters
+        ----------
+        recording_seconds: int
+            recording seconds for data acquisition
+
+        Returns
+        -------
+        h5_file_name: string
+            tracking number of measurement
+        '''
         context = zmq.Context()
         socket = context.socket(zmq.REQ)
         socket.connect(OpcUaParameters.accelerometers_server)
@@ -31,12 +42,25 @@ class AccData():
 
         list = os.listdir('/mnt/acc_data')
         list.sort()
-        data = list[len(list)-1]
-        shutil.copy(os.path.join('/mnt/acc_data', data),
-                    os.path.join(fold_name.ACC_ROOT_FOLDER, data))
-    
-    def readAccData(self, h5_file_path):
-        hf = h5py.File(name, 'r')
+        h5_file_name = list[len(list)-1]
+        final_destination = os.path.join(self._storageFolder(), h5_file_name)
+        shutil.copy(os.path.join('/mnt/acc_data', h5_file_name),
+                    final_destination)
+        return h5_file_name
+
+    def readAccData(self, h5_file_name):
+        '''
+        Parameters
+        ----------
+        h5_file_name: string
+            tracking number of measurement
+
+        Returns
+        -------
+        data:
+        '''
+        h5_file_path = os.path.join(self._storageFolder(), h5_file_name)
+        hf = h5py.File(h5_file_path, 'r')
         hf.keys()
         data = hf.get('Accelerometers')
         return data
@@ -93,7 +117,7 @@ class AccData():
                 matrix containing the signal projections
         Returns
         -------
-            spe_list: list 
+            spe_list: list
                     list containing the spectrum of vectors composing
                     the matrix z
             freq_list: list

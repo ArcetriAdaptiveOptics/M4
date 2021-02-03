@@ -81,7 +81,9 @@ setup(name=NAME,
                         "skimage",
                         "IPython",
                         "opcua",
-                        "mock"
+                        "mock",
+                        "zmq",
+                        "shutil"
                         ],
       test_suite='test',
       cmdclass={'upload': UploadCommand, },
