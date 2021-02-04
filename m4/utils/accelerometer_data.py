@@ -8,132 +8,149 @@ import os
 import numpy as np
 import zmq
 import h5py
+import time
 from m4.configuration.config import fold_name
 from m4.configuration.ott_parameters import OpcUaParameters
+from matplotlib import pyplot as plt
+from m4.ground.timestamp import Timestamp
 
-class AccData():
 
-    def __init__(self):
-        """The constructor """
-        self._dt = 1e-3
+def acquire_acc_data(recording_seconds=5):
+    '''
+    Parameters
+    ----------
+    recording_seconds: int
+        recording seconds for data acquisition
 
-    @staticmethod
-    def _storageFolder():
-        """ Creates the path where to save measurement data"""
-        return fold_name.ACC_ROOT_FOLDER
+    Returns
+    -------
+    h5_file_name: string
+        tracking number of measurement
+    '''
+    context = zmq.Context()
+    socket = context.socket(zmq.REQ)
+    socket.connect(OpcUaParameters.accelerometers_server)
+    socket.send_string("START %d" %recording_seconds)
+    socket.disconnect(OpcUaParameters.accelerometers_server)
 
-    def acquireAccData(self, recording_seconds):
-        '''
-        Parameters
-        ----------
-        recording_seconds: int
-            recording seconds for data acquisition
+    list = os.listdir(OpcUaParameters.accelerometers_data_folder)
+    list.sort()
+    h5_file_name = list[len(list)-1]
+    tt = Timestamp.now()
+    name = tt + '.h5'
+    final_destination = os.path.join(fold_name.ACC_ROOT_FOLDER, name)
+    shutil.copy(os.path.join(OpcUaParameters.accelerometers_data_folder, h5_file_name),
+                final_destination)
+    return name
 
-        Returns
-        -------
-        h5_file_name: string
-            tracking number of measurement
-        '''
-        context = zmq.Context()
-        socket = context.socket(zmq.REQ)
-        socket.connect(OpcUaParameters.accelerometers_server)
-        socket.send("START %d" %recording_seconds)
-        socket.disconnect(OpcUaParameters.accelerometers_server)
+def read_acc_data(name):
+    '''
+    Parameters
+    ----------
+    h5_file_name: string
+        tracking number of measurement
 
-        list = os.listdir('/mnt/acc_data')
-        list.sort()
-        h5_file_name = list[len(list)-1]
-        final_destination = os.path.join(self._storageFolder(), h5_file_name)
-        shutil.copy(os.path.join('/mnt/acc_data', h5_file_name),
-                    final_destination)
-        return h5_file_name
+    Returns
+    -------
+    data:
+    '''
+    h5_file_path = os.path.join(fold_name.ACC_ROOT_FOLDER, name)
+    hf = h5py.File(h5_file_path, 'r')
+    hf.keys()
+    data = hf.get('Accelerometers')
+    return data
 
-    def readAccData(self, h5_file_name):
-        '''
-        Parameters
-        ----------
-        h5_file_name: string
-            tracking number of measurement
-
-        Returns
-        -------
-        data:
-        '''
-        h5_file_path = os.path.join(self._storageFolder(), h5_file_name)
-        hf = h5py.File(h5_file_path, 'r')
-        hf.keys()
-        data = hf.get('Accelerometers')
-        return data
-
-    def create_test_signal(self):
-        T = 10
-        n = int(T/self._dt)
-        t = np.linspace(0, T, n)
-        freqSin = 2
-        ampSin = 1
-        vector = ampSin * np.sin(2*np.pi*freqSin*t)
+def _create_test_signal(self):
+    T = 10
+    n = int(T/self._dt)
+    t = np.linspace(0, T, n)
+    freqSin = 2
+    ampSin = 1
+    vector = ampSin * np.sin(2*np.pi*freqSin*t)
 #         spe = np.fft.fftshift(np.fft.fft(vector, norm='ortho'))
 #         freq = np.fft.fftshift(np.fft.fftfreq(spe.size, d=dt))
-        return vector, t
+    return vector, t
 
-    def create_test_vector_sign(self, vector):
-        vv = np.column_stack((vector, vector))
-        vv_c = np.column_stack((vv, vector))
-        return vv_c
+def _create_test_vector_sign(vector):
+    vv = np.column_stack((vector, vector))
+    vv_c = np.column_stack((vv, vector))
+    return vv_c
 
-    def data_projection(self, vv_c):
-        '''
-        Parameters
-        ----------
-            vv_c: numpy array
-                    matrix containing the signal (1000x3)
-        Returns
-        -------
-            z: numpy array
-                matrix containing the signal projections
-        '''
-        c30 = np.cos(30/180. * np.pi)
-        c60= np.cos(60/180. * np.pi)
+def data_projection(vv_c):
+    '''
+    Parameters
+    ----------
+        vv_c: numpy array
+                matrix containing the signal (1000x3)
+    Returns
+    -------
+        z: numpy array
+            matrix containing the signal projections
+    '''
+    c30 = np.cos(30/180. * np.pi)
+    c60 = np.cos(60/180. * np.pi)
 
-        a = np.ones(3)
-        b =np.array([0, c30,-c30])
-        c = np.array([-1, c60, c60])
+    a = np.ones(3)
+    b = np.array([0, c30, -c30])
+    c = np.array([-1, c60, c60])
 
-        w = np.column_stack((a,b))
-        w_c = np.column_stack((w,c)) #a,b,c sono colonne
+    w = np.column_stack((a, b))
+    w_c = np.column_stack((w, c)) #a,b,c sono colonne
 
-        w1 = np.linalg.pinv(w_c.T)
-        z = np.dot(w1, vv_c.T)
-        return z
+    w1 = np.linalg.pinv(w_c.T)
+    z = np.dot(w1, vv_c.T)
+    return z
 #clf(); plot(t, vec, '--', label='signal'); plot(t, z[0,:], label='proiezione1');
 #plot(t, z[1,:], label='proizione2'); plot(t, z[2,:], label='proiezione3');
 #plt.xlabel('Time[s]'); plt.legend()
 
-    def power_spectrum(self, z):
-        '''
-        Parameters
-        ----------
-            z: numpy array
-                matrix containing the signal projections
-        Returns
-        -------
-            spe_list: list
-                    list containing the spectrum of vectors composing
-                    the matrix z
-            freq_list: list
-                    list containing the frequencies of vectors composing
-                    the matrix z
-        '''
-        spe_list = []
-        freq_list = []
-        for i in range(z.shape[0]):
-            vector = z[i, :]
-            spe = np.fft.fftshift(np.fft.rfft(vector, norm='ortho'))
-            freq = np.fft.fftshift(np.fft.rfftfreq(vector.size, d=self._dt))
-            spe_list.append(spe)
-            freq_list.append(freq)
-        return spe_list, freq_list
+def power_spectrum(vec):
+    '''
+    Parameters
+    ----------
+        vec: numpy array
+            matrix containing the signal projections
+            or signals to analyze
+    Returns
+    -------
+        spe_list: list
+                list containing the spectrum of vectors composing
+                the matrix z
+        freq_list: list
+                list containing the frequencies of vectors composing
+                the matrix z
+    '''
+    dt = OpcUaParameters.accelerometers_dt
+    z = vec.T
+#         #spe = np.fft.fftshift(np.fft.rfft(vector, norm='ortho'))
+#         #freq = np.fft.fftshift(np.fft.rfftfreq(vector.size, d=self._dt))
+    spe = np.fft.rfft(z, axis=1, norm='ortho')
+    freq = np.fft.rfftfreq(z.shape[1], d=1./dt)
+    return spe, freq
 #clf(); plot(freq[0], np.abs(spe[0]), label='proiezione1');
 #plot(freq[1], np.abs(spe[1]), label='proiezione2');
 #plot(freq[2], np.abs(spe[2]), label='proiezione3'); plt.xlabel('Freq[Hz]');
 #plt.ylabel('FFT|sig|'); plt.legend()
+
+
+def plot_power_spectrum(spe, freq):
+    plt.figure()
+    label_list = ['acc05', 'acc06', 'acc07']
+    for i in range(spe.shape[0]):
+        plt.plot(freq, np.abs(spe[i,:]), '-o', label=label_list[i])
+    plt.xlabel('Freq[Hz]')
+    plt.ylabel('FFT|sig|')
+    plt.show()
+    plt.legend()
+
+
+if __name__ == '__main__':
+    tt = acquire_acc_data()
+    data = read_acc_data(tt)
+    vec = data[:, 5:8]
+    spe, freq = power_spectrum(vec)
+    fh = plot_power_spectrum(spe, freq)
+    time.sleep(5)
+    plt.close(fh)
+
+
