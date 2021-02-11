@@ -22,15 +22,31 @@ a = Alignment(ott)
 opc = OpcUaController()
 
 
-def testCalib(commandAmpVector):
+def testCalib(commandAmpVector, n_repetition=15):
+    '''
+    Parameters
+    ----------
+    commandAmpVector: numpy array
+        vector containing the movement values
+        of the 5 degrees of freedom
+    n_repetition: int
+        number of calibration acquisition and analysis to repeat
+
+    Returns
+    ------
+    ttAmpVector: numpy array
+        vector of tracking numbers strings of measurements
+    '''
     nPushPull = 4
     n_frames = 5
+    old_or_new = 1 # not mixed
     tt_list = []
     file_name = os.path.join(fold_name.CALIBRATION_ROOT_FOLDER,
                              'TtSleepCalib.txt')
     file = open(file_name, 'w+')
-    for i in range(15):
-        tt_tower = a.ott_calibration(n_frames, commandAmpVector, nPushPull, 0)
+    for i in range(n_repetition):
+        tt_tower = a.ott_calibration(n_frames, commandAmpVector,
+                                     nPushPull, old_or_new, 0)
         tt_list.append(tt_tower)
         print(tt_tower)
         file.write('%s' % tt_tower)
@@ -42,6 +58,17 @@ def testCalib(commandAmpVector):
 
 
 def opticalMonitoring(n_images, delay):
+    '''
+    Parameters
+    ----------
+    n_images: int
+        number of images to acquire
+
+    Returns
+    ------
+    tt: string
+        tracking number of measurements
+    '''
     opc = OpcUaController()
     store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
     save = tracking_number_folder.TtFolder(store_in_folder)
@@ -75,6 +102,21 @@ def opticalMonitoring(n_images, delay):
 
 
 def actsRepeatability(n_meas, piston_value, n_frames):
+    '''
+    Parameters
+    ----------
+    n_meas: int
+        number of measurement for the test
+    piston_value: float
+        relative value for the parabola piston
+    n_frames: int
+        number of frames for the acquisition measurement
+
+    Returns
+    ------
+    tt: string
+        tracking number of measurements
+    '''
     store_in_folder = fold_name.REPEATABILITY_ROOT_FOLDER
     save = tracking_number_folder.TtFolder(store_in_folder)
     dove, tt = save._createFolderToStoreMeasurements()
@@ -89,22 +131,28 @@ def actsRepeatability(n_meas, piston_value, n_frames):
     for i in range(n_meas):
         ott.parab(pos_par)
         ott.refflat(pos_rm)
-        par0 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
-        rm0 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
+        par0 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2,
+                         OpcUaParameters.PAR3)
+        rm0 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2,
+                        OpcUaParameters.RM3)
         masked_ima0 = interf.acq4d(n_frames, ott)
 
         ott.parab(pos_par + piston)
         # ott.refflat(pos_rm + piston)
 
-        par1 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
-        rm1 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
+        par1 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2,
+                         OpcUaParameters.PAR3)
+        rm1 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2,
+                        OpcUaParameters.RM3)
         masked_ima1 = interf.acq4d(n_frames, ott)
 
         ott.parab(pos_par - piston)
         # ott.refflat(pos_rm - piston)
 
-        par2 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
-        rm2 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
+        par2 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2,
+                         OpcUaParameters.PAR3)
+        rm2 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2,
+                        OpcUaParameters.RM3)
         masked_ima2 = interf.acq4d(n_frames, ott)
 
         par = np.array([par0, par1, par2])
@@ -117,17 +165,36 @@ def actsRepeatability(n_meas, piston_value, n_frames):
 
         par_list.append(par)
         rm_list.append(rm)
-        pyfits.writeto(os.path.join(dove, 'par.fits'), np.array(par_list), overwrite=True)
-        pyfits.writeto(os.path.join(dove, 'rm.fits'), np.array(rm_list), overwrite=True)
-        pyfits.writeto(os.path.join(dove, 'images.fits'), cube.data, overwrite=True)
-        pyfits.append(os.path.join(dove, 'images.fits'), cube.mask.astype(int), overwrite=True)
+        pyfits.writeto(os.path.join(dove, 'par.fits'),
+                       np.array(par_list), overwrite=True)
+        pyfits.writeto(os.path.join(dove, 'rm.fits'),
+                       np.array(rm_list), overwrite=True)
+        pyfits.writeto(os.path.join(dove, 'images.fits'),
+                       cube.data, overwrite=True)
+        pyfits.append(os.path.join(dove, 'images.fits'),
+                      cube.mask.astype(int), overwrite=True)
 
     ott.parab(pos_par)
     ott.refflat(pos_rm)
     return tt
 
 
-def scanAstigmComa(stepamp, nstep, nframes=10):  # by RB 20210117. 
+def scanAstigmComa(stepamp, nstep, nframes=10):  # by RB 20210117.
+    '''
+    Parameters
+    ----------
+    stepamp: int
+        amplitude for tip and tilt
+    nstep: int
+        number of step measurements
+    nframes: int
+        number of interferometr's frames
+
+    Returns
+    ------
+    tt: string
+        tracking number of measurements
+    '''
     # goal: to measure coma and astigmatism at different PAR position, spanning 500 arcsec
     store_in_folder = fold_name.CALIBRATION_ROOT_FOLDER
     save = tracking_number_folder.TtFolder(store_in_folder)
@@ -157,7 +224,10 @@ def scanAstigmComa(stepamp, nstep, nframes=10):  # by RB 20210117.
                 rm1[k] += rmmove
                 ott.refflat(rm1)
                 print('Moving RM[%d] by %d' % (k, rmmove))
-                par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1, np.array([0, 1]), np.array([3, 4]), tt_for_align)
+                par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1,
+                                                  np.array([0, 1]),
+                                                  np.array([3, 4]),
+                                                  tt_for_align)
                 par2 = ott.parab()
                 rm2 = ott.refflat()
                 masked_ima = interf.acq4d(nframes, 0)
@@ -172,7 +242,8 @@ def scanAstigmComa(stepamp, nstep, nframes=10):  # by RB 20210117.
                 rmpos.append(rm2)
 
                 fits_file_name = os.path.join(dove, 'zernike.fits')
-                pyfits.writeto(fits_file_name, np.array(zern_vect), overwrite=True)
+                pyfits.writeto(fits_file_name, np.array(zern_vect),
+                               overwrite=True)
                 fits_file_name = os.path.join(dove, 'PAR_positions.fits')
                 pyfits.writeto(fits_file_name, np.array(parpos), overwrite=True)
                 fits_file_name = os.path.join(dove, 'RM_positions.fits')
@@ -191,6 +262,23 @@ def _readActs(n1, n2, n3):
 
 
 def parPistonTest(piston_value, deltapos_filepath, amp, tt_for_align):
+    '''
+    Parameters
+    ----------
+    piston_value: int
+        relative value for the parabola piston
+    deltapos_filepath: string
+        file path for par and rm delta positions
+    amp: float
+        tip tilt amplitude for par and rm
+    tt_for_align: string
+        tracking number for alignment
+
+    Returns
+    -------
+    tt: string
+        tracking number of measurements
+    '''
         # '/home/m4/pardeltapos.fits'
     hduList = pyfits.open(deltapos_filepath)
     deltapos = hduList[0].data
@@ -220,7 +308,10 @@ def parPistonTest(piston_value, deltapos_filepath, amp, tt_for_align):
             rm_new[4] += rmcoeff * dy[i]
             ott.parab(par_new)
             ott.refflat(rm_new)
-            par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1, np.array([0, 1]), np.array([3, 4]), tt_for_align)
+            par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1,
+                                              np.array([0, 1]),
+                                              np.array([3, 4]),
+                                              tt_for_align)
 
         par = ott.parab()
         rm = ott.refflat()
@@ -248,6 +339,25 @@ def parPistonTest(piston_value, deltapos_filepath, amp, tt_for_align):
 
 
 def parTiltTest(act, val_vec):
+    '''
+    Parameters
+    ----------
+    act: int
+        number of the actuator to move
+    val_vec: int
+        value to assignee to actuator
+
+    Returns
+    -------
+    quad: numpy array
+        vector of rss
+    coef: numpy array
+        vector of zernike coefficients of image-difference
+    image0: numpy masked array
+        start image
+    delta_list: list
+        different from start image
+    '''
     image0 = interf.acq4d(10, 0)
     delta_list = []
     sum_list = []
@@ -266,9 +376,21 @@ def parTiltTest(act, val_vec):
     return quad, np.array(coef_list), image0, delta_list
 
 
-def mappaturaPar(shift, n_iter, tt_for_align):
+def mappingPar(shift, n_iter, tt_for_align):
     '''
-    shift = np.array([shift_par, shift_rm, rot_angle])
+    Parameters
+    ----------
+    shift: numpy array
+            np.array([shift_par, shift_rm, rot_angle])
+    n_iter: int
+            number of iterations
+    tt_for_align: string
+        tracking number for alignment
+
+    Returns
+    -------
+    tt: string
+        tracking number of measurements
     '''
     n_frames_alignment = 1
     par0 = ott.parab()
@@ -278,7 +400,7 @@ def mappaturaPar(shift, n_iter, tt_for_align):
     delta_object = []
     delta_object2 = []
     delta_object3 = []
-    
+
     save = tracking_number_folder.TtFolder(fold_name.MAPPING_TEST_ROOT_FOLDER)
     dove, tt = save._createFolderToStoreMeasurements()
     if shift[2] != 0:
@@ -295,7 +417,6 @@ def mappaturaPar(shift, n_iter, tt_for_align):
     file = open(os.path.join(dove, 'MappingInfo.txt'), "a")
     file.write('Mapping object: ' + object_to_move + '\n')
     file.close()
-    # n_iter = 20
     slide0 = ott.slide()
     rslide0 = ott.rslide()
     angle0 = ott.angle()
@@ -313,7 +434,7 @@ def mappaturaPar(shift, n_iter, tt_for_align):
 #                 raise Exception('HOMING! RM WIN')
         if shift[2] != 0:
             angle = ott.angle(angle0 + ((i + 1) * shift[2]))
-            
+
         time.sleep(5)
         par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1,
                                           np.array([0, 1]), np.array([3, 4]),
@@ -328,7 +449,7 @@ def mappaturaPar(shift, n_iter, tt_for_align):
         delta_object.append(slide - slide0)
         delta_object2.append(rslide - rslide0)
         delta_object3.append(angle - angle0)
-        
+
         fits_file_name = os.path.join(dove, 'delta_slide.fits')
         pyfits.writeto(fits_file_name, np.array(delta_object), overwrite=True)
         fits_file_name = os.path.join(dove, 'delta_rslide.fits')
@@ -339,16 +460,37 @@ def mappaturaPar(shift, n_iter, tt_for_align):
         pyfits.writeto(fits_file_name, np.array(delta_rm), overwrite=True)
         fits_file_name = os.path.join(dove, 'delta_ANGLE_positions.fits')
         pyfits.writeto(fits_file_name, np.array(delta_object3), overwrite=True)
-    
-    return tt     
 
-def align_test(ttr, n_images, perturbation_vec, pre= False):
+    return tt
 
-#    Homing the system
-    main.ott_alignment(ttr, n_images, 1, np.array([0,1]), np.array([3,4])) 
+def alignTest(tt, n_images, perturbation_vec, pre=False):
+    '''
+    Parameters
+    ---------
+    tt: string
+        tracking number for the alignment
+    n_images: int
+        number of frames for the interferometer
+    perturbation_vec: numpy array
+        np.array([par_focus, par_tilt, par_tip])
+
+    Other Parameters
+    ----------------
+    pre: boolean
+        if True a pre-tiptilt alignment before the 5 dof one
+
+    Returns
+    -------
+    coeff_matrix: numpy array
+        zernike coefficients matrix for all the images
+    tt: string
+        tracking number of measurements
+    '''
+    # Homing the system
+    a.ott_alignment(n_images, 1, np.array([0,1]), np.array([3,4]), tt)
     par0 = ott.parab()
     rm0 = ott.refflat()
-    #    Set perturbation from perturbation_vec
+    # Set perturbation from perturbation_vec
     focus = perturbation_vec[0]
     tip = perturbation_vec[1]
     tilt = perturbation_vec[2]
@@ -359,10 +501,10 @@ def align_test(ttr, n_images, perturbation_vec, pre= False):
     rm1 = np.copy(rm0)
     rm1[3] += -tip*2.05
     rm1[4] += -tilt*2.05
-#    Initialization
-    zern_vec = np.arange(1, 12, 1)   
+    # Initialization
+    zern_vec = np.arange(1, 12, 1)
     coeff = []
-#    Start image, perturbation and perturbed image
+    # Start image, perturbation and perturbed image
     image = interf.acq4d(n_images)
     pippo = zernike.zernikeFit(image, zern_vec)
     coeff.append(pippo[0])
@@ -371,23 +513,24 @@ def align_test(ttr, n_images, perturbation_vec, pre= False):
     image = interf.acq4d(n_images)
     pippo = zernike.zernikeFit(image, zern_vec)
     coeff.append(pippo[0])
-#    TipTilt pre-alignment
+    # TipTilt pre-alignment
     if pre is True:
-        main.ott_alignment(ttr, n_images, 1, np.array([0,1]), np.array([3,4])) 
+        a.ott_alignment(n_images, 1, np.array([0,1]), np.array([3,4]), tt)
         image = interf.acq4d(2)
         pippo = zernike.zernikeFit(image, zern_vec)
         coeff.append(pippo[0])
-#    First alignment
-    main.ott_alignment(ttr, n_images, 1, np.array([0,1,2,3,4]), np.array([0,1,2,3,4]))
+    # First alignment
+    a.ott_alignment(n_images, 1, np.array([0,1,2,3,4]),
+                    np.array([0,1,2,3,4]), tt)
     image = interf.acq4d(2)
     pippo = zernike.zernikeFit(image, zern_vec)
     coeff.append(pippo[0])
-#    Second alignment
-    main.ott_alignment(ttr, n_images, 1, np.array([0,1]), np.array([3,4])) 
+    # Second alignment
+    a.ott_alignment(n_images, 1, np.array([0,1]), np.array([3,4]), tt)
     image = interf.acq4d(n_images)
     pippo = zernike.zernikeFit(image, zern_vec)
     coeff.append(pippo[0])
-#    Check image
+    # Check image
     image = interf.acq4d(n_images)
     pippo = zernike.zernikeFit(image, zern_vec)
     coeff.append(pippo[0])
@@ -395,7 +538,8 @@ def align_test(ttr, n_images, perturbation_vec, pre= False):
     coeff_matrix = np.array(coeff)*1e9
     parend = ott.parab()
 
-    store_in_folder = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER, 'Alignment')
+    store_in_folder = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER,
+                                   'Alignment')
     save = tracking_number_folder.TtFolder(store_in_folder)
     dove, tt = save._createFolderToStoreMeasurements()
     fits_file_name = os.path.join(dove, 'zernike.fits')
@@ -404,38 +548,3 @@ def align_test(ttr, n_images, perturbation_vec, pre= False):
     print(parend-par0)
     return coeff_matrix, tt
 
-def align_plot(coeff_matrix, tt):
-    
-    x_old = np.arange(coeff_matrix.shape[0])
-    if coeff_matrix.shape[0] == 5:
-        x = ['Start_image', 'Perturbed_image', '5_param_alignment', 'TipTilt_alignment', 'Check_image']
-    elif coeff_matrix.shape[0] == 6:
-        x = ['Start_image', 'Perturbed_image', 'TipTilt pre-alignment' ,'5_param_alignment', 'TipTilt_alignment', 'Check_image']
-    
-    plt.figure(figsize=(16,10))
-    plt.subplot(4,1,1)
-    plt.plot(x_old,coeff_matrix[:,1:3],'-o')
-    plt.grid()
-    plt.xticks(x_old,x,rotation=0)
-    plt.ylabel('TipTilt rms [nm]')
-    plt.subplot(4,1,2)
-    plt.plot(x_old,coeff_matrix[:,3],'-ok')
-    plt.grid()
-    plt.xticks(x_old,x,rotation=0)
-    plt.ylabel('Focus rms [nm]')
-    plt.subplot(4,1,3)
-    plt.plot(x_old,coeff_matrix[:,6:8],'-o')
-    plt.grid()
-    plt.xticks(x_old,x,rotation=0)
-    plt.ylabel('Coma rms [nm]')
-    plt.subplot(4,1,4)
-    plt.plot(x_old,coeff_matrix[:,4:6]-coeff_matrix[0,4:6],'-o')
-    plt.grid()
-    plt.xticks(x_old,x,rotation=0)
-    plt.ylabel('Ast rms a.u. [nm]')
-    
-    plt.suptitle(tt + ' Alignment', fontweight='bold',fontsize=20)
-    return
-
-       
-    
