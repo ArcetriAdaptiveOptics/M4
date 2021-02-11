@@ -123,7 +123,6 @@ def scanAstigComa(tn):
         matrix containing parabola position
     rm_pos: numpy array
         matrix containing reference flat position
-        
     '''
     dove = os.path.join(fold_name.CALIBRATION_ROOT_FOLDER, tn)
     name = os.path.join(dove, 'zernike.fits')
@@ -202,7 +201,7 @@ def alignPlot(coeff_matrix, tt):
     plt.xticks(x_old,x, rotation=0)
     plt.ylabel('Ast rms a.u. [nm]')
 
-    plt.suptitle(tt + 'Alignment', fontweight='bold', fontsize=20)
+    plt.suptitle(tt + ' Alignment', fontweight='bold', fontsize=20)
     return
 
 
