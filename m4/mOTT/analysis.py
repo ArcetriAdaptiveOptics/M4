@@ -112,6 +112,40 @@ def parTiltTest(self):
     pass
 
 
+def align_plot(coeff_matrix, tt):
+    
+    x_old = np.arange(coeff_matrix.shape[0])
+    if coeff_matrix.shape[0] == 5:
+        x = ['Start_image', 'Perturbed_image', '5_param_alignment', 'TipTilt_alignment', 'Check_image']
+    elif coeff_matrix.shape[0] == 6:
+        x = ['Start_image', 'Perturbed_image', 'TipTilt pre-alignment' ,'5_param_alignment', 'TipTilt_alignment', 'Check_image']
+    
+    plt.figure(figsize=(16,10))
+    plt.subplot(4,1,1)
+    plt.plot(x_old,coeff_matrix[:,1:3],'-o')
+    plt.grid()
+    plt.xticks(x_old,x,rotation=0)
+    plt.ylabel('TipTilt rms [nm]')
+    plt.subplot(4,1,2)
+    plt.plot(x_old,coeff_matrix[:,3],'-ok')
+    plt.grid()
+    plt.xticks(x_old,x,rotation=0)
+    plt.ylabel('Focus rms [nm]')
+    plt.subplot(4,1,3)
+    plt.plot(x_old,coeff_matrix[:,6:8],'-o')
+    plt.grid()
+    plt.xticks(x_old,x,rotation=0)
+    plt.ylabel('Coma rms [nm]')
+    plt.subplot(4,1,4)
+    plt.plot(x_old,coeff_matrix[:,4:6]-coeff_matrix[0,4:6],'-o')
+    plt.grid()
+    plt.xticks(x_old,x,rotation=0)
+    plt.ylabel('Ast rms a.u. [nm]')
+    
+    plt.suptitle(tt + ' Alignment', fontweight='bold',fontsize=20)
+    return
+
+
 ###ALTRO###
 def pippo(tt):
     from m4.utils.optical_alignment import OpticalAlignment

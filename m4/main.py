@@ -40,7 +40,6 @@ from m4.configuration import start
 from m4.configuration.ott_parameters import OttParameters, OpcUaParameters
 
 
-
 def start_log(logging_level):
     """
     Parameters

@@ -21,6 +21,7 @@ ott, interf = start.create_ott()
 a = Alignment(ott)
 opc = OpcUaController()
 
+
 def testCalib(commandAmpVector):
     nPushPull = 4
     n_frames = 5
@@ -32,12 +33,13 @@ def testCalib(commandAmpVector):
         tt_tower = a.ott_calibration(n_frames, commandAmpVector, nPushPull, 0)
         tt_list.append(tt_tower)
         print(tt_tower)
-        file.write('%s' %tt_tower)
+        file.write('%s' % tt_tower)
     file.close()
 
     tt_list.append(commandAmpVector)
     ttAmpVector = np.array(tt_list)
     return ttAmpVector
+
 
 def opticalMonitoring(n_images, delay):
     opc = OpcUaController()
@@ -50,7 +52,7 @@ def opticalMonitoring(n_images, delay):
     t0 = time.time()
     for i in range(n_images):
         ti = time.time()
-        dt = ti -t0
+        dt = ti - t0
         masked_ima = interf.acq4d(1, ott)
         temp_vect = opc.get_temperature_vector()
         name = Timestamp.now() + '.fits'
@@ -58,7 +60,7 @@ def opticalMonitoring(n_images, delay):
         pyfits.writeto(fits_file_name, masked_ima.data)
         pyfits.append(fits_file_name, masked_ima.mask.astype(int))
 
-        coef, mat = zernike.zernikeFit(masked_ima, np.arange(10)+1)
+        coef, mat = zernike.zernikeFit(masked_ima, np.arange(10) + 1)
         vect = np.append(dt, coef)
         zer_list.append(vect)
         temp_list.append(temp_vect)
@@ -70,6 +72,7 @@ def opticalMonitoring(n_images, delay):
 
         time.sleep(delay)
     return tt
+
 
 def actsRepeatability(n_meas, piston_value, n_frames):
     store_in_folder = fold_name.REPEATABILITY_ROOT_FOLDER
@@ -91,14 +94,14 @@ def actsRepeatability(n_meas, piston_value, n_frames):
         masked_ima0 = interf.acq4d(n_frames, ott)
 
         ott.parab(pos_par + piston)
-        #ott.refflat(pos_rm + piston)
+        # ott.refflat(pos_rm + piston)
 
         par1 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
         rm1 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
         masked_ima1 = interf.acq4d(n_frames, ott)
 
         ott.parab(pos_par - piston)
-        #ott.refflat(pos_rm - piston)
+        # ott.refflat(pos_rm - piston)
 
         par2 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3)
         rm2 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3)
@@ -123,8 +126,9 @@ def actsRepeatability(n_meas, piston_value, n_frames):
     ott.refflat(pos_rm)
     return tt
 
-def scanAstigmComa(stepamp, nstep, nframes=10): #by RB 20210117. 
-    #goal: to measure coma and astigmatism at different PAR position, spanning 500 arcsec
+
+def scanAstigmComa(stepamp, nstep, nframes=10):  # by RB 20210117. 
+    # goal: to measure coma and astigmatism at different PAR position, spanning 500 arcsec
     store_in_folder = fold_name.CALIBRATION_ROOT_FOLDER
     save = tracking_number_folder.TtFolder(store_in_folder)
     dove, tt = save._createFolderToStoreMeasurements()
@@ -144,16 +148,16 @@ def scanAstigmComa(stepamp, nstep, nframes=10): #by RB 20210117.
 
             for i in range(nstep):
                 par1 = par0.copy()
-                parmove = stepamp*i*v
+                parmove = stepamp * i * v
                 par1[k] += parmove
-                print('Moving PAR[%d] by %d' %(k, parmove))
+                print('Moving PAR[%d] by %d' % (k, parmove))
                 ott.parab(par1)
                 rm1 = rm0.copy()
-                rmmove = stepamp*i*v*par2rm
+                rmmove = stepamp * i * v * par2rm
                 rm1[k] += rmmove
                 ott.refflat(rm1)
-                print('Moving RM[%d] by %d' %(k, rmmove))
-                par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1, np.array([0,1]), np.array([3, 4]), tt_for_align)
+                print('Moving RM[%d] by %d' % (k, rmmove))
+                par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1, np.array([0, 1]), np.array([3, 4]), tt_for_align)
                 par2 = ott.parab()
                 rm2 = ott.refflat()
                 masked_ima = interf.acq4d(nframes, 0)
@@ -162,7 +166,7 @@ def scanAstigmComa(stepamp, nstep, nframes=10): #by RB 20210117.
                 pyfits.writeto(fits_file_name, masked_ima.data)
                 pyfits.append(fits_file_name, masked_ima.mask.astype(int))
 
-                coef, mat = zernike.zernikeFit(masked_ima, np.arange(10)+1)
+                coef, mat = zernike.zernikeFit(masked_ima, np.arange(10) + 1)
                 zern_vect.append(coef)
                 parpos.append(par2)
                 rmpos.append(rm2)
@@ -174,16 +178,17 @@ def scanAstigmComa(stepamp, nstep, nframes=10): #by RB 20210117.
                 fits_file_name = os.path.join(dove, 'RM_positions.fits')
                 pyfits.writeto(fits_file_name, np.array(rmpos), overwrite=True)
 
-
     ott.parab(par0)
     ott.refflat(rm0)
     return tt
+
 
 def _readActs(n1, n2, n3):
     act1 = opc.get_position(n1)
     act2 = opc.get_position(n2)
     act3 = opc.get_position(n3)
     return np.array([act1, act2, act3])
+
 
 def parPistonTest(piston_value, deltapos_filepath, amp, tt_for_align):
         # '/home/m4/pardeltapos.fits'
@@ -206,16 +211,16 @@ def parPistonTest(piston_value, deltapos_filepath, amp, tt_for_align):
         if i == 0:
             print('Iteration 0')
         else:
-            print('Iteration %d' %i)
+            print('Iteration %d' % i)
             par_new = par0.copy()
             rm_new = rm0.copy()
             par_new[3] += dx[i]
-            rm_new[3] += rmcoeff*dx[i]
+            rm_new[3] += rmcoeff * dx[i]
             par_new[4] += dy[i]
-            rm_new[4] += rmcoeff*dy[i]
+            rm_new[4] += rmcoeff * dy[i]
             ott.parab(par_new)
             ott.refflat(rm_new)
-            par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1, np.array([0,1]), np.array([3, 4]), tt_for_align)
+            par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1, np.array([0, 1]), np.array([3, 4]), tt_for_align)
 
         par = ott.parab()
         rm = ott.refflat()
@@ -228,9 +233,9 @@ def parPistonTest(piston_value, deltapos_filepath, amp, tt_for_align):
         par[2] -= piston_value
         ott.parab(par)
         diff = masked_ima1 - masked_ima0
-        name = 'diff_%04d.fits' %i
+        name = 'diff_%04d.fits' % i
         interf.save_phasemap(dove, name, diff)
-        coef, mat = zernike.zernikeFit(diff, np.arange(10)+1)
+        coef, mat = zernike.zernikeFit(diff, np.arange(10) + 1)
         coef_list.append(coef)
 
         fits_file_name = os.path.join(dove, 'Zernike.fits')
@@ -241,8 +246,9 @@ def parPistonTest(piston_value, deltapos_filepath, amp, tt_for_align):
         pyfits.writeto(fits_file_name, np.array(rm_list), overwrite=True)
     return tt
 
+
 def parTiltTest(act, val_vec):
-    image0 =interf.acq4d(10, 0)
+    image0 = interf.acq4d(10, 0)
     delta_list = []
     sum_list = []
     coef_list = []
@@ -251,13 +257,14 @@ def parTiltTest(act, val_vec):
         image = interf.acq4d(10, 0)
         delta = image - image0
         delta_list.append(delta)
-        coef, mat = zernike.zernikeFit(delta, np.arange(10)+1)
+        coef, mat = zernike.zernikeFit(delta, np.arange(10) + 1)
         coef_list.append(coef)
-        sum = np.sqrt(coef[1]**2+coef[2]**2)
+        sum = np.sqrt(coef[1] ** 2 + coef[2] ** 2)
         sum_list.append(sum)
     quad = np.array(sum_list)
     plt.plot(val_vec, quad, '-o')
     return quad, np.array(coef_list), image0, delta_list
+
 
 def mappaturaPar(shift, n_iter, tt_for_align):
     '''
@@ -286,9 +293,9 @@ def mappaturaPar(shift, n_iter, tt_for_align):
         object_to_move = 'PAR + RM'
 
     file = open(os.path.join(dove, 'MappingInfo.txt'), "a")
-    file.write('Mapping object: ' + object_to_move +'\n')
+    file.write('Mapping object: ' + object_to_move + '\n')
     file.close()
-    #n_iter = 20
+    # n_iter = 20
     slide0 = ott.slide()
     rslide0 = ott.rslide()
     angle0 = ott.angle()
@@ -297,19 +304,19 @@ def mappaturaPar(shift, n_iter, tt_for_align):
     angle = -1
     for i in range(n_iter):
         if shift[0] != 0:
-            slide = ott.slide(slide0 +((i+1)*shift[0]))
+            slide = ott.slide(slide0 + ((i + 1) * shift[0]))
 #             if slide==0:
 #                 raise Exception('HOMING! PAR WIN')
         if shift[1] != 0:
-            rslide = ott.rslide(rslide0 +((i+1)*shift[1]))
+            rslide = ott.rslide(rslide0 + ((i + 1) * shift[1]))
 #             if rslide==0:
 #                 raise Exception('HOMING! RM WIN')
         if shift[2] != 0:
-            angle = ott.angle(angle0 +((i+1)*shift[2]))
+            angle = ott.angle(angle0 + ((i + 1) * shift[2]))
             
         time.sleep(5)
         par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1,
-                                          np.array([0,1]), np.array([3, 4]),
+                                          np.array([0, 1]), np.array([3, 4]),
                                           tt_for_align)
         image = interf.acq4d(1)
         name = 'image_%04d.fits' % i
@@ -335,9 +342,100 @@ def mappaturaPar(shift, n_iter, tt_for_align):
     
     return tt     
 
-         
-     
+def align_test(ttr, n_images, perturbation_vec, pre= False):
 
-                
-                
+#    Homing the system
+    main.ott_alignment(ttr, n_images, 1, np.array([0,1]), np.array([3,4])) 
+    par0 = ott.parab()
+    rm0 = ott.refflat()
+    #    Set perturbation from perturbation_vec
+    focus = perturbation_vec[0]
+    tip = perturbation_vec[1]
+    tilt = perturbation_vec[2]
+    par1 = np.copy(par0)
+    par1[2] += focus
+    par1[3] += tip
+    par1[4] += tilt
+    rm1 = np.copy(rm0)
+    rm1[3] += -tip*2.05
+    rm1[4] += -tilt*2.05
+#    Initialization
+    zern_vec = np.arange(1, 12, 1)   
+    coeff = []
+#    Start image, perturbation and perturbed image
+    image = interf.acq4d(n_images)
+    pippo = zernike.zernikeFit(image, zern_vec)
+    coeff.append(pippo[0])
+    ott.parab(par1)
+    ott.refflat(rm1)
+    image = interf.acq4d(n_images)
+    pippo = zernike.zernikeFit(image, zern_vec)
+    coeff.append(pippo[0])
+#    TipTilt pre-alignment
+    if pre is True:
+        main.ott_alignment(ttr, n_images, 1, np.array([0,1]), np.array([3,4])) 
+        image = interf.acq4d(2)
+        pippo = zernike.zernikeFit(image, zern_vec)
+        coeff.append(pippo[0])
+#    First alignment
+    main.ott_alignment(ttr, n_images, 1, np.array([0,1,2,3,4]), np.array([0,1,2,3,4]))
+    image = interf.acq4d(2)
+    pippo = zernike.zernikeFit(image, zern_vec)
+    coeff.append(pippo[0])
+#    Second alignment
+    main.ott_alignment(ttr, n_images, 1, np.array([0,1]), np.array([3,4])) 
+    image = interf.acq4d(n_images)
+    pippo = zernike.zernikeFit(image, zern_vec)
+    coeff.append(pippo[0])
+#    Check image
+    image = interf.acq4d(n_images)
+    pippo = zernike.zernikeFit(image, zern_vec)
+    coeff.append(pippo[0])
+
+    coeff_matrix = np.array(coeff)*1e9
+    parend = ott.parab()
+
+    store_in_folder = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER, 'Alignment')
+    save = tracking_number_folder.TtFolder(store_in_folder)
+    dove, tt = save._createFolderToStoreMeasurements()
+    fits_file_name = os.path.join(dove, 'zernike.fits')
+    pyfits.writeto(fits_file_name, coeff_matrix, overwrite=True)
+
+    print(parend-par0)
+    return coeff_matrix, tt
+
+def align_plot(coeff_matrix, tt):
+    
+    x_old = np.arange(coeff_matrix.shape[0])
+    if coeff_matrix.shape[0] == 5:
+        x = ['Start_image', 'Perturbed_image', '5_param_alignment', 'TipTilt_alignment', 'Check_image']
+    elif coeff_matrix.shape[0] == 6:
+        x = ['Start_image', 'Perturbed_image', 'TipTilt pre-alignment' ,'5_param_alignment', 'TipTilt_alignment', 'Check_image']
+    
+    plt.figure(figsize=(16,10))
+    plt.subplot(4,1,1)
+    plt.plot(x_old,coeff_matrix[:,1:3],'-o')
+    plt.grid()
+    plt.xticks(x_old,x,rotation=0)
+    plt.ylabel('TipTilt rms [nm]')
+    plt.subplot(4,1,2)
+    plt.plot(x_old,coeff_matrix[:,3],'-ok')
+    plt.grid()
+    plt.xticks(x_old,x,rotation=0)
+    plt.ylabel('Focus rms [nm]')
+    plt.subplot(4,1,3)
+    plt.plot(x_old,coeff_matrix[:,6:8],'-o')
+    plt.grid()
+    plt.xticks(x_old,x,rotation=0)
+    plt.ylabel('Coma rms [nm]')
+    plt.subplot(4,1,4)
+    plt.plot(x_old,coeff_matrix[:,4:6]-coeff_matrix[0,4:6],'-o')
+    plt.grid()
+    plt.xticks(x_old,x,rotation=0)
+    plt.ylabel('Ast rms a.u. [nm]')
+    
+    plt.suptitle(tt + ' Alignment', fontweight='bold',fontsize=20)
+    return
+
+       
     
