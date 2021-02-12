@@ -85,7 +85,7 @@ class RotOptAlign():
             direction = 1
 
         for k in range(number_of_image+1):
-            #start_angle = self._ott.angle()
+            #start_angle = self.ott.angle()
             self._ott.angle(start_angle + k*rot_angle*direction)
             angle_list.append(start_angle + k*rot_angle*direction)
             time.sleep(5)

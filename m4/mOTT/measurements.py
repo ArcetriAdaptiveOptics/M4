@@ -1,3 +1,8 @@
+#!/User/rm/anaconda3/bin/python3.7
+#!/usr/bin/python
+# ./library/mycode.py
+#!/usr/bin/env python3
+# -*- coding: UTF-8 -*-
 '''
 Authors
   - C. Selmi: written in 2020

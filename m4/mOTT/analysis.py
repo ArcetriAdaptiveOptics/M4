@@ -13,6 +13,10 @@ def testCalib():
     '''
     Returns
     -------
+    intMat1: numpy array
+        cube of tts1's interaction matrix
+    intMat2: numpy array
+        cube of tts2's interaction matrix
     '''
     tts1 = np.array(['20201214_091212', '20201214_092528', '20201214_093842',
                     '20201214_095152', '20201214_100508', '20201214_101821',
@@ -39,11 +43,7 @@ def testCalib():
 
 def _readRepData(tt):
     '''
-    Parameters
-    ----------
-
-    Returns
-    -------
+    Function to read repeatability file fits in tt folder
     '''
     file_name = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER, tt)
     hduList = pyfits.open(os.path.join(file_name, 'par.fits'))
@@ -207,6 +207,7 @@ def alignPlot(coeff_matrix, tt):
 
 ###ALTRO###
 def pippo(tt):
+    '''Function to read interaction matrix in tt folder'''
     from m4.utils.optical_alignment import OpticalAlignment
     al = OpticalAlignment(tt)
     intMat, rec, mask = al._loadAlignmentInfo()
