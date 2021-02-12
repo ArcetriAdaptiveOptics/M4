@@ -157,7 +157,7 @@ def parTiltTest(self):
     pass
 
 
-def alignPlot(coeff_matrix, tt):
+def alignPlot(tt):
     '''
     Parameters
     ----------
@@ -170,6 +170,10 @@ def alignPlot(coeff_matrix, tt):
     -------
     figure plot
     '''
+    file_name = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER,
+                            'Alignment', tt, 'zernike.fits')
+    hdu = pyfits.open(file_name)
+    coeff_matrix = hdu[0].data
 
     x_old = np.arange(coeff_matrix.shape[0])
     if coeff_matrix.shape[0] == 5:
