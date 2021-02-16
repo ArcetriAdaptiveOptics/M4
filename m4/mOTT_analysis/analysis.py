@@ -3,11 +3,11 @@ Authors
   - C. Selmi: written in 2020
 '''
 
-import os as _os
-import numpy as _np
-from astropy.io import fits as _pyfits
-from matplotlib import pyplot as _plt
-from m4.configuration.config import fold_name as _fold_name
+import os 
+import numpy as np
+from astropy.io import fits as pyfits
+from matplotlib import pyplot as plt
+from m4.configuration.config import fold_name
 
 
 def testCalib():
@@ -19,11 +19,11 @@ def testCalib():
     intMat2: numpy array
         cube of tts2's interaction matrix
     '''
-    tts1 = _np.array(['20201214_091212', '20201214_092528', '20201214_093842',
+    tts1 = np.array(['20201214_091212', '20201214_092528', '20201214_093842',
                     '20201214_095152', '20201214_100508', '20201214_101821',
                     '20201214_103128', '20201214_104441', '20201214_105754',
                     '20201214_111110', '20201214_112435', '20201214_113749'])
-    tts2 = _np.array(['20201214_115451', '20201214_120323', '20201214_121200',
+    tts2 = np.array(['20201214_115451', '20201214_120323', '20201214_121200',
                     '20201214_122040', '20201214_122922', '20201214_123807',
                     '20201214_124640', '20201214_125504', '20201214_130327',
                     '20201214_131134', '20201214_131950', '20201214_132822'])
@@ -35,21 +35,21 @@ def testCalib():
         if intMat1 is None:
             intMat1 = mat1
         else:
-            intMat1 = _np.stack((intMat1, mat1))
+            intMat1 = np.stack((intMat1, mat1))
         if intMat2 is None:
             intMat2 = mat2
         else:
-            intMat2 = _np.stack((intMat2, mat2))
+            intMat2 = np.stack((intMat2, mat2))
     return intMat1, intMat2
 
 def _readRepData(tt):
     '''
     Function to read repeatability file fits in tt folder
     '''
-    file_name = _os.path.join(_fold_name.REPEATABILITY_ROOT_FOLDER, tt)
-    hduList = _pyfits.open(_os.path.join(file_name, 'par.fits'))
+    file_name = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER, tt)
+    hduList = pyfits.open(os.path.join(file_name, 'par.fits'))
     par = hduList[0].data
-    hduList = _pyfits.open(_os.path.join(file_name, 'rm.fits'))
+    hduList = pyfits.open(os.path.join(file_name, 'rm.fits'))
     rm = hduList[0].data
     #hduList = pyfits.open(os.path.join(file_name, 'images.fits'))
     #cube = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
@@ -102,11 +102,11 @@ def actsRepeatability(tt):
         pos0 = par[:,0,i]
         pos0_list.append(pos0.std())
 
-    pos01_std = _np.array(pos01_list_std)
-    pos02_std = _np.array(pos02_list_std)
-    pos01_mean = _np.array(pos01_list_mean)
-    pos02_mean = _np.array(pos02_list_mean)
-    pos0 = _np.array(pos0_list)
+    pos01_std = np.array(pos01_list_std)
+    pos02_std = np.array(pos02_list_std)
+    pos01_mean = np.array(pos01_list_mean)
+    pos02_mean = np.array(pos02_list_mean)
+    pos0 = np.array(pos0_list)
     return pos01_std, pos02_std, pos01_mean, pos02_mean, pos0
 
 def scanAstigComa(tn):
@@ -125,27 +125,27 @@ def scanAstigComa(tn):
     rm_pos: numpy array
         matrix containing reference flat position
     '''
-    dove = _os.path.join(_fold_name.CALIBRATION_ROOT_FOLDER, tn)
-    name = _os.path.join(dove, 'zernike.fits')
-    hduList = _pyfits.open(name)
+    dove = os.path.join(fold_name.CALIBRATION_ROOT_FOLDER, tn)
+    name = os.path.join(dove, 'zernike.fits')
+    hduList = pyfits.open(name)
     zer = hduList[0].data
-    name = _os.path.join(dove, 'PAR_positions.fits')
-    hduList = _pyfits.open(name)
+    name = os.path.join(dove, 'PAR_positions.fits')
+    hduList = pyfits.open(name)
     par_pos = hduList[0].data
-    name = _os.path.join(dove, 'RM_positions.fits')
-    hduList = _pyfits.open(name)
+    name = os.path.join(dove, 'RM_positions.fits')
+    hduList = pyfits.open(name)
     rm_pos = hduList[0].data
-    _plt.plot(par_pos[0:20, 3], zer[0:20, 4],'o')
-    _plt.plot(par_pos[0:20, 3], zer[0:20, 5],'o')
-    _plt.xlabel('Par tilt [as]')
-    _plt.ylabel('Astigm. Coeff [m]')
-    _plt.title(tn)
-    _plt.plot(par_pos[0:20, 3], zer[0:20, 6], 'o')
-    _plt.plot(par_pos[20:40, 3], zer[20:40, 7],' o')
-    _plt.xlabel('Par tilt [as]')
-    _plt.ylabel('Coma. Coeff [m]')
-    _plt.legend(['X', 'Y'])
-    _plt.title(tn)
+    plt.plot(par_pos[0:20, 3], zer[0:20, 4],'o')
+    plt.plot(par_pos[0:20, 3], zer[0:20, 5],'o')
+    plt.xlabel('Par tilt [as]')
+    plt.ylabel('Astigm. Coeff [m]')
+    plt.title(tn)
+    plt.plot(par_pos[0:20, 3], zer[0:20, 6], 'o')
+    plt.plot(par_pos[20:40, 3], zer[20:40, 7],' o')
+    plt.xlabel('Par tilt [as]')
+    plt.ylabel('Coma. Coeff [m]')
+    plt.legend(['X', 'Y'])
+    plt.title(tn)
     return zer, par_pos, rm_pos
 
 def opticalMonitoring():
@@ -171,12 +171,12 @@ def alignPlot(tt):
     -------
     figure plot
     '''
-    file_name = _os.path.join(_fold_name.REPEATABILITY_ROOT_FOLDER,
+    file_name = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER,
                             'Alignment', tt, 'zernike.fits')
-    hdu = _pyfits.open(file_name)
+    hdu = pyfits.open(file_name)
     coeff_matrix = hdu[0].data
 
-    x_old = _np.arange(coeff_matrix.shape[0])
+    x_old = np.arange(coeff_matrix.shape[0])
     if coeff_matrix.shape[0] == 5:
         x = ['Start_image', 'Perturbed_image', '5_param_alignment',
              'TipTilt_alignment', 'Check_image']
@@ -184,29 +184,29 @@ def alignPlot(tt):
         x = ['Start_image', 'Perturbed_image', 'TipTilt pre-alignment',
              '5_param_alignment', 'TipTilt_alignment', 'Check_image']
 
-    _plt.figure(figsize=(16, 10))
-    _plt.subplot(4, 1, 1)
-    _plt.plot(x_old, coeff_matrix[:, 1:3], '-o')
-    _plt.grid()
-    _plt.xticks(x_old, x, rotation=0)
-    _plt.ylabel('TipTilt rms [nm]')
-    _plt.subplot(4, 1, 2)
-    _plt.plot(x_old, coeff_matrix[:, 3], '-ok')
-    _plt.grid()
-    _plt.xticks(x_old, x, rotation=0)
-    _plt.ylabel('Focus rms [nm]')
-    _plt.subplot(4, 1, 3)
-    _plt.plot(x_old, coeff_matrix[:, 6:8], '-o')
-    _plt.grid()
-    _plt.xticks(x_old, x,rotation=0)
-    _plt.ylabel('Coma rms [nm]')
-    _plt.subplot(4, 1, 4)
-    _plt.plot(x_old, coeff_matrix[:, 4:6]-coeff_matrix[0,4:6], '-o')
-    _plt.grid()
-    _plt.xticks(x_old,x, rotation=0)
-    _plt.ylabel('Ast rms a.u. [nm]')
+    plt.figure(figsize=(16, 10))
+    plt.subplot(4, 1, 1)
+    plt.plot(x_old, coeff_matrix[:, 1:3], '-o')
+    plt.grid()
+    plt.xticks(x_old, x, rotation=0)
+    plt.ylabel('TipTilt rms [nm]')
+    plt.subplot(4, 1, 2)
+    plt.plot(x_old, coeff_matrix[:, 3], '-ok')
+    plt.grid()
+    plt.xticks(x_old, x, rotation=0)
+    plt.ylabel('Focus rms [nm]')
+    plt.subplot(4, 1, 3)
+    plt.plot(x_old, coeff_matrix[:, 6:8], '-o')
+    plt.grid()
+    plt.xticks(x_old, x,rotation=0)
+    plt.ylabel('Coma rms [nm]')
+    plt.subplot(4, 1, 4)
+    plt.plot(x_old, coeff_matrix[:, 4:6]-coeff_matrix[0,4:6], '-o')
+    plt.grid()
+    plt.xticks(x_old,x, rotation=0)
+    plt.ylabel('Ast rms a.u. [nm]')
 
-    _plt.suptitle(tt + ' Alignment', fontweight='bold', fontsize=20)
+    plt.suptitle(tt + ' Alignment', fontweight='bold', fontsize=20)
     return
 
 
