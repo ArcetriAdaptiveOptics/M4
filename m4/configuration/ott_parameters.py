@@ -120,7 +120,7 @@ class OpcUaParameters():
     zabbix_port = 10051
     accelerometers_server = 'tcp://192.168.22.100:6660'
     accelerometers_data_folder = '/mnt/acc_data'
-    accelerometers_dt = 2.5 * 1e-4
+    accelerometers_dt = 2.5e-4
 
 class OtherParameters():
     ''' '''

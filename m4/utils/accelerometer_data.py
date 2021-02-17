@@ -125,7 +125,7 @@ def power_spectrum(vec):
 #         #spe = np.fft.fftshift(np.fft.rfft(vector, norm='ortho'))
 #         #freq = np.fft.fftshift(np.fft.rfftfreq(vector.size, d=self._dt))
     spe = np.fft.rfft(z, axis=1, norm='ortho')
-    freq = np.fft.rfftfreq(z.shape[1], d=1./dt)
+    freq = np.fft.rfftfreq(z.shape[1], d=dt)
     return spe, freq
 #clf(); plot(freq[0], np.abs(spe[0]), label='proiezione1');
 #plot(freq[1], np.abs(spe[1]), label='proiezione2');
@@ -134,18 +134,30 @@ def power_spectrum(vec):
 
 
 def plot_power_spectrum(spe, freq):
+    spe1 = spe[:, 1:]
+    freq1 = freq[1:]
     plt.figure()
     label_list = ['acc05', 'acc06', 'acc07']
-    for i in range(spe.shape[0]):
-        plt.plot(freq, np.abs(spe[i,:]), '-o', label=label_list[i])
+    for i in range(spe1.shape[0]):
+        plt.plot(freq1, np.abs(spe1[i,:]), '-o', label=label_list[i])
     plt.xlabel('Freq[Hz]')
     plt.ylabel('FFT|sig|')
     plt.show()
     plt.legend()
 
+def main(recording_seconds=5, plot_seconds=10):
+    tt = acquire_acc_data()
+    print(tt)
+    data = read_acc_data(tt)
+    vec = data[:, 5:8]
+    spe, freq = power_spectrum(vec)
+    plot_power_spectrum(spe, freq)
+    time.sleep(plot_seconds)
+    plt.close()
 
 if __name__ == '__main__':
     tt = acquire_acc_data()
+    print(tt)
     data = read_acc_data(tt)
     vec = data[:, 5:8]
     spe, freq = power_spectrum(vec)
