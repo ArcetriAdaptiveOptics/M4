@@ -137,3 +137,12 @@ class InterferometerConverter():
         ima = np.ma.masked_array(data * 632.8e-9, mask=mask)
         return ima
 
+    @staticmethod
+    def fromNew4D(h5filename):
+        file = h5py.File(h5filename, 'r') 
+        data = file.get('/Measurement/SurfaceInWaves/Data')
+        meas = data[()]
+        mask = np.invert(np.isfinite(meas))
+        image = np.ma.masked_array(meas * 632.8e-9, mask=mask)
+        return image
+

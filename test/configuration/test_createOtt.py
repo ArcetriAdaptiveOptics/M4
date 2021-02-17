@@ -20,7 +20,7 @@ class TestCalc(unittest.TestCase):
     def tearDown(self):
         del self.ott
 
-#    @unittest.skip('Mancano i file per costruire il simulatore')
+    @unittest.skip('Mancano i file per costruire il simulatore')
     def testTower(self):
         self.ott.slide()
         self.ott.slide(100)
