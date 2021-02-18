@@ -63,3 +63,13 @@ script:
 
 after_success:
   - coveralls
+ 
+on: ["push", "pull_request"]
+
+name: Test Coveralls
+
+jobs:
+      - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
