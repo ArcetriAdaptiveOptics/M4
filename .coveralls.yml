@@ -83,8 +83,9 @@ jobs:
 
     - name: npm install, make test-coverage
       run: |
-        npm install
-        make test-coverage
+        pip install pytest
+        pip install pytest-cov
+        pytest --cov=./ --cov-report=xml
      
     - name: Coveralls
       uses: coverallsapp/github-action@master
