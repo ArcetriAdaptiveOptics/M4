@@ -164,5 +164,3 @@ if __name__ == '__main__':
     fh = plot_power_spectrum(spe, freq)
     time.sleep(5)
     plt.close(fh)
-
-

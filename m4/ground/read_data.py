@@ -139,7 +139,7 @@ class InterferometerConverter():
 
     @staticmethod
     def fromNew4D(h5filename):
-        file = h5py.File(h5filename, 'r') 
+        file = h5py.File(h5filename, 'r')
         data = file.get('/Measurement/SurfaceInWaves/Data')
         meas = data[()]
         mask = np.invert(np.isfinite(meas))
