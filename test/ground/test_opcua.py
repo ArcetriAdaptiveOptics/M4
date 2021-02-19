@@ -12,11 +12,12 @@ class Test(unittest.TestCase):
     def setUp(self, mock_client):
         from m4.ground.opc_ua_controller import OpcUaController
         self.opc = OpcUaController()
+        self.opc._client = mock.MagicMock()
 
     def tearDown(self):
         del self.opc
 
-    @unittest.skip('Funziona ma è lungo')
+#    @unittest.skip('Funziona ma è lungo')
     def testName(self):
         self.opc.stop()
         self.opc.get_temperature_vector()

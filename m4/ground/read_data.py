@@ -35,7 +35,7 @@ def read_phasemap(file_path, ext=0):
         image = np.ma.masked_array(np.array(data1),
                                    np.array(data2.astype(bool)))
     return image
-    
+
 ### Generiche
 def readFits_data(fits_file_path):
     '''
@@ -139,10 +139,20 @@ class InterferometerConverter():
 
     @staticmethod
     def fromNew4D(h5filename):
+        """
+        Parameters
+        ----------
+            h5filename: string
+                 path of h5 file to convert
+
+        Returns
+        -------
+                ima: numpy masked array
+                     masked array image
+        """
         file = h5py.File(h5filename, 'r')
         data = file.get('/Measurement/SurfaceInWaves/Data')
         meas = data[()]
         mask = np.invert(np.isfinite(meas))
         image = np.ma.masked_array(meas * 632.8e-9, mask=mask)
         return image
-
