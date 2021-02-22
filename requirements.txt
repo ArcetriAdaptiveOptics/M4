@@ -9,3 +9,4 @@ scikit-image>0.15
 IPython
 opcua
 mock
+sklearn

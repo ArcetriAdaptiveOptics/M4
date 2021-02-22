@@ -83,7 +83,8 @@ setup(name=NAME,
                         "opcua",
                         "mock",
                         "zmq",
-                        "shutil"
+                        "shutil",
+                        "sklearn"
                         ],
       test_suite='test',
       cmdclass={'upload': UploadCommand, },
