@@ -59,7 +59,6 @@ def zernikeSurface(img, coef, mat):
     -------
     surf: numpy masked array
         zernike surface generate by coeff
-        
     '''
 #     img1 = img.data
 #     mask = np.invert(img.mask).astype(int)

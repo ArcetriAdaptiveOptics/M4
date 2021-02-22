@@ -138,7 +138,7 @@ class InterferometerConverter():
         return ima
 
     @staticmethod
-    def fromNew4D(h5filename):
+    def fromNew4D(i4dfilename):
         """
         Parameters
         ----------
@@ -150,9 +150,19 @@ class InterferometerConverter():
                 ima: numpy masked array
                      masked array image
         """
-        file = h5py.File(h5filename, 'r')
+        file = h5py.File(i4dfilename, 'r')
         data = file.get('/Measurement/SurfaceInWaves/Data')
         meas = data[()]
         mask = np.invert(np.isfinite(meas))
         image = np.ma.masked_array(meas * 632.8e-9, mask=mask)
         return image
+
+    @staticmethod
+    def fromI4DToSimplerData(i4dname, folder, h5name):
+        file = h5py.File(i4dname, 'r')
+        data = file.get('/Measurement/SurfaceInWaves/Data')
+
+        file_name = os.path.join(folder, h5name)
+        hf = h5py.File(file_name, 'w')
+        hf.create_dataset('Data', data=data)
+        return file_name

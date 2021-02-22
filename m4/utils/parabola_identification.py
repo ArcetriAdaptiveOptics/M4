@@ -27,6 +27,21 @@ class ParabolIdent():
         """The constructor """
         self._rFiducialPoint = OttParameters.RADIUS_FIDUCIAL_POINT
 
+    def testZernikeOnPar(self, image):
+        from m4.ground import zernike
+        x, y = self.fiduciali(image)
+        centro, axs, raggio = self._fitEllipse(x, y)
+        pxs = raggio / OttParameters.RADIUS_FIDUCIAL_POINT
+        par_radius = pxs * OttParameters.parab_radius
+        circle = self._drawCircle(centro, par_radius, image)
+        ima = np.ma.masked_array(image, mask=np.invert(circle.astype(bool)))
+        coef1, mat = zernike.zernikeFit(ima, np.arange(10)+1)
+
+        xx, yy = self.coord(image, centro, raggio)
+        mm = (circle==1)
+        coef2 = zernike._surf_fit(xx[mm], yy[mm], image.data[mm], np.arange(10)+1)
+        return coef1, coef2
+
     def parable(self, image):
         '''
         Parameters
@@ -151,27 +166,28 @@ class ParabolIdent():
             raggio = radius of the parabola circumference
         '''
         #fit ellipse
-        x = x[:,np.newaxis]
-        y = y[:,np.newaxis]
+        x = x[:, np.newaxis]
+        y = y[:, np.newaxis]
         D =  np.hstack((x*x, x*y, y*y, x, y, np.ones_like(x)))
-        S = np.dot(D.T,D)
-        C = np.zeros([6,6])
-        C[0,2] = C[2,0] = 2; C[1,1] = -1
+        S = np.dot(D.T, D)
+        C = np.zeros([6, 6])
+        C[0, 2] = C[2, 0] = 2
+        C[1, 1] = -1
         E, V =  eig(np.dot(inv(S), C))
         n = np.argmax(np.abs(E))
-        a_vect = V[:,n]
+        a_vect = V[:, n]
         #center
-        b,c,d,f,g,a = a_vect[1]/2, a_vect[2], a_vect[3]/2, a_vect[4]/2, a_vect[5], a_vect[0]
-        num = b*b-a*c
-        x0=(c*d-b*f)/num
-        y0=(a*f-b*d)/num
-        centro = np.array([x0,y0])
+        b, c, d, f, g, a = a_vect[1]/2, a_vect[2], a_vect[3]/2, a_vect[4]/2, a_vect[5], a_vect[0]
+        num = b*b - a*c
+        x0 = (c*d - b*f)/num
+        y0 = (a*f - b*d)/num
+        centro = np.array([x0, y0])
         #lunghezza degli assi        
         up = 2*(a*f*f+c*d*d+g*b*b-2*b*d*f-a*c*g)
-        down1=(b*b-a*c)*((c-a)*np.sqrt(1+4*b*b/((a-c)*(a-c)))-(c+a))
-        down2=(b*b-a*c)*((a-c)*np.sqrt(1+4*b*b/((a-c)*(a-c)))-(c+a))
-        res1=np.sqrt(up/down1)
-        res2=np.sqrt(np.abs(up/down2)) #attenzione
+        down1 = (b*b-a*c)*((c-a)*np.sqrt(1+4*b*b/((a-c)*(a-c)))-(c+a))
+        down2 = (b*b-a*c)*((a-c)*np.sqrt(1+4*b*b/((a-c)*(a-c)))-(c+a))
+        res1 = np.sqrt(np.abs(up/down1)) #prima non c'era il valore assoluto
+        res2 = np.sqrt(np.abs(up/down2)) #attenzione
         axs = np.array([res1, res2])
         raggio = axs.mean()
         return centro, axs, raggio
@@ -201,14 +217,15 @@ class ParabolIdent():
         returns:
             circle = circle of one to display
         '''
-        circle = np.zeros((image.shape[0],image.shape[1]))
+        circle = np.zeros((image.shape[0], image.shape[1]))
         rr, cc = draw_circle(centro[1], centro[0], raggio/self._rFiducialPoint)
-        circle[rr, cc]=1
+        circle[rr, cc] = 1
         return circle
 
     def _imaTest(self):
         #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/20161226_122557/mode_0569.fits'
-        file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Seg/img_0000.fits'
+        #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Seg/img_0000.fits'
+        file_name = '/Users/rm/eclipse-workspace/M4/test/img_0000.fits'
         hduList = pyfits.open(file_name)
         ima = hduList[0].data
         immagine = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
