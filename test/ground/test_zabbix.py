@@ -17,7 +17,9 @@ class Test(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @unittest.skip('Non funziona')
-    @mock.patch('pyzabbix.ZabbixAPI', 'pyzabbix.ZabbixSender', 'pyzabbix.ZabbixMetric', autospec=True)
+#    @unittest.skip('Non funziona')
+    @mock.patch('pyzabbix.ZabbixAPI', autospec=True)
+    @mock.patch('pyzabbix.ZabbixSender', autospec=True)
+    @mock.patch('pyzabbix.ZabbixMetric', autospec=True)
     def testZabbix(self, mock_api, mock_sender, mock_metric):
         self.zabbix.mainZabbix()

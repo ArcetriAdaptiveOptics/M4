@@ -3,6 +3,7 @@ Authors
   - C. Selmi: written in 2020
 '''
 import unittest
+import os
 import numpy as np
 from skimage.draw import circle
 from m4.ground import geo
@@ -33,9 +34,11 @@ class Test(unittest.TestCase):
 
     @unittest.skip('Dove mettere il file')
     def testLogger(self):
-        file_path = '?'
+        import tempfile
+        file = tempfile.NamedTemporaryFile(mode='w', delete=False)
+        file_path = os.path.join(file, 'mylog')
         logging_level = 0
-        logger_set_up.set_up_logger(file_path, logging_level)
+        logger_set_up.set_up_logger(file_path.name, logging_level)
 
     def testReadData(self):
         pass
