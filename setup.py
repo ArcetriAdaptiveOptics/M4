@@ -84,7 +84,8 @@ setup(name=NAME,
                         "mock",
                         "zmq",
                         "shutil",
-                        "sklearn"
+                        "sklearn",
+                        "pyzabbix"
                         ],
       test_suite='test',
       cmdclass={'upload': UploadCommand, },

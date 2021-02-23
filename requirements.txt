@@ -10,3 +10,4 @@ IPython
 opcua
 mock
 sklearn
+pyzabbix
