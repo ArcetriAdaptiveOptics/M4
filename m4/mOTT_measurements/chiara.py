@@ -151,4 +151,36 @@ cmd_new3[commandId] = np.dot(M, z_new)
 
 
 
+### per new4d ###
+    list = os.listdir(measurements_folder)
+    list.sort()
+    
+    ima_list = []
+    tip_list = []
+    tilt_list = []
+    for i4d_name in list:
+        name = os.path.join(measurements_folder, i4d_name)
+        image = fromNew4D(name)
+        coef, mat = zernike.zernikeFit(image, np.arange(10)+1)
+        ima_list.append(image)
+        tip_list.append(coef[1])
+        tilt_list.append(coef[2])
+    tip = np.array(tip_list)
+    tilt = np.array(tilt_list)
+x = np.arange(len(list))+1
+plt.figure(figsize=(10, 5))
+plt.subplot(2,1,1) 
+plt.plot(x, tip*1e9, '-o', label='Tip') 
+plt.grid()
+plt.ylabel('[nm]')
+plt.subplot(2,1,2) 
+plt.plot(x, tilt*1e9, '-o', label='Tilt')
+plt.grid()
+#plt.xticks(x_old, x, rotation=0)
+plt.xlabel('Number of measurement') 
+plt.ylabel('[nm]')
+plt.suptitle(measurements_folder, fontweight='bold', fontsize=20)
+
+
+
 
