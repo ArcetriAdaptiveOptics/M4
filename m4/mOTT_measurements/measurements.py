@@ -21,6 +21,7 @@ from m4.alignment import Alignment
 from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.ground.timestamp import Timestamp
+from m4.utils import accelerometer_data as acc
 
 
 ott, interf = start.create_ott()

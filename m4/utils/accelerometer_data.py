@@ -154,6 +154,7 @@ def main(recording_seconds=5, plot_seconds=10):
     plot_power_spectrum(spe, freq)
     time.sleep(plot_seconds)
     plt.close()
+    return tt
 
 if __name__ == '__main__':
     tt = acquire_acc_data()
