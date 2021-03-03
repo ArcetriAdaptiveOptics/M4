@@ -32,7 +32,8 @@ def acquire_acc_data(recording_seconds=5):
     socket.connect(OpcUaParameters.accelerometers_server)
     socket.send_string("START %d" %recording_seconds)
     socket.disconnect(OpcUaParameters.accelerometers_server)
-
+    time.sleep(recording_seconds)
+    
     list = os.listdir(OpcUaParameters.accelerometers_data_folder)
     list.sort()
     h5_file_name = list[len(list)-1]
@@ -144,15 +145,16 @@ def plot_power_spectrum(spe, freq):
     plt.ylabel('FFT|sig|')
     plt.show()
     plt.legend()
+    plt.grid()
 
 def main(recording_seconds=5, plot_seconds=10):
-    tt = acquire_acc_data()
+    tt = acquire_acc_data(recording_seconds)
     print(tt)
     data = read_acc_data(tt)
     vec = data[:, 5:8]
     spe, freq = power_spectrum(vec)
     plot_power_spectrum(spe, freq)
-    time.sleep(plot_seconds)
+    plt.pause(plot_seconds)
     plt.close()
     return tt
 
@@ -162,6 +164,6 @@ if __name__ == '__main__':
     data = read_acc_data(tt)
     vec = data[:, 5:8]
     spe, freq = power_spectrum(vec)
-    fh = plot_power_spectrum(spe, freq)
-    time.sleep(5)
-    plt.close(fh)
+    plot_power_spectrum(spe, freq)
+    plt.pause(5)
+    plt.close()
