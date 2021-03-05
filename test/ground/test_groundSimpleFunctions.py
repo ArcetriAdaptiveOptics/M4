@@ -13,7 +13,9 @@ from m4.ground.timestamp import Timestamp
 from m4.ground import logger_set_up
 from m4.ground.tracking_number_folder import TtFolder
 from m4.ground import zernike
+from m4.ground import read_data
 
+TESTDATA_DIR = os.path.dirname(__file__)
 
 class Test(unittest.TestCase):
 
@@ -41,7 +43,11 @@ class Test(unittest.TestCase):
         logger_set_up.set_up_logger(file_path.name, logging_level)
 
     def testReadData(self):
-        pass
+        ic = read_data.InterferometerConverter()
+        file_path = os.path.join(TESTDATA_DIR, 'img_0046.h5')
+        ima = ic.from4D(file_path)
+        file_path = os.path.join(TESTDATA_DIR, '0.4D')
+        ima2 = ic.fromNew4D(file_path)
 
     def testSmoothFunction(self):
         data = np.arange(100)

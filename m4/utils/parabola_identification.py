@@ -9,7 +9,7 @@ from numpy.linalg import eig, inv
 from skimage.draw import circle as draw_circle
 from skimage.draw import ellipse as draw_ellipse
 from skimage.measure import label
-from astropy.io import fits as pyfits
+from m4.ground import read_data
 import sklearn.feature_extraction as skf_e
 import sklearn.cluster as skc
 from m4.configuration.ott_parameters import OttParameters
@@ -222,11 +222,9 @@ class ParabolIdent():
         circle[rr, cc] = 1
         return circle
 
-    def _imaTest(self, file_name):
+    def _imaTest(self, file_path):
         #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/20161226_122557/mode_0569.fits'
         #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Seg/img_0000.fits'
-        #file_name = '/Users/rm/eclipse-workspace/M4/test/img_0000.fits'
-        hduList = pyfits.open(file_name)
-        ima = hduList[0].data
-        immagine = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
+        #file_name = '/Users/rm/eclipse-workspace/M4/test/utils/img_0000.fits'
+        immagine = read_data.read_phasemap(file_path)
         return immagine
