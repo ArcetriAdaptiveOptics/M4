@@ -33,6 +33,8 @@ class ParabolIdent():
         centro, axs, raggio = self._fitEllipse(x, y)
         pxs = raggio / OttParameters.RADIUS_FIDUCIAL_POINT
         par_radius = pxs * OttParameters.parab_radius
+#         import pdb
+#         pdb.set_trace()
         circle = self._drawCircle(centro, par_radius, image)
         ima = np.ma.masked_array(image, mask=np.invert(circle.astype(bool)))
         coef1, mat = zernike.zernikeFit(ima, np.arange(10)+1)
@@ -174,6 +176,8 @@ class ParabolIdent():
         C[0, 2] = C[2, 0] = 2
         C[1, 1] = -1
         E, V =  eig(np.dot(inv(S), C))
+#         import pdb
+#         pdb.set_trace()
         n = np.argmax(np.abs(E))
         a_vect = V[:, n]
         #center
