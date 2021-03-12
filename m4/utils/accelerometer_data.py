@@ -3,13 +3,11 @@ Authors
   - C. Selmi: written in 2020
 '''
 
-import shutil
 import os
 import numpy as np
 import zmq
 import h5py
 import time
-import stat
 from m4.configuration.config import fold_name
 from m4.configuration.ott_parameters import OpcUaParameters
 from matplotlib import pyplot as plt
@@ -32,13 +30,14 @@ def acquire_acc_data(recording_seconds=5):
     socket = context.socket(zmq.REQ)
     socket.connect(OpcUaParameters.accelerometers_server)
     socket.send_string("START %d" %recording_seconds)
-#     try:
-#         reply = socket.recv(1)
-#         print(reply)
-#     except:
-#         raise OSError('No reply from socket')
+    time.sleep(1)
+    try:
+        reply = socket.recv(1)
+        print('Data from %s' %reply)
+    except:
+        raise OSError('No reply from socket')
     socket.disconnect(OpcUaParameters.accelerometers_server)
-    time.sleep(recording_seconds+2)
+    #time.sleep(recording_seconds+2)
     
     list = os.listdir(OpcUaParameters.accelerometers_data_folder)
     list.sort()
@@ -46,12 +45,20 @@ def acquire_acc_data(recording_seconds=5):
     tt = Timestamp.now()
     name = tt + '.h5'
     final_destination = os.path.join(fold_name.ACC_ROOT_FOLDER, name)
+    print( 'To %s' %final_destination)
     start = os.path.join(OpcUaParameters.accelerometers_data_folder, h5_file_name)
-    print(start)
-    #hf = h5py.File(start, 'r')
-    #hf2 = h5py.File(final_destination, 'a')
-    #hf.close()
-    #hf2.close()
+
+    t0 = os.path.getmtime(start)
+    time.sleep(2)
+    t1 = os.path.getmtime(start)
+    diff = t1-t0
+    while diff != 0:
+        #print(diff)
+        t0 = os.path.getmtime(start)
+        time.sleep(2)
+        t1 = os.path.getmtime(start)
+        diff = t1-t0
+
     os.system('cp %s %s' %(start, final_destination)) #popen
     #shutil.copy(start, final_destination)
     #os.chmod(final_destination, stat.S_IWGRP)
