@@ -9,7 +9,7 @@ from numpy.linalg import eig, inv
 from skimage.draw import circle as draw_circle
 from skimage.draw import ellipse as draw_ellipse
 from skimage.measure import label
-from astropy.io import fits as pyfits
+from m4.ground import read_data
 import sklearn.feature_extraction as skf_e
 import sklearn.cluster as skc
 from m4.configuration.ott_parameters import OttParameters
@@ -33,6 +33,8 @@ class ParabolIdent():
         centro, axs, raggio = self._fitEllipse(x, y)
         pxs = raggio / OttParameters.RADIUS_FIDUCIAL_POINT
         par_radius = pxs * OttParameters.parab_radius
+#         import pdb
+#         pdb.set_trace()
         circle = self._drawCircle(centro, par_radius, image)
         ima = np.ma.masked_array(image, mask=np.invert(circle.astype(bool)))
         coef1, mat = zernike.zernikeFit(ima, np.arange(10)+1)
@@ -174,6 +176,8 @@ class ParabolIdent():
         C[0, 2] = C[2, 0] = 2
         C[1, 1] = -1
         E, V =  eig(np.dot(inv(S), C))
+#         import pdb
+#         pdb.set_trace()
         n = np.argmax(np.abs(E))
         a_vect = V[:, n]
         #center
@@ -222,11 +226,9 @@ class ParabolIdent():
         circle[rr, cc] = 1
         return circle
 
-    def _imaTest(self, file_name):
+    def _imaTest(self, file_path):
         #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/20161226_122557/mode_0569.fits'
         #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Seg/img_0000.fits'
-        #file_name = '/Users/rm/eclipse-workspace/M4/test/img_0000.fits'
-        hduList = pyfits.open(file_name)
-        ima = hduList[0].data
-        immagine = np.ma.masked_array(ima[0], mask=np.invert(ima[1].astype(bool)))
+        #file_name = '/Users/rm/eclipse-workspace/M4/test/utils/img_0000.fits'
+        immagine = read_data.read_phasemap(file_path)
         return immagine
