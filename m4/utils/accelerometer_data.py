@@ -9,6 +9,7 @@ import numpy as np
 import zmq
 import h5py
 import time
+import stat
 from m4.configuration.config import fold_name
 from m4.configuration.ott_parameters import OpcUaParameters
 from matplotlib import pyplot as plt
@@ -31,8 +32,13 @@ def acquire_acc_data(recording_seconds=5):
     socket = context.socket(zmq.REQ)
     socket.connect(OpcUaParameters.accelerometers_server)
     socket.send_string("START %d" %recording_seconds)
+#     try:
+#         reply = socket.recv(1)
+#         print(reply)
+#     except:
+#         raise OSError('No reply from socket')
     socket.disconnect(OpcUaParameters.accelerometers_server)
-    time.sleep(recording_seconds)
+    time.sleep(recording_seconds+2)
     
     list = os.listdir(OpcUaParameters.accelerometers_data_folder)
     list.sort()
@@ -40,8 +46,16 @@ def acquire_acc_data(recording_seconds=5):
     tt = Timestamp.now()
     name = tt + '.h5'
     final_destination = os.path.join(fold_name.ACC_ROOT_FOLDER, name)
-    shutil.copy(os.path.join(OpcUaParameters.accelerometers_data_folder, h5_file_name),
-                final_destination)
+    start = os.path.join(OpcUaParameters.accelerometers_data_folder, h5_file_name)
+    print(start)
+    #hf = h5py.File(start, 'r')
+    #hf2 = h5py.File(final_destination, 'a')
+    #hf.close()
+    #hf2.close()
+    os.system('cp %s %s' %(start, final_destination)) #popen
+    #shutil.copy(start, final_destination)
+    #os.chmod(final_destination, stat.S_IWGRP)
+    #shutil.copy(start, final_destination)
     return name
 
 def read_acc_data(name):
@@ -57,9 +71,11 @@ def read_acc_data(name):
     '''
     h5_file_path = os.path.join(fold_name.ACC_ROOT_FOLDER, name)
     hf = h5py.File(h5_file_path, 'r')
-    hf.keys()
-    data = hf.get('Accelerometers')
-    return data
+    #hf.keys()
+    datah5 = hf.get('Accelerometers')
+    #data = datah5[()]
+    #hf.close()
+    return datah5
 
 def _create_test_signal(self):
     T = 10
@@ -140,12 +156,16 @@ def plot_power_spectrum(spe, freq):
     plt.figure()
     label_list = ['acc05', 'acc06', 'acc07']
     for i in range(spe1.shape[0]):
-        plt.plot(freq1, np.abs(spe1[i,:]), '-o', label=label_list[i])
+        plt.plot(freq1, np.abs(spe1[i,:]), '-', label=label_list[i])
     plt.xlabel('Freq[Hz]')
     plt.ylabel('FFT|sig|')
+    plt.xlim([0,100])
+    plt.ion()
     plt.show()
+    plt.pause(0.01)
     plt.legend()
     plt.grid()
+    
 
 def main(recording_seconds=5, plot_seconds=10):
     tt = acquire_acc_data(recording_seconds)
