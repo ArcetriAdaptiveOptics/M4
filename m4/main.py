@@ -360,13 +360,13 @@ def convection_noise(data_file_path, tau_vector):
     plt.savefig(os.path.join(dove, 'tiptilt_tau.png'))
 
     #stimare tc dal grafico e usare 2*tau_c = epsilon_c / np.sqrt(n) n = 4000
-    tau_c = 30 * (1/27.58)
-    epsilon_c = 2 * tau_c * np.sqrt(n_meas)
-    fits_file_name = os.path.join(dove, 'epsilon_c.txt')
-    file = open(fits_file_name, 'w+')
-    file.write('Epsilon_c = %e' %epsilon_c)
-    file.close()
-    return epsilon_c
+#     tau_c = 30 * (1/27.58)
+#     epsilon_c = 2 * tau_c * np.sqrt(n_meas)
+#     fits_file_name = os.path.join(dove, 'epsilon_c.txt')
+#     file = open(fits_file_name, 'w+')
+#     file.write('Epsilon_c = %e' %epsilon_c)
+#     file.close()
+    return
 
 def piston_noise(data_file_path):
     '''
