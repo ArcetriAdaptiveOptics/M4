@@ -333,7 +333,7 @@ def test242(image):
     return rms
 
 def test243(image, ps):
-    diameter = 0 #average inter-actuator spacing 
+    diameter = 0 #average inter-actuator spacing
     fit = 0
     step = None
     rms, rms_ord = patches_analysis(image, diameter/2, fit, ps, step)
@@ -344,6 +344,9 @@ def test283(image):
     alpha, beta = curv_fit(image, diameter)
     raggio = roc(diameter, alpha, beta)
     return raggio
+
+
+
 
 def imaTest():
     ff = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest/20191210_110019/mode0002_measure_segment00_neg.fits'

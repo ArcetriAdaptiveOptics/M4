@@ -350,14 +350,18 @@ def convection_noise(data_file_path, tau_vector):
     pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad)
     pyfits.writeto(os.path.join(dove, 'tau_vector.fits'), tau_vector)
 
-    plt.clf()
-    plt.plot(tau_vector, rms, '-o', label= 'rms_medio'); plt.xlabel('tau_vector')
-    plt.legend()
-    plt.savefig(os.path.join(dove, 'rms_tau.png'))
-    plt.figure()
-    plt.plot(tau_vector, quad, '-o', label= 'tip_tilt'); plt.xlabel('tau_vector')
-    plt.legend()
-    plt.savefig(os.path.join(dove, 'tiptilt_tau.png'))
+    if tau_vector.size > 20:
+        plt.clf()
+        plt.plot(tau_vector * (1/27.58), rms, '-o'); plt.xlabel('tau_vector')
+    else:
+        plt.clf()
+        plt.plot(tau_vector, rms, '-o', label= 'rms_medio'); plt.xlabel('tau_vector')
+        plt.legend()
+        plt.savefig(os.path.join(dove, 'rms_tau.png'))
+        plt.figure()
+        plt.plot(tau_vector, quad, '-o', label= 'tip_tilt'); plt.xlabel('tau_vector')
+        plt.legend()
+        plt.savefig(os.path.join(dove, 'tiptilt_tau.png'))
 
     #stimare tc dal grafico e usare 2*tau_c = epsilon_c / np.sqrt(n) n = 4000
 #     tau_c = 30 * (1/27.58)
