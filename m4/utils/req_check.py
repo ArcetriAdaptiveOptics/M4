@@ -345,6 +345,16 @@ def test283(image):
     raggio = roc(diameter, alpha, beta)
     return raggio
 
+def diffPiston(image):
+    dimx = image.shape[0]
+    dimy = image.shape[1]
+    imas = image[:, 0:np.int(dimy/2)]
+    imad = image[np.int(dimx/2):, :]
+
+    coefs, mat = zernike.zernikeFit(imas, np.arange(3)+1)
+    coefd, mat = zernike.zernikeFit(imad, np.arange(3)+1)
+    diff_piston = coefs[0]-coefd[1]
+    return diff_piston
 
 
 

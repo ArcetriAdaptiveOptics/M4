@@ -246,7 +246,7 @@ def _createTemplateList(numbers_array):
         template_list.append(temp)
     return template_list
 
-def stability_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
+def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
     '''
     Parameters
     ----------
@@ -347,27 +347,21 @@ def convection_noise(data_file_path, tau_vector):
 
     rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector)
     pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms, overwrite=True)
-    pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad, overwrite=True)
+    #pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'tau_vector.fits'), tau_vector, overwrite=True)
 
-    if tau_vector.size > 20:
-        plt.clf()
-        plt.plot(tau_vector * (1/27.58), rms, '-o'); plt.xlabel('tau_vector')
-    else:
-        plt.clf()
-        plt.plot(tau_vector, rms, '-o', label= 'rms_medio'); plt.xlabel('tau_vector')
-        plt.legend()
-        name = os.path.join(dove, 'rms_tau.png')
-        if os.path.isfile(name):
-            os.remove(name)
-        plt.savefig(name)
-        plt.figure()
-        plt.plot(tau_vector, quad, '-o', label= 'tip_tilt'); plt.xlabel('tau_vector')
-        plt.legend()
-        name = os.path.join(dove, 'tiptilt_tau.png')
-        if os.path.isfile(name):
-            os.remove(name)
-        plt.savefig(name)
+
+    plt.clf()
+    plt.plot(tau_vector * (1/27.58), rms * 1e-9, '-o')
+    plt.xlabel('time [s]')
+    plt.ylabel('rms [nm]')
+    name = os.path.join(dove, 'rms_tau.png')
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
+
+    decorr_time = '?'
+    return rms[-1], decorr_time
 
     #stimare tc dal grafico e usare 2*tau_c = epsilon_c / np.sqrt(n) n = 4000
 #     tau_c = 30 * (1/27.58)
@@ -376,7 +370,7 @@ def convection_noise(data_file_path, tau_vector):
 #     file = open(fits_file_name, 'w+')
 #     file.write('Epsilon_c = %e' %epsilon_c)
 #     file.close()
-    return
+
 
 def piston_noise(data_file_path):
     '''
