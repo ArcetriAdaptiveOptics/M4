@@ -346,9 +346,9 @@ def convection_noise(data_file_path, tau_vector):
     dove = _path_noise_results(data_file_path)
 
     rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector)
-    pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms)
-    pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad)
-    pyfits.writeto(os.path.join(dove, 'tau_vector.fits'), tau_vector)
+    pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms, overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad, overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'tau_vector.fits'), tau_vector, overwrite=True)
 
     if tau_vector.size > 20:
         plt.clf()
@@ -357,11 +357,17 @@ def convection_noise(data_file_path, tau_vector):
         plt.clf()
         plt.plot(tau_vector, rms, '-o', label= 'rms_medio'); plt.xlabel('tau_vector')
         plt.legend()
-        plt.savefig(os.path.join(dove, 'rms_tau.png'))
+        name = os.path.join(dove, 'rms_tau.png')
+        if os.path.isfile(name):
+            os.remove(name)
+        plt.savefig(name)
         plt.figure()
         plt.plot(tau_vector, quad, '-o', label= 'tip_tilt'); plt.xlabel('tau_vector')
         plt.legend()
-        plt.savefig(os.path.join(dove, 'tiptilt_tau.png'))
+        name = os.path.join(dove, 'tiptilt_tau.png')
+        if os.path.isfile(name):
+            os.remove(name)
+        plt.savefig(name)
 
     #stimare tc dal grafico e usare 2*tau_c = epsilon_c / np.sqrt(n) n = 4000
 #     tau_c = 30 * (1/27.58)
