@@ -4,11 +4,14 @@ Authors
 '''
 
 import numpy as np
+import os
+import glob
 from m4.configuration.ott_parameters import OttParameters
 from astropy.io import fits as pyfits
 from skimage.draw import circle as draw_circle
 from m4.ground import zernike
 from scipy.ndimage.interpolation import shift
+from m4.ground.read_data import InterferometerConverter
 
 def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patches=None):
     '''
@@ -356,8 +359,41 @@ def diffPiston(image):
     diff_piston = coefs[0]-coefd[1]
     return diff_piston
 
+def robustImageFromDataset(path):
+    list = glob.glob(os.path.join(path, '*.h5'))
+    list.sort()
+    half = np.int(len(list)/2)
+    list1 = list[0:half]
+    list2 = list[half:]
+
+    cube1 = None
+    print('Creating cube 1:')
+    for name in list1:
+        print(name)
+        image = InterferometerConverter.from4D(name)
+        if cube1 is None:
+            cube1 = image
+        else:
+            cube1 = np.ma.dstack((cube1, image))
+
+    cube2 = None
+    print('Creating cube 2:')
+    for name in list2:
+        print(name)
+        image = InterferometerConverter.from4D(name)
+        if cube2 is None:
+            cube2 = image
+        else:
+            cube2 = np.ma.dstack((cube1, image))
+
+    mean1 = np.ma.mean(cube1, axis=2)
+    mean2 = np.ma.mean(cube2, axis=2)
+
+    image = mean2 -mean1
+    return image
 
 
+###TEST###
 def imaTest():
     ff = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest/20191210_110019/mode0002_measure_segment00_neg.fits'
     hduList=pyfits.open(ff)
