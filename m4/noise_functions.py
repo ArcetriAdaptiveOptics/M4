@@ -117,7 +117,7 @@ class Noise():
 
         self._saveInfo(dove, tidy_or_shuffle, an._template, an._actsVector, an._nPushPull)
 
-        rms_mean, quad_mean = self.rmsFromCube(self._cubeFromAnalysis)
+        rms_mean, quad_mean, tilt_mean = self.rmsFromCube(self._cubeFromAnalysis)
         self._saveResults(rms_mean, quad_mean, dove)
         return tt
 
@@ -158,7 +158,7 @@ class Noise():
         tilt = np.array(coef_tilt_list).mean()
         quad_tt = np.array(quad_list).mean()
         rms_mean = np.mean(rms_vector)
-        return rms_mean, quad_tt
+        return rms_mean, quad_tt, tilt
 
     def _spectrumAllData(self, data_file_path):
         list = glob.glob(os.path.join(data_file_path, '*.h5'))
@@ -261,7 +261,7 @@ class Noise():
         for tt in tt_list:
             cube = self._readCube(tt)
             n_temp = self._readTempFromInfoFile(tt)
-            rms, quad = self.rmsFromCube(cube)
+            rms, quad, tilt = self.rmsFromCube(cube)
             rms_list.append(rms)
             quad_list.append(quad)
             n_temp_list.append(n_temp)
@@ -269,7 +269,7 @@ class Noise():
         rms_medio = np.array(rms_list)
         quad = np.array(quad_list)
         n_temp = np.array(n_temp_list)
-        return rms_medio, quad, n_temp
+        return rms_medio, tilt, n_temp
     ### tt_list ###
     # measurementFolder ='/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Noise'
     # list= os.listdir(measurementFolder); list.sort()

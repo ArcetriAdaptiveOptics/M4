@@ -277,22 +277,22 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
         file.write('%s \n' %tt)
     file.close()
 
-    rms_medio, quad_medio, n_temp = n.different_template_analyzer(tt_list)
+    rms_medio, tilt_medio, n_temp = n.different_template_analyzer(tt_list)
     pyfits.writeto(os.path.join(dove, 'rms_vector_%d.fits' %tidy_or_shuffle), rms_medio, overwrite=True)
-    pyfits.writeto(os.path.join(dove, 'tiptilt_vector_%d.fits' %tidy_or_shuffle), quad_medio, overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'tilt_vector_%d.fits' %tidy_or_shuffle), tilt_medio, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'n_temp_vector_%d.fits' %tidy_or_shuffle), n_temp, overwrite=True)
 
-    plt.clf()
-    plt.plot(n_temp, rms_medio, '-o', label= 'rms_medio'); plt.xlabel('n_temp')
-    plt.legend()
-    name = os.path.join(dove, 'rms_ntemp_%d.png' %tidy_or_shuffle)
-    if os.path.isfile(name):
-        os.remove(name)
-    plt.savefig(name)
+#     plt.clf()
+#     plt.plot(n_temp, rms_medio, '-o', label= 'rms_medio'); plt.xlabel('n_temp')
+#     plt.legend()
+#     name = os.path.join(dove, 'rms_ntemp_%d.png' %tidy_or_shuffle)
+#     if os.path.isfile(name):
+#         os.remove(name)
+#     plt.savefig(name)
     plt.figure()
-    plt.plot(n_temp, quad_medio, '-o', label= 'tip_tilt'); plt.xlabel('n_temp')
-    plt.legend()
-    name = os.path.join(dove, 'tiptilt_ntemp_%d.png' %tidy_or_shuffle)
+    plt.plot(n_temp, tilt_medio, '-o'); plt.xlabel('n_temp')
+    plt.ylabel('Tilt [m]')
+    name = os.path.join(dove, 'tilt_ntemp_%d.png' %tidy_or_shuffle)
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
@@ -346,6 +346,7 @@ def convection_noise(data_file_path, tau_vector):
     dove = _path_noise_results(data_file_path)
 
     rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector)
+    WFE = rms * 2
     pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms, overwrite=True)
     #pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'tau_vector.fits'), tau_vector, overwrite=True)
