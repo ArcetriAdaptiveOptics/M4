@@ -353,7 +353,7 @@ def convection_noise(data_file_path, tau_vector):
 
 
     plt.clf()
-    plt.plot(tau_vector * (1/27.58), rms * 1e-9, '-o')
+    plt.plot(tau_vector * (1/27.58), rms * 1e9, '-o')
     plt.xlabel('time [s]')
     plt.ylabel('rms [nm]')
     name = os.path.join(dove, 'rms_tau.png')
@@ -372,6 +372,11 @@ def convection_noise(data_file_path, tau_vector):
 #     file.write('Epsilon_c = %e' %epsilon_c)
 #     file.close()
 
+def fun(param, tau_vector):
+	fun = -exp(-tau_vector* (1/27.58)*param[0]+param[1]) + param[2]
+	return fun
+def prova(param, tau_vector):
+	pp, pcov = curve_fit(fun(param, tau_vector), tau_vector * (1/27.58), rms *1e9, param)
 
 def piston_noise(data_file_path):
     '''
