@@ -373,11 +373,13 @@ def convection_noise(data_file_path, tau_vector):
 #     file.close()
 
 def fun(tau_vector, a, b, c):
-    fun = -np.exp(-tau_vector* (1/27.58)*a+b) + c
+    fun = -np.exp(-a*(tau_vector* (1/27.58)+b)) + c
     return fun
 def prova(param, tau_vector, rms):
     from scipy.optimize import curve_fit
     pp, pcov = curve_fit(fun, tau_vector * (1/27.58), rms *1e9, param)
+    fit = fun(tau_vector * (1/27.58), *pp)
+
 
 def piston_noise(data_file_path):
     '''
