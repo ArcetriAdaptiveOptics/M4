@@ -257,6 +257,7 @@ class Noise():
         self._logger.debug('tt_list used: %s', tt_list)
         rms_list = []
         quad_list = []
+        tilt_list = []
         n_temp_list = []
         for tt in tt_list:
             cube = self._readCube(tt)
@@ -264,10 +265,12 @@ class Noise():
             rms, quad, tilt = self.rmsFromCube(cube)
             rms_list.append(rms)
             quad_list.append(quad)
+            tilt_list.append(tilt)
             n_temp_list.append(n_temp)
 
         rms_medio = np.array(rms_list)
         quad = np.array(quad_list)
+        tilt = np.array(tilt_list)
         n_temp = np.array(n_temp_list)
         return rms_medio, tilt, n_temp
     ### tt_list ###
