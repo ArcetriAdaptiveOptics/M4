@@ -376,7 +376,7 @@ def convection_noise(data_file_path, tau_vector):
 #     file.close()
 
 def fun_fit(tau_vector, a, b, c):
-    fun = -np.exp(-a*(tau_vector* (1/27.58)+b)) + c
+    fun = -np.exp(-a*(tau_vector* (1/27.58)-b)) + c
     return fun
 def curvFit(param, tau_vector, rms):
     from scipy.optimize import curve_fit

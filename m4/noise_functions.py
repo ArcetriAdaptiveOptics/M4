@@ -304,7 +304,7 @@ class Noise():
         image_number = len(list)
         i_max = np.int((image_number - tau_vector[tau_vector.shape[0]-1]) /
                        (tau_vector[tau_vector.shape[0]-1] * 2))
-        if i_max <= 20:
+        if i_max <= 10:
             raise OSError('tau = %s too large' %tau_vector[tau_vector.shape[0]-1])
         rms_medio_list = []
         quad_med_list = []
