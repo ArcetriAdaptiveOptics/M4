@@ -346,7 +346,9 @@ def convection_noise(data_file_path, tau_vector):
     dove = _path_noise_results(data_file_path)
 
     rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector)
-    WFE = rms * 2
+    param = [5, 0.5, 32]
+    pp,fit = curvFit(param, tau_vector, rms)
+    #WFE = rms * 2
     pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms, overwrite=True)
     #pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'tau_vector.fits'), tau_vector, overwrite=True)
@@ -356,13 +358,14 @@ def convection_noise(data_file_path, tau_vector):
     plt.plot(tau_vector * (1/27.58), rms * 1e9, '-o')
     plt.xlabel('time [s]')
     plt.ylabel('rms [nm]')
+    plt.plot(tau_vector * (1/27.58), fit, '-o')
     name = os.path.join(dove, 'rms_tau.png')
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
 
     decorr_time = '?'
-    return rms[-1], decorr_time
+    return pp[2], decorr_time
 
     #stimare tc dal grafico e usare 2*tau_c = epsilon_c / np.sqrt(n) n = 4000
 #     tau_c = 30 * (1/27.58)
@@ -372,13 +375,14 @@ def convection_noise(data_file_path, tau_vector):
 #     file.write('Epsilon_c = %e' %epsilon_c)
 #     file.close()
 
-def fun(tau_vector, a, b, c):
+def fun_fit(tau_vector, a, b, c):
     fun = -np.exp(-a*(tau_vector* (1/27.58)+b)) + c
     return fun
-def prova(param, tau_vector, rms):
+def curvFit(param, tau_vector, rms):
     from scipy.optimize import curve_fit
-    pp, pcov = curve_fit(fun, tau_vector * (1/27.58), rms *1e9, param)
-    fit = fun(tau_vector * (1/27.58), *pp)
+    pp, pcov = curve_fit(fun_fit, tau_vector * (1/27.58), rms *1e9, param)
+    fit = fun_fit(tau_vector * (1/27.58), *pp)
+    return pp, fit
 
 
 def piston_noise(data_file_path):
