@@ -290,8 +290,10 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
 #         os.remove(name)
 #     plt.savefig(name)
     plt.figure()
-    plt.plot(n_temp, quad_medio, '-o'); plt.xlabel('n_temp')
-    plt.ylabel('Tilt [m]')
+    plt.plot(n_temp, quad_medio*1e9, '-o'); plt.xlabel('n_temp')
+    plt.ylabel('TipTilt [nm]')
+    tt = data_file_path.split('/')[-2]
+    plt.title('%s' %tt)
     name = os.path.join(dove, 'tiptilt_ntemp_%d.png' %tidy_or_shuffle)
     if os.path.isfile(name):
         os.remove(name)
