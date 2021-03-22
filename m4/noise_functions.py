@@ -272,7 +272,7 @@ class Noise():
         quad = np.array(quad_list)
         tilt = np.array(tilt_list)
         n_temp = np.array(n_temp_list)
-        return rms_medio, tilt, n_temp
+        return rms_medio, quad, n_temp
     ### tt_list ###
     # measurementFolder ='/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Noise'
     # list= os.listdir(measurementFolder); list.sort()
