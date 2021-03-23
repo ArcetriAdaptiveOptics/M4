@@ -53,14 +53,15 @@ class Noise():
             an = analyzer object
         '''
         an = AnalyzerIFF()
+        list = glob.glob(os.path.join(data_file_path,'*.h5'))
+        n_tot = len(list)
+        an._template = template
         if n_push_pull is None:
-            an._nPushPull = 3
+            #an._nPushPull = 3
+            an._nPushPull = np.int(n_tot/an._template.size)
         else:
             an._nPushPull = n_push_pull
-        an._template = template
         if actsVector is None:
-            list = glob.glob(os.path.join(data_file_path,'*.h5'))
-            n_tot = len(list)
             n_acts = np.int(n_tot / (an._template.size * an._nPushPull))
             an._actsVector = np.arange(n_acts)
             an._modeVector = np.copy(an._actsVector)
