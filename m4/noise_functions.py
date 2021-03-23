@@ -144,14 +144,14 @@ class Noise():
         quad_list = []
         for i in range(cube_to_process.shape[2]):
             image = cube_to_process[:, :, i]
-            coef, mat = zernike.zernikeFit(image, np.array([2, 3]))
+            coef, mat = zernike.zernikeFit(image, np.array([1, 2, 3]))
             sur = zernike.zernikeSurface(image, coef, mat)
             image_ttr = image - sur
             rms = image_ttr.std()
             rms_list.append(rms)
-            coef_tip_list.append(coef[0])
-            coef_tilt_list.append(coef[1])
-            quad = np.sqrt(coef[0]**2 + coef[1]**2)
+            coef_tip_list.append(coef[1])
+            coef_tilt_list.append(coef[2])
+            quad = np.sqrt(coef[1]**2 + coef[2]**2)
             quad_list.append(quad)
         rms_vector = np.array(rms_list)
         tip = np.array(coef_tip_list).mean()
