@@ -361,10 +361,10 @@ def convection_noise(data_file_path, tau_vector):
     plt.xlabel('time [s]')
     plt.ylabel('rms [nm]')
     plt.plot(tau_vector * (1/27.58), fit, '-o', label='fit')
-    plt.legend()
     plt.grid()
     plt.plot([tau_vector[0] * (1/27.58), tau_vector[-1] * (1/27.58)], [pp[2], pp[2]],
              '--r', linewidth=3, label='%.2f [nm]' %pp[2])
+    plt.legend()
     tt = data_file_path.split('/')[-2]
     plt.title('%s' %tt)
     name = os.path.join(dove, 'rms_tau.png')
