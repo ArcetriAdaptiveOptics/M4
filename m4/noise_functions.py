@@ -57,7 +57,7 @@ class Noise():
         n_tot = len(list)
         an._template = template
         if n_push_pull is None:
-            an._nPushPull = 10
+            an._nPushPull = 6
             #an._nPushPull = np.int(n_tot/an._template.size) #cosi il cubo diventa una immagine
         else:
             an._nPushPull = n_push_pull
