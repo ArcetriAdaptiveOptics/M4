@@ -358,6 +358,7 @@ def convection_noise(data_file_path, tau_vector):
     x = tau_vector* (1/27.58)
     rms_nm = rms*1e9
     pp,fit = curvFit(param, x, rms_nm)
+    decorr_time = 1/pp[0]+pp[1]
     #WFE = rms * 2
     pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad, overwrite=True)
@@ -368,10 +369,12 @@ def convection_noise(data_file_path, tau_vector):
     plt.plot(tau_vector * (1/27.58), rms * 1e9, '-o', label='meas')
     plt.xlabel('time [s]')
     plt.ylabel('rms [nm]')
-    plt.plot(x, fit, '-o', label='fit')
+    plt.plot(x, fit, '-', label='fit')
     plt.grid()
     plt.plot([x[0], x[-1]], [pp[2], pp[2]], '--r', linewidth=3,
              label='%.2f [nm]' %pp[2])
+    plt.plot(decorr_time, fun_fit(decorr_time,*pp), 'og',
+    		 label='Dec time = %d [s]' %np.round(decorr_time))
     plt.legend()
     tt = data_file_path.split('/')[-2]
     plt.title('%s' %tt)
@@ -379,8 +382,6 @@ def convection_noise(data_file_path, tau_vector):
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
-
-    decorr_time = 1/pp[0]+pp[1]
     return pp[2], decorr_time
 
     #stimare tc dal grafico e usare 2*tau_c = epsilon_c / np.sqrt(n) n = 4000
