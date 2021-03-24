@@ -282,17 +282,22 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
     pyfits.writeto(os.path.join(dove, 'tiptilt_vector_%d.fits' %tidy_or_shuffle), quad_medio, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'n_temp_vector_%d.fits' %tidy_or_shuffle), n_temp, overwrite=True)
 
-#     plt.clf()
-#     plt.plot(n_temp, rms_medio, '-o', label= 'rms_medio'); plt.xlabel('n_temp')
-#     plt.legend()
-#     name = os.path.join(dove, 'rms_ntemp_%d.png' %tidy_or_shuffle)
-#     if os.path.isfile(name):
-#         os.remove(name)
-#     plt.savefig(name)
+    tt = data_file_path.split('/')[-2]
+    plt.clf()
+    #WFE = 2*rms_medio
+    plt.plot(n_temp, rms_medio*1e9, '-o')
+    plt.xlabel('n_temp')
+    plt.ylabel('rms [nm]')
+    plt.title('%s' %tt)
+    plt.grid()
+    name = os.path.join(dove, 'rms_ntemp_%d.png' %tidy_or_shuffle)
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
+
     plt.figure()
     plt.plot(n_temp, quad_medio*1e9, '-o'); plt.xlabel('n_temp')
     plt.ylabel('TipTilt [nm]')
-    tt = data_file_path.split('/')[-2]
     plt.title('%s' %tt)
     plt.grid()
     name = os.path.join(dove, 'tiptilt_ntemp_%d.png' %tidy_or_shuffle)
@@ -353,7 +358,7 @@ def convection_noise(data_file_path, tau_vector):
     pp,fit = curvFit(param, tau_vector, rms)
     #WFE = rms * 2
     pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms, overwrite=True)
-    #pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad, overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'tau_vector.fits'), tau_vector, overwrite=True)
 
 
