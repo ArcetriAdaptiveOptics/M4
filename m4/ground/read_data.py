@@ -64,7 +64,7 @@ def readFits_maskedImage(fits_file_path):
     object: numpy masked array
     '''
     hduList = pyfits.open(fits_file_path)
-    immagine = np.ma.masked_array(hduList[0].data, mask=np.invert(hduList[1].data.astype(bool)))
+    immagine = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
     return immagine
 ###
 

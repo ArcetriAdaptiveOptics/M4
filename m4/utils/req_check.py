@@ -392,12 +392,18 @@ def robustImageFromDataset(path):
     image = mean2 -mean1
     return image
 
-def robustImageFromStabilityData(path):
+def robustImageFromStabilityData(path=None):
+    if path is None:
+        path = '/home/labot/data/M4/Data/M4Data/OPTData/OPD_series/20210210_151134'
+    else:
+        path = path
+
     list_tot = glob.glob(os.path.join(path, '*.fits'))
     list_tot.sort()
-    half = np.int(len(list_tot)/2)
-    list1 = list_tot[0:half]
-    list2 = list_tot[half:]
+    list = list_tot[0:50]
+    half = np.int(len(list)/2)
+    list1 = list[0:half]
+    list2 = list[half:]
 
     cube1 = None
     print('Creating cube 1:')
