@@ -6,6 +6,7 @@ Authors
 import numpy as np
 import os
 import glob
+from m4.ground import geo
 from m4.configuration.ott_parameters import OttParameters
 from astropy.io import fits as pyfits
 from skimage.draw import circle as draw_circle
@@ -317,8 +318,12 @@ def slope(image):
     -------
         slope: masked array
     '''
-    ax = ((image - shift(image, [1,0]))/OttParameters.pscale)
-    ay = ((image - shift(image, [0,1]))/OttParameters.pscale)
+    mask = np.invert(image.mask).astype(int)
+    x, y, r, xx, yy = geo.qpupil(mask)
+    pscale = r * (1/0.17)
+ 
+    ax = ((image - shift(image, [1,0]))*pscale)
+    ay = ((image - shift(image, [0,1]))*pscale)
     mask = np.ma.mask_or(image.mask, shift(image.mask, [1,0]))
     sp = np.sqrt(((ax))**2+((ay))**2)
     #s = np.sqrt((np.arctan(ax))**2+(np.arctan(ay))**2)
@@ -331,7 +336,7 @@ def slope(image):
 def test242(image):
     sp = slope(image)
     # sp in pixel * fattore di conversione da rad ad arcsec
-    slope_arcsec = sp * 1e-3 * 206265
+    slope_arcsec = sp * 206265
     rms = slope_arcsec.std()
     return rms
 
@@ -392,7 +397,7 @@ def robustImageFromDataset(path):
     image = mean2 -mean1
     return image
 
-def robustImageFromStabilityData(path=None):
+def robustImageFromStabilityData(n_images, path=None):
     if path is None:
         path = '/home/labot/data/M4/Data/M4Data/OPTData/OPD_series/20210210_151134'
     else:
@@ -400,7 +405,7 @@ def robustImageFromStabilityData(path=None):
 
     list_tot = glob.glob(os.path.join(path, '*.fits'))
     list_tot.sort()
-    list = list_tot[0:50]
+    list = list_tot[0:n_images]
     half = np.int(len(list)/2)
     list1 = list[0:half]
     list2 = list[half:]
