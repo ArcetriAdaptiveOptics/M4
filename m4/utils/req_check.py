@@ -11,7 +11,7 @@ from astropy.io import fits as pyfits
 from skimage.draw import circle as draw_circle
 from m4.ground import zernike
 from scipy.ndimage.interpolation import shift
-from m4.ground.read_data import InterferometerConverter
+from m4.ground import read_data
 
 def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patches=None):
     '''
@@ -370,7 +370,7 @@ def robustImageFromDataset(path):
     print('Creating cube 1:')
     for name in list1:
         print(name)
-        image = InterferometerConverter.from4D(name)
+        image = read_data.InterferometerConverter.from4D(name)
         if cube1 is None:
             cube1 = image
         else:
@@ -380,7 +380,7 @@ def robustImageFromDataset(path):
     print('Creating cube 2:')
     for name in list2:
         print(name)
-        image = InterferometerConverter.from4D(name)
+        image = read_data.InterferometerConverter.from4D(name)
         if cube2 is None:
             cube2 = image
         else:
@@ -392,6 +392,38 @@ def robustImageFromDataset(path):
     image = mean2 -mean1
     return image
 
+def robustImageFromStabilityData(path):
+    list_tot = glob.glob(os.path.join(path, '*.fits'))
+    list_tot.sort()
+    half = np.int(len(list_tot)/2)
+    list1 = list_tot[0:half]
+    list2 = list_tot[half:]
+
+    cube1 = None
+    print('Creating cube 1:')
+    for name in list1:
+        print(name)
+        image = read_data.readFits_maskedImage(name)
+        if cube1 is None:
+            cube1 = image
+        else:
+            cube1 = np.ma.dstack((cube1, image))
+
+    cube2 = None
+    print('Creating cube 2:')
+    for name in list2:
+        print(name)
+        image = read_data.readFits_maskedImage(name)
+        if cube2 is None:
+            cube2 = image
+        else:
+            cube2 = np.ma.dstack((cube1, image))
+
+    mean1 = np.ma.mean(cube1, axis=2)
+    mean2 = np.ma.mean(cube2, axis=2)
+
+    image = mean2 -mean1
+    return image
 
 ###TEST###
 def imaTest():
