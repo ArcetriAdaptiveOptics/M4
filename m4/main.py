@@ -355,7 +355,9 @@ def convection_noise(data_file_path, tau_vector):
 
     rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector)
     param = [5, 0.5, 32]
-    pp,fit = curvFit(param, tau_vector, rms)
+    x = tau_vector* (1/27.58)
+    rms_nm = rms*1e9
+    pp,fit = curvFit(param, x, rms_nm)
     #WFE = rms * 2
     pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad, overwrite=True)
@@ -366,10 +368,10 @@ def convection_noise(data_file_path, tau_vector):
     plt.plot(tau_vector * (1/27.58), rms * 1e9, '-o', label='meas')
     plt.xlabel('time [s]')
     plt.ylabel('rms [nm]')
-    plt.plot(tau_vector * (1/27.58), fit, '-o', label='fit')
+    plt.plot(x, fit, '-o', label='fit')
     plt.grid()
-    plt.plot([tau_vector[0] * (1/27.58), tau_vector[-1] * (1/27.58)], [pp[2], pp[2]],
-             '--r', linewidth=3, label='%.2f [nm]' %pp[2])
+    plt.plot([x[0], x[-1]], [pp[2], pp[2]], '--r', linewidth=3,
+             label='%.2f [nm]' %pp[2])
     plt.legend()
     tt = data_file_path.split('/')[-2]
     plt.title('%s' %tt)
@@ -378,7 +380,7 @@ def convection_noise(data_file_path, tau_vector):
         os.remove(name)
     plt.savefig(name)
 
-    decorr_time = '?'
+    decorr_time = 1/pp[0]+pp[1]
     return pp[2], decorr_time
 
     #stimare tc dal grafico e usare 2*tau_c = epsilon_c / np.sqrt(n) n = 4000
@@ -389,13 +391,13 @@ def convection_noise(data_file_path, tau_vector):
 #     file.write('Epsilon_c = %e' %epsilon_c)
 #     file.close()
 
-def fun_fit(tau_vector, a, b, c):
-    fun = -np.exp(-a*(tau_vector* (1/27.58)-b)) + c
+def fun_fit(x, a, b, c):
+    fun = -np.exp(-a*(x-b)) + c
     return fun
-def curvFit(param, tau_vector, rms):
+def curvFit(param, x, rms_nm):
     from scipy.optimize import curve_fit
-    pp, pcov = curve_fit(fun_fit, tau_vector * (1/27.58), rms *1e9, param)
-    fit = fun_fit(tau_vector * (1/27.58), *pp)
+    pp, pcov = curve_fit(fun_fit, x, rms_nm, param)
+    fit = fun_fit(x, *pp)
     return pp, fit
 
 
