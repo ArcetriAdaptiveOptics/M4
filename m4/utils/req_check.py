@@ -321,7 +321,7 @@ def slope(image):
     mask = np.invert(image.mask).astype(int)
     x, y, r, xx, yy = geo.qpupil(mask)
     pscale = r * (1/0.17)
- 
+
     ax = ((image - shift(image, [1,0]))*pscale)
     ay = ((image - shift(image, [0,1]))*pscale)
     mask = np.ma.mask_or(image.mask, shift(image.mask, [1,0]))
@@ -364,7 +364,27 @@ def diffPiston(image):
     diff_piston = coefs[0]-coefd[1]
     return diff_piston
 
+
+def imageOpticOffset(data_file_path):
+    list = glob.glob(os.path.join(data_file_path, '*.fits'))
+    list.sort()
+
+    cube = None
+    print('Creating cube for offset image:')
+    for name in list:
+        nn = data_file_path.split('/')[-1]
+        print(nn)
+        image = read_data.InterferometerConverter.from4D(name)
+        if cube is None:
+            cube = image
+        else:
+            cube = np.ma.dstack((cube, image))
+
+    image = np.mean(cube, axis=2)
+    return image
+
 def robustImageFromDataset(path):
+    ''' From h5 files '''
     list = glob.glob(os.path.join(path, '*.h5'))
     list.sort()
     half = np.int(len(list)/2)
@@ -398,6 +418,7 @@ def robustImageFromDataset(path):
     return image
 
 def robustImageFromStabilityData(n_images, path=None):
+    ''' From fits files '''
     if path is None:
         path = '/home/labot/data/M4/Data/M4Data/OPTData/OPD_series/20210210_151134'
     else:
