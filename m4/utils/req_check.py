@@ -372,15 +372,19 @@ def imageOpticOffset(data_file_path):
     cube = None
     print('Creating cube for offset image:')
     for name in list:
-        nn = data_file_path.split('/')[-1]
+        nn = name.split('/')[-1]
         print(nn)
-        image = read_data.InterferometerConverter.from4D(name)
+        image = read_data.readFits_maskedImage(name)
         if cube is None:
             cube = image
         else:
             cube = np.ma.dstack((cube, image))
 
     image = np.mean(cube, axis=2)
+    dove = '/home/labot/data/M4/Data/M4Data/Results'
+    fits_file_name = os.path.join(dove, 'OptOffset.fits')
+    pyfits.writeto(fits_file_name, image.data)
+    pyfits.append(fits_file_name, image.mask.astype(int))
     return image
 
 def robustImageFromDataset(path):
