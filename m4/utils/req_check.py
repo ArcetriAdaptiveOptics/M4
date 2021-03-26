@@ -461,7 +461,7 @@ def robustImageFromStabilityData(n_images, path):
     fits_file_name = os.path.join(config.path_name.OUT_FOLDER, 'Req', 'OptOffset5000.fits')
     image_optOffset = read_data.readFits_maskedImage(fits_file_name)
     final_image = image - image_optOffset
-    return final_image
+    return image
 
 
 

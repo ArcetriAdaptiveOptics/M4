@@ -428,7 +428,8 @@ def piston_noise(data_file_path):
 
 def analysis_req(stab_path):
     results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req')
-    dove = os.path.join(results_path, stab_path.split('/')[-1])
+    tt = stab_path.split('/')[-1]
+    dove = os.path.join(results_path, tt)
     if os.path.exists(dove):
         dove = dove
     else:
@@ -451,21 +452,33 @@ def analysis_req(stab_path):
 
     x = np.array([50,100,300,600])
     y = np.array([image50.std(),image100.std(),image300.std(),image600.std()])
+    plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')
+    plt.ylabel('rms [m]')
+    plt.xlabel('sqrt(n_frames)')
+    plt.title('%s' %tt)
     name = os.path.join(dove, 'std.png')
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
 
     y = np.array([sp_arc50, sp_arc100, sp_arc300, sp_arc600])
+    plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')
+    plt.ylabel('rms [arcsec]')
+    plt.xlabel('sqrt(n_frames)')
+    plt.title('%s' %tt)
     name = os.path.join(dove, 'slope.png')
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
 
     y = np.array([d50, d100, d300, d600])
+    plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')
+    plt.ylabel('diff_piston [m]')
+    plt.xlabel('sqrt(n_frames)')
+    plt.title('%s' %tt)
     name = os.path.join(dove, 'diff_piston.png')
     if os.path.isfile(name):
         os.remove(name)
