@@ -424,43 +424,56 @@ def robustImageFromDataset(path):
     image = mean2 -mean1
     return image
 
-def robustImageFromStabilityData(n_images, path):
+def robustImageFromStabilityData(n_images, path, offset=None):
     ''' From fits files and whit offset subtraction'''
     list_tot = glob.glob(os.path.join(path, '*.fits'))
     list_tot.sort()
     list = list_tot[0:n_images]
-    half = np.int(len(list)/2)
-    list1 = list[0:half]
-    list2 = list[half:]
+    if offset is None:
+        half = np.int(len(list)/2)
+        list1 = list[0:half]
+        list2 = list[half:]
 
-    cube1 = None
-    print('Creating cube 1:')
-    for name in list1:
-        print(name)
-        image = read_data.readFits_maskedImage(name)
-        if cube1 is None:
-            cube1 = image
-        else:
-            cube1 = np.ma.dstack((cube1, image))
+        cube1 = None
+        print('Creating cube 1:')
+        for name in list1:
+            print(name)
+            image = read_data.readFits_maskedImage(name)
+            if cube1 is None:
+                cube1 = image
+            else:
+                cube1 = np.ma.dstack((cube1, image))
 
-    cube2 = None
-    print('Creating cube 2:')
-    for name in list2:
-        print(name)
-        image = read_data.readFits_maskedImage(name)
-        if cube2 is None:
-            cube2 = image
-        else:
-            cube2 = np.ma.dstack((cube1, image))
+        cube2 = None
+        print('Creating cube 2:')
+        for name in list2:
+            print(name)
+            image = read_data.readFits_maskedImage(name)
+            if cube2 is None:
+                cube2 = image
+            else:
+                cube2 = np.ma.dstack((cube1, image))
 
-    mean1 = np.ma.mean(cube1, axis=2)
-    mean2 = np.ma.mean(cube2, axis=2)
+        mean1 = np.ma.mean(cube1, axis=2)
+        mean2 = np.ma.mean(cube2, axis=2)
 
-    image = mean2 -mean1
+        final_image = mean2 -mean1
 
-    fits_file_name = os.path.join(config.path_name.OUT_FOLDER, 'Req', 'OptOffset5000.fits')
-    image_optOffset = read_data.readFits_maskedImage(fits_file_name)
-    final_image = image - image_optOffset
+    else:
+        fits_file_name = os.path.join(config.path_name.OUT_FOLDER, 'Req', 'OptOffset5000.fits')
+        image_optOffset = read_data.readFits_maskedImage(fits_file_name)
+        
+        cube = None
+        for name in list:
+            print(name)
+            image = read_data.readFits_maskedImage(name)
+            if cube is None:
+                cube = image
+            else:
+                cube = np.ma.dstack((cube, image))
+        mean =  np.ma.mean(cube, axis=2)
+        final_image = mean - image_optOffset
+
     return image
 
 
