@@ -426,7 +426,7 @@ def piston_noise(data_file_path):
     plt.savefig(os.path.join(dove, 'piston_spectrum.png'))
 
 
-def analysis_req(stab_path):
+def analysis_req(stab_path, offset=None):
     results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req')
     tt = stab_path.split('/')[-1]
     dove = os.path.join(results_path, tt)
@@ -435,10 +435,14 @@ def analysis_req(stab_path):
     else:
         os.makedirs(dove)
 
-    image50 = req_check.robustImageFromStabilityData(50, stab_path)
-    image100 = req_check.robustImageFromStabilityData(100, stab_path)
-    image300 = req_check.robustImageFromStabilityData(300, stab_path)
-    image600 = req_check.robustImageFromStabilityData(600, stab_path)
+    print('Creating cube 50')
+    image50 = req_check.robustImageFromStabilityData(50, stab_path, offset)
+    print('Creating cube 100')
+    image100 = req_check.robustImageFromStabilityData(100, stab_path, offset)
+    print('Creating cube 300')
+    image300 = req_check.robustImageFromStabilityData(300, stab_path, offset)
+    print('Creating cube 600')
+    image600 = req_check.robustImageFromStabilityData(600, stab_path, offset)
 
     sp_arc50 = req_check.test242(image50)
     sp_arc100 = req_check.test242(image100)

@@ -435,9 +435,9 @@ def robustImageFromStabilityData(n_images, path, offset=None):
         list2 = list[half:]
 
         cube1 = None
-        print('Creating cube 1:')
+        print('Creating cube 1')
         for name in list1:
-            print(name)
+            #print(name)
             image = read_data.readFits_maskedImage(name)
             if cube1 is None:
                 cube1 = image
@@ -445,9 +445,9 @@ def robustImageFromStabilityData(n_images, path, offset=None):
                 cube1 = np.ma.dstack((cube1, image))
 
         cube2 = None
-        print('Creating cube 2:')
+        print('Creating cube 2')
         for name in list2:
-            print(name)
+            #print(name)
             image = read_data.readFits_maskedImage(name)
             if cube2 is None:
                 cube2 = image
@@ -464,8 +464,9 @@ def robustImageFromStabilityData(n_images, path, offset=None):
         image_optOffset = read_data.readFits_maskedImage(fits_file_name)
         
         cube = None
+        print('Creating cube')
         for name in list:
-            print(name)
+            #print(name)
             image = read_data.readFits_maskedImage(name)
             if cube is None:
                 cube = image
@@ -474,7 +475,7 @@ def robustImageFromStabilityData(n_images, path, offset=None):
         mean =  np.ma.mean(cube, axis=2)
         final_image = mean - image_optOffset
 
-    return image
+    return final_image
 
 
 
