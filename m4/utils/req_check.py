@@ -13,6 +13,7 @@ from skimage.draw import circle as draw_circle
 from m4.ground import zernike
 from scipy.ndimage.interpolation import shift
 from m4.ground import read_data
+from m4.configuration import config
 
 def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patches=None):
     '''
@@ -365,6 +366,8 @@ def diffPiston(image):
     return diff_piston
 
 
+### ROBUST IMAGE ###
+
 def imageOpticOffset(data_file_path):
     list = glob.glob(os.path.join(data_file_path, '*.fits'))
     list.sort()
@@ -421,13 +424,8 @@ def robustImageFromDataset(path):
     image = mean2 -mean1
     return image
 
-def robustImageFromStabilityData(n_images, path=None):
-    ''' From fits files '''
-    if path is None:
-        path = '/home/labot/data/M4/Data/M4Data/OPTData/OPD_series/20210210_151134'
-    else:
-        path = path
-
+def robustImageFromStabilityData(n_images, path):
+    ''' From fits files and whit offset subtraction'''
     list_tot = glob.glob(os.path.join(path, '*.fits'))
     list_tot.sort()
     list = list_tot[0:n_images]
@@ -459,7 +457,15 @@ def robustImageFromStabilityData(n_images, path=None):
     mean2 = np.ma.mean(cube2, axis=2)
 
     image = mean2 -mean1
-    return image
+
+    fits_file_name = os.path.join(config.path_name.OUT_FOLDER, 'Req', 'OptOffset5000.fits')
+    image_optOffset = read_data.readFits_maskedImage(fits_file_name)
+    final_image = image - image_optOffset
+    return final_image
+
+
+
+
 
 ###TEST###
 def imaTest():

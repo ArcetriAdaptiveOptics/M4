@@ -37,6 +37,7 @@ from m4.noise_functions import Noise
 from m4.alignment import Alignment
 from m4.ground import logger_set_up as lsu
 from m4.configuration import start
+from m4.utils import req_check
 from m4.configuration.ott_parameters import OttParameters, OpcUaParameters
 
 
@@ -401,7 +402,6 @@ def curvFit(param, x, rms_nm):
     fit = fun_fit(x, *pp)
     return pp, fit
 
-
 def piston_noise(data_file_path):
     '''
     Parameters
@@ -425,6 +425,51 @@ def piston_noise(data_file_path):
     plt.ylabel('|FFT(sig)|'); plt.title('piston_power_spectrum')
     plt.savefig(os.path.join(dove, 'piston_spectrum.png'))
 
+
+def analysis_req(stab_path):
+    results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req')
+    dove = os.path.join(results_path, stab_path.split('/')[-1])
+    if os.path.exists(dove):
+        dove = dove
+    else:
+        os.makedirs(dove)
+
+    image50 = req_check.robustImageFromStabilityData(50, stab_path)
+    image100 = req_check.robustImageFromStabilityData(100, stab_path)
+    image300 = req_check.robustImageFromStabilityData(300, stab_path)
+    image600 = req_check.robustImageFromStabilityData(600, stab_path)
+
+    sp_arc50 = req_check.test242(image50)
+    sp_arc100 = req_check.test242(image100)
+    sp_arc300 = req_check.test242(image300)
+    sp_arc600 = req_check.test242(image600)
+
+    d50 = req_check.diffPiston(image50)
+    d100 = req_check.diffPiston(image100)
+    d300 = req_check.diffPiston(image300)
+    d600 = req_check.diffPiston(image600)
+
+    x = np.array([50,100,300,600])
+    y = np.array([image50.std(),image100.std(),image300.std(),image600.std()])
+    plt.plot(np.sqrt(x), y, '-o')
+    name = os.path.join(dove, 'std.png')
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
+
+    y = np.array([sp_arc50, sp_arc100, sp_arc300, sp_arc600])
+    plt.plot(np.sqrt(x), y, '-o')
+    name = os.path.join(dove, 'slope.png')
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
+
+    y = np.array([d50, d100, d300, d600])
+    plt.plot(np.sqrt(x), y, '-o')
+    name = os.path.join(dove, 'diff_piston.png')
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
 
 
 ######## Sensori PT #######
