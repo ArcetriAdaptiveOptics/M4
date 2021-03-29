@@ -385,15 +385,15 @@ def imageOpticOffset(data_file_path, start, stop):
             cube = np.ma.dstack((cube, image))
 
     image = np.mean(cube, axis=2)
-    #coef, mat = zernike.zernikeFit(image, np.array([1,2,3]))
-    #surf = zernike.zernikeSurface(image_optOffset, coef, mat)
-    #image_ttr = image - surf
+    coef, mat = zernike.zernikeFit(image, np.array([1,2,3,4,5,6]))
+    surf = zernike.zernikeSurface(image, coef, mat)
+    image_ttr = image - surf
     
     results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req')
-    fits_file_name = os.path.join(results_path, 'OptOffset.fits')
-    pyfits.writeto(fits_file_name, image.data)
-    pyfits.append(fits_file_name, image.mask.astype(int))
-    return image
+    fits_file_name = os.path.join(results_path, 'OptOffset_6zer.fits')
+    pyfits.writeto(fits_file_name, image_ttr.data)
+    pyfits.append(fits_file_name, image_ttr.mask.astype(int))
+    return image_ttr
 
 def robustImageFromDataset(path):
     ''' From h5 files '''
