@@ -8,6 +8,9 @@ import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from m4.configuration.config import fold_name
+import glob
+from m4.ground import read_data
+from m4.ground import zernike
 
 
 def testCalib():
@@ -209,7 +212,92 @@ def alignPlot(tt):
     plt.suptitle(tt + ' Alignment', fontweight='bold', fontsize=20)
     return
 
+def _convert(seconds): 
+    mmin, sec = divmod(seconds, 60) 
+    hour, mmin = divmod(mmin, 60)
+#   return "%d:%02d:%02d" % (hour, mmin, sec)
+    return "%d:%02d" % (hour, mmin)
 
+def longTerm_analysis(tn, zc1, zc2=None, ntick=6, figure=True):
+
+    where = '/mnt/m4storage/Data/M4Data/OPTData/OPD_series/'
+    path = os.path.join(where, tn)
+    D = sorted(glob.glob(os.path.join(path,tn[0:-6]) + '*'))
+    zern = pyfits.open(os.path.join(path,'zernike.fits'))[0].data
+    temp = pyfits.open(os.path.join(path,'temperature.fits'))[0].data
+    t0 = str(D[0][1+D[0].rfind('_'):D[0].find('.')])
+    hs = float(t0[0:2])*3600
+    ms = float(t0[2:4])*60
+    s =float( t0[4::])
+    t0s = hs + ms + s
+    time = zern[:,0]
+    times = time + t0s
+    ttime = np.copy(times)
+    timeh = ttime/3600
+    taxis = []
+    for ii in range(len(ttime)):
+        if ttime[ii]>24*3600:
+                ttime[ii]-=24*3600
+        taxis.append(_convert(ttime[ii]))
+    PtV = np.max(zern[:,4]*10**9)-np.min(zern[:,4]*10**9)
+    sstd = np.std(zern[:,4]*10**9) 
+
+    plt.figure()
+    start = 0
+    stop = len(zern[:,0]) #- 2000
+    plt.plot(timeh[start:stop],zern[start:stop,zc1]*10**9,'k',label='Z' + str(zc1))
+    if zc2 is not None:
+        plt.plot(timeh[start:stop],zern[start:stop,zc2]*10**9,'r',label='Z' + str(zc2))
+#    plt.plot(timeh[start:stop],zern[start:stop,3]*10**9,'k',label='Z2')
+#    plt.plot(timeh[start:stop],zern[start:stop,2]*10**9,'r',label='Z3')        
+    if figure is True:
+        plt.xticks(timeh,taxis[::len(taxis)/ntick],rotation=0)#,fontsize=fsize)
+        plt.locator_params(nbins=ntick,axis='x',tight=None)        
+        plt.xlabel('Time [hrs:min]')
+    else:
+        plt.xlabel('Time [h]')
+    plt.ylabel('rms [nm]')
+    plt.title(tn)
+    plt.legend()
+    plt.grid()
+    
+    return timeh, zern, taxis, PtV, sstd, temp
+
+def longTerm_rmsConvection(tn):
+    where = '/mnt/m4storage/Data/M4Data/OPTData/OPD_series/'
+    path = os.path.join(where, tn)
+    D1 = sorted(glob.glob(os.path.join(path,tn) + '*.fits'))
+    D1.sort()
+    D = D1[0:-2]
+
+    cube = None
+    for name in D:
+        print(name)
+        image = read_data.readFits_maskedImage(name)
+        if cube is None:
+            cube = image
+        else:
+            cube = np.ma.dstack((cube, image))
+    mean =  np.ma.mean(cube, axis=2)
+
+    rms_list = []
+    for i in range(cube.shape[2]):
+        print(i)
+        ima = cube[:,:,i]-mean
+        coef, mat = zernike.zernikeFit(ima, np.arange(8)+1)
+        surf = zernike.zernikeSurface(ima, coef, mat)
+        new_ima = ima-surf
+        rms = new_ima.std()
+        rms_list.append(rms)
+
+    rms = np.array(rms_list)
+    x = np.arange(rms.size)
+    x_list = []
+    for i in range(rms.size):
+        
+    return rms
+        
+        
 ###ALTRO###
 def pippo(tt):
     '''Function to read interaction matrix in tt folder'''
