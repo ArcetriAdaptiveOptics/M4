@@ -219,7 +219,8 @@ def _convert(seconds):
     return "%d:%02d" % (hour, mmin)
 
 def longTerm_analysis(tn, zc1, zc2=None, ntick=6, figure=True):
-    where = '/mnt/m4storage/Data/M4Data/OPTData/OPD_series/'
+    where = config.fold_name.OPD_SERIES_ROOT_FOLDER
+    #'/mnt/m4storage/Data/M4Data/OPTData/OPD_series/'
     path = os.path.join(where, tn)
     D = sorted(glob.glob(os.path.join(path,tn[0:-6]) + '*'))
     zern = pyfits.open(os.path.join(path,'zernike.fits'))[0].data

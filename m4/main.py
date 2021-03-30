@@ -365,7 +365,10 @@ def convection_noise(data_file_path, tau_vector, h5_or_fits=None):
     rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector,
                                                            h5_or_fits)
     param = [5, 0.5, 32]
-    x = tau_vector* (1/27.58)
+    if h5_or_fits is None:
+        x = tau_vector* (1/27.58)
+    else:
+        x = tau_vector*2
     rms_nm = rms*1e9
     pp,fit = curvFit(param, x, rms_nm)
     decorr_time = 1/pp[0]+pp[1]
@@ -379,7 +382,7 @@ def convection_noise(data_file_path, tau_vector, h5_or_fits=None):
 
 
     plt.clf()
-    plt.plot(tau_vector * (1/27.58), rms * 1e9, '-o', label='meas')
+    plt.plot(x, rms * 1e9, '-o', label='meas')
     plt.xlabel('time [s]')
     plt.ylabel('rms [nm]')
     plt.plot(x, fit, '-', label='fit')
