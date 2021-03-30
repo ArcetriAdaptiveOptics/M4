@@ -13,6 +13,7 @@ from m4.configuration.config import fold_name
 from m4.ground.read_data import InterferometerConverter
 from m4.analyzer_iffunctions import AnalyzerIFF
 from m4.ground import zernike
+from m4.ground import read_data
 
 
 class Noise():
@@ -282,7 +283,7 @@ class Noise():
     # plot(n_temp, rms, '-o'); plt.xlabel('n_temp'); plt.ylabel('rms_medio')
 
     ### FUNZIONE DI STRUTTURA ###
-    def analysis_whit_structure_function(self, data_file_path, tau_vector):
+    def analysis_whit_structure_function(self, data_file_path, tau_vector, h5_or_fits=None):
         '''
         .. 4000 = total number of image in hdf5
 
@@ -301,7 +302,12 @@ class Noise():
                      squaring sum of tip and tilt calculated on the difference
                     of the images
         '''
-        list = glob.glob(os.path.join(data_file_path, '*.h5'))
+        if h5_or_fits is None:
+        	list = glob.glob(os.path.join(data_file_path, '*.h5'))
+        else:
+        	listtot = glob.glob(os.path.join(data_file_path, '*.fits'))
+        	listtot.sort()
+        	list = listtot[0:-2]
         image_number = len(list)
         i_max = np.int((image_number - tau_vector[tau_vector.shape[0]-1]) /
                        (tau_vector[tau_vector.shape[0]-1] * 2))
@@ -316,12 +322,17 @@ class Noise():
             quad_list = []
             for i in range(i_max):
                 k = i * dist * 2
-                name = 'img_%04d.h5' %k
-                file_name = os.path.join(data_file_path, name)
-                image_k = self._ic.from4D(file_name)
-                name = 'img_%04d.h5' %(k+dist)
-                file_name = os.path.join(data_file_path, name)
-                image_dist = self._ic.from4D(file_name)
+            	if h5_or_fits is None:
+	                #k = i * dist * 2
+	                name = 'img_%04d.h5' %k
+	                file_name = os.path.join(data_file_path, name)
+	                image_k = self._ic.from4D(file_name)
+	                name = 'img_%04d.h5' %(k+dist)
+	                file_name = os.path.join(data_file_path, name)
+	                image_dist = self._ic.from4D(file_name)
+                else:
+	                image_k = read_data.readFits_maskedImage(list[k])
+	                image_dist = read_data.readFits_maskedImage(list[k+dist])
 
                 image_diff = image_k - image_dist
                 zernike_coeff_array, mat = zernike.zernikeFit(image_diff, np.array([2, 3]))

@@ -207,10 +207,13 @@ def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
 
 
 ######### Misure di noise ##########
-def _path_noise_results(data_file_path):
+def _path_noise_results(data_file_path, h5_or_fits=None):
     results_path = os.path.join(config.path_name.OUT_FOLDER, 'Noise')
     x = data_file_path.split("/")
-    dove = os.path.join(results_path, x[len(x)-2])
+    if h5_or_fits is None:
+        dove = os.path.join(results_path, x[len(x)-2])
+    else:
+        dove = os.path.join(results_path, x[len(x)-1])
     if os.path.exists(dove):
         dove = dove
     else:
@@ -341,7 +344,7 @@ def spectrumFromData(data_file_path):
         os.remove(name)
     plt.savefig(name)
 
-def convection_noise(data_file_path, tau_vector):
+def convection_noise(data_file_path, tau_vector, h5_or_fits=None):
     '''
     Parameters
     ----------
@@ -352,9 +355,9 @@ def convection_noise(data_file_path, tau_vector):
     '''
     print('Noise analysis using tau vector')
     n = Noise()
-    dove = _path_noise_results(data_file_path)
+    dove = _path_noise_results(data_file_path, h5_or_fits)
 
-    rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector)
+    rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector, h5_or_fits)
     param = [5, 0.5, 32]
     x = tau_vector* (1/27.58)
     rms_nm = rms*1e9
@@ -377,7 +380,7 @@ def convection_noise(data_file_path, tau_vector):
     plt.plot(decorr_time, fun_fit(decorr_time,*pp), 'og',
     		 label='Dec time = %d [s]' %np.round(decorr_time))
     plt.legend()
-    tt = data_file_path.split('/')[-2]
+    tt = dove.split('/')[-1]
     plt.title('%s' %tt)
     name = os.path.join(dove, 'rms_tau.png')
     if os.path.isfile(name):

@@ -8,6 +8,7 @@ import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from m4.configuration.config import fold_name
+from m4.configuration import config
 import glob
 from m4.ground import read_data
 from m4.ground import zernike
@@ -264,11 +265,12 @@ def longTerm_analysis(tn, zc1, zc2=None, ntick=6, figure=True):
     return timeh, zern, taxis, PtV, sstd, temp
 
 def longTerm_rmsConvection(tn):
-    where = '/mnt/m4storage/Data/M4Data/OPTData/OPD_series/'
+    #where = '/mnt/m4storage/Data/M4Data/OPTData/OPD_series/'
+    where = '/home/labot/data/M4/Data/M4Data/OPTData/OPD_series'
     path = os.path.join(where, tn)
-    D1 = sorted(glob.glob(os.path.join(path,tn) + '*.fits'))
-    D1.sort()
-    D = D1[0:-2]
+    D1 = sorted(glob.glob(os.path.join(path, '*.fits')))
+    D = D1[0:-np.int(len(D1)/8)]
+    #D = D1[0:-2]
 
     cube = None
     for name in D:
@@ -294,7 +296,31 @@ def longTerm_rmsConvection(tn):
     x = np.arange(rms.size)
     x_list = []
     for i in range(rms.size):
-        
+        aa = D[i].split('_')[-1]
+        tt = aa.split('.')[0]
+        x_list.append(tt)
+    x_time = np.array(x_list)
+    ntick = 11
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, rms, '-')
+    plt.xticks(x, x_time[::len(x_time)/ntick], rotation=45)
+    plt.locator_params(nbins=ntick, axis='x', tight=True)
+    plt.ylabel('rms[m]')
+    plt.title('%s' %tn)
+    
+    results_path = os.path.join(config.path_name.OUT_FOLDER, 'LongTermStability')
+    dove = os.path.join(results_path, tn)
+    if os.path.exists(dove):
+        dove = dove
+    else:
+        os.makedirs(dove)
+    name = os.path.join(dove, 'rmsMeanDiff.fits')
+    pyfits.writeto(name, rms, overwrite=True)
+    
+    name = os.path.join(dove, '%s-rms.png' %tn)
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
     return rms
         
         
