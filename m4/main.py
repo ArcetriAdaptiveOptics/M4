@@ -208,6 +208,7 @@ def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
 
 ######### Misure di noise ##########
 def _path_noise_results(data_file_path, h5_or_fits=None):
+    ''' Function to get tt'''
     results_path = os.path.join(config.path_name.OUT_FOLDER, 'Noise')
     x = data_file_path.split("/")
     if h5_or_fits is None:
@@ -352,21 +353,29 @@ def convection_noise(data_file_path, tau_vector, h5_or_fits=None):
                         measurement data folder
         tau_vector: numpy array
                     vector of tau to use
+
+    Other Parameters
+    ----------------
+        h5_or_fits: if it is none the h5 data analysis is performed
     '''
     print('Noise analysis using tau vector')
     n = Noise()
     dove = _path_noise_results(data_file_path, h5_or_fits)
 
-    rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector, h5_or_fits)
+    rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector,
+                                                           h5_or_fits)
     param = [5, 0.5, 32]
     x = tau_vector* (1/27.58)
     rms_nm = rms*1e9
     pp,fit = curvFit(param, x, rms_nm)
     decorr_time = 1/pp[0]+pp[1]
     #WFE = rms * 2
-    pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms, overwrite=True)
-    pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad, overwrite=True)
-    pyfits.writeto(os.path.join(dove, 'tau_vector.fits'), tau_vector, overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms,
+                   overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad,
+                   overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'tau_vector.fits'), tau_vector,
+                   overwrite=True)
 
 
     plt.clf()

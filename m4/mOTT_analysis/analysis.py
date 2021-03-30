@@ -3,13 +3,12 @@ Authors
   - C. Selmi: written in 2020
 '''
 
-import os 
+import os
+import glob
 import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
-from m4.configuration.config import fold_name
 from m4.configuration import config
-import glob
 from m4.ground import read_data
 from m4.ground import zernike
 
@@ -50,7 +49,7 @@ def _readRepData(tt):
     '''
     Function to read repeatability file fits in tt folder
     '''
-    file_name = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER, tt)
+    file_name = os.path.join(config.fold_name.REPEATABILITY_ROOT_FOLDER, tt)
     hduList = pyfits.open(os.path.join(file_name, 'par.fits'))
     par = hduList[0].data
     hduList = pyfits.open(os.path.join(file_name, 'rm.fits'))
@@ -129,7 +128,7 @@ def scanAstigComa(tn):
     rm_pos: numpy array
         matrix containing reference flat position
     '''
-    dove = os.path.join(fold_name.CALIBRATION_ROOT_FOLDER, tn)
+    dove = os.path.join(config.fold_name.CALIBRATION_ROOT_FOLDER, tn)
     name = os.path.join(dove, 'zernike.fits')
     hduList = pyfits.open(name)
     zer = hduList[0].data
@@ -175,7 +174,7 @@ def alignPlot(tt):
     -------
     figure plot
     '''
-    file_name = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER,
+    file_name = os.path.join(config.fold_name.REPEATABILITY_ROOT_FOLDER,
                             'Alignment', tt, 'zernike.fits')
     hdu = pyfits.open(file_name)
     coeff_matrix = hdu[0].data
@@ -213,23 +212,22 @@ def alignPlot(tt):
     plt.suptitle(tt + ' Alignment', fontweight='bold', fontsize=20)
     return
 
-def _convert(seconds): 
-    mmin, sec = divmod(seconds, 60) 
+def _convert(seconds):
+    mmin, sec = divmod(seconds, 60)
     hour, mmin = divmod(mmin, 60)
 #   return "%d:%02d:%02d" % (hour, mmin, sec)
     return "%d:%02d" % (hour, mmin)
 
 def longTerm_analysis(tn, zc1, zc2=None, ntick=6, figure=True):
-
     where = '/mnt/m4storage/Data/M4Data/OPTData/OPD_series/'
     path = os.path.join(where, tn)
     D = sorted(glob.glob(os.path.join(path,tn[0:-6]) + '*'))
     zern = pyfits.open(os.path.join(path,'zernike.fits'))[0].data
     temp = pyfits.open(os.path.join(path,'temperature.fits'))[0].data
     t0 = str(D[0][1+D[0].rfind('_'):D[0].find('.')])
-    hs = float(t0[0:2])*3600
-    ms = float(t0[2:4])*60
-    s =float( t0[4::])
+    hs = float(t0[0: 2])*3600
+    ms = float(t0[2: 4])*60
+    s = float( t0[4::])
     t0s = hs + ms + s
     time = zern[:,0]
     times = time + t0s
@@ -238,10 +236,10 @@ def longTerm_analysis(tn, zc1, zc2=None, ntick=6, figure=True):
     taxis = []
     for ii in range(len(ttime)):
         if ttime[ii]>24*3600:
-                ttime[ii]-=24*3600
+            ttime[ii] -= 24*3600
         taxis.append(_convert(ttime[ii]))
     PtV = np.max(zern[:,4]*10**9)-np.min(zern[:,4]*10**9)
-    sstd = np.std(zern[:,4]*10**9) 
+    sstd = np.std(zern[:,4]*10**9)
 
     plt.figure()
     start = 0
@@ -250,10 +248,10 @@ def longTerm_analysis(tn, zc1, zc2=None, ntick=6, figure=True):
     if zc2 is not None:
         plt.plot(timeh[start:stop],zern[start:stop,zc2]*10**9,'r',label='Z' + str(zc2))
 #    plt.plot(timeh[start:stop],zern[start:stop,3]*10**9,'k',label='Z2')
-#    plt.plot(timeh[start:stop],zern[start:stop,2]*10**9,'r',label='Z3')        
+#    plt.plot(timeh[start:stop],zern[start:stop,2]*10**9,'r',label='Z3')
     if figure is True:
         plt.xticks(timeh,taxis[::len(taxis)/ntick],rotation=0)#,fontsize=fsize)
-        plt.locator_params(nbins=ntick,axis='x',tight=None)        
+        plt.locator_params(nbins=ntick,axis='x',tight=None)
         plt.xlabel('Time [hrs:min]')
     else:
         plt.xlabel('Time [h]')
@@ -261,7 +259,7 @@ def longTerm_analysis(tn, zc1, zc2=None, ntick=6, figure=True):
     plt.title(tn)
     plt.legend()
     plt.grid()
-    
+
     return timeh, zern, taxis, PtV, sstd, temp
 
 def longTerm_rmsConvection(tn):
@@ -307,7 +305,7 @@ def longTerm_rmsConvection(tn):
     plt.locator_params(nbins=ntick, axis='x', tight=True)
     plt.ylabel('rms[m]')
     plt.title('%s' %tn)
-    
+
     results_path = os.path.join(config.path_name.OUT_FOLDER, 'LongTermStability')
     dove = os.path.join(results_path, tn)
     if os.path.exists(dove):
@@ -316,14 +314,14 @@ def longTerm_rmsConvection(tn):
         os.makedirs(dove)
     name = os.path.join(dove, 'rmsMeanDiff.fits')
     pyfits.writeto(name, rms, overwrite=True)
-    
+
     name = os.path.join(dove, '%s-rms.png' %tn)
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
     return rms
-        
-        
+
+
 ###ALTRO###
 def pippo(tt):
     '''Function to read interaction matrix in tt folder'''

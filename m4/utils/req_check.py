@@ -335,6 +335,7 @@ def slope(image):
 ### REQ ###
 
 def test242(image):
+    ''' Return slop in arcsec '''
     sp = slope(image)
     # sp in pixel * fattore di conversione da rad ad arcsec
     slope_arcsec = sp * 206265
@@ -367,7 +368,6 @@ def diffPiston(image):
 
 
 ### ROBUST IMAGE ###
-
 def imageOpticOffset(data_file_path, start, stop):
     list = glob.glob(os.path.join(data_file_path, '*.fits'))
     list.sort()
@@ -388,7 +388,7 @@ def imageOpticOffset(data_file_path, start, stop):
     #coef, mat = zernike.zernikeFit(image, np.array([1,2,3,4,5,6]))
     #surf = zernike.zernikeSurface(image, coef, mat)
     #image_ttr = image - surf
-    
+
     results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req')
     fits_file_name = os.path.join(results_path, 'OptOffset.fits')
     pyfits.writeto(fits_file_name, image.data)
@@ -430,10 +430,22 @@ def robustImageFromDataset(path):
     return image
 
 def robustImageFromStabilityData(n_images, path, offset=None):
-    ''' From fits files and whit offset subtraction'''
+    ''' From fits files and whit offset subtraction
+
+    Parameters
+    ----------
+    n_images: int
+        number of images to analyze
+    path: string
+        total path for data analysis
+
+    Other Parameters
+    ----------------
+    offset: if it is None data analysis is made by slit n_images in two
+    '''
     list_tot = glob.glob(os.path.join(path, '*.fits'))
     list_tot.sort()
-    list = list_tot[0:n_images]
+    list = list_tot[0: n_images]
     if offset is None:
         half = np.int(len(list)/2)
         list1 = list[0:half]
@@ -465,21 +477,21 @@ def robustImageFromStabilityData(n_images, path, offset=None):
         final_image = mean2 -mean1
 
     else:
-        fits_file_name = os.path.join(config.path_name.OUT_FOLDER, 'Req', 'OptOffset-20210204_233630.fits')
+        fits_file_name = os.path.join(config.path_name.OUT_FOLDER, 'Req',
+                                      'OptOffset-20210204_233630.fits')
         image_optOffset = read_data.readFits_maskedImage(fits_file_name)
-        
+
         cube = None
         print('Creating cube')
         for name in list:
             #print(name)
             ima = read_data.readFits_maskedImage(name)
-            image = ima-image_optOffset
+            image = ima - image_optOffset
             if cube is None:
                 cube = image
             else:
                 cube = np.ma.dstack((cube, image))
         final_image = np.ma.mean(cube, axis=2)
-
     return final_image
 
 
