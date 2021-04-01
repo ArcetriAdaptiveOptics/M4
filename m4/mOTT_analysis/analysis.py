@@ -269,8 +269,8 @@ def longTerm_rmsConvection(tn):
     #where = '/home/labot/data/M4/Data/M4Data/OPTData/OPD_series'
     path = os.path.join(where, tn)
     D1 = sorted(glob.glob(os.path.join(path, '*.fits')))
-    D = D1[0:-np.int(len(D1)/8)]
-    #D = D1[0:-2]
+    #D = D1[0:-np.int(len(D1)/8)]
+    D = D1[0:-2]
 
     cube = None
     for name in D:

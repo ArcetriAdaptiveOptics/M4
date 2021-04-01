@@ -406,10 +406,11 @@ def convection_noise(data_file_path, tau_vector):
         time_diff = timeForPlot(data_file_path)
         x = tau_vector*time_diff
         plt.clf()
-        plt.plot(x, rms * 1e9, '-o', label='meas')
+        plt.plot(x, rms * 1e9, '-o', label='time_diff = %d' %time_diff)
         plt.xlabel('time [s]')
         plt.ylabel('rms [nm]')
         plt.grid()
+        plt.legend()
         tt = dove.split('/')[-1]
         plt.title('%s' %tt)
         name = os.path.join(dove, 'rms_tau.png')
