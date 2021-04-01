@@ -346,7 +346,7 @@ def spectrumFromData(data_file_path):
         os.remove(name)
     plt.savefig(name)
 
-def convection_noise(data_file_path, tau_vector, h5_or_fits=None):
+def convection_noise(data_file_path, tau_vector):
     '''
     Parameters
     ----------
@@ -359,6 +359,12 @@ def convection_noise(data_file_path, tau_vector, h5_or_fits=None):
     ----------------
         h5_or_fits: if it is none the h5 data analysis is performed
     '''
+    last_name = data_file_path.split('/')[-1]
+    if last_name == 'hdf5':
+        h5_or_fits = None
+    else:
+        h5_or_fits = 7
+    
     print('Noise analysis using tau vector')
     n = Noise()
     dove = _path_noise_results(data_file_path, h5_or_fits)
@@ -422,9 +428,9 @@ def timeForPlot(stab_path):
     listtot = glob.glob(os.path.join(stab_path, '*.fits'))
     listtot.sort()
     aa = listtot[0].split('/')
-    t0 = aa[-1].split('.')[0]
+    t0 = aa[-1].split('_')[1].split('.')[0]
     bb = listtot[1].split('/')
-    t1 = bb[-1].split('.')[0]
+    t1 = bb[-1].split('_')[1].split('.')[0]
 
     hs = float(t0[0: 2])*3600
     ms = float(t0[2: 4])*60
