@@ -29,6 +29,7 @@ PT sensors
 
 import os
 import time
+import glob
 import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
@@ -364,15 +365,6 @@ def convection_noise(data_file_path, tau_vector, h5_or_fits=None):
 
     rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector,
                                                            h5_or_fits)
-    param = [5, 0.5, 32]
-    if h5_or_fits is None:
-        x = tau_vector* (1/27.58)
-    else:
-        x = tau_vector*2
-    rms_nm = rms*1e9
-    pp,fit = curvFit(param, x, rms_nm)
-    decorr_time = 1/pp[0]+pp[1]
-    #WFE = rms * 2
     pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms,
                    overwrite=True)
     pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad,
@@ -380,26 +372,44 @@ def convection_noise(data_file_path, tau_vector, h5_or_fits=None):
     pyfits.writeto(os.path.join(dove, 'tau_vector.fits'), tau_vector,
                    overwrite=True)
 
-
-    plt.clf()
-    plt.plot(x, rms * 1e9, '-o', label='meas')
-    plt.xlabel('time [s]')
-    plt.ylabel('rms [nm]')
-    plt.plot(x, fit, '-', label='fit')
-    plt.grid()
-    plt.plot([x[0], x[-1]], [pp[2], pp[2]], '--r', linewidth=3,
-             label='%.2f [nm]' %pp[2])
-    plt.plot(decorr_time, fun_fit(decorr_time,*pp), 'og',
-    		 label='Dec time = %d [s]' %np.round(decorr_time))
-    plt.legend()
-    tt = dove.split('/')[-1]
-    plt.title('%s' %tt)
-    name = os.path.join(dove, 'rms_tau.png')
-    if os.path.isfile(name):
-        os.remove(name)
-    plt.savefig(name)
-    return pp[2], decorr_time
-
+    rms_nm = rms*1e9
+    if h5_or_fits is None:
+        x = tau_vector* (1/27.58)
+        param = [5, 0.5, 32]
+        pp,fit = curvFit(param, x, rms_nm)
+        decorr_time = 1/pp[0]+pp[1]
+        plt.clf()
+        plt.plot(x, rms * 1e9, '-o', label='meas')
+        plt.xlabel('time [s]')
+        plt.ylabel('rms [nm]')
+        plt.plot(x, fit, '-', label='fit')
+        plt.grid()
+        plt.plot([x[0], x[-1]], [pp[2], pp[2]], '--r', linewidth=3,
+                 label='%.2f [nm]' %pp[2])
+        plt.plot(decorr_time, fun_fit(decorr_time,*pp), 'og',
+                 label='Dec time = %d [s]' %np.round(decorr_time))
+        plt.legend()
+        tt = dove.split('/')[-1]
+        plt.title('%s' %tt)
+        name = os.path.join(dove, 'rms_tau.png')
+        if os.path.isfile(name):
+            os.remove(name)
+        plt.savefig(name)
+        return pp[2], decorr_time
+    else:
+        time_diff = timeForPlot(data_file_path)
+        x = tau_vector*time_diff
+        plt.clf()
+        plt.plot(x, rms * 1e9, '-o', label='meas')
+        plt.xlabel('time [s]')
+        plt.ylabel('rms [nm]')
+        plt.grid()
+        tt = dove.split('/')[-1]
+        plt.title('%s' %tt)
+        name = os.path.join(dove, 'rms_tau.png')
+        if os.path.isfile(name):
+            os.remove(name)
+        plt.savefig(name)
     #stimare tc dal grafico e usare 2*tau_c = epsilon_c / np.sqrt(n) n = 4000
 #     tau_c = 30 * (1/27.58)
 #     epsilon_c = 2 * tau_c * np.sqrt(n_meas)
@@ -408,6 +418,25 @@ def convection_noise(data_file_path, tau_vector, h5_or_fits=None):
 #     file.write('Epsilon_c = %e' %epsilon_c)
 #     file.close()
 
+def timeForPlot(stab_path):
+    listtot = glob.glob(os.path.join(stab_path, '*.fits'))
+    listtot.sort()
+    aa = listtot[0].split('/')
+    t0 = aa[-1].split('.')[0]
+    bb = listtot[1].split('/')
+    t1 = bb[-1].split('.')[0]
+
+    hs = float(t0[0: 2])*3600
+    ms = float(t0[2: 4])*60
+    s = float( t0[4::])
+    t0s = hs + ms + s
+    hs = float(t1[0: 2])*3600
+    ms = float(t1[2: 4])*60
+    s = float( t1[4::])
+    t1s = hs + ms + s
+
+    time_diff = t1s-t0s
+    return time_diff 
 def fun_fit(x, a, b, c):
     fun = -np.exp(-a*(x-b)) + c
     return fun

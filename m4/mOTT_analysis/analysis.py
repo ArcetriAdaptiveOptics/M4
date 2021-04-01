@@ -264,8 +264,9 @@ def longTerm_analysis(tn, zc1, zc2=None, ntick=6, figure=True):
     return timeh, zern, taxis, PtV, sstd, temp
 
 def longTerm_rmsConvection(tn):
+    where = config.fold_name.OPD_SERIES_ROOT_FOLDER
     #where = '/mnt/m4storage/Data/M4Data/OPTData/OPD_series/'
-    where = '/home/labot/data/M4/Data/M4Data/OPTData/OPD_series'
+    #where = '/home/labot/data/M4/Data/M4Data/OPTData/OPD_series'
     path = os.path.join(where, tn)
     D1 = sorted(glob.glob(os.path.join(path, '*.fits')))
     D = D1[0:-np.int(len(D1)/8)]
