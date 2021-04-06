@@ -395,10 +395,11 @@ def imageOpticOffset(data_file_path, start, stop):
     pyfits.append(fits_file_name, image.mask.astype(int))
     return image
 
-def robustImageFromDataset(path):
+def robustImageFromDataset(n_images, path):
     ''' From h5 files '''
-    list = glob.glob(os.path.join(path, '*.h5'))
-    list.sort()
+    list_tot = glob.glob(os.path.join(path, '*.h5'))
+    list_tot.sort()
+    list = list_tot[0: n_images]
     half = np.int(len(list)/2)
     list1 = list[0:half]
     list2 = list[half:]

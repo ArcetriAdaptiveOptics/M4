@@ -504,6 +504,11 @@ def analysis_req(stab_path, offset=None):
     d100 = req_check.diffPiston(image100)
     d300 = req_check.diffPiston(image300)
     d600 = req_check.diffPiston(image600)
+    
+    roc50 = req_check.test283(image50)
+    roc100 = req_check.test283(image100)
+    roc300 = req_check.test283(image300)
+    roc600 = req_check.test283(image600)
 
     x = np.array([50,100,300,600])
     y = np.array([image50.std(),image100.std(),image300.std(),image600.std()])
@@ -535,6 +540,17 @@ def analysis_req(stab_path, offset=None):
     plt.xlabel('sqrt(n_frames)')
     plt.title('%s' %tt)
     name = os.path.join(dove, 'diff_piston.png')
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
+    
+    y = np.array([roc50, roc100, roc300, roc600])
+    plt.figure(figsize=(10,6))
+    plt.plot(np.sqrt(x), y, '-o')
+    plt.ylabel('roc [m]')
+    plt.xlabel('sqrt(n_frames)')
+    plt.title('%s' %tt)
+    name = os.path.join(dove, 'roc.png')
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
