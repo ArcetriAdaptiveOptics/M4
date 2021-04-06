@@ -230,5 +230,9 @@ class ParabolIdent():
         #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/20161226_122557/mode_0569.fits'
         #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/Seg/img_0000.fits'
         #file_name = '/Users/rm/eclipse-workspace/M4/test/utils/img_0000.fits'
-        immagine = read_data.read_phasemap(file_path)
+        import pyfits
+        hduList = pyfits.open(file_path)
+        immagine = np.ma.masked_array(hduList[0].data[0,:,:],
+                                      mask=np.invert(hduList[0].data[1,:,:].astype(bool)))  
+        #immagine = read_data.read_phasemap(file_path)
         return immagine

@@ -11,8 +11,8 @@ class Test(unittest.TestCase):
     @mock.patch('opcua.Client', autospec=True)
     @mock.patch('pyzabbix.ZabbixAPI', autospec=True)
     @mock.patch('pyzabbix.ZabbixSender', autospec=True)
-    @mock.patch('pyzabbix.ZabbixMetric', autospec=True)
-    def setUp(self, mock_client, mock_api, mock_sender, mock_metric):
+#    @mock.patch('pyzabbix.ZabbixMetric', autospec=True)
+    def setUp(self, mock_client, mock_api, mock_sender):
         from m4.ground import zabbix
         self.zabbix = zabbix
 
