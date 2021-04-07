@@ -478,6 +478,17 @@ def piston_noise(data_file_path):
 
 
 def analysis_req(stab_path, offset=None):
+    ''' Simultaneous analysis of noise requirements for a tn
+
+    Parameters
+    ----------
+    path: string
+        total path for data analysis
+
+    Other Parameters
+    ----------------
+    offset: if it is None data analysis is made by split n_images in two
+    '''
     results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req')
     tt = stab_path.split('/')[-1]
     dove = os.path.join(results_path, tt)
@@ -487,13 +498,13 @@ def analysis_req(stab_path, offset=None):
         os.makedirs(dove)
 
     print('Creating cube 50')
-    image50 = req_check.robustImageFromStabilityData(50, stab_path, offset)
+    image50 = req_check.robustImageFromFitsDataSet(50, stab_path, offset)
     print('Creating cube 100')
-    image100 = req_check.robustImageFromStabilityData(100, stab_path, offset)
+    image100 = req_check.robustImageFromFitsDataSet(100, stab_path, offset)
     print('Creating cube 300')
-    image300 = req_check.robustImageFromStabilityData(300, stab_path, offset)
+    image300 = req_check.robustImageFromFitsDataSet(300, stab_path, offset)
     print('Creating cube 600')
-    image600 = req_check.robustImageFromStabilityData(600, stab_path, offset)
+    image600 = req_check.robustImageFromFitsDataSet(600, stab_path, offset)
 
     sp_arc50 = req_check.test242(image50)
     sp_arc100 = req_check.test242(image100)
@@ -504,7 +515,7 @@ def analysis_req(stab_path, offset=None):
     d100 = req_check.diffPiston(image100)
     d300 = req_check.diffPiston(image300)
     d600 = req_check.diffPiston(image600)
-    
+
     roc50 = req_check.test283(image50)
     roc100 = req_check.test283(image100)
     roc300 = req_check.test283(image300)
@@ -543,7 +554,7 @@ def analysis_req(stab_path, offset=None):
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
-    
+
     y = np.array([roc50, roc100, roc300, roc600])
     plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')

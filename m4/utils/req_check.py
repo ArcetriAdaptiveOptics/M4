@@ -135,14 +135,14 @@ def _patchesAndFit(image, radius_m, x, y, fit, pixelscale=None):
             r1 = 0.1/2
             r_px1 = r1/ps
             ima = _circleImage(image, x, y, r_px1)
-            new_ima = surf_fit(ima)
+            new_ima = tiptilt_fit(ima)
             r2 = radius_m
             r_px2 = r2/ps
             final_ima = _circleImage(new_ima, x, y, r_px2)
         else:
             r_px2 = radius_m/ps
             ima = _circleImage(image, x, y, r_px2)
-            final_ima = surf_fit(ima)
+            final_ima = tiptilt_fit(ima)
     else:
         r1 = radius_m
         r_px1 = r1/ps
@@ -181,7 +181,7 @@ def _patchesAndFitMatrix(image, radius_m, x, y, n_point, pixelscale=None):
     r1 = 0.1/2
     r_px1 = r1/ps
     ima = _circleImage(image, x, y, r_px1)
-    new_ima = surf_fit(ima)
+    new_ima = tiptilt_fit(ima)
     r2 = radius_m
     r_px2 = r2/ps
     if new_ima is None:
@@ -205,6 +205,22 @@ def _patchesAndFitMatrix(image, radius_m, x, y, n_point, pixelscale=None):
 def _circleImage(image, x, y, raggio_px):
     ''' Function to create circular cuts of the image.
     The function excludes cuts that come out of the edges of the image
+
+    Parameters
+    ----------
+        image: masked array
+            image for the analysis
+        x: int
+            coordinate x
+        y: int
+            coordinate y
+        radius_px: int
+            radius of circular patch in pixels
+
+    Returns
+    -------
+        ima: numpy masked array
+            cut image
     '''
     if image is None:
         pass
@@ -226,7 +242,7 @@ def _circleImage(image, x, y, raggio_px):
             ima = np.ma.masked_array(image, mask=mask_prod)
             return ima
 
-def surf_fit(ima):
+def tiptilt_fit(ima):
     '''
     Parameters
     ----------
@@ -234,7 +250,7 @@ def surf_fit(ima):
 
     Returns
     -------
-        pp: numpy masked array
+        ima_ttr: numpy masked array
             image without tip and tilt
     '''
     if ima is None:
@@ -242,9 +258,10 @@ def surf_fit(ima):
     else:
         coef, mat = zernike.zernikeFit(ima,
                                     np.array([2, 3]))
-        new_image = zernike.zernikeSurface(ima, coef, mat)
-        pp = np.ma.masked_array(new_image, mask=ima.mask) 
-        return pp
+        surf = zernike.zernikeSurface(ima, coef, mat)
+        new_image = ima - surf
+        ima_ttr = np.ma.masked_array(new_image, mask=ima.mask)
+        return ima_ttr
 
 def curv_fit(image, test_diameter):
     '''
@@ -309,20 +326,18 @@ def roc(test_diameter, alpha, beta):
     raggio = (rho**2 + wfe**2)/(2*wfe)
     return raggio
 
-def slope(image):
+def slope(image, pscale):
     '''
     Parameters
     ----------
         image: masked array
             image for the analysis
+        pscale: float
+            pixel scale of image
     Returns
     -------
-        slope: masked array
+        slope: numpy masked array
     '''
-    mask = np.invert(image.mask).astype(int)
-    x, y, r, xx, yy = geo.qpupil(mask)
-    pscale = r * (1/0.17)
-
     ax = ((image - shift(image, [1,0]))*pscale)
     ay = ((image - shift(image, [0,1]))*pscale)
     mask = np.ma.mask_or(image.mask, shift(image.mask, [1,0]))
@@ -336,7 +351,11 @@ def slope(image):
 
 def test242(image):
     ''' Return slop in arcsec '''
-    sp = slope(image)
+    mask = np.invert(image.mask).astype(int)
+    x, y, r, xx, yy = geo.qpupil(mask)
+    pscale = r * (1/0.17)
+
+    sp = slope(image, pscale)
     # sp in pixel * fattore di conversione da rad ad arcsec
     slope_arcsec = sp * 206265
     rms = slope_arcsec.std()
@@ -356,6 +375,16 @@ def test283(image):
     return raggio
 
 def diffPiston(image):
+    '''
+    Parameters
+    ----------
+        image: masked array
+            image for the analysis
+
+    Returns
+    -------
+        diff_piston: numpy masked array
+    '''
     dimx = image.shape[0]
     dimy = image.shape[1]
     imas = image[:, 0:np.int(dimy/2)]
@@ -369,6 +398,21 @@ def diffPiston(image):
 
 ### ROBUST IMAGE ###
 def imageOpticOffset(data_file_path, start, stop):
+    '''
+    Parameters
+    ----------
+    data_file_path: string
+        data file path for measurement to analyze
+    start: int
+        number of first image to use for the data analysis
+    stop: int
+        last number of measurement to use
+
+    Returns
+    -------
+    image: numpy  masked array
+        mean image of the selected data
+    '''
     list = glob.glob(os.path.join(data_file_path, '*.fits'))
     list.sort()
     list = list[start:stop]
@@ -395,8 +439,20 @@ def imageOpticOffset(data_file_path, start, stop):
     pyfits.append(fits_file_name, image.mask.astype(int))
     return image
 
-def robustImageFromDataset(n_images, path):
-    ''' From h5 files '''
+def robustImageFromH5DataSet(n_images, path):
+    ''' From h5 files
+    Parameters
+    ----------
+    n_images: int
+        number of images to analyze
+    path: string
+        total path for data analysis
+
+    Returns
+    -------
+    robust_image: numpy masked array
+        robust image from data set
+    '''
     list_tot = glob.glob(os.path.join(path, '*.h5'))
     list_tot.sort()
     list = list_tot[0: n_images]
@@ -430,7 +486,7 @@ def robustImageFromDataset(n_images, path):
     image = mean2 -mean1
     return image
 
-def robustImageFromStabilityData(n_images, path, offset=None):
+def robustImageFromFitsDataSet(n_images, path, offset=None):
     ''' From fits files and whit offset subtraction
 
     Parameters
@@ -442,7 +498,12 @@ def robustImageFromStabilityData(n_images, path, offset=None):
 
     Other Parameters
     ----------------
-    offset: if it is None data analysis is made by slit n_images in two
+    offset: if it is None data analysis is made by split n_images in two
+
+    Returns
+    -------
+    robust_image: numpy masked array
+        robust image from data set
     '''
     list_tot = glob.glob(os.path.join(path, '*.fits'))
     list_tot.sort()
@@ -500,7 +561,7 @@ def robustImageFromStabilityData(n_images, path, offset=None):
 
 
 ###TEST###
-def imaTest():
+def _imaTest():
     ff = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/ZernikeCommandTest/20191210_110019/mode0002_measure_segment00_neg.fits'
     hduList=pyfits.open(ff)
     image = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
@@ -508,7 +569,7 @@ def imaTest():
 
 #    path_rm = '/Users/rm/Desktop/Arcetri/M4/RM_20201020.fits'
 #    path_par = '/Users/rm/Desktop/Arcetri/M4/PM_20191113.fits'
-def readTestData(path):
+def _readTestData(path):
     hduList = pyfits.open(path)
     ogg = hduList[0].data
     dim = int(np.sqrt(ogg[:,0].size))
