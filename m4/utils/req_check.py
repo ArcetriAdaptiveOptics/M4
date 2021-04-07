@@ -15,7 +15,7 @@ from scipy.ndimage.interpolation import shift
 from m4.ground import read_data
 from m4.configuration import config
 
-def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patches=None):
+def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None):
     '''
     Parameters
     ----------
@@ -29,7 +29,7 @@ def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patches
     Other Parameters
     ----------
         pixelscale: int
-            value of image's pixel scale
+            value of image's pixel scale [px/m]
         step: int
             distance between patches
         n_patches: int
@@ -42,18 +42,14 @@ def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patches
         ord_rms: numpy array
             tidy std of every patches
     '''
-    diameter = image.shape[0]
-    #OttParameters.PARABOLA_PUPIL_XYRADIUS[2] = np.int(diameter/2)
-    #metri = 0.05
     if pixelscale is None:
         ps = 1/OttParameters.pscale
     else:
-        ps = pixelscale
+        ps = 1/pixelscale
 
     raggio_px = radius_m/ps
 
     nn = image.compressed().shape[0]
-    th_validPoint = np.pi * raggio_px**2 * 30 / 100
     idx = np.where(image.mask==0)
     x = idx[0]
     y = idx[1]
@@ -64,93 +60,51 @@ def patches_analysis(image, radius_m, fit, pixelscale=None, step=None, n_patches
     else:
         n_point = np.int(nn/step)+1
 
-    rms_list = []
+    result_list = []
     list_ima = []
+    list_big = []
     for i in range(n_point):
         p = i + i * (step - 1)
         print('%d' %p)
-#         circle = np.ones((image.shape[0],image.shape[1])).astype(int)
-#         rr, cc = draw_circle(x[p], y[p], raggio_px)
-#         circle[rr, cc] = 0
-#         mask_prod = np.ma.mask_or(circle.astype(bool), image.mask)
-#         ima = np.ma.masked_array(image, mask=mask_prod)
         print('%d %d' %(x[p], y[p]))
-        if n_patches is None:
-            ima = _patchesAndFit(image, radius_m, x[p], y[p], fit, ps)
-            if ima is None:
-                pass
-            else:
+        if radius_m == 0.04:
+            thresh = 0.05
+            ima = _circleImage(image, x[p], y[p], raggio_px)
+            if ima is not None:
                 list_ima.append(ima)
-                valid_point = ima.compressed().shape[0]
-                if valid_point >= th_validPoint:
-                    rms_list.append(np.std(ima))
-                else:
-                    pass
-        else:
-            list_ima = _patchesAndFitMatrix(image, radius_m, x[p], y[p], n_patches, ps)
-            if list_ima is None:
-                pass
-            else:
-                for ima in list_ima:
-                    valid_point = ima.compressed().shape[0]
-                    if valid_point >= th_validPoint:
-                        rms_list.append(np.std(ima))
-                    else:
-                        pass
-    rms = np.array(rms_list)
-    ord_rms = np.sort(rms)
-    return rms, ord_rms
-
-def _patchesAndFit(image, radius_m, x, y, fit, pixelscale=None):
-    '''
-    Parameters
-    ----------
-        image: masked array
-            image for the analysis
-        radius_m: int
-            radius of circular patch in meters
-        x: int
-            coordinate x
-        y: int
-            coordinate y
-        fit: int
-            0 to remove tip e tilt
-            other values to not remove it
-    Other Parameters
-    ----------
-        pixelscale: int
-            value of image's pixel scale
-    Returns
-    -------
-        final_ima: numpy masked array
-            circle cropped image
-    '''
-    if pixelscale is None:
-        ps = 1/OttParameters.pscale
-    else:
-        ps = pixelscale
-
-    if fit == 0:
-        if radius_m<=(0.1/2):
+                alpha, beta = curv_fit(ima, 2*radius_m)
+                raggio = roc(2*radius_m, alpha, beta)
+                print(raggio)
+                result_list.append(raggio)
+        if radius_m == 0.015:
+            thresh = 0.95
             r1 = 0.1/2
             r_px1 = r1/ps
-            ima = _circleImage(image, x, y, r_px1)
-            new_ima = tiptilt_fit(ima)
-            r2 = radius_m
-            r_px2 = r2/ps
-            final_ima = _circleImage(new_ima, x, y, r_px2)
-        else:
-            r_px2 = radius_m/ps
-            ima = _circleImage(image, x, y, r_px2)
-            final_ima = tiptilt_fit(ima)
-    else:
-        r1 = radius_m
-        r_px1 = r1/ps
-        final_ima = _circleImage(image, x, y, r_px1)
+            ima = _circleImage(image, x[p], y[p], r_px1)
+            if ima is not None:
+                new_ima = tiptilt_fit(ima)
+                list_big.append(new_ima)
+                if n_patches is None:
+                    final_ima = _circleImage(new_ima, x[p], y[p], raggio_px)
+                    if final_ima is not None:
+                        list_ima.append(final_ima)
+                        result_list.append(np.std(final_ima))
+                else:
+                    list_circleima = _circleImageList(new_ima, x[p], y[p], n_patches, raggio_px)
+                    if list_circleima is not None:
+                        for ima in list_circleima:
+                            list_ima.append(ima)
+                            result_list.append(np.std(ima))
 
-    return final_ima
+    result_vect = np.array(result_list)
+    result_sort = np.copy(result_vect)
+    result_sort.sort()
+    dim = result_sort.size
+    req = result_sort[np.int(thresh*dim)]
+    return req, list_ima, result_vect, list_big
 
-def _patchesAndFitMatrix(image, radius_m, x, y, n_point, pixelscale=None):
+
+def _circleImageList(new_ima, x, y, n_point, r_px):
     '''
     Parameters
     ----------
@@ -164,8 +118,6 @@ def _patchesAndFitMatrix(image, radius_m, x, y, n_point, pixelscale=None):
             coordinate y
         n_point: int
             number of images for second cut
-    Other Parameters
-    ----------
         pixelscale: int
             value of image's pixel scale
     Returns
@@ -173,20 +125,7 @@ def _patchesAndFitMatrix(image, radius_m, x, y, n_point, pixelscale=None):
         final_ima_list: list
             list of circle cropped image
     '''
-    if pixelscale is None:
-        ps = 1/OttParameters.pscale
-    else:
-        ps = pixelscale
-
-    r1 = 0.1/2
-    r_px1 = r1/ps
-    ima = _circleImage(image, x, y, r_px1)
-    new_ima = tiptilt_fit(ima)
-    r2 = radius_m
-    r_px2 = r2/ps
-    if new_ima is None:
-        pass
-    else:
+    if new_ima is not None:
         nn = new_ima.compressed().shape[0]
         idx = np.where(new_ima.mask==0)
         x = idx[0]
@@ -195,16 +134,16 @@ def _patchesAndFitMatrix(image, radius_m, x, y, n_point, pixelscale=None):
         final_ima_list = []
         for i in range(n_point):
             p = i + i * (step - 2)
-            final_ima = _circleImage(new_ima, x[p], y[p], r_px2)
-            if final_ima is None:
-                pass
-            else:
+            final_ima = _circleImage(new_ima, x[p], y[p], r_px)
+            if final_ima is not None:
                 final_ima_list.append(final_ima)
         return final_ima_list
 
 def _circleImage(image, x, y, raggio_px):
     ''' Function to create circular cuts of the image.
     The function excludes cuts that come out of the edges of the image
+    and check the threshold for valid point
+    NOTE: if image is out of conditions return None type
 
     Parameters
     ----------
@@ -222,9 +161,8 @@ def _circleImage(image, x, y, raggio_px):
         ima: numpy masked array
             cut image
     '''
-    if image is None:
-        pass
-    else:
+    th_validPoint = np.pi * raggio_px**2 * 30 / 100
+    if image is not None:
         circle = np.ones((image.shape[0],image.shape[1])).astype(int)
         rr, cc = draw_circle(x, y, raggio_px)
         test_r = (len(list(filter (lambda x : x >= image.shape[0], rr))) > 0)
@@ -240,7 +178,9 @@ def _circleImage(image, x, y, raggio_px):
             circle[rr, cc] = 0
             mask_prod = np.ma.mask_or(circle.astype(bool), image.mask)
             ima = np.ma.masked_array(image, mask=mask_prod)
-            return ima
+            valid_point = ima.compressed().shape[0]
+            if valid_point >= th_validPoint:
+                return ima
 
 def tiptilt_fit(ima):
     '''
@@ -253,9 +193,7 @@ def tiptilt_fit(ima):
         ima_ttr: numpy masked array
             image without tip and tilt
     '''
-    if ima is None:
-        pass
-    else:
+    if ima is not None:
         coef, mat = zernike.zernikeFit(ima,
                                     np.array([2, 3]))
         surf = zernike.zernikeSurface(ima, coef, mat)
@@ -333,7 +271,7 @@ def slope(image, pscale):
         image: masked array
             image for the analysis
         pscale: float
-            pixel scale of image
+            pixel scale of image [m/px]
     Returns
     -------
         slope: numpy masked array
@@ -361,18 +299,19 @@ def test242(image):
     rms = slope_arcsec.std()
     return rms
 
-def test243(image, ps):
-    diameter = 0 #average inter-actuator spacing
-    fit = 0
-    step = None
-    rms, rms_ord = patches_analysis(image, diameter/2, fit, ps, step)
-    return rms
+def test243(image, step, n_patches):
+    mask = np.invert(image.mask).astype(int)
+    x, y, r, xx, yy = geo.qpupil(mask)
+    pscale = r * (1/0.17)
+    req, list_ima, result_vect, list_big = patches_analysis(image, 0.015, pscale, step, n_patches)
+    return req
 
-def test283(image):
-    diameter = 0.08
-    alpha, beta = curv_fit(image, diameter)
-    raggio = roc(diameter, alpha, beta)
-    return raggio
+def test283(image, step):
+    mask = np.invert(image.mask).astype(int)
+    x, y, r, xx, yy = geo.qpupil(mask)
+    pscale = r * (1/0.17)
+    req, list_ima, result_vect, list_big = patches_analysis(image, 0.04, pscale, step)
+    return req
 
 def diffPiston(image):
     '''
