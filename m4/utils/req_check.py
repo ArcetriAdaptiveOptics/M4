@@ -23,9 +23,7 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
             image for the analysis
         radius_m: int
             radius of circular patch in meters
-        fit: int
-            0 to remove tip e tilt
-            other values to not remove it
+
     Other Parameters
     ----------
         pixelscale: int
@@ -33,14 +31,16 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
         step: int
             distance between patches
         n_patches: int
-        number of patches for the second cut
-        (if it is None sw creates a single crop in the center of the image)
+            number of patches for the second cut
+            (if it is None sw creates a single crop in the center of the image)
     Returns
     -------
-        rms: numpy array
-            std of every patches
-        ord_rms: numpy array
-            tidy std of every patches
+        req: float
+            roc at threshold 0.05 or rms at threshold 0.95
+        list_ima: list
+            list of images used for the analysis
+        result_vect: numpy array
+            vector containing the test analysis results
     '''
     if pixelscale is None:
         ps = 1/OttParameters.pscale
@@ -74,7 +74,7 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
                 list_ima.append(ima)
                 alpha, beta = curv_fit(ima, 2*radius_m)
                 raggio = roc(2*radius_m, alpha, beta)
-                print(raggio)
+                #print(raggio)
                 result_list.append(raggio)
         if radius_m == 0.015:
             thresh = 0.95
@@ -95,13 +95,21 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
                         for ima in list_circleima:
                             list_ima.append(ima)
                             result_list.append(np.std(ima))
+        if radius_m == 0.1:
+            thresh = 0.95
+            r_px1 = 0.1/2/ps
+            ima = _circleImage(image, x[p], y[p], r_px1)
+            if ima is not None:
+                new_ima = tiptilt_fit(ima)
+                list_ima.append(new_ima)
+                result_list.append(np.std(new_ima))
 
     result_vect = np.array(result_list)
     result_sort = np.copy(result_vect)
     result_sort.sort()
     dim = result_sort.size
     req = result_sort[np.int(thresh*dim)]
-    return req, list_ima, result_vect, list_big
+    return req, list_ima, result_vect
 
 
 def _circleImageList(new_ima, x, y, n_point, r_px):
@@ -110,16 +118,14 @@ def _circleImageList(new_ima, x, y, n_point, r_px):
     ----------
         image: masked array
             image for the analysis
-        radius_m: int
-            radius of circular patch in meters
         x: int
             coordinate x
         y: int
             coordinate y
         n_point: int
             number of images for second cut
-        pixelscale: int
-            value of image's pixel scale
+        r_px: int
+            radius of circular patch in meters
     Returns
     -------
         final_ima_list: list
@@ -271,7 +277,7 @@ def slope(image, pscale):
         image: masked array
             image for the analysis
         pscale: float
-            pixel scale of image [m/px]
+            pixel scale of image [px/m]
     Returns
     -------
         slope: numpy masked array
@@ -288,7 +294,17 @@ def slope(image, pscale):
 ### REQ ###
 
 def test242(image):
-    ''' Return slop in arcsec '''
+    '''
+    Parameters
+    ----------
+        image: masked array
+            robust image for the analysis
+
+    Returns
+    -------
+        rms: float
+            rms slope in arcsec
+    '''
     mask = np.invert(image.mask).astype(int)
     x, y, r, xx, yy = geo.qpupil(mask)
     pscale = r * (1/0.17)
@@ -299,19 +315,61 @@ def test242(image):
     rms = slope_arcsec.std()
     return rms
 
-def test243(image, step, n_patches):
-    mask = np.invert(image.mask).astype(int)
-    x, y, r, xx, yy = geo.qpupil(mask)
-    pscale = r * (1/0.17)
-    req, list_ima, result_vect, list_big = patches_analysis(image, 0.015, pscale, step, n_patches)
-    return req
+def test243(image, radius_m, step=None, n_patches=None):
+    ''' Return rms at the interactuator scale 31 mm or 150 mm (thresh = 0.95)
 
-def test283(image, step):
+    Parameters
+    ----------
+        image: masked array
+            robust image for the analysis
+        radius_m: int
+            radius of circular patch in meters
+
+    Other Parameters
+    ----------------
+        step: int
+            distance between patches
+        n_patches: int
+            number of patches for the second cut
+            (if it is None sw creates a single crop in the center of the image)
+
+    Returns
+    -------
+        rms: float
+            rms at threshold 0.95
+'''
+    # radius_m = 0.015 or 0.1
     mask = np.invert(image.mask).astype(int)
     x, y, r, xx, yy = geo.qpupil(mask)
     pscale = r * (1/0.17)
-    req, list_ima, result_vect, list_big = patches_analysis(image, 0.04, pscale, step)
-    return req
+
+    rms, list_ima, result_vect, list_big = patches_analysis(image, radius_m, pscale, step, n_patches)
+    return rms
+
+def test283(image, step=None):
+    ''' Return roc on 80 mm spatial scale (thresh = 0.05)
+
+    Parameters
+    ----------
+        image: masked array
+            robust image for the analysis
+
+    Other Parameters
+    ----------------
+        step: int
+            distance between patches
+
+    Returns
+    -------
+        roc: float
+            roc at threshold 0.05
+'''
+    mask = np.invert(image.mask).astype(int)
+    x, y, r, xx, yy = geo.qpupil(mask)
+    pscale = r * (1/0.17)
+
+    roc, list_ima, result_vect, list_big = patches_analysis(image, 0.04, pscale, step)
+    return roc
 
 def diffPiston(image):
     '''

@@ -506,22 +506,36 @@ def analysis_req(stab_path, offset=None):
     print('Creating cube 600')
     image600 = req_check.robustImageFromFitsDataSet(600, stab_path, offset)
 
-    sp_arc50 = req_check.test242(image50)
-    sp_arc100 = req_check.test242(image100)
-    sp_arc300 = req_check.test242(image300)
-    sp_arc600 = req_check.test242(image600)
+    image_list = [image50, image100, image300, image600]
+    slop_list = []
+    diff_piston_list = []
+    roc_list = []
+    rms31 = []
+    rms500 = []
+    for image in image_list:
+        slop_list.append(req_check.test242(image))
+        diff_piston_list.append(req_check.diffPiston(image))
+        roc_list.append(req_check.test283(image))
+        rms31.append(req_check.test243(image, 0.015, step=None, n_patches=None))
+        rms500.append(req_check.test243(image, 0.1, step=None, n_patches=None))
 
-    d50 = req_check.diffPiston(image50)
-    d100 = req_check.diffPiston(image100)
-    d300 = req_check.diffPiston(image300)
-    d600 = req_check.diffPiston(image600)
-
-    roc50 = req_check.test283(image50)
-    roc100 = req_check.test283(image100)
-    roc300 = req_check.test283(image300)
-    roc600 = req_check.test283(image600)
+#     sp_arc50 = req_check.test242(image50)
+#     sp_arc100 = req_check.test242(image100)
+#     sp_arc300 = req_check.test242(image300)
+#     sp_arc600 = req_check.test242(image600)
+# 
+#     d50 = req_check.diffPiston(image50)
+#     d100 = req_check.diffPiston(image100)
+#     d300 = req_check.diffPiston(image300)
+#     d600 = req_check.diffPiston(image600)
+# 
+#     roc50 = req_check.test283(image50)
+#     roc100 = req_check.test283(image100)
+#     roc300 = req_check.test283(image300)
+#     roc600 = req_check.test283(image600)
 
     x = np.array([50,100,300,600])
+    #GRAFICO STD IMAGES
     y = np.array([image50.std(),image100.std(),image300.std(),image600.std()])
     plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')
@@ -533,7 +547,8 @@ def analysis_req(stab_path, offset=None):
         os.remove(name)
     plt.savefig(name)
 
-    y = np.array([sp_arc50, sp_arc100, sp_arc300, sp_arc600])
+    #GRAFICO SLOPE
+    y = np.array(slop_list)
     plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')
     plt.ylabel('rms [arcsec]')
@@ -544,7 +559,8 @@ def analysis_req(stab_path, offset=None):
         os.remove(name)
     plt.savefig(name)
 
-    y = np.array([d50, d100, d300, d600])
+    #GRAFICO DIFF PISTON
+    y = np.array(diff_piston_list)
     plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')
     plt.ylabel('diff_piston [m]')
@@ -555,13 +571,38 @@ def analysis_req(stab_path, offset=None):
         os.remove(name)
     plt.savefig(name)
 
-    y = np.array([roc50, roc100, roc300, roc600])
+    #GRAFICO ROC
+    y = np.array(roc_list)
     plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')
     plt.ylabel('roc [m]')
     plt.xlabel('sqrt(n_frames)')
     plt.title('%s' %tt)
     name = os.path.join(dove, 'roc.png')
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
+
+    #GRAFICO RMS 31 MM
+    y = np.array(rms31)
+    plt.figure(figsize=(10,6))
+    plt.plot(np.sqrt(x), y, '-o')
+    plt.ylabel('rms_31mm [m]')
+    plt.xlabel('sqrt(n_frames)')
+    plt.title('%s' %tt)
+    name = os.path.join(dove, 'rms_31mm.png')
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
+
+    #GRAFICO RMS 500 MM
+    y = np.array(rms500)
+    plt.figure(figsize=(10,6))
+    plt.plot(np.sqrt(x), y, '-o')
+    plt.ylabel('rms_500mm [m]')
+    plt.xlabel('sqrt(n_frames)')
+    plt.title('%s' %tt)
+    name = os.path.join(dove, 'rms_500mm.png')
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
