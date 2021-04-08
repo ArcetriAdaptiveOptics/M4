@@ -66,7 +66,7 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
     for i in range(n_point):
         p = i + i * (step - 1)
         print('%d' %p)
-        print('%d %d' %(x[p], y[p]))
+        #print('%d %d' %(x[p], y[p]))
         if radius_m == 0.04:
             thresh = 0.05
             ima = _circleImage(image, x[p], y[p], raggio_px)
@@ -343,7 +343,7 @@ def test243(image, radius_m, step=None, n_patches=None):
     x, y, r, xx, yy = geo.qpupil(mask)
     pscale = r * (1/0.17)
 
-    rms, list_ima, result_vect, list_big = patches_analysis(image, radius_m, pscale, step, n_patches)
+    rms, list_ima, result_vect = patches_analysis(image, radius_m, pscale, step, n_patches)
     return rms
 
 def test283(image, step=None):
@@ -368,7 +368,7 @@ def test283(image, step=None):
     x, y, r, xx, yy = geo.qpupil(mask)
     pscale = r * (1/0.17)
 
-    roc, list_ima, result_vect, list_big = patches_analysis(image, 0.04, pscale, step)
+    roc, list_ima, result_vect = patches_analysis(image, 0.04, pscale, step)
     return roc
 
 def diffPiston(image):

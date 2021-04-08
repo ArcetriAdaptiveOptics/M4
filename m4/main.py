@@ -477,7 +477,7 @@ def piston_noise(data_file_path):
     plt.savefig(os.path.join(dove, 'piston_spectrum.png'))
 
 
-def analysis_req(stab_path, offset=None):
+def analysis_req(stab_path, step=None, offset=None):
     ''' Simultaneous analysis of noise requirements for a tn
 
     Parameters
@@ -516,8 +516,8 @@ def analysis_req(stab_path, offset=None):
         slop_list.append(req_check.test242(image))
         diff_piston_list.append(req_check.diffPiston(image))
         roc_list.append(req_check.test283(image))
-        rms31.append(req_check.test243(image, 0.015, step=None, n_patches=None))
-        rms500.append(req_check.test243(image, 0.1, step=None, n_patches=None))
+        rms31.append(req_check.test243(image, 0.015, step, n_patches=None))
+        rms500.append(req_check.test243(image, 0.1, step, n_patches=None))
 
 #     sp_arc50 = req_check.test242(image50)
 #     sp_arc100 = req_check.test242(image100)
@@ -539,7 +539,7 @@ def analysis_req(stab_path, offset=None):
     y = np.array([image50.std(),image100.std(),image300.std(),image600.std()])
     plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')
-    plt.ylabel('rms [m]')
+    plt.ylabel('rms_image [m]')
     plt.xlabel('sqrt(n_frames)')
     plt.title('%s' %tt)
     name = os.path.join(dove, 'std.png')
@@ -551,7 +551,7 @@ def analysis_req(stab_path, offset=None):
     y = np.array(slop_list)
     plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')
-    plt.ylabel('rms [arcsec]')
+    plt.ylabel('rms_slope [arcsec]')
     plt.xlabel('sqrt(n_frames)')
     plt.title('%s' %tt)
     name = os.path.join(dove, 'slope.png')
