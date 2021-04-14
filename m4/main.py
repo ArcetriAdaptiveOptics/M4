@@ -364,12 +364,13 @@ def convection_noise(data_file_path, tau_vector):
         h5_or_fits = None
     else:
         h5_or_fits = 7
-    
+
     print('Noise analysis using tau vector')
     n = Noise()
     dove = _path_noise_results(data_file_path, h5_or_fits)
 
-    rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path, tau_vector,
+    rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path,
+                                                           tau_vector,
                                                            h5_or_fits)
     pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms,
                    overwrite=True)
@@ -380,9 +381,9 @@ def convection_noise(data_file_path, tau_vector):
 
     rms_nm = rms*1e9
     if h5_or_fits is None:
-        x = tau_vector* (1/27.58)
+        x = tau_vector * (1/27.58)
         param = [5, 0.5, 32]
-        pp,fit = curvFit(param, x, rms_nm)
+        pp,fit = _curvFit(param, x, rms_nm)
         decorr_time = 1/pp[0]+pp[1]
         plt.clf()
         plt.plot(x, rms * 1e9, '-o', label='meas')
@@ -392,8 +393,8 @@ def convection_noise(data_file_path, tau_vector):
         plt.grid()
         plt.plot([x[0], x[-1]], [pp[2], pp[2]], '--r', linewidth=3,
                  label='%.2f [nm]' %pp[2])
-        plt.plot(decorr_time, fun_fit(decorr_time,*pp), 'og',
-                 label='Dec time = %d [s]' %np.round(decorr_time))
+#         plt.plot(decorr_time, _funFit(decorr_time,*pp), 'og',
+#                  label='Dec time = %d [s]' %np.round(decorr_time))
         plt.legend()
         tt = dove.split('/')[-1]
         plt.title('%s' %tt)
@@ -443,14 +444,14 @@ def timeForPlot(stab_path):
     t1s = hs + ms + s
 
     time_diff = t1s-t0s
-    return time_diff 
-def fun_fit(x, a, b, c):
+    return time_diff
+def _funFit(x, a, b, c):
     fun = -np.exp(-a*(x-b)) + c
     return fun
-def curvFit(param, x, rms_nm):
+def _curvFit(param, x, rms_nm):
     from scipy.optimize import curve_fit
-    pp, pcov = curve_fit(fun_fit, x, rms_nm, param)
-    fit = fun_fit(x, *pp)
+    pp, pcov = curve_fit(_funFit, x, rms_nm, param)
+    fit = _funFit(x, *pp)
     return pp, fit
 
 def piston_noise(data_file_path):
