@@ -260,8 +260,20 @@ def longTerm_analysis(tn, zc1, zc2=None, ntick=6, figure=True):
     plt.title(tn)
     plt.legend()
     plt.grid()
+    
+    results_path = os.path.join(config.path_name.OUT_FOLDER, 'LongTermStability')
+    dove = os.path.join(results_path, tn)
+    if os.path.exists(dove):
+        dove = dove
+    else:
+        os.makedirs(dove)
 
-    return timeh, zern, taxis, PtV, sstd, temp
+    name = os.path.join(dove, '%s-tiptiltstability.png' %tn)
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
+
+#    return timeh, zern, taxis, PtV, sstd, temp
 
 def longTerm_rmsConvection(tn):
     where = config.fold_name.OPD_SERIES_ROOT_FOLDER
@@ -284,7 +296,7 @@ def longTerm_rmsConvection(tn):
 
     rms_list = []
     for i in range(cube.shape[2]):
-        print(i)
+        #print(i)
         ima = cube[:,:,i]-mean
         coef, mat = zernike.zernikeFit(ima, np.arange(8)+1)
         surf = zernike.zernikeSurface(ima, coef, mat)
