@@ -508,6 +508,7 @@ def analysis_req(data_file_path, step=None, offset=None):
         file.write('Data produced without offset optic image')
     else:
         file.write('Data produced with offset optic image')
+    file.close()
 
     print('Creating cube 50')
     image50 = req_check.robustImageFromDataSet(50, data_file_path, offset)
