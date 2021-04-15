@@ -442,9 +442,9 @@ def imageOpticOffset(data_file_path, start, stop):
     #image_ttr = image - surf
 
     results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req', tt)
-    fits_file_name = os.path.join(results_path, 'OptOffset.fits', overwrite=True)
-    pyfits.writeto(fits_file_name, image.data)
-    pyfits.append(fits_file_name, image.mask.astype(int))
+    fits_file_name = os.path.join(results_path, 'OptOffset.fits')
+    pyfits.writeto(fits_file_name, image.data, overwrite=True)
+    pyfits.append(fits_file_name, image.mask.astype(int), overwrite=True)
     return image
 
 # def robustImageFromH5DataSet(n_images, path):
