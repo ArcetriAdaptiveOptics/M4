@@ -65,7 +65,7 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
     list_big = []
     for i in range(n_point):
         p = i + i * (step - 1)
-        print('%d' %p)
+        #print('%d' %p)
         #print('%d %d' %(x[p], y[p]))
         if radius_m == 0.04:
             thresh = 0.05

@@ -502,6 +502,12 @@ def analysis_req(data_file_path, step=None, offset=None):
         dove = dove
     else:
         os.makedirs(dove)
+    fits_file_name = os.path.join(dove, 'info.txt')
+    file = open(fits_file_name, 'w+')
+    if offset is None:
+        file.write('Data produced without offset optic image')
+    else:
+        file.write('Data produced with offset optic image')
 
     print('Creating cube 50')
     image50 = req_check.robustImageFromDataSet(50, data_file_path, offset)
@@ -519,10 +525,15 @@ def analysis_req(data_file_path, step=None, offset=None):
     rms31 = []
     rms500 = []
     for image in image_list:
+        print('Producing slope')
         slop_list.append(req_check.test242(image))
+        print('Producing differential piston')
         diff_piston_list.append(req_check.diffPiston(image))
+        print('Producing roc')
         roc_list.append(req_check.test283(image))
+        print('Producing rms31')
         rms31.append(req_check.test243(image, 0.015, step, n_patches=None))
+        print('Producing rms51')
         rms500.append(req_check.test243(image, 0.1, step, n_patches=None))
 
     x = np.array([50,100,300,600])
