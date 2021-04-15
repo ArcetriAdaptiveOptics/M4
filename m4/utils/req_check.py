@@ -265,6 +265,8 @@ def roc(test_diameter, alpha, beta):
         raggio: float
             radius of curvature
     '''
+    #SE = 0.5*(test_diameter**2)/(8*np.sqrt(3))*((2*(alpha-beta)**2 + (alpha+beta)**2)**0.5)
+    #wfe = SE
     wfe = test_diameter**2 /(8*np.sqrt(3)) * np.sqrt(2*(alpha-beta)**2 - (alpha+beta)**2)
     rho = test_diameter/2
     raggio = (rho**2 + wfe**2)/(2*wfe)
@@ -410,16 +412,25 @@ def imageOpticOffset(data_file_path, start, stop):
     image: numpy  masked array
         mean image of the selected data
     '''
-    list = glob.glob(os.path.join(data_file_path, '*.fits'))
+    last_name = data_file_path.split('/')[-1]
+    if last_name == 'hdf5':
+        list = glob.glob(os.path.join(data_file_path, '*.h5'))
+        tt = data_file_path.split('/')[-2]
+        ext = 1
+    else:
+        list = glob.glob(os.path.join(data_file_path, '*.fits'))
+        tt = data_file_path.split('/')[-1]
+        ext = 0
+
     list.sort()
     list = list[start:stop]
 
     cube = None
     print('Creating cube for offset image:')
     for name in list:
-        nn = name.split('/')[-1]
-        print(nn)
-        image = read_data.readFits_maskedImage(name)
+        #nn = name.split('/')[-1]
+        #print(nn)
+        image = read_data.read_phasemap(name, ext)
         if cube is None:
             cube = image
         else:
@@ -430,60 +441,60 @@ def imageOpticOffset(data_file_path, start, stop):
     #surf = zernike.zernikeSurface(image, coef, mat)
     #image_ttr = image - surf
 
-    results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req')
-    fits_file_name = os.path.join(results_path, 'OptOffset.fits')
+    results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req', tt)
+    fits_file_name = os.path.join(results_path, 'OptOffset.fits', overwrite=True)
     pyfits.writeto(fits_file_name, image.data)
     pyfits.append(fits_file_name, image.mask.astype(int))
     return image
 
-def robustImageFromH5DataSet(n_images, path):
-    ''' From h5 files
-    Parameters
-    ----------
-    n_images: int
-        number of images to analyze
-    path: string
-        total path for data analysis
+# def robustImageFromH5DataSet(n_images, path):
+#     ''' From h5 files
+#     Parameters
+#     ----------
+#     n_images: int
+#         number of images to analyze
+#     path: string
+#         total path for data analysis
+# 
+#     Returns
+#     -------
+#     robust_image: numpy masked array
+#         robust image from data set
+#     '''
+#     list_tot = glob.glob(os.path.join(path, '*.h5'))
+#     list_tot.sort()
+#     list = list_tot[0: n_images]
+#     half = np.int(len(list)/2)
+#     list1 = list[0:half]
+#     list2 = list[half:]
+# 
+#     cube1 = None
+#     print('Creating cube 1:')
+#     for name in list1:
+#         print(name)
+#         image = read_data.InterferometerConverter.from4D(name)
+#         if cube1 is None:
+#             cube1 = image
+#         else:
+#             cube1 = np.ma.dstack((cube1, image))
+# 
+#     cube2 = None
+#     print('Creating cube 2:')
+#     for name in list2:
+#         print(name)
+#         image = read_data.InterferometerConverter.from4D(name)
+#         if cube2 is None:
+#             cube2 = image
+#         else:
+#             cube2 = np.ma.dstack((cube1, image))
+# 
+#     mean1 = np.ma.mean(cube1, axis=2)
+#     mean2 = np.ma.mean(cube2, axis=2)
+# 
+#     image = mean2 -mean1
+#     return image
 
-    Returns
-    -------
-    robust_image: numpy masked array
-        robust image from data set
-    '''
-    list_tot = glob.glob(os.path.join(path, '*.h5'))
-    list_tot.sort()
-    list = list_tot[0: n_images]
-    half = np.int(len(list)/2)
-    list1 = list[0:half]
-    list2 = list[half:]
-
-    cube1 = None
-    print('Creating cube 1:')
-    for name in list1:
-        print(name)
-        image = read_data.InterferometerConverter.from4D(name)
-        if cube1 is None:
-            cube1 = image
-        else:
-            cube1 = np.ma.dstack((cube1, image))
-
-    cube2 = None
-    print('Creating cube 2:')
-    for name in list2:
-        print(name)
-        image = read_data.InterferometerConverter.from4D(name)
-        if cube2 is None:
-            cube2 = image
-        else:
-            cube2 = np.ma.dstack((cube1, image))
-
-    mean1 = np.ma.mean(cube1, axis=2)
-    mean2 = np.ma.mean(cube2, axis=2)
-
-    image = mean2 -mean1
-    return image
-
-def robustImageFromFitsDataSet(n_images, path, offset=None):
+def robustImageFromDataSet(n_images, data_file_path, offset=None):
     ''' From fits files and whit offset subtraction
 
     Parameters
@@ -502,7 +513,16 @@ def robustImageFromFitsDataSet(n_images, path, offset=None):
     robust_image: numpy masked array
         robust image from data set
     '''
-    list_tot = glob.glob(os.path.join(path, '*.fits'))
+    last_name = data_file_path.split('/')[-1]
+    if last_name == 'hdf5':
+        list_tot = glob.glob(os.path.join(data_file_path, '*.h5'))
+        tt = data_file_path.split('/')[-2]
+        ext = 1
+    else:
+        list_tot = glob.glob(os.path.join(data_file_path, '*.fits'))
+        tt = data_file_path.split('/')[-1]
+        ext = 0
+
     list_tot.sort()
     list = list_tot[0: n_images]
     if offset is None:
@@ -514,7 +534,7 @@ def robustImageFromFitsDataSet(n_images, path, offset=None):
         print('Creating cube 1')
         for name in list1:
             #print(name)
-            image = read_data.readFits_maskedImage(name)
+            image = read_data.read_phasemap(name, ext)
             if cube1 is None:
                 cube1 = image
             else:
@@ -524,7 +544,7 @@ def robustImageFromFitsDataSet(n_images, path, offset=None):
         print('Creating cube 2')
         for name in list2:
             #print(name)
-            image = read_data.readFits_maskedImage(name)
+            image = read_data.read_phasemap(name, ext)
             if cube2 is None:
                 cube2 = image
             else:
@@ -533,18 +553,18 @@ def robustImageFromFitsDataSet(n_images, path, offset=None):
         mean1 = np.ma.mean(cube1, axis=2)
         mean2 = np.ma.mean(cube2, axis=2)
 
-        final_image = mean2 -mean1
+        final_image = mean2 - mean1
 
     else:
-        fits_file_name = os.path.join(config.path_name.OUT_FOLDER, 'Req',
-                                      'OptOffset-20210204_233630.fits')
+        fits_file_name = os.path.join(config.path_name.OUT_FOLDER, 'Req', tt,
+                                      'OptOffset.fits')
         image_optOffset = read_data.readFits_maskedImage(fits_file_name)
 
         cube = None
         print('Creating cube')
         for name in list:
             #print(name)
-            ima = read_data.readFits_maskedImage(name)
+            ima = read_data.read_phasemap(name, ext)
             image = ima - image_optOffset
             if cube is None:
                 cube = image

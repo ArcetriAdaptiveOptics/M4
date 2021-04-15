@@ -28,12 +28,13 @@ def read_phasemap(file_path, ext=0):
     if ext == 0:
         image = readFits_maskedImage(file_path)
     else:
-        hf = h5py.File(file_path, 'r')
-        hf.keys()
-        data1 = hf.get('dataset_1')
-        data2 = hf.get('dataset_2')
-        image = np.ma.masked_array(np.array(data1),
-                                   np.array(data2.astype(bool)))
+        image = InterferometerConverter.from4D(file_path)
+#         hf = h5py.File(file_path, 'r')
+#         hf.keys()
+#         data1 = hf.get('dataset_1')
+#         data2 = hf.get('dataset_2')
+#         image = np.ma.masked_array(np.array(data1),
+#                                    np.array(data2.astype(bool)))
     return image
 
 ### Generiche
@@ -104,9 +105,9 @@ def readTypeFromFitsName(amplitude_fits_file_name,
     return amplitude, mode_vector, cmd_matrix
 
 
-def _readImageFromRunaIFFs(fits_file_path):
-    file_name = os.path.join(fold_name.IFFUNCTIONS_ROOT_FOLDER,
-                             fits_file_path)
+def _readImageFromRunaIFFs(file_name):
+    #file_name = os.path.join(fold_name.IFFUNCTIONS_ROOT_FOLDER,
+    #                        fits_file_path)
     hduList = pyfits.open(file_name)
     cube = hduList[0].data
     immagine = np.ma.masked_array(cube[0, :, :], mask=np.invert(cube[1, :, :].astype(bool)))

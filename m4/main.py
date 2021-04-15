@@ -478,7 +478,7 @@ def piston_noise(data_file_path):
     plt.savefig(os.path.join(dove, 'piston_spectrum.png'))
 
 
-def analysis_req(stab_path, step=None, offset=None):
+def analysis_req(data_file_path, step=None, offset=None):
     ''' Simultaneous analysis of noise requirements for a tn
 
     Parameters
@@ -490,8 +490,13 @@ def analysis_req(stab_path, step=None, offset=None):
     ----------------
     offset: if it is None data analysis is made by split n_images in two
     '''
+    last_name = data_file_path.split('/')[-1]
+    if last_name == 'hdf5':
+        tt = data_file_path.split('/')[-2]
+    else:
+        tt = data_file_path.split('/')[-1]
+
     results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req')
-    tt = stab_path.split('/')[-1]
     dove = os.path.join(results_path, tt)
     if os.path.exists(dove):
         dove = dove
@@ -499,13 +504,13 @@ def analysis_req(stab_path, step=None, offset=None):
         os.makedirs(dove)
 
     print('Creating cube 50')
-    image50 = req_check.robustImageFromFitsDataSet(50, stab_path, offset)
+    image50 = req_check.robustImageFromDataSet(50, data_file_path, offset)
     print('Creating cube 100')
-    image100 = req_check.robustImageFromFitsDataSet(100, stab_path, offset)
+    image100 = req_check.robustImageFromDataSet(100, data_file_path, offset)
     print('Creating cube 300')
-    image300 = req_check.robustImageFromFitsDataSet(300, stab_path, offset)
+    image300 = req_check.robustImageFromDataSet(300, data_file_path, offset)
     print('Creating cube 600')
-    image600 = req_check.robustImageFromFitsDataSet(600, stab_path, offset)
+    image600 = req_check.robustImageFromDataSet(600, data_file_path, offset)
 
     image_list = [image50, image100, image300, image600]
     slop_list = []
@@ -519,21 +524,6 @@ def analysis_req(stab_path, step=None, offset=None):
         roc_list.append(req_check.test283(image))
         rms31.append(req_check.test243(image, 0.015, step, n_patches=None))
         rms500.append(req_check.test243(image, 0.1, step, n_patches=None))
-
-#     sp_arc50 = req_check.test242(image50)
-#     sp_arc100 = req_check.test242(image100)
-#     sp_arc300 = req_check.test242(image300)
-#     sp_arc600 = req_check.test242(image600)
-# 
-#     d50 = req_check.diffPiston(image50)
-#     d100 = req_check.diffPiston(image100)
-#     d300 = req_check.diffPiston(image300)
-#     d600 = req_check.diffPiston(image600)
-# 
-#     roc50 = req_check.test283(image50)
-#     roc100 = req_check.test283(image100)
-#     roc300 = req_check.test283(image300)
-#     roc600 = req_check.test283(image600)
 
     x = np.array([50,100,300,600])
     #GRAFICO STD IMAGES
