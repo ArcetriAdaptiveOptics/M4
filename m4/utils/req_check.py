@@ -437,9 +437,6 @@ def imageOpticOffset(data_file_path, start, stop):
             cube = np.ma.dstack((cube, image))
 
     image = np.mean(cube, axis=2)
-    #coef, mat = zernike.zernikeFit(image, np.array([1,2,3,4,5,6]))
-    #surf = zernike.zernikeSurface(image, coef, mat)
-    #image_ttr = image - surf
 
     results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req', tt)
     fits_file_name = os.path.join(results_path, 'OptOffset.fits')
@@ -571,7 +568,11 @@ def robustImageFromDataSet(n_images, data_file_path, offset=None):
             else:
                 cube = np.ma.dstack((cube, image))
         final_image = np.ma.mean(cube, axis=2)
-    return final_image
+
+    coef, mat = zernike.zernikeFit(final_image, np.array([1,2,3,4,5,6]))
+    surf = zernike.zernikeSurface(final_image, coef, mat)
+    image_ttr = final_image - surf
+    return image_ttr
 
 
 
