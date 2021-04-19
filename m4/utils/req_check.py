@@ -73,9 +73,10 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
             if ima is not None:
                 list_ima.append(ima)
                 alpha, beta = curv_fit(ima, 2*radius_m)
-                raggio = roc(2*radius_m, alpha, beta)
+                raggi_km = roc(alpha, beta)
+                #raggio = roc(2*radius_m, alpha, beta)
                 #print(raggio)
-                result_list.append(raggio)
+                result_list.append(raggi_km)
         if radius_m == 0.015:
             thresh = 0.95
             r1 = 0.1/2
@@ -245,11 +246,11 @@ def curv_fit(image, test_diameter):
     inv = np.linalg.pinv(zmat)
     coeff = np.dot(inv, image.compressed())
 
-    alpha = 0.5*( coeff[1]+ coeff[2]+ np.sqrt((coeff[1]-coeff[2])**2 + coeff[3]**2) )
-    beta  = 0.5*( coeff[1]+ coeff[2]- np.sqrt((coeff[1]-coeff[2])**2 + coeff[3]**2) )
+    alpha = 0.5*( coeff[0]+ coeff[1]+ np.sqrt((coeff[0]-coeff[1])**2 + coeff[2]**2) )
+    beta  = 0.5*( coeff[0]+ coeff[1]- np.sqrt((coeff[0]-coeff[1])**2 + coeff[2]**2) )
     return alpha, beta
 
-def roc(test_diameter, alpha, beta):
+def roc(alpha, beta):
     '''
     Parameters
     ----------
@@ -265,12 +266,12 @@ def roc(test_diameter, alpha, beta):
         raggio: float
             radius of curvature
     '''
-    #SE = 0.5*(test_diameter**2)/(8*np.sqrt(3))*((2*(alpha-beta)**2 + (alpha+beta)**2)**0.5)
-    #wfe = SE
-    wfe = test_diameter**2 /(8*np.sqrt(3)) * np.sqrt(2*(alpha-beta)**2 - (alpha+beta)**2)
-    rho = test_diameter/2
-    raggio = (rho**2 + wfe**2)/(2*wfe)
-    return raggio
+    vect = np.array(1/alpha, 1/beta)
+    raggi_km = np.abs(vect)/1000
+#     wfe = test_diameter**2 /(8*np.sqrt(3)) * np.sqrt(2*(alpha-beta)**2 - (alpha+beta)**2)
+#     rho = test_diameter/2
+#     raggio = (rho**2 + wfe**2)/(2*wfe)
+    return raggi_km
 
 def slope(image, pscale):
     '''
