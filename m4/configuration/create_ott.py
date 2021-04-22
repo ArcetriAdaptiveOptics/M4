@@ -6,58 +6,28 @@ Authors
 import logging
 import os
 import numpy as np
-from astropy.io import fits as pyfits
 from m4.configuration import config as conf, ott_parameters
 from m4.configuration.config import path_name
-from m4.configuration.ott_parameters import OttParameters, Interferometer, OpcUaParameters
-from m4.ground import read_data
+from m4.configuration.ott_parameters import OttParameters, OpcUaParameters
 from m4.utils.roi import ROI
-from m4.ground import zernike, geo
 from m4.ground.opc_ua_controller import OpcUaController
 
 
 class OTT():
 
-    def __init__(self, parabola_slider):
+    def __init__(self, parabola_slider, reference_mirror_slider, angle_rotator):
         """The constructor """
         self._logger = logging.getLogger('OTT:')
+        self._r = ROI()
         self._opcUa = OpcUaController()
         self._parabola_slider = parabola_slider
+        self._reference_mirror_slider = reference_mirror_slider
+        self._angle_rotator = angle_rotator
 
-        self._r = ROI()
-#        self._zg = ZernikeGenerator(2*OttParameters.parab_radius*OttParameters.pscale)
-        self._slide = 0
-        self._rslide = 0
-        self._angle = 0
         self.par_start_position = np.zeros(6)
         self.m4_start_position = np.zeros(6)
         self.refflat_start_position = np.zeros(6)
-        self.m4offset = 0.
-        self.offset = 0.
-        self.smap = np.zeros((Interferometer.N_PIXEL[0], Interferometer.N_PIXEL[1]))
-        self.rmap = np.zeros(((2 * OttParameters.rflat_radius * OttParameters.pscale).astype(int),
-                              (2 * OttParameters.rflat_radius * OttParameters.pscale).astype(int)))
-        self.m4pupil = read_data.readFits_data(os.path.join(conf.path_name.MIRROR_FOLDER,
-                                                        conf.mirror_conf,
-                                                        'm4_mech_pupil-bin2.fits'))
-        self.m4ima = self.m4pupil * 0.
-        self.mask = read_data.readFits_data(os.path.join(conf.path_name.MIRROR_FOLDER,
-                                                     conf.mirror_conf,
-                                                     'ott_mask.fits'))
-        self.parmask = np.ma.make_mask(read_data.readFits_data(
-                                        os.path.join(conf.path_name.OPTICAL_FOLDER,
-                                        conf.optical_conf, 'ottmask.fits')))
-#         self.segmask1 = np.ma.make_mask(obj.readFits_object(
-#                                         os.path.join(conf.path_name.MIRROR_FOLDER,
-#                                         conf.mirror_conf, 'py-sect4-mask.fits')))
-#         self.ifmat = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
-#                                                     conf.mirror_conf,
-#                                                    'if_sect4_rot-bin2.fits'))
-#         self.vmat = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
-#                                                    conf.mirror_conf, 'ff_v_matrix.fits'))
-        self.zmat = read_data.readFits_data(os.path.join(conf.path_name.OPTICAL_FOLDER,
-                                                     conf.optical_conf,
-                                                     'Zmat.fits'))
+
 
 # Elements position
     def slide(self, par_trans=None):
@@ -65,12 +35,12 @@ class OTT():
 
         Other Parameters
         ----------
-        par_trans: int, optional [UNITS??]
+        par_trans: int, optional [mm]
                 If par_trans is not set it's equal to zero
 
         Returns
         -------
-            par_trans: int
+            par_trans: int [mm]
                     parabola translation
         '''
         if par_trans is None:
@@ -83,74 +53,37 @@ class OTT():
 
         Other Parameters
         ----------
-        ref_flat: int, optional
+        ref_flat: int, optional [mm]
                 If ref_flat is not set it's equal to zero
 
         Returns
         -------
-        ref_flat: int
+        ref_flat: int [mm]
                 reference flat mirror position
         '''
-        self._logger.debug('About RSLIDE')
-        if conf.simulated == 1:
-            if ref_flat is None:
-                self._rslide = self._rslide
-            else:
-                self._rslide = ref_flat
-            self._logger.debug('Position = %f', self._rslide)
+        if ref_flat is None:
+            return self._reference_mirror_slider.getPosition()
         else:
-            if ref_flat is None:
-                self._rslide = self._opcUa.get_position(OpcUaParameters.CAR)
-            else:
-                self._checkRslide(ref_flat)
-                self._rslide = self._opcUa.set_target_position(OpcUaParameters.CAR, ref_flat)
-                self._opcUa.move_object(OpcUaParameters.CAR)
-                self._opcUa.wait_for_stop(OpcUaParameters.CAR)
-                self._rslide = self._opcUa.get_position(OpcUaParameters.CAR)
-        return self._rslide
-
-    def _checkRslide(self, r_slide):
-        if r_slide <= OpcUaParameters.min_r_slide or r_slide >= OpcUaParameters.max_r_slide:
-            raise OSError(' The required reference flat position is incorrect: %d' % r_slide)
-        else:
-            pass
+            return self._reference_mirror_slider.setPosition(ref_flat)
 
     def angle(self, rot_ring_angle=None):
         ''' Function to set the rotating ring angle (range: 0 to 360)
 
         Other Parameters
         ----------
-            rot_ring_angle: int, optional
+            rot_ring_angle: int, optional [deg]
                 If rot_ring_angle is not set it's equal to zero
 
         Returns
         -------
-            rot_ring_angle: int
+            rot_ring_angle: int [deg]
                             rot_ring_angle
         '''
-        self._logger.debug('About ANGLE')
-        if conf.simulated == 1:
-            if rot_ring_angle is None:
-                self._angle = self._angle
-            else:
-                self._angle = rot_ring_angle
-            self._logger.debug('Position = %f', self._angle)
+        if rot_ring_angle is None:
+            return self._angle_rotator.getPosition()
         else:
-            if rot_ring_angle is None:
-                self._angle = self._opcUa.get_position(OpcUaParameters.RA)
-            else:
-                self._checkAngle(rot_ring_angle)
-                self._opcUa.set_target_position(OpcUaParameters.RA, rot_ring_angle)
-                self._opcUa.move_object(OpcUaParameters.RA)
-                self._opcUa.wait_for_stop(OpcUaParameters.RA)
-                self._angle = self._opcUa.get_position(OpcUaParameters.RA)
-        return self._angle
+            return self._angle_rotator.setPosition(rot_ring_angle)
 
-    def _checkAngle(self, angle):
-        if angle <= OpcUaParameters.min_angle or angle >= OpcUaParameters.max_angle:
-            raise OSError(' The required angle is incorrect: %d' % angle)
-        else:
-            pass
 
 # Elements alignment
     def parab(self, start_position=None):
@@ -291,86 +224,6 @@ class OTT():
             temp_vector = self._opcUa.get_temperature_vector()
         return temp_vector
 
-# ## Sensitivity matrices
-    def _readMatFromTxt(self, file_name):
-        ''' Function to read matrix of 11 Zernike x 6 displacements,
-        m RMS, per 1 m displacement - or 1 radiant rotation
-
-        Parameters
-        ----------
-        file_name: string
-                    matrix file path
-
-        Returns
-        -------
-                mat: numpy array [11,6]
-                    matrix from txt file
-        '''
-        file = open(file_name, 'r')
-        triplets = file.read().split()
-        x = np.array(triplets)
-        mat = x.reshape(11, 6)
-        return mat.astype(float)
-
-    def zmx_parpos2z(self):
-        '''
-        Returns
-        -------
-                mat: numpy array [11,6]
-                    matrix parable positions to zernike
-        '''
-        file_name = os.path.join(conf.path_name.OPTICAL_FOLDER,
-                                 conf.optical_conf, 'PAR_pos2z.txt')
-        # file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_PAR_pos2z.txt'
-        mat = self._readMatFromTxt(file_name)
-        return mat
-
-    def zmx_refflatpos2z(self):
-        '''
-        Returns
-        -------
-                mat: numpy array [11,6]
-                    matrix reference flat positions to zernike
-        '''
-        file_name = os.path.join(conf.path_name.OPTICAL_FOLDER,
-                                 conf.optical_conf, 'M4_pos2z.txt')
-        # file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_FM_pos2z.txt'
-        mat = self._readMatFromTxt(file_name)
-        return mat
-
-    def zmx_m4pos2z(self):
-        '''
-        Returns
-        -------
-                mat: numpy array [11,6]
-                    matrix deformable mirror positions to zernike
-        '''
-        file_name = os.path.join(conf.path_name.OPTICAL_FOLDER,
-                                 conf.optical_conf, 'M4_pos2z.txt')
-        # file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_M4_pos2z.txt'
-        mat = self._readMatFromTxt(file_name)
-        return mat
-
-# Zmat
-    def create_zmat(self, file_name):
-        '''
-        Returns
-        -------
-            zmat: numpy array
-
-        '''
-        # file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ott_mask.fits'
-        hduList = pyfits.open(file_name)
-        final_mask = np.invert(hduList[0].data.astype(bool))
-
-        prova = np.ma.masked_array(np.ones(((2 * OttParameters.parab_radius * OttParameters.pscale).astype(int),
-                                            (2 * OttParameters.parab_radius * OttParameters.pscale).astype(int))),
-                                   mask=final_mask)
-        zernike_mode = np.arange(10) + 1
-        mm = np.where(final_mask == False)
-        x, y, r, xx, yy = geo.qpupil(final_mask)
-        zmat = zernike._getZernike(xx[mm], yy[mm], zernike_mode)
-        return zmat
 
 
 class DMirror():

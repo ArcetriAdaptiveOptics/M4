@@ -3,9 +3,9 @@ Authors
   - C. Selmi: written in 2020
 '''
 
-class BaseParabolaSlider():
+class BaseReferenceMirrorSlider():
     '''
-    Abstract class for the parabola slider
+    Abstract class for the referece mirror slider
     '''
 
     def getPosition(self):
@@ -13,4 +13,3 @@ class BaseParabolaSlider():
 
     def setPosition(self, absolute_position_in_mm):
         raise Exception('Implement me!')
-

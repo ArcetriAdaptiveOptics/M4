@@ -1,11 +1,12 @@
+
 '''
 Authors
   - C. Selmi: written in 2020
 '''
 
-class BaseParabolaSlider():
+class BaseAngleRotator():
     '''
-    Abstract class for the parabola slider
+    Abstract class for the ring angle rotation
     '''
 
     def getPosition(self):
@@ -13,4 +14,3 @@ class BaseParabolaSlider():
 
     def setPosition(self, absolute_position_in_mm):
         raise Exception('Implement me!')
-

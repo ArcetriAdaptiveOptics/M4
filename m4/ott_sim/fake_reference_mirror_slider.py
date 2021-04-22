@@ -1,19 +1,18 @@
 '''
 Authors
   - C. Selmi: written in 2020
-  '''
+'''
 import logging
-from m4.devices.base_parabola_slider import BaseParabolaSlider
+from m4.devices.base_reference_mirror_slider import BaseReferenceMirrorSlider
 
-
-class FakeParabolaSlider(BaseParabolaSlider):
-    ''' Class for parabola slider simulation
+class FakeReferenceMirrorSlider(BaseReferenceMirrorSlider):
+    ''' Class for reference mirror slider simulation
     '''
 
     def __init__(self):
         """The constructor """
         self._pos = 0
-        self._logger = logging.getLogger('FakeParabolaSlider')
+        self._logger = logging.getLogger('FakeReferenceMirrorSlider')
 
     def getPosition(self):
         self._logger.debug('Position = %g' % self._pos)
