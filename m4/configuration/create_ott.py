@@ -15,12 +15,15 @@ from m4.utils.roi import ROI
 from m4.ground import zernike, geo
 from m4.ground.opc_ua_controller import OpcUaController
 
+
 class OTT():
 
-    def __init__(self):
+    def __init__(self, parabola_slider):
         """The constructor """
         self._logger = logging.getLogger('OTT:')
         self._opcUa = OpcUaController()
+        self._parabola_slider = parabola_slider
+
         self._r = ROI()
 #        self._zg = ZernikeGenerator(2*OttParameters.parab_radius*OttParameters.pscale)
         self._slide = 0
@@ -32,8 +35,8 @@ class OTT():
         self.m4offset = 0.
         self.offset = 0.
         self.smap = np.zeros((Interferometer.N_PIXEL[0], Interferometer.N_PIXEL[1]))
-        self.rmap = np.zeros(((2*OttParameters.rflat_radius*OttParameters.pscale).astype(int),
-                              (2*OttParameters.rflat_radius*OttParameters.pscale).astype(int)))
+        self.rmap = np.zeros(((2 * OttParameters.rflat_radius * OttParameters.pscale).astype(int),
+                              (2 * OttParameters.rflat_radius * OttParameters.pscale).astype(int)))
         self.m4pupil = read_data.readFits_data(os.path.join(conf.path_name.MIRROR_FOLDER,
                                                         conf.mirror_conf,
                                                         'm4_mech_pupil-bin2.fits'))
@@ -62,7 +65,7 @@ class OTT():
 
         Other Parameters
         ----------
-        par_trans: int, optional
+        par_trans: int, optional [UNITS??]
                 If par_trans is not set it's equal to zero
 
         Returns
@@ -70,29 +73,10 @@ class OTT():
             par_trans: int
                     parabola translation
         '''
-        self._logger.debug('About SLIDE')
-        if conf.simulated == 1:
-            if par_trans is None:
-                self._slide = self._slide
-            else:
-                self._slide = par_trans
-            self._logger.debug('Position = %f', self._slide)
+        if par_trans is None:
+            return self._parabola_slider.getPosition()
         else:
-            if par_trans is None:
-                self._slide = self._opcUa.get_position(OpcUaParameters.ST)
-            else:
-                self._checkSlide(par_trans)
-                self._slide = self._opcUa.set_target_position(OpcUaParameters.ST, par_trans)
-                self._opcUa.move_object(OpcUaParameters.ST)
-                self._opcUa.wait_for_stop(OpcUaParameters.ST)
-                self._slide = self._opcUa.get_position(OpcUaParameters.ST)
-        return self._slide
-
-    def _checkSlide(self, slide):
-        if slide <= OpcUaParameters.min_slide or slide >= OpcUaParameters.max_slide:
-            raise OSError(' The required parabola position is incorrect: %d' % slide)
-        else:
-            pass
+            return self._parabola_slider.setPosition(par_trans)
 
     def rslide(self, ref_flat=None):
         '''  Function to set the reference flat mirror (range: -0.05 m to 0.4 m)
@@ -185,8 +169,8 @@ class OTT():
 
         '''
         self._logger.debug('About PARAB')
-        #if type(start_position) is np.ndarray:
-        #if start_position.size == 6:
+        # if type(start_position) is np.ndarray:
+        # if start_position.size == 6:
         if conf.simulated == 1:
             if start_position is None:
                 self.par_start_position = self.par_start_position
@@ -203,14 +187,14 @@ class OTT():
                 for i in range(OttParameters.PARABOLA_DOF.size):
                     j = OttParameters.PARABOLA_DOF[i]
                     self._opcUa.set_target_position(n_opc[i], start_position[j])
-                    #print(start_position[j])
+                    # print(start_position[j])
                 self._opcUa.move_object(OpcUaParameters.PAR_KIN)
                 self._opcUa.wait_for_stop(OpcUaParameters.PAR_KIN)
                 self.par_start_position = self._readParPosition()
-        #else:
-            #raise OSError('Incorrect length of the vector')
-        #else:
-            #raise OSError('Data is not a numpy array')
+        # else:
+            # raise OSError('Incorrect length of the vector')
+        # else:
+            # raise OSError('Data is not a numpy array')
         return self.par_start_position
 
     def _readParPosition(self):
@@ -234,8 +218,8 @@ class OTT():
                         start position of the reference flat
         '''
         self._logger.debug('About REFFLAT')
-        #if type(start_position) is np.ndarray:
-        #if start_position.size == 6:
+        # if type(start_position) is np.ndarray:
+        # if start_position.size == 6:
         if conf.simulated == 1:
             if start_position is None:
                 self.refflat_start_position = self.refflat_start_position
@@ -252,14 +236,14 @@ class OTT():
                 for i in range(OttParameters.RM_DOF_PISTON.size):
                     j = OttParameters.RM_DOF_PISTON[i]
                     self._opcUa.set_target_position(n_opc[i], start_position[j])
-                    #print(start_position[j])
+                    # print(start_position[j])
                 self._opcUa.move_object(OpcUaParameters.RM_KIN)
                 self._opcUa.wait_for_stop(OpcUaParameters.RM_KIN)
                 self.refflat_start_position = self._readRMPosition()
-        #else:
-            #raise OSError('Incorrect length of the vector')
-        #else:
-            #raise OSError('Data is not a numpy array')
+        # else:
+            # raise OSError('Incorrect length of the vector')
+        # else:
+            # raise OSError('Data is not a numpy array')
         return self.refflat_start_position
 
     def _readRMPosition(self):
@@ -283,8 +267,8 @@ class OTT():
                         start position of the deformable mirror
         '''
         self._logger.debug('About M4')
-        #if type(start_position) is np.ndarray:
-        #if start_position.size == 6:
+        # if type(start_position) is np.ndarray:
+        # if start_position.size == 6:
         if conf.simulated == 1:
             if start_position is None:
                 self.m4_start_position = self.m4_start_position
@@ -294,10 +278,10 @@ class OTT():
         else:
             print('Sw to be developed')
             self.m4_start_position = self.m4_start_position
-        #else:
-            #raise OSError('Incorrect length of the vector')
-        #else:
-            #raise OSError('Data is not a numpy array')
+        # else:
+            # raise OSError('Incorrect length of the vector')
+        # else:
+            # raise OSError('Data is not a numpy array')
         return self.m4_start_position
 
     def temperature(self):
@@ -307,7 +291,7 @@ class OTT():
             temp_vector = self._opcUa.get_temperature_vector()
         return temp_vector
 
-### Sensitivity matrices
+# ## Sensitivity matrices
     def _readMatFromTxt(self, file_name):
         ''' Function to read matrix of 11 Zernike x 6 displacements,
         m RMS, per 1 m displacement - or 1 radiant rotation
@@ -337,7 +321,7 @@ class OTT():
         '''
         file_name = os.path.join(conf.path_name.OPTICAL_FOLDER,
                                  conf.optical_conf, 'PAR_pos2z.txt')
-        #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_PAR_pos2z.txt'
+        # file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_PAR_pos2z.txt'
         mat = self._readMatFromTxt(file_name)
         return mat
 
@@ -350,7 +334,7 @@ class OTT():
         '''
         file_name = os.path.join(conf.path_name.OPTICAL_FOLDER,
                                  conf.optical_conf, 'M4_pos2z.txt')
-        #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_FM_pos2z.txt'
+        # file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_FM_pos2z.txt'
         mat = self._readMatFromTxt(file_name)
         return mat
 
@@ -363,9 +347,10 @@ class OTT():
         '''
         file_name = os.path.join(conf.path_name.OPTICAL_FOLDER,
                                  conf.optical_conf, 'M4_pos2z.txt')
-        #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_M4_pos2z.txt'
+        # file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ZST_M4_pos2z.txt'
         mat = self._readMatFromTxt(file_name)
         return mat
+
 # Zmat
     def create_zmat(self, file_name):
         '''
@@ -374,20 +359,22 @@ class OTT():
             zmat: numpy array
 
         '''
-        #file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ott_mask.fits'
+        # file_name = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/OTT/ott_mask.fits'
         hduList = pyfits.open(file_name)
         final_mask = np.invert(hduList[0].data.astype(bool))
 
-        prova = np.ma.masked_array(np.ones(((2*OttParameters.parab_radius*OttParameters.pscale).astype(int),
-                                            (2*OttParameters.parab_radius*OttParameters.pscale).astype(int))),
+        prova = np.ma.masked_array(np.ones(((2 * OttParameters.parab_radius * OttParameters.pscale).astype(int),
+                                            (2 * OttParameters.parab_radius * OttParameters.pscale).astype(int))),
                                    mask=final_mask)
-        zernike_mode = np.arange(10)+1
+        zernike_mode = np.arange(10) + 1
         mm = np.where(final_mask == False)
         x, y, r, xx, yy = geo.qpupil(final_mask)
         zmat = zernike._getZernike(xx[mm], yy[mm], zernike_mode)
         return zmat
 
+
 class DMirror():
+
     def __init__(self):
         """The constructor """
         curr_conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER,
@@ -404,7 +391,7 @@ class DMirror():
         command_input = np.copy(command)
         pos = self._measurePosition()
         if seg is None:
-            if command_input.shape[0]==OttParameters.N_ACTS_TOT:
+            if command_input.shape[0] == OttParameters.N_ACTS_TOT:
                 command = command_input
             elif command_input.shape[0] < OttParameters.N_ACTS_TOT:
                 cmd = np.zeros(OttParameters.N_ACTS_TOT)
@@ -427,10 +414,10 @@ class DMirror():
             for cmd in command_list:
                 command = command + cmd
             delta_command = command
-        #forza = self._mirror._ff * delta_command
+        # forza = self._mirror._ff * delta_command
         return delta_command
 
     def _measurePosition(self):
-        #dall'opc ua va letta la posizione degli attuatori
-        pos = np.zeros(OttParameters.N_ACTS_TOT)+7
+        # dall'opc ua va letta la posizione degli attuatori
+        pos = np.zeros(OttParameters.N_ACTS_TOT) + 7
         return pos
