@@ -120,7 +120,11 @@ class OpcUaParameters():
     zabbix_port = 10051
     accelerometers_server = 'tcp://192.168.22.100:6660'
     accelerometers_data_folder = '/mnt/acc_data'
-    accelerometers_dt = 2.5e-4
+    accelerometers_dt_plc = 2.5e-4
+    accelerometers_dt = 5e-3
+    accelerometers_sn = ['', '', '', '', 'a', 'a', 'a', 'b']
+    accelerometers_plc_id = np.array([5,6,7,8])
+    accelerometrs_directions = ['', '', '', '', 'X', 'Z', 'Y', 'Z']
 
 class OtherParameters():
     ''' '''
