@@ -29,14 +29,17 @@ def acquire_acc_data(recording_seconds=5):
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
     socket.connect(OpcUaParameters.accelerometers_server)
+    time.sleep(0.2)
     socket.send_string("START %d" %recording_seconds)
-    time.sleep(1)
+    time.sleep(0.5)
     try:
         reply = socket.recv(1)
         print('Data from %s' %reply)
     except:
         raise OSError('No reply from socket')
+    time.sleep(0.5)
     socket.disconnect(OpcUaParameters.accelerometers_server)
+    time.sleep(0.5)
     #time.sleep(recording_seconds+2)
     
     list = os.listdir(OpcUaParameters.accelerometers_data_folder)
@@ -157,16 +160,19 @@ def power_spectrum(vec):
 #plt.ylabel('FFT|sig|'); plt.legend()
 
 
-def plot_power_spectrum(spe, freq):
+def plot_power_spectrum(spe, freq, tt=None):
     spe1 = spe[:, 1:]
     freq1 = freq[1:]
     plt.figure()
-    label_list = ['acc05', 'acc06', 'acc07']
+    label_list = ['acc05-X', 'acc06-Z', 'acc07-Y','acc08-Z']
     for i in range(spe1.shape[0]):
         plt.plot(freq1, np.abs(spe1[i,:]), '-', label=label_list[i])
     plt.xlabel('Freq[Hz]')
     plt.ylabel('FFT|sig|')
     plt.xlim([0,100])
+    if tt is not None:
+        plt.title(tt)
+        
     plt.ion()
     plt.show()
     plt.pause(0.01)
@@ -178,7 +184,7 @@ def main(recording_seconds=5, plot_seconds=10):
     tt = acquire_acc_data(recording_seconds)
     print(tt)
     data = read_acc_data(tt)
-    vec = data[:, 5:8]
+    vec = data[:, 5:9]
     spe, freq = power_spectrum(vec)
     plot_power_spectrum(spe, freq)
     plt.pause(plot_seconds)
@@ -189,7 +195,7 @@ if __name__ == '__main__':
     tt = acquire_acc_data()
     print(tt)
     data = read_acc_data(tt)
-    vec = data[:, 5:8]
+    vec = data[:, 5:9]
     spe, freq = power_spectrum(vec)
     plot_power_spectrum(spe, freq)
     plt.pause(5)

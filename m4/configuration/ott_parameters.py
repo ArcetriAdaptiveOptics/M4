@@ -86,7 +86,7 @@ class OpcUaParameters():
     server = "opc.tcp://192.168.22.100:48050"
     num_PT_sensor = 24
     min_angle, max_angle = np.array([-171, 181])
-    min_r_slide, max_r_slide = np.array([-50, 9000])
+    min_r_slide, max_r_slide = np.array([-9000, 9000])  #modified RB 20210423: was -50; 9000
     min_slide, max_slide = np.array([-10000, 10000])
 
     RA = 0 #angolo di rotazione
