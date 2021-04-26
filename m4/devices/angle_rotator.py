@@ -6,7 +6,7 @@ import logging
 from m4.configuration.ott_parameters import OpcUaParameters
 from m4.devices.base_angle_rotator import BaseAngleRotator
 
-class AngleRotator(BaseAngleRotator):
+class OpcUaAngleRotator(BaseAngleRotator):
     ''' Class for ring angle rotation via opc ua '''
 
     def __init__(self, opcUa):

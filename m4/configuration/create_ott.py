@@ -15,7 +15,8 @@ from m4.ground.opc_ua_controller import OpcUaController
 
 class OTT():
 
-    def __init__(self, parabola_slider, reference_mirror_slider, angle_rotator):
+    def __init__(self, parabola_slider, reference_mirror_slider, angle_rotator,
+                 parabola):
         """The constructor """
         self._logger = logging.getLogger('OTT:')
         self._r = ROI()
@@ -23,8 +24,9 @@ class OTT():
         self._parabola_slider = parabola_slider
         self._reference_mirror_slider = reference_mirror_slider
         self._angle_rotator = angle_rotator
+        self._parabola = parabola
 
-        self.par_start_position = np.zeros(6)
+
         self.m4_start_position = np.zeros(6)
         self.refflat_start_position = np.zeros(6)
 
@@ -86,55 +88,25 @@ class OTT():
 
 
 # Elements alignment
-    def parab(self, start_position=None):
+    def parab(self, par_position=None):
         '''Function to set the start position of the parable
 
         Other Parameters
         ----------
-        start_position: numpy array, optional
+        start_position: numpy array, optional [mm]
                         vector of six position,
                         If start_position is not set it's equal to zero vector
 
         Returns
         -------
-            start_position: numpy array
+            start_position: numpy array [mm]
                         start position of the parable
 
         '''
-        self._logger.debug('About PARAB')
-        # if type(start_position) is np.ndarray:
-        # if start_position.size == 6:
-        if conf.simulated == 1:
-            if start_position is None:
-                self.par_start_position = self.par_start_position
-            else:
-                self.par_start_position = start_position
-            self._logger.debug(self.par_start_position)
+        if par_position is None:
+            return self._parabola.getPosition()
         else:
-            if start_position is None:
-                self.par_start_position = self._readParPosition()
-            else:
-                n_opc = np.array([OpcUaParameters.PAR_PISTON,
-                                  OpcUaParameters.PAR_TIP,
-                                  OpcUaParameters.PAR_TILT])
-                for i in range(OttParameters.PARABOLA_DOF.size):
-                    j = OttParameters.PARABOLA_DOF[i]
-                    self._opcUa.set_target_position(n_opc[i], start_position[j])
-                    # print(start_position[j])
-                self._opcUa.move_object(OpcUaParameters.PAR_KIN)
-                self._opcUa.wait_for_stop(OpcUaParameters.PAR_KIN)
-                self.par_start_position = self._readParPosition()
-        # else:
-            # raise OSError('Incorrect length of the vector')
-        # else:
-            # raise OSError('Data is not a numpy array')
-        return self.par_start_position
-
-    def _readParPosition(self):
-        piston = self._opcUa.get_position(OpcUaParameters.PAR_PISTON)
-        tip = self._opcUa.get_position(OpcUaParameters.PAR_TIP)
-        tilt = self._opcUa.get_position(OpcUaParameters.PAR_TILT)
-        return np.array([0, 0, piston, tip, tilt, 0])
+            return self._parabola.setPosition(par_position)
 
     def refflat(self, start_position=None):
         '''Function to set the start position of the reference flat
