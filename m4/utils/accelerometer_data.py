@@ -18,10 +18,11 @@ class Accelerometers():
 
     def __init__(self):
         """The constructor """
-        self._rebinnig_factor = OpcUaParameters.accelerometers_dt_plc/OpcUaParameters.accelerometers_dt
-        self.dt = OpcUaParameters.accelerometers_dt_plc
+        self._rebinnig_factor = OpcUaParameters.accelerometers_dt/OpcUaParameters.accelerometers_dt_plc
+        self.dt = OpcUaParameters.accelerometers_dt
         self.id_vector = OpcUaParameters.accelerometers_plc_id
         self.directions = OpcUaParameters.accelerometrs_directions
+        self.datah5 = None
 
     @staticmethod
     def _storageFolder():
@@ -79,6 +80,7 @@ class Accelerometers():
 
         self._rebinAndSaveData(start, final_destination)
         #os.system('cp %s %s' %(start, final_destination)) #popen
+        self._tt = name
         return name
 
     def _rebinAndSaveData(self, start, final_destination):    
@@ -86,7 +88,7 @@ class Accelerometers():
         data = hf.get('Accelerometers')
 
         vec = data[:, OpcUaParameters.accelerometers_plc_id]
-        rebinning_size = vec.shape[0]/self._rebinnig_factor
+        rebinning_size = np.int(vec.shape[0]/self._rebinnig_factor)
         v_list=[]
         for i in range(vec.shape[1]):
             v_list.append(rebinner.rebin(vec[:,i], rebinning_size)) #1050
@@ -95,7 +97,7 @@ class Accelerometers():
         hf = h5py.File(final_destination, 'w')
         hf.create_dataset('Accelerometers', data=rebinned_vector)
         hf.attrs['DT'] = OpcUaParameters.accelerometers_dt
-        hf.attrs['ID'] = OpcUaParameters.accelerometers_dt_plc
+        hf.attrs['ID'] = OpcUaParameters.accelerometers_plc_id
         hf.attrs['DIR'] = ['X', 'Z', 'Y', 'Z']
         hf.close()
 
@@ -113,9 +115,10 @@ class Accelerometers():
         '''
         h5_file_path = os.path.join(Accelerometers._storageFolder(), h5_name)
         theObject = Accelerometers()
+        theObject._tt = h5_name
         hf = h5py.File(h5_file_path, 'r')
         #hf.keys()
-        theObject.datah5 = hf.get('Accelerometers')
+        #theObject.datah5 = hf.get('Accelerometers')
         #data = datah5[()]
         #hf.close()
         try:
@@ -128,7 +131,10 @@ class Accelerometers():
             theObject.directions = ['X', 'Z', 'Y', 'Z']
         return theObject
 
-    def get_data(self):
+    def read_data(self):
+        h5_file_path = os.path.join(Accelerometers._storageFolder(), self._tt)
+        hf = h5py.File(h5_file_path, 'r')
+        self.datah5 = hf.get('Accelerometers')
         return self.datah5
 
     def get_dt(self):
@@ -150,8 +156,9 @@ class Accelerometers():
                     list containing the frequencies of vectors composing
                     the matrix z
         '''
-        if self.dt == OpcUaParameters.accelerometers_dt:
-            z = vec.T
+        if self.dt == OpcUaParameters.accelerometers_dt_plc:
+            vec_cut = vec[:, OpcUaParameters.accelerometers_plc_id]
+            z = vec_cut.T
         else:
             z = vec
         #dt = OpcUaParameters.accelerometers_dt
@@ -166,7 +173,7 @@ class Accelerometers():
     #plot(freq[2], np.abs(spe[2]), label='proiezione3'); plt.xlabel('Freq[Hz]');
     #plt.ylabel('FFT|sig|'); plt.legend()
 
-    def plot_power_spectrum(self, spe, freq, tt=None):
+    def plot_power_spectrum(self, spe, freq):
         spe1 = spe[:, 1:]
         freq1 = freq[1:]
         plt.figure()
@@ -176,8 +183,7 @@ class Accelerometers():
         plt.xlabel('Freq[Hz]')
         plt.ylabel('FFT|sig|')
         plt.xlim([0,100])
-        if tt is not None:
-            plt.title(tt)
+        plt.title(self._tt)
 
         plt.ion()
         plt.show()
@@ -185,6 +191,23 @@ class Accelerometers():
         plt.legend()
         plt.grid()
 
+
+def acquisitionAndShow(recording_seconds=5):
+    acc = Accelerometers()
+    tt = acc.acquire_acc_data(recording_seconds)
+    #print(tt)
+    data = acc.read_data()
+    spe, freq = acc.power_spectrum(data)
+    acc.plot_power_spectrum(spe, freq)
+    #plt.pause(plot_seconds)
+    #plt.close()
+    return tt
+
+def readAndShow(tt):
+    acc = Accelerometers.reload_acc_info(tt)
+    data = acc.read_data()
+    spe, freq = acc.power_spectrum(data)
+    acc.plot_power_spectrum(spe, freq)
 
 
 ### FUNZIONI NON USATE ###
@@ -234,17 +257,6 @@ def data_projection(vv_c):
 
 ### FINE FUNZIONI NON USATE ###
 
-
-def new_main(recording_seconds=5, plot_seconds=10):
-    acc = Accelerometers()
-    tt = acc.acquire_acc_data(recording_seconds)
-    print(tt)
-    acc = Accelerometers.reload_acc_info(tt)
-    data = acc.get_data()
-    spe, freq = acc.power_spectrum(data)
-    acc.plot_power_spectrum(spe, freq)
-    plt.pause(plot_seconds)
-    plt.close()
 
 # def main(recording_seconds=5, plot_seconds=10):
 #     tt = acquire_acc_data(recording_seconds)
