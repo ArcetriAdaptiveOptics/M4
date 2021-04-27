@@ -22,12 +22,28 @@ class Accelerometers():
         self.dt = OpcUaParameters.accelerometers_dt
         self.id_vector = OpcUaParameters.accelerometers_plc_id
         self.directions = OpcUaParameters.accelerometrs_directions
-        self.datah5 = None
+        self._datah5 = None
 
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
         return fold_name.ACC_ROOT_FOLDER
+
+    def acquisitionAndShow(self, recording_seconds=5):
+        tt = self.acquire_acc_data(recording_seconds)
+        #print(tt)
+        data = self.read_data()
+        spe, freq = self.power_spectrum(data)
+        self.plot_power_spectrum(spe, freq)
+        #plt.pause(plot_seconds)
+        #plt.close()
+        return tt
+
+    def readAndShow(self, tt):
+        acc = Accelerometers.reload_acc_info(tt)
+        data = acc.read_data()
+        spe, freq = acc.power_spectrum(data)
+        acc.plot_power_spectrum(spe, freq)
 
     def acquire_acc_data(self, recording_seconds=5):
         '''
@@ -77,9 +93,10 @@ class Accelerometers():
             t1 = os.path.getmtime(start)
             diff = t1-t0
 
-
-        self._rebinAndSaveData(start, final_destination)
-        #os.system('cp %s %s' %(start, final_destination)) #popen
+        if self._rebinnig_factor == 1:
+            os.system('cp %s %s' %(start, final_destination)) #popen
+        else:
+            self._rebinAndSaveData(start, final_destination)
         self._tt = name
         return name
 
@@ -134,7 +151,9 @@ class Accelerometers():
             theObject.directions = ['X', 'Z', 'Y', 'Z']
         return theObject
 
-    def read_data(self):
+    def read_data(self, tt=None):
+        if tt is not None:
+            self._tt = tt
         h5_file_path = os.path.join(Accelerometers._storageFolder(), self._tt)
         hf = h5py.File(h5_file_path, 'r')
         self.datah5 = hf.get('Accelerometers')
@@ -168,7 +187,7 @@ class Accelerometers():
         #z = vec.T
     #         #spe = np.fft.fftshift(np.fft.rfft(vector, norm='ortho'))
     #         #freq = np.fft.fftshift(np.fft.rfftfreq(vector.size, d=self._dt))
-        spe = np.fft.rfft(z, axis=1, norm='ortho')
+        spe = np.fft.rfft(z, axis=1)
         freq = np.fft.rfftfreq(z.shape[1], d=self.dt)
         return spe, freq
     #clf(); plot(freq[0], np.abs(spe[0]), label='proiezione1');
@@ -195,22 +214,6 @@ class Accelerometers():
         plt.grid()
 
 
-def acquisitionAndShow(recording_seconds=5):
-    acc = Accelerometers()
-    tt = acc.acquire_acc_data(recording_seconds)
-    #print(tt)
-    data = acc.read_data()
-    spe, freq = acc.power_spectrum(data)
-    acc.plot_power_spectrum(spe, freq)
-    #plt.pause(plot_seconds)
-    #plt.close()
-    return tt
-
-def readAndShow(tt):
-    acc = Accelerometers.reload_acc_info(tt)
-    data = acc.read_data()
-    spe, freq = acc.power_spectrum(data)
-    acc.plot_power_spectrum(spe, freq)
 
 
 ### FUNZIONI NON USATE ###
