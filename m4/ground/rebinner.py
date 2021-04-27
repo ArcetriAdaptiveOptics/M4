@@ -6,6 +6,7 @@ Authors
 import numpy as np
 
 def rebin(a, *args):
+    #modRB to correct for the wrong amplitude after rebin
     '''rebin ndarray data into a smaller ndarray of the same rank whose dimensions
     are factors of the original dimensions. eg. An array with 6 columns and 4 rows
     can be reduced to have 6,3,2 or 1 columns and 4,2 or 1 rows.
@@ -29,3 +30,8 @@ def rebin(a, *args):
              ['/factor[%d]'%i for i in range(lenShape)]
     print (''.join(evList))
     return eval(''.join(evList))
+
+
+def rebin2(a, shape):
+    sh = shape[0],a.shape[0]//shape[0],shape[1],a.shape[1]//shape[1]
+    return a.reshape(sh).mean(-1).mean(1)

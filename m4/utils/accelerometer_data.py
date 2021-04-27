@@ -91,14 +91,16 @@ class Accelerometers():
         rebinning_size = np.int(vec.shape[0]/self._rebinnig_factor)
         v_list=[]
         for i in range(vec.shape[1]):
-            v_list.append(rebinner.rebin(vec[:,i], rebinning_size)) #1050
+            v_list.append(rebinner.rebin(vec[:, i], rebinning_size)) #1050
         rebinned_vector = np.array(v_list)
+        time = rebinner.rebin(data[:, 0], rebinning_size)
 
         hf = h5py.File(final_destination, 'w')
         hf.create_dataset('Accelerometers', data=rebinned_vector)
         hf.attrs['DT'] = OpcUaParameters.accelerometers_dt
         hf.attrs['ID'] = OpcUaParameters.accelerometers_plc_id
         hf.attrs['DIR'] = ['X', 'Z', 'Y', 'Z']
+        hf.attrs['TIME'] = time
         hf.close()
 
     @staticmethod
@@ -125,6 +127,7 @@ class Accelerometers():
             theObject.dt = hf.attrs['DT']
             theObject.id_vector = hf.attrs['ID']
             theObject.directions = hf.attrs['DIR']
+            theObject.time = hf.attrs['TIME']
         except:
             theObject.dt = OpcUaParameters.accelerometers_dt_plc
             theObject.id_vector = OpcUaParameters.accelerometers_plc_id
