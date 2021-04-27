@@ -23,8 +23,8 @@ class OpcUaParabola(BaseParabola):
 
     def setPosition(self, absolute_position_in_mm):
         n_opc = np.array([OpcUaParameters.PAR_PISTON,
-                                  OpcUaParameters.PAR_TIP,
-                                  OpcUaParameters.PAR_TILT])
+                          OpcUaParameters.PAR_TIP,
+                          OpcUaParameters.PAR_TILT])
         for i in range(OttParameters.PARABOLA_DOF.size):
             j = OttParameters.PARABOLA_DOF[i]
             self._opcUa.set_target_position(n_opc[i], absolute_position_in_mm[j])

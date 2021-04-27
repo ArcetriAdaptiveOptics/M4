@@ -5,16 +5,16 @@ Authors
 
 import logging
 import numpy as np
-from m4.devices.base_parabola import BaseParabola
+from m4.devices.base_reference_mirror import BaseReferenceMirror
 
-class FakeParabola(BaseParabola):
-    ''' Class for parabola simulation
+class FakeReferenceMirror(BaseReferenceMirror):
+    ''' Class for reference mirror simulation
     '''
 
     def __init__(self):
         """The constructor """
         self._pos = np.zeros(6)
-        self._logger = logging.getLogger('FakeParabola')
+        self._logger = logging.getLogger('FakeReferenceMirror')
 
     def getPosition(self):
         self._logger.debug('Position = %g' % self._pos)
