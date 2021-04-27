@@ -18,7 +18,7 @@ class OpcUaParabola(BaseParabola):
 
     def getPosition(self):
         current_pos = self._readParPosition()
-        self._logger.debug('Position = %g' % current_pos)
+        self._logger.debug('Position = %s' % current_pos)
         return current_pos
 
     def setPosition(self, absolute_position_in_mm):

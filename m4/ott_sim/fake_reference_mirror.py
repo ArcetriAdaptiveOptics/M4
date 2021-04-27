@@ -17,9 +17,9 @@ class FakeReferenceMirror(BaseReferenceMirror):
         self._logger = logging.getLogger('FakeReferenceMirror')
 
     def getPosition(self):
-        self._logger.debug('Position = %g' % self._pos)
+        self._logger.debug('Position = %s' % self._pos)
         return self._pos
 
     def setPosition(self, absolute_position_in_mm):
-        self._pos = absolute_position_in_mm
+        self._pos = absolute_position_in_mm * 1e-3
         return self.getPosition()

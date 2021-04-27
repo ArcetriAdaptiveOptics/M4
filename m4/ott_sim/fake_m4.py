@@ -17,7 +17,7 @@ class FakeM4(BaseM4):
         self._logger = logging.getLogger('FakeM4')
 
     def getPosition(self):
-        self._logger.debug('Position = %g' % self._pos)
+        self._logger.debug('Position = %s' % self._pos)
         return self._pos
 
     def setPosition(self, absolute_position_in_mm):
