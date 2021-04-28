@@ -123,9 +123,12 @@ class OpcUaParameters():
     accelerometers_dt_plc = 2.5e-4
     accelerometers_dt = 5e-3
     accelerometers_sn = ['', '', '', '', 'a', 'a', 'a', 'b']
-    accelerometers_plc_id = np.array([5,6,7,8])
+    accelerometers_plc_id = np.array([5,6,7,8]) #final vector is time, accelerom, --> first accelerom is 1
     accelerometrs_directions = ['', '', '', '', 'X', 'Z', 'Y', 'Z']
-
+    accelerometers_sensitivity = np.array([0.,0,0,0,0.1,0.1,0.1,10])   #accel sentivity [V/g]
+    accelerometers_plc_range = np.array([0.,0,0,0,2.5,2.5,2.5,20])
+    accelerometers_plc_totcounts = 2**24
+ 
 class OtherParameters():
     ''' '''
     MASK_INDEX_SIMULATORE = 4

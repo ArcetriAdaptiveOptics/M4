@@ -156,7 +156,10 @@ class Accelerometers():
             self._tt = tt
         h5_file_path = os.path.join(Accelerometers._storageFolder(), self._tt)
         hf = h5py.File(h5_file_path, 'r')
-        self.datah5 = hf.get('Accelerometers')
+        self.datah5 = hf.get('Accelerometers')[()]
+        nacc = (self.datah5.shape)[0]
+        for i in range(nacc):
+            print(self.datah5[i,:].std())
         return self.datah5
 
     def get_dt(self):
@@ -187,7 +190,9 @@ class Accelerometers():
         #z = vec.T
     #         #spe = np.fft.fftshift(np.fft.rfft(vector, norm='ortho'))
     #         #freq = np.fft.fftshift(np.fft.rfftfreq(vector.size, d=self._dt))
-        spe = np.fft.rfft(z, axis=1)
+        spe  = np.fft.rfft(z, axis=1, norm='ortho')
+        nn   = np.sqrt(spe.shape[1])   #modRB 
+        spe  = (np.abs(spe)) / nn
         freq = np.fft.rfftfreq(z.shape[1], d=self.dt)
         return spe, freq
     #clf(); plot(freq[0], np.abs(spe[0]), label='proiezione1');
@@ -212,6 +217,18 @@ class Accelerometers():
         plt.pause(0.01)
         plt.legend()
         plt.grid()
+        
+        
+    def counts_to_g(self, vec):
+        id = OpcUaParameters.accelerometers_plc_id -1
+        sens = OpcUaParameters.accelerometers_sensitivity[id]
+        plcfs = OpcUaParameters.accelerometers_plc_range[id]
+        cal_list = []
+        for i in range(vec.shape[1]):
+            cal_vec = vec[:, i] /OpcUaParameters.accelerometers_plc_totcounts/(sens*plcfs)
+            cal_list.append(cal_vec)
+        cal_vec = np.array(cal_list)
+        return cal_vec.T
 
 
 
