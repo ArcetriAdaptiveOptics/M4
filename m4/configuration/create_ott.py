@@ -18,7 +18,8 @@ class OTT():
 
 
 # Elements position
-    def slide(self, par_slider_position=None):
+    @property
+    def slide(self):
         ''' Function to set the parabola translation (range: -0.9 m +0.9 m)
 
         Other Parameters
@@ -31,10 +32,10 @@ class OTT():
             par_trans: int [mm]
                     parabola translation
         '''
-        if par_slider_position is None:
-            return self._parabola_slider.getPosition()
-        else:
-            return self._parabola_slider.setPosition(par_slider_position)
+        return self._parabola_slider.getPosition()
+    @slide.setter
+    def slide(self, par_slider_position):
+        self._parabola_slider.setPosition(par_slider_position)
 
     def rslide(self, ref_flat_slider_position=None):
         '''  Function to set the reference flat mirror (range: -0.05 m to 0.4 m)
