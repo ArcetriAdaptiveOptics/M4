@@ -9,4 +9,6 @@ class BaseTemperatureSensors():
     '''
 
     def getTemperature(self):
+        ''' Function for getting PT temperature
+        '''
         raise Exception('Implement me!')

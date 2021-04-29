@@ -17,11 +17,29 @@ class OpcUaReferenceMirrorSlider(BaseReferenceMirrorSlider):
         self._logger = logging.getLogger('OpcUaReferenceMirrorSlider')
 
     def getPosition(self):
+        ''' Function to get the reference mirror slider position
+
+        Returns
+        -------
+            current_pos: int [mm]
+                            reference mirror slider position
+        '''
         current_pos = self._opcUa.get_position(OpcUaParameters.CAR)
         self._logger.debug('Position = %s' % current_pos)
         return current_pos
 
     def setPosition(self, absolute_position_in_mm):
+        '''Function to set the absolute position of the reference mirror slider
+
+        Parameters
+        ----------
+        absolute_position_in_mm: int [mm]
+
+        Returns
+        -------
+            current_pos: int [mm]
+                        absolute reference mirror slider position
+        '''
         self._checkRslide(absolute_position_in_mm)
         self._opcUa.set_target_position(OpcUaParameters.CAR,
                                         absolute_position_in_mm)
@@ -30,5 +48,6 @@ class OpcUaReferenceMirrorSlider(BaseReferenceMirrorSlider):
         return self.getPosition()
 
     def _checkRslide(self, r_slide):
+        ''' Function for input parameter control'''
         if r_slide <= OpcUaParameters.min_r_slide or r_slide >= OpcUaParameters.max_r_slide:
             raise OSError(' The required reference flat position is incorrect: %d' % r_slide)

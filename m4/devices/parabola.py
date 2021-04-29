@@ -17,11 +17,30 @@ class OpcUaParabola(BaseParabola):
         self._logger = logging.getLogger('OpcUaParabola')
 
     def getPosition(self):
+        ''' Function to get the parabola position
+
+        Returns
+        -------
+            current_pos: int [mm]
+                            parabola position
+        '''
         current_pos = self._readParPosition()
         self._logger.debug('Position = %s' % current_pos)
         return current_pos
 
     def setPosition(self, absolute_position_in_mm):
+        '''Function to set the absolute position of the parabola
+
+        Parameters
+        ----------
+        absolute_position_in_mm: numpy array [mm]
+                        vector of six value
+
+        Returns
+        -------
+            current_pos: numpy array [mm]
+                        absolute parabola position
+        '''
         n_opc = np.array([OpcUaParameters.PAR_PISTON,
                           OpcUaParameters.PAR_TIP,
                           OpcUaParameters.PAR_TILT])
@@ -34,6 +53,12 @@ class OpcUaParabola(BaseParabola):
         return self.getPosition()
 
     def _readParPosition(self):
+        '''
+        Returns
+        -------
+            current_pos: numpy array [mm]
+                        absolute parabola position
+        '''
         piston = self._opcUa.get_position(OpcUaParameters.PAR_PISTON)
         tip = self._opcUa.get_position(OpcUaParameters.PAR_TIP)
         tilt = self._opcUa.get_position(OpcUaParameters.PAR_TILT)

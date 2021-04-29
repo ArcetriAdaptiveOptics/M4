@@ -13,6 +13,8 @@ from m4.configuration.config import fold_name
 from m4.devices.base_interferometer import BaseInterferometer
 
 class I4dArcetri(BaseInterferometer):
+    ''' Class for i4d interferometer
+    '''
 
     def __init__(self):
         """The constructor """
@@ -28,6 +30,8 @@ class I4dArcetri(BaseInterferometer):
         ----------
             nframes: int
                 number of frames
+            show: int
+                0 to not show the image
 
         Returns
         -------
@@ -45,33 +49,44 @@ class I4dArcetri(BaseInterferometer):
                 else:
                     cube_images = np.ma.dstack((cube_images, ima))
             masked_ima = np.ma.mean(cube_images, axis=2)
-        if show!=0:
+        if show != 0:
             plt.clf()
             plt.imshow(masked_ima)
             plt.colorbar()
         return masked_ima
 
-    def save_phasemap(self, dove, name, image):
+    def save_phasemap(self, location, file_name, masked_image):
         """
         Parameters
         ----------
-        dove: string
+        location: string
             measurement file path
-        name: string
+        file_name: string
             measuremnet fits file name
-        image: numpy masked array
+        masked_image: numpy masked array
             data to save
         """
-        fits_file_name = os.path.join(dove, name)
-        pyfits.writeto(fits_file_name, image.data)
-        pyfits.append(fits_file_name, image.mask.astype(int))
+        fits_file_name = os.path.join(location, file_name)
+        pyfits.writeto(fits_file_name, masked_image.data)
+        pyfits.append(fits_file_name, masked_image.mask.astype(int))
 
     def _getMeasurementOnTheFly(self, interf):
+        '''
+        Parameters
+        ----------
+            interf: object
+                interferometer
+
+        Returns
+        -------
+            masked_image: numpy masked image
+                interferogram
+        '''
         filename = '/tmp/prova4d'
 
-        nMeasure=1
+        nMeasure = 1
         interf.connect()
-        interf.capture(1, name= 'DM_temp')
+        interf.capture(1, name='DM_temp')
         interf.produce('DM_temp')
         interf.disconnect()
         time.sleep(1.0)
@@ -80,7 +95,7 @@ class I4dArcetri(BaseInterferometer):
 
         for i in range(nMeasure):
             shutil.move(fName + '/hdf5/img_%04d.h5' %i,
-                    filename + "_m%02d" %i + ".h5")
+                        filename + "_m%02d" %i + ".h5")
 
         shutil.rmtree(fName + '/hdf5')
         shutil.rmtree(fName + '/raw')

@@ -15,4 +15,10 @@ class OpcUaTemperatureSensors(BaseTemperatureSensors):
         self._logger = logging.getLogger('OpcUaPT')
 
     def getTemperature(self):
+        '''
+        Returns
+        -------
+        temperature: numpy array
+            vector containing temperature
+        '''
         return self._opcUa.get_temperature_vector()

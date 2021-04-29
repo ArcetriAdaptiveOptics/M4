@@ -9,8 +9,15 @@ class BaseParabolaSlider():
     '''
 
     def getPosition(self):
+        ''' Function for getting object position
+        '''
         raise Exception('Implement me!')
 
     def setPosition(self, absolute_position_in_mm):
-        raise Exception('Implement me!')
+        ''' Function for setting object position
 
+        Parameters
+        ----------
+        absolute_position_in_mm: int [mm]
+        '''
+        raise Exception('Implement me!')

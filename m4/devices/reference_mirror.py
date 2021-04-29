@@ -17,11 +17,30 @@ class OpcUaReferenceMirror(BaseReferenceMirror):
         self._logger = logging.getLogger('OpcUaReferenceMirror')
 
     def getPosition(self):
+        ''' Function to get the reference mirror position
+
+        Returns
+        -------
+            current_pos: int [mm]
+                            reference mirror position
+        '''
         current_pos = self._readRMPosition()
         self._logger.debug('Position = %s' % current_pos)
         return current_pos
 
     def setPosition(self, absolute_position_in_mm):
+        '''Function to set the absolute position of the reference mirror
+
+        Parameters
+        ----------
+        absolute_position_in_mm: numpy array [mm]
+                        vector of six value
+
+        Returns
+        -------
+            current_pos: numpy array [mm]
+                        absolute reference mirror position
+        '''
         n_opc = np.array([OpcUaParameters.RM_PISTON,
                           OpcUaParameters.RM_TIP,
                           OpcUaParameters.RM_TILT])
@@ -34,6 +53,12 @@ class OpcUaReferenceMirror(BaseReferenceMirror):
         return self.getPosition()
 
     def _readRMPosition(self):
+        '''
+        Returns
+        -------
+            current_pos: numpy array [mm]
+                        absolute reference mirror position
+        '''
         piston = self._opcUa.get_position(OpcUaParameters.RM_PISTON)
         tip = self._opcUa.get_position(OpcUaParameters.RM_TIP)
         tilt = self._opcUa.get_position(OpcUaParameters.RM_TILT)

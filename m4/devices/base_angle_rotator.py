@@ -10,7 +10,16 @@ class BaseAngleRotator():
     '''
 
     def getPosition(self):
+        ''' Function for getting object position
+        '''
         raise Exception('Implement me!')
 
-    def setPosition(self, absolute_position_in_mm):
+    def setPosition(self, absolute_position_in_deg):
+        ''' Function for setting object position
+
+        Parameters
+        ----------
+        absolute_position_in_deg: int [deg]
+            rotating ring position
+        '''
         raise Exception('Implement me!')

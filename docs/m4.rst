@@ -92,6 +92,7 @@ Subpackages
     ground
     utils
     mOTT
+    devices
 
 Module contents
 ---------------
