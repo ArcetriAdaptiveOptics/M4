@@ -115,7 +115,7 @@ def actsRepeatability(n_meas, piston_value, n_frames):
     n_meas: int
         number of measurement for the test
     piston_value: float
-        relative value for the parabola piston
+        relative value for the parab piston
     n_frames: int
         number of frames for the acquisition measurement
 
@@ -273,7 +273,7 @@ def parPistonTest(piston_value, deltapos_filepath, amp, tt_for_align):
     Parameters
     ----------
     piston_value: int
-        relative value for the parabola piston
+        relative value for the parab piston
     deltapos_filepath: string
         file path for par and rm delta positions
     amp: float

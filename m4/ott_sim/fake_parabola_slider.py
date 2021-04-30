@@ -7,7 +7,7 @@ from m4.devices.base_parabola_slider import BaseParabolaSlider
 
 
 class FakeParabolaSlider(BaseParabolaSlider):
-    ''' Class for parabola slider simulation
+    ''' Class for parabola slider simulation (range: -0.9 m +0.9 m)
     '''
 
     def __init__(self):
@@ -20,5 +20,12 @@ class FakeParabolaSlider(BaseParabolaSlider):
         return self._pos
 
     def setPosition(self, absolute_position_in_mm):
-        self._pos = absolute_position_in_mm * 1e-3
+        self._pos = absolute_position_in_mm
         return self.getPosition()
+
+    def getPositionInM(self):
+        return self._pos*1e-3
+
+    def setPositionInM(self, absolute_position_in_m):
+        self._pos = absolute_position_in_m * 1e3
+        return self.getPositionInM()
