@@ -20,6 +20,8 @@ class OpcUaController():
         from m4.utils.opc_ua_controller import OpcUaController
         opc = OpcUaController()
     """
+    STOP_NODE = "ns=7;s=MAIN.b_StopCmd"
+    TEMPERATURE_NODE = "ns=7;s=MAIN.i_Temperature_Sensor"
 
     def __init__(self):
         """The constructor """
@@ -31,7 +33,7 @@ class OpcUaController():
         Stop all commands
         """
         self._client.connect()
-        stop_node = self._client.get_node("ns=7;s=MAIN.b_StopCmd")
+        stop_node = self._client.get_node(self.STOP_NODE)
         stop_type = stop_node.get_data_type_as_variant_type()
 #         import pdb
 #         pdb.set_trace()
@@ -46,7 +48,7 @@ class OpcUaController():
                                 values obtained from PT
         """
         self._client.connect()
-        temperature_node = self._client.get_node("ns=7;s=MAIN.i_Temperature_Sensor")
+        temperature_node = self._client.get_node(self.TEMPERATURE_NODE)
         temperature_vector = np.array(temperature_node.get_value()) / 100.
         self._client.disconnect()
         return temperature_vector
