@@ -24,7 +24,7 @@ class FakeParabolaSlider(BaseParabolaSlider):
         return self.getPosition()
 
     def getPositionInM(self):
-        return self._pos*1e-3
+        return self._pos * 1e-3
 
     def setPositionInM(self, absolute_position_in_m):
         self._pos = absolute_position_in_m * 1e3

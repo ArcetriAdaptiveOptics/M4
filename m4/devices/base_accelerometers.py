@@ -2,12 +2,15 @@
 Authors
   - C. Selmi: written in 2020
 '''
+from abc import ABC, abstractmethod
 
-class BaseAccelerometers():
+
+class BaseAccelerometers(ABC):
     '''
     Abstract class for parabola
     '''
 
+    @abstractmethod
     def acquireData(self, recording_seconds):
         ''' Function for data acquisition
 
