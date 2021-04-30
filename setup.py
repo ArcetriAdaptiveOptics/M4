@@ -83,7 +83,6 @@ setup(name=NAME,
                         "opcua",
                         "mock",
                         "zmq",
-                        "shutil",
                         "sklearn",
                         "pyzabbix"
                         ],
