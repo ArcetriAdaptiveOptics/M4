@@ -8,7 +8,7 @@ from m4.devices.base_angle_rotator import BaseAngleRotator
 
 
 class FakeAngleRotator(BaseAngleRotator):
-    ''' Class for ring angle rotation simulation
+    ''' Class for ring angle rotation simulation (range: 0 to 360)
     '''
 
     def __init__(self):

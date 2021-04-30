@@ -15,6 +15,7 @@ from m4.ott_sim.fake_temperature_sensors import FakeTemperatureSensors
 from m4.configuration.create_ott import OTT
 from numpy import testing
 from m4.configuration.ott_parameters import OpcUaParameters
+from m4.ott_sim.fake_accelerometers import FakeAccelerometers
 
 
 class TestOtt(unittest.TestCase):
@@ -27,6 +28,7 @@ class TestOtt(unittest.TestCase):
         reference_mirror = FakeReferenceMirror()
         m4 = FakeM4()
         temperature_sensor = FakeTemperatureSensors()
+        accelerometers = FakeAccelerometers()
         self.ott = OTT(
             parabola_slider,
             reference_mirror_slider,
@@ -34,25 +36,29 @@ class TestOtt(unittest.TestCase):
             parabola,
             reference_mirror,
             m4,
-            temperature_sensor)
+            temperature_sensor,
+            accelerometers)
 
     def testSlide(self):
-        self.ott.slide = 100
-        self.ott.rslide(-82.4)
-        self.ott.angle(31.4)
-        self.ott.parab(np.array([0, 0, -2, 3.3, -4, 0]))
-        self.ott.refflat(np.array([0, 0, 0, 3.1, 4, 0]))
-        self.ott.m4(np.array([0, 0, 0, 33.3, 44.4, 0]))
+        self.ott.parabolaSlider.setPosition(100)
+        self.ott.referenceMirrorSlider.setPosition(-82.4)
+        self.ott.angleRotator.setPosition(31.4)
+        self.ott.parabola.setPosition(np.array([0, 0, -2, 3.3, -4, 0]))
+        self.ott.referenceMirror.setPosition(np.array([0, 0, 0, 3.1, 4, 0]))
+        self.ott.m4.setPosition(np.array([0, 0, 0, 33.3, 44.4, 0]))
 
-        self.assertAlmostEqual(100, self.ott.slide)
-        self.assertAlmostEqual(-82.4, self.ott.rslide())
-        self.assertAlmostEqual(31.4, self.ott.angle())
-        testing.assert_allclose(self.ott.parab(),
+        self.assertAlmostEqual(100,
+                               self.ott.parabolaSlider.getPosition())
+        self.assertAlmostEqual(-82.4,
+                               self.ott.referenceMirrorSlider.getPosition())
+        self.assertAlmostEqual(31.4,
+                               self.ott.angleRotator.getPosition())
+        testing.assert_allclose(self.ott.parabola.getPosition(),
                                 np.array([0, 0, -2, 3.3, -4, 0]))
-        testing.assert_allclose(self.ott.refflat(),
+        testing.assert_allclose(self.ott.referenceMirror.getPosition(),
                                 np.array([0, 0, 0, 3.1, 4, 0]))
-        testing.assert_allclose(self.ott.m4(),
+        testing.assert_allclose(self.ott.m4.getPosition(),
                                 np.array([0, 0, 0, 33.3, 44.4, 0]))
-        testing.assert_allclose(self.ott.temperature(),
-                                np.np.zeros(OpcUaParameters.num_PT_sensor))
+        testing.assert_allclose(self.ott.temperature.getTemperature(),
+                                np.zeros(OpcUaParameters.num_PT_sensor))
 

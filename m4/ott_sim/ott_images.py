@@ -65,7 +65,8 @@ class OttImages():
             smap = smap+offset
 
         #fullmask  = maskm
-        roffset = (self._ott.rslide()-self._ott.slide()) * OttParameters.pscale
+        roffset = (self._ott.referenceMirrorSlider.getPositionInM()-
+                   self._ott.parabolaSlider.getPositionInM()) * OttParameters.pscale
         draw_ref = (abs(roffset)-OttParameters.rflat_radius*OttParameters.pscale < npix[1]/2)
         if draw_ref == 1:
             rmap, rmask = self.ott_rflat_ima()
@@ -146,7 +147,7 @@ class OttImages():
         ww = np.dot(self.zmat, self.zmx_parpos2z()) 
 
         for i in range(0, 5):
-            smap[self.parmask == True] = smap[self.parmask == True] + ww[:, i]*(self._ott.parab())[i]
+            smap[self.parmask == True] = smap[self.parmask == True] + ww[:, i]*(self._ott.parabola.getPositionInM())[i]
 
         mask = geo.draw_mask(self.mask, npix[0]/2, npix[1]/2,
                              OttParameters.fold_radius*OttParameters.pscale)
@@ -157,7 +158,7 @@ class OttImages():
         npix = Interferometer.N_PIXEL
         pscale = OttParameters.pscale
         rmap = self.smap.copy()
-        roffset = (self._ott.rslide()-self._ott.slide())*pscale
+        roffset = (self._ott.referenceMirrorSlider.getPositionInM()-self._ott.parabolaSlider.getPositionInM())*pscale
         rflat_radius = OttParameters.rflat_radius
         if abs(roffset)-rflat_radius*pscale < npix[1]/2:
             rmask = np.ones([npix[0], npix[1]])
@@ -170,7 +171,7 @@ class OttImages():
             #idr   = where(rmask[ott.idx])
             ww = np.dot(self.zmat, self.zmx_refflatpos2z())
             for i in range(0, 5):
-                rmap[self.parmask == True] = rmap[self.parmask == True] + ww[:, i]*(self._ott.refflat())[i]
+                rmap[self.parmask == True] = rmap[self.parmask == True] + ww[:, i]*(self._ott.referenceMirror.getPositionInM())[i]
                 #rmap[ott.idx[idr]] += ww[i,idr]* ott.refflat[i]
 
             rmap = rmap*rmask
@@ -182,7 +183,7 @@ class OttImages():
 
     def ott_m4_ima(self): #bad=mask, idm=idm, idtot=idtot, optpupil=optpupil
 
-        theta = self._ott.angle()*np.pi/180.
+        theta = self._ott.angleRotator.getPosition()*np.pi/180.
         rmat = [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
         ss = self.m4pupil.shape
 
@@ -197,7 +198,7 @@ class OttImages():
         m4smap = self.smap.copy()
         ww = np.dot(self.zmat, self.zmx_m4pos2z())
         for i in range(0, 5):
-            m4smap[self.parmask == True] = m4smap[self.parmask == True] + ww[:, i]* (self._ott.m4())[i]
+            m4smap[self.parmask == True] = m4smap[self.parmask == True] + ww[:, i]* (self._ott.m4.getPositionInM())[i]
             #m4smap[ott.idx[idtot]] = m4smap[ott.idx[idtot]] + ww[i,idtot]* ott.m4[i]
 
         #m4img[ott.idx[idtot]] += m4smap[ott.idx[idtot]]
@@ -206,12 +207,12 @@ class OttImages():
 
     def ott_map2ima(self, w):   #debugged
         npix = Interferometer.N_PIXEL
-        theta = self._ott.angle()*np.pi/180.
+        theta = self._ott.angleRotator.getPosition()*np.pi/180.
         rmat = [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
         ss = w.shape
-        theangle = -30.-self._ott.angle()
+        theangle = -30.-self._ott.angleRotator.getPosition()
         simg = geo.rotate(w, theangle)
-        parxy = self._ott.slide() * OttParameters.pscale
+        parxy = self._ott.parabolaSlider.getPositionInM() * OttParameters.pscale
         x0 = np.fix(ss[0]/2-npix[0]/2)
         x1 = np.fix(ss[0]/2+npix[0]/2-1)
         y0 = np.fix(ss[1]/2+parxy-npix[1]/2)
@@ -230,9 +231,9 @@ class OttImages():
         #rmod = 0.6
         m4 = self.m4pupil.copy()
         pixscale = OttParameters.PIXEL_SCALE
-        parxy = [self._ott.slide()*pixscale, 0]
-        refmxy = [self._ott.rslide()*pixscale, 0]
-        ang = (-30-self._ott.angle())*np.pi/180
+        parxy = [self._ott.parabolaSlider.getPositionInM()*pixscale, 0]
+        refmxy = [self._ott.referenceMirrorSlider.getPositionInM()*pixscale, 0]
+        ang = (-30-self._ott.angleRotator.getPosition())*np.pi/180
         rmat = np.array([[np.cos(ang), np.sin(ang)], [-np.sin(ang), np.cos(ang)]])
         parxy = rmat.dot(parxy)
         refmxy = rmat.dot(refmxy)

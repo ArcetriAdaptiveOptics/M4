@@ -6,7 +6,7 @@ import logging
 from m4.devices.base_reference_mirror_slider import BaseReferenceMirrorSlider
 
 class FakeReferenceMirrorSlider(BaseReferenceMirrorSlider):
-    ''' Class for reference mirror slider simulation
+    ''' Class for reference mirror slider simulation (range: -0.05 m to 0.4 m)
     '''
 
     def __init__(self):
@@ -19,5 +19,12 @@ class FakeReferenceMirrorSlider(BaseReferenceMirrorSlider):
         return self._pos
 
     def setPosition(self, absolute_position_in_mm):
-        self._pos = absolute_position_in_mm * 1e-3
+        self._pos = absolute_position_in_mm
         return self.getPosition()
+
+    def getPositionInM(self):
+        return self._pos*1e-3
+
+    def setPositionInM(self, absolute_position_in_m):
+        self._pos = absolute_position_in_m * 1e3
+        return self.getPositionInM()
