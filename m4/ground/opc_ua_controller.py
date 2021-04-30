@@ -12,6 +12,7 @@ from m4.configuration.ott_parameters import OpcUaParameters
 
 server = OpcUaParameters.server
 
+
 class OpcUaController():
     """
     Function for test tower management via OpcUa::
@@ -19,6 +20,7 @@ class OpcUaController():
         from m4.utils.opc_ua_controller import OpcUaController
         opc = OpcUaController()
     """
+
     def __init__(self):
         """The constructor """
         self._logger = logging.getLogger('OPCUA:')
@@ -45,7 +47,7 @@ class OpcUaController():
         """
         self._client.connect()
         temperature_node = self._client.get_node("ns=7;s=MAIN.i_Temperature_Sensor")
-        temperature_vector = np.array(temperature_node.get_value())/100.
+        temperature_vector = np.array(temperature_node.get_value()) / 100.
         self._client.disconnect()
         return temperature_vector
 
@@ -59,12 +61,11 @@ class OpcUaController():
         self._client.connect()
         var_list = []
         for i in range(len(OpcUaParameters.zabbix_variables_name)):
-            node = self._client.get_node("ns=7;s=MAIN.Drivers_input.f_PosAct[%d]" %i)
+            node = self._client.get_node("ns=7;s=MAIN.Drivers_input.f_PosAct[%d]" % i)
             var = node.get_value()
             var_list.append(var)
         self._client.disconnect()
         return np.array(var_list)
-
 
 ### Command for object ###
     def get_position(self, int_number):
@@ -80,7 +81,7 @@ class OpcUaController():
                     position of the requested object
         """
         self._client.connect()
-        node = self._client.get_node("ns=7;s=MAIN.Drivers_input.f_PosAct[%d]" %int_number)
+        node = self._client.get_node("ns=7;s=MAIN.Drivers_input.f_PosAct[%d]" % int_number)
         position = node.get_value()
         self._client.disconnect()
         self._logger.debug('Position = %f', position)
@@ -102,7 +103,7 @@ class OpcUaController():
                     (not applied)
         """
         self._client.connect()
-        node = self._client.get_node("ns=7;s=MAIN.f_TargetPosition_input[%d]" %int_number)
+        node = self._client.get_node("ns=7;s=MAIN.f_TargetPosition_input[%d]" % int_number)
         type_node = node.get_data_type_as_variant_type()
         node.set_value(ua.DataValue(ua.Variant(value, type_node)))
         target_position = node.get_value()
@@ -120,7 +121,7 @@ class OpcUaController():
                     number of the chosen object
         """
         self._client.connect()
-        node = self._client.get_node("ns=7;s=MAIN.b_MoveCmd[%d]" %int_number)
+        node = self._client.get_node("ns=7;s=MAIN.b_MoveCmd[%d]" % int_number)
         node_type = node.get_data_type_as_variant_type()
         node.set_value(ua.DataValue(ua.Variant(True, node_type)))
         self._client.disconnect()
@@ -139,7 +140,7 @@ class OpcUaController():
                     position of the requested object
         """
         self._client.connect()
-        node = self._client.get_node("ns=7;s=MAIN.b_MoveCmd[%d]" %int_number)
+        node = self._client.get_node("ns=7;s=MAIN.b_MoveCmd[%d]" % int_number)
         value = node.get_value()
         self._client.disconnect()
         return value
@@ -205,7 +206,7 @@ class OpcUaController():
         self.set_target_position(number, value)
         self.move_object(number)
         time.sleep(10)
-        #self.wait_for_stop(number)
+        # self.wait_for_stop(number)
         act = self.get_position(number)
         return act
 

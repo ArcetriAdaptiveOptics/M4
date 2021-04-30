@@ -3,7 +3,7 @@ Authors
   - C. Selmi: written in 2020
 '''
 from m4.configuration.create_ott import OTT
-#from m4.ground.interface_4D import comm4d
+# from m4.ground.interface_4D import comm4d
 from m4.configuration import config
 from m4.ground.opc_ua_controller import OpcUaController
 from m4.ott_sim.fake_parabola_slider import FakeParabolaSlider
@@ -25,7 +25,8 @@ from m4.devices.temperature_sensors import OpcUaTemperatureSensors
 from m4.devices.accelerometers import ZmqAccelerometes
 from m4.devices.interferometer import I4dArcetri
 
-def create_ott():
+
+def create_ott(config=config):
     ''' Function for the ott creation
 
     Returns
@@ -59,5 +60,5 @@ def create_ott():
 
     ott = OTT(parabola_slider, reference_mirror_slider, angle_rotator,
               parab, reference_mirror, m4, temperature_sensor, accelerometers)
-    #interf = comm4d()
+    # interf = comm4d()
     return ott, interf
