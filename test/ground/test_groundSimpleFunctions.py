@@ -9,7 +9,6 @@ from skimage.draw import circle
 from m4.ground import geo
 from m4.ground import find_directory
 from m4.ground import smooth_function
-from m4.ground.timestamp import Timestamp
 from m4.ground import logger_set_up
 from m4.ground.tracking_number_folder import TtFolder
 from m4.ground import zernike
@@ -17,8 +16,8 @@ from m4.ground import read_data
 
 TESTDATA_DIR = os.path.dirname(__file__)
 
-class Test(unittest.TestCase):
 
+class Test(unittest.TestCase):
 
     @unittest.skip('Mettere dei file')
     def testFindDirectory(self):
@@ -53,14 +52,6 @@ class Test(unittest.TestCase):
         data = np.arange(100)
         smooth_function.smooth(data, 4)
 
-    def testTimestamp(self):
-        t = Timestamp()
-        t.asNowString()
-        t.asTodayString()
-        t.now()
-        t.nowUSec()
-        t.today()
-
     @unittest.skip('Dove mettere il file')
     def testTtFolder(self):
         store_in_folder = '?'
@@ -69,10 +60,10 @@ class Test(unittest.TestCase):
 
     def testZernike(self):
         img = np.random.rand(500, 500)
-        mask = np.ones((500, 500), dtype= bool)
+        mask = np.ones((500, 500), dtype=bool)
         rr, cc = circle(250, 250, 100)
-        mask[rr,cc] = 0
+        mask[rr, cc] = 0
         masked_ima = np.ma.masked_array(img, mask=mask)
 
-        coef, mat = zernike.zernikeFit(masked_ima, np.arange(10)+1)
+        coef, mat = zernike.zernikeFit(masked_ima, np.arange(10) + 1)
         zernike.zernikeSurface(masked_ima, coef, mat)
