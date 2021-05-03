@@ -11,7 +11,7 @@ class BaseInterferometer(ABC):
     '''
 
     @abstractmethod
-    def acquire_phasemap(self, nframes_or_ott, show):
+    def acquire_phasemap(self, nframes, show):
         ''' Function for data acquisition '''
         raise Exception('Implement me!')
 

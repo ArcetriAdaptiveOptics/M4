@@ -14,12 +14,17 @@ class FakeInterferometer(BaseInterferometer):
     def __init__(self):
         """The constructor """
         self._logger = logging.getLogger('FakeInterferometer')
+        self._ott = None
 
-    def acquire_phasemap(self, ott, show=0):
-        ottIma = OttImages(ott)
+    def acquire_phasemap(self, n_frames=1, show=0):
+        ottIma = OttImages(self._ott)
         opd, mask = ottIma.ott_smap(show=show)
-        masked_ima = np.ma.masked_array(opd.T, mask=np.invert(mask.astype(bool)).T)
+        masked_ima = np.ma.masked_array(opd.T,
+                                        mask=np.invert(mask.astype(bool)).T)
         return masked_ima
+
+    def set_ott(self, ott):
+        self._ott = ott
 
     def save_phasemap(self, dove, name, image):
         """

@@ -8,20 +8,19 @@ Authors
   - C. Selmi: written in 2020
 '''
 
-from m4.configuration import start
 import time
 import os
 import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from m4.configuration.ott_parameters import OpcUaParameters
-from m4.ground.opc_ua_controller import OpcUaController
+from m4.devices.opc_ua_controller import OpcUaController
+from m4.configuration import start
 from m4.configuration.config import fold_name
 from m4.alignment import Alignment
 from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.ground.timestamp import Timestamp
-from m4.utils import accelerometer_data as acc
 
 
 ott, interf = start.create_ott()
@@ -76,7 +75,7 @@ def opticalMonitoring(n_images, delay):
     tt: string
         tracking number of measurements
     '''
-    opc = OpcUaController()
+    #opc = OpcUaController()
     store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
     save = tracking_number_folder.TtFolder(store_in_folder)
     dove, tt = save._createFolderToStoreMeasurements()
@@ -87,8 +86,8 @@ def opticalMonitoring(n_images, delay):
     for i in range(n_images):
         ti = time.time()
         dt = ti - t0
-        masked_ima = interf.acq4d(1, ott)
-        temp_vect = opc.get_temperature_vector()
+        masked_ima = interf.acquire_phasemap(1)
+        temp_vect = ott.temperature.getTemperature()
         name = Timestamp.now() + '.fits'
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, masked_ima.data)
@@ -129,38 +128,38 @@ def actsRepeatability(n_meas, piston_value, n_frames):
     dove, tt = save._createFolderToStoreMeasurements()
 
     piston = np.array([0, 0, piston_value, 0, 0, 0])
-    pos_par = ott.parab()
-    pos_rm = ott.refflat()
+    pos_par = ott.parabola.getPosition()
+    pos_rm = ott.referenceMirror.getPosition()
 
     par_list = []
     rm_list = []
     cube = None
     for i in range(n_meas):
-        ott.parab(pos_par)
-        ott.refflat(pos_rm)
+        ott.parabola.setPosition(pos_par)
+        ott.referenceMirror.setPosition(pos_rm)
         par0 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2,
                          OpcUaParameters.PAR3)
         rm0 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2,
                         OpcUaParameters.RM3)
-        masked_ima0 = interf.acq4d(n_frames, ott)
+        masked_ima0 = interf.acquire_phasemap(n_frames)
 
-        ott.parab(pos_par + piston)
+        ott.parabola.setPosition(pos_par + piston)
         # ott.refflat(pos_rm + piston)
 
         par1 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2,
                          OpcUaParameters.PAR3)
         rm1 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2,
                         OpcUaParameters.RM3)
-        masked_ima1 = interf.acq4d(n_frames, ott)
+        masked_ima1 = interf.acquire_phasemap(n_frames)
 
-        ott.parab(pos_par - piston)
+        ott.parabola.setPosition(pos_par - piston)
         # ott.refflat(pos_rm - piston)
 
         par2 = _readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2,
                          OpcUaParameters.PAR3)
         rm2 = _readActs(OpcUaParameters.RM1, OpcUaParameters.RM2,
                         OpcUaParameters.RM3)
-        masked_ima2 = interf.acq4d(n_frames, ott)
+        masked_ima2 = interf.acquire_phasemap(n_frames)
 
         par = np.array([par0, par1, par2])
         rm = np.array([rm0, rm1, rm2])
@@ -181,8 +180,8 @@ def actsRepeatability(n_meas, piston_value, n_frames):
         pyfits.append(os.path.join(dove, 'images.fits'),
                       cube.mask.astype(int), overwrite=True)
 
-    ott.parab(pos_par)
-    ott.refflat(pos_rm)
+    ott.parabola.setPosition(pos_par)
+    ott.referenceMirror.setPosition(pos_rm)
     return tt
 
 
@@ -210,8 +209,8 @@ def scanAstigmComa(stepamp, nstep, nframes=10):  # by RB 20210117.
     zern_vect = []
     parpos = []
     rmpos = []
-    par0 = ott.parab()
-    rm0 = ott.refflat()
+    par0 = ott.parabola.getPosition()
+    rm0 = ott.referenceMirror.getPosition()
     n2move = np.array([3, 4])
     thedirection = np.array([-1, 1])
     n_frames_alignment = 3
@@ -225,19 +224,19 @@ def scanAstigmComa(stepamp, nstep, nframes=10):  # by RB 20210117.
                 parmove = stepamp * i * v
                 par1[k] += parmove
                 print('Moving PAR[%d] by %d' % (k, parmove))
-                ott.parab(par1)
+                ott.parabola.setPosition(par1)
                 rm1 = rm0.copy()
                 rmmove = stepamp * i * v * par2rm
                 rm1[k] += rmmove
-                ott.refflat(rm1)
+                ott.referenceMirror.setPosition(rm1)
                 print('Moving RM[%d] by %d' % (k, rmmove))
                 par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1,
                                                   np.array([0, 1]),
                                                   np.array([3, 4]),
                                                   tt_for_align)
-                par2 = ott.parab()
-                rm2 = ott.refflat()
-                masked_ima = interf.acq4d(nframes, 0)
+                par2 = ott.parabola.getPosition()
+                rm2 = ott.referenceMirror.getPosition()
+                masked_ima = interf.acquire_phasemap(nframes)
                 name = Timestamp.now() + '.fits'
                 fits_file_name = os.path.join(dove, name)
                 pyfits.writeto(fits_file_name, masked_ima.data)
@@ -256,8 +255,8 @@ def scanAstigmComa(stepamp, nstep, nframes=10):  # by RB 20210117.
                 fits_file_name = os.path.join(dove, 'RM_positions.fits')
                 pyfits.writeto(fits_file_name, np.array(rmpos), overwrite=True)
 
-    ott.parab(par0)
-    ott.refflat(rm0)
+    ott.parabola.setPosition(par0)
+    ott.referenceMirror.setPosition(rm0)
     return tt
 
 
@@ -293,8 +292,8 @@ def parPistonTest(piston_value, deltapos_filepath, amp, tt_for_align):
     dy = deltapos[:, 1] * amp
     save = tracking_number_folder.TtFolder(fold_name.PISTON_TEST_ROOT_FOLDER)
     dove, tt = save._createFolderToStoreMeasurements()
-    par0 = ott.parab()
-    rm0 = ott.refflat()
+    par0 = ott.parabola.getPosition()
+    rm0 = ott.referenceMirror.getPosition()
     n_frames_meas = 10
     n_frames_alignment = 3
     rmcoeff = -2.04
@@ -313,23 +312,23 @@ def parPistonTest(piston_value, deltapos_filepath, amp, tt_for_align):
             rm_new[3] += rmcoeff * dx[i]
             par_new[4] += dy[i]
             rm_new[4] += rmcoeff * dy[i]
-            ott.parab(par_new)
-            ott.refflat(rm_new)
+            ott.parabola.setPosition(par_new)
+            ott.referenceMirror.setPosition(rm_new)
             par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1,
                                               np.array([0, 1]),
                                               np.array([3, 4]),
                                               tt_for_align)
 
-        par = ott.parab()
-        rm = ott.refflat()
+        par = ott.parabola.getPosition()
+        rm = ott.referenceMirror.getPosition()
         par_list.append(par)
         rm_list.append(rm)
-        masked_ima0 = interf.acq4d(n_frames_meas, ott)
+        masked_ima0 = interf.acquire_phasemap(n_frames_meas)
         par[2] += piston_value
-        ott.parab(par)
-        masked_ima1 = interf.acq4d(n_frames_meas, ott)
+        ott.parabola.setPosition(par)
+        masked_ima1 = interf.acquire_phasemap(n_frames_meas)
         par[2] -= piston_value
-        ott.parab(par)
+        ott.parabola.setPosition(par)
         diff = masked_ima1 - masked_ima0
         name = 'diff_%04d.fits' % i
         interf.save_phasemap(dove, name, diff)
@@ -365,13 +364,13 @@ def parTiltTest(act, val_vec):
     delta_list: list
         different from start image
     '''
-    image0 = interf.acq4d(10, 0)
+    image0 = interf.acquire_phasemap(10)
     delta_list = []
     sum_list = []
     coef_list = []
     for i in range(val_vec.size):
         opc._setAct(act, val_vec[i])
-        image = interf.acq4d(10, 0)
+        image = interf.acquire_phasemap(10)
         delta = image - image0
         delta_list.append(delta)
         coef, mat = zernike.zernikeFit(delta, np.arange(10) + 1)
@@ -400,8 +399,8 @@ def mappingPar(shift, n_iter, tt_for_align):
         tracking number of measurements
     '''
     n_frames_alignment = 1
-    par0 = ott.parab()
-    rm0 = ott.refflat()
+    par0 = ott.parabola.getPosition()
+    rm0 = ott.referenceMirror.getPosition()
     delta_par = []
     delta_rm = []
     delta_object = []
@@ -424,33 +423,33 @@ def mappingPar(shift, n_iter, tt_for_align):
     file = open(os.path.join(dove, 'MappingInfo.txt'), "a")
     file.write('Mapping object: ' + object_to_move + '\n')
     file.close()
-    slide0 = ott.slide()
-    rslide0 = ott.rslide()
-    angle0 = ott.angle()
+    slide0 = ott.parabolaSlider.getPosition()
+    rslide0 = ott.referenceMirrorSlider.getPosition()
+    angle0 = ott.angleRotator.getPosition()
     slide = -1
     rslide = -1
     angle = -1
     for i in range(n_iter):
         if shift[0] != 0:
-            slide = ott.slide(slide0 + ((i + 1) * shift[0]))
+            slide = ott.parabolaSlider.setPosition(slide0 + ((i + 1) * shift[0]))
 #             if slide==0:
 #                 raise Exception('HOMING! PAR WIN')
         if shift[1] != 0:
-            rslide = ott.rslide(rslide0 + ((i + 1) * shift[1]))
+            rslide = ott.referenceMirrorSlider.setPosition(rslide0 + ((i + 1) * shift[1]))
 #             if rslide==0:
 #                 raise Exception('HOMING! RM WIN')
         if shift[2] != 0:
-            angle = ott.angle(angle0 + ((i + 1) * shift[2]))
+            angle = ott.angleRotator.setPosition(angle0 + ((i + 1) * shift[2]))
 
         time.sleep(5)
         par_cmd, rm_cmd = a.ott_alignment(n_frames_alignment, 1,
                                           np.array([0, 1]), np.array([3, 4]),
                                           tt_for_align)
-        image = interf.acq4d(1)
+        image = interf.acquire_phasemap(1)
         name = 'image_%04d.fits' % i
         interf.save_phasemap(dove, name, image)
-        par = ott.parab()
-        rm = ott.refflat()
+        par = ott.parabola.getPosition()
+        rm = ott.referenceMirror.getPosition()
         delta_par.append(par - par0)
         delta_rm.append(rm - rm0)
         delta_object.append(slide - slide0)
@@ -495,8 +494,8 @@ def alignTest(tt, n_images, perturbation_vec, pre=False):
     '''
     # Homing the system
     a.ott_alignment(n_images, 1, np.array([0,1]), np.array([3,4]), tt)
-    par0 = ott.parab()
-    rm0 = ott.refflat()
+    par0 = ott.parabola.getPosition()
+    rm0 = ott.referenceMirror.getPosition()
     # Set perturbation from perturbation_vec
     focus = perturbation_vec[0]
     tip = perturbation_vec[1]
@@ -512,38 +511,38 @@ def alignTest(tt, n_images, perturbation_vec, pre=False):
     zern_vec = np.arange(1, 12, 1)
     coeff = []
     # Start image, perturbation and perturbed image
-    image = interf.acq4d(n_images)
+    image = interf.acquire_phasemap(n_images)
     pippo = zernike.zernikeFit(image, zern_vec)
     coeff.append(pippo[0])
-    ott.parab(par1)
-    ott.refflat(rm1)
-    image = interf.acq4d(n_images)
+    ott.parabola.setPosition(par1)
+    ott.referenceMirror.setPosition(rm1)
+    image = interf.acquire_phasemap(n_images)
     pippo = zernike.zernikeFit(image, zern_vec)
     coeff.append(pippo[0])
     # TipTilt pre-alignment
     if pre is True:
         a.ott_alignment(n_images, 1, np.array([0,1]), np.array([3,4]), tt)
-        image = interf.acq4d(2)
+        image = interf.acquire_phasemap(2)
         pippo = zernike.zernikeFit(image, zern_vec)
         coeff.append(pippo[0])
     # First alignment
     a.ott_alignment(n_images, 1, np.array([0,1,2,3,4]),
                     np.array([0,1,2,3,4]), tt)
-    image = interf.acq4d(2)
+    image = interf.acquire_phasemap(2)
     pippo = zernike.zernikeFit(image, zern_vec)
     coeff.append(pippo[0])
     # Second alignment
     a.ott_alignment(n_images, 1, np.array([0,1]), np.array([3,4]), tt)
-    image = interf.acq4d(n_images)
+    image = interf.acquire_phasemap(n_images)
     pippo = zernike.zernikeFit(image, zern_vec)
     coeff.append(pippo[0])
     # Check image
-    image = interf.acq4d(n_images)
+    image = interf.acquire_phasemap(n_images)
     pippo = zernike.zernikeFit(image, zern_vec)
     coeff.append(pippo[0])
 
     coeff_matrix = np.array(coeff)*1e9
-    parend = ott.parab()
+    parend = ott.parabola.getPosition()
 
     store_in_folder = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER,
                                    'Alignment')

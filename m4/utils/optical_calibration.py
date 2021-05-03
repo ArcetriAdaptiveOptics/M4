@@ -9,7 +9,6 @@ import numpy as np
 from m4.configuration.config import fold_name
 from m4.configuration.ott_parameters import OttParameters
 from m4.ground import tracking_number_folder
-from m4.ground.interface_4D import comm4d
 from m4.ground import zernike
 
 
@@ -23,10 +22,11 @@ class OpticalCalibration():
         cal = OpticalCalibration()
     """
 
-    def __init__(self):
+    def __init__(self, ott, interf):
         """The constructor """
         self._logger = logging.getLogger('OPT_CALIB:')
-        self._c4d = comm4d()
+        self._interf = interf
+        self._ott = ott
         self._cube = None
         self._rec = None
         self._intMat = None
@@ -38,7 +38,7 @@ class OpticalCalibration():
         return fold_name.CALIBRATION_ROOT_FOLDER
 
 
-    def measureCalibrationMatrix(self, ott, who, command_amp_vector, n_push_pull,
+    def measureCalibrationMatrix(self, who, command_amp_vector, n_push_pull,
                                  n_frames, old_or_new):
         '''
         Parameters
@@ -68,7 +68,7 @@ class OpticalCalibration():
         tt : string
             tracking number
         '''
-        self._ott = ott
+        #self._ott = ott
         self._nPushPull = n_push_pull
         self._commandAmpVector = command_amp_vector
         self._who = who
@@ -133,8 +133,8 @@ class OpticalCalibration():
         if who == 0:
             vec_push_pull = np.array((1, -1))
             #mis = (len(command_list)-2) * n_push_pull * vec_push_pull.size
-            par0 = self._ott.parab()
-            rm0 = self._ott.refflat()
+            par0 = self._ott.parabola.getPosition()
+            rm0 = self._ott.referenceMirror.getPosition()
             for k in range(n_push_pull):
                 for i in range(len(command_list)-2):
                     j = (len(command_list)-2)*k *2
@@ -144,12 +144,12 @@ class OpticalCalibration():
                         for v in range(vec_push_pull.size):
                             par1 = pcmd * vec_push_pull[v]
                             print(par1)
-                            self._ott.parab(par0+par1)
-                            masked_ima = self._c4d.acq4d(n_frames, 0)
+                            self._ott.parabola.setPosition(par0+par1)
+                            masked_ima = self._interf.acquire_phasemap(n_frames)
                             name = 'Frame_%04d.fits' %(2*i+mis[v])
                             print(name)
-                            self._c4d.save_phasemap(dove, name, masked_ima)
-                            self._ott.parab(par0)
+                            self._interf.save_phasemap(dove, name, masked_ima)
+                            self._ott.parabola.setPosition(par0)
                     elif i==1 or i==2:
                         if i==1:
                             l=i
@@ -160,27 +160,27 @@ class OpticalCalibration():
                         for v in range(vec_push_pull.size):
                             par1 = pcmd * vec_push_pull[v]
                             rm1 = rcmd * vec_push_pull[v]
-                            self._ott.parab(par0+par1)
+                            self._ott.parabola.setPosition(par0+par1)
                             if np.count_nonzero(rm1) !=0:
-                                self._ott.refflat(rm0+rm1)
+                                self._ott.referenceMirror.setPosition(rm0+rm1)
                             print(par1, rm1)
-                            masked_ima = self._c4d.acq4d(n_frames, 0)
+                            masked_ima = self._interf.acquire_phasemap(n_frames)
                             name = 'Frame_%04d.fits' %(2*i+mis[v])
                             print(name)
-                            self._c4d.save_phasemap(dove, name, masked_ima)
-                            self._ott.parab(par0)
-                            self._ott.refflat(rm0)
+                            self._interf.save_phasemap(dove, name, masked_ima)
+                            self._ott.parabola.setPosition(par0)
+                            self._ott.referenceMirror.setPosition(rm0)
                     else:
                         rcmd = np.array(command_list[i+2])
                         for v in range(vec_push_pull.size):
                             rm1 = rcmd * vec_push_pull[v]
-                            self._ott.refflat(rm0+rm1)
+                            self._ott.referenceMirror.setPosition(rm0+rm1)
                             print(rm1)
-                            masked_ima = self._c4d.acq4d(n_frames, 0)
+                            masked_ima = self._interf.acquire_phasemap(n_frames)
                             name = 'Frame_%04d.fits' %(2*i+mis[v])
                             print(name)
-                            self._c4d.save_phasemap(dove, name, masked_ima)
-                            self._ott.refflat(rm0)
+                            self._interf.save_phasemap(dove, name, masked_ima)
+                            self._ott.referenceMirror.setPosition(rm0)
         elif who == 1:
             pass
         elif who == 2:
@@ -302,7 +302,9 @@ class OpticalCalibration():
                 theObject: ibjecct
                          opt_calibration class object
         """
-        theObject = OpticalCalibration()
+        ott = None
+        interf = None
+        theObject = OpticalCalibration(ott, interf)
         theObject._tt = tt
         dove = os.path.join(theObject._storageFolder(), tt)
         file = os.path.join(dove, 'CommandMatrixInfo.fits')
