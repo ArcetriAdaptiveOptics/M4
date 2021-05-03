@@ -10,7 +10,7 @@ class Test(unittest.TestCase):
 
     @mock.patch('opcua.Client', autospec=True)
     def setUp(self, mock_client):
-        from m4.ground.opc_ua_controller import OpcUaController
+        from m4.devices.opc_ua_controller import OpcUaController
         self.opc = OpcUaController()
         self.client = mock.MagicMock()
         self.opc._client = self.client

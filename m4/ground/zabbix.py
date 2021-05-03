@@ -10,7 +10,7 @@ import numpy as np
 from pyzabbix import ZabbixAPI
 from pyzabbix import ZabbixMetric, ZabbixSender
 sys.path.insert(0,'/home/m4/git/M4')
-from m4.ground.opc_ua_controller import OpcUaController
+from m4.devices.opc_ua_controller import OpcUaController
 from m4.configuration.ott_parameters import OpcUaParameters
 opcUa = OpcUaController()
 
