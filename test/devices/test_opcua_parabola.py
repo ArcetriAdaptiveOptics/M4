@@ -51,7 +51,6 @@ class TestOpcUaParabola(unittest.TestCase):
 
         def side_effect_set(dof, value):
             self._values[dof] = value
-            print("%s" % self._values)
 
         def side_effect_get(arg):
             return self._values[arg]
