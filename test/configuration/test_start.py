@@ -3,11 +3,24 @@ Authors
   - C. Selmi: written in 2020
 '''
 import unittest
-from m4.configuration import start
+from m4.configuration.start import create_ott
+from m4.ott_sim.fake_parabola_slider import FakeParabolaSlider
+from m4.ott_sim.fake_interferometer import FakeInterferometer
 
 
-class Test(unittest.TestCase):
+class FakeConfig():
 
-    @unittest.skip('Mancano i file per costruire il simulatore')
-    def testStart(self):
-        ott, interf = start.create_ott()
+    def __init__(self):
+        self.simulated = 1
+
+
+aFakeConfig = FakeConfig()
+
+
+class TestStart(unittest.TestCase):
+
+    def testCreationWithSimulatedDevices(self):
+        aFakeConfig.simulated = 1
+        ott, interf = create_ott(config=aFakeConfig)
+        self.assertIsInstance(ott.parabolaSlider, FakeParabolaSlider)
+        self.assertIsInstance(interf, FakeInterferometer)

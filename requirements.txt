@@ -11,3 +11,4 @@ opcua
 mock
 sklearn
 pyzabbix
+zmq

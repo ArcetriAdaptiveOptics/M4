@@ -11,7 +11,6 @@ from matplotlib import pyplot as plt
 from m4.configuration.config import fold_name
 from m4.configuration import config as conf
 from m4.utils.optical_calibration import OpticalCalibration
-from m4.ground.interface_4D import comm4d
 from m4.ground import zernike
 from m4.configuration.ott_parameters import OttParameters, OtherParameters
 from m4.ground.timestamp import Timestamp
@@ -29,12 +28,13 @@ class OpticalAlignment():
         command = al.opt_align(ott, piston=None)
     """
 
-    def __init__(self, tt):
+    def __init__(self, tt, ott, interf):
         """The constructor """
         self._logger = logging.getLogger('OPT_ALIGN:')
         self._tt = tt
         self._cal = OpticalCalibration.loadCommandMatrixFromFits(tt)
-        self._c4d = comm4d()
+        self._interf = interf
+        self._ott = ott
         self._rec = None
         self._intMat = None
         self._mask = None
@@ -45,7 +45,7 @@ class OpticalAlignment():
         return fold_name.ALIGNMENT_ROOT_FOLDER
 
 
-    def opt_align(self, ott, n_images, intMatModesVector=None, commandId=None):
+    def opt_align(self, n_images, intMatModesVector=None, commandId=None):
         """
         Parameters
         ----------
@@ -68,20 +68,20 @@ class OpticalAlignment():
                 cmd: numpy array
                     final delta command for the optical alignment
         """
-        par_position = ott.parab()
-        rm_position = ott.refflat()
-        m4_position = ott.m4()
+        par_position = self._ott.parabola.getPosition()
+        rm_position = self._ott.referenceMirror.getPosition()
+        m4_position = self._ott.m4.getPosition()
         self._logger.info('Calculation of the alignment command for %s',
                           self._tt)
         self._intMat, self._rec, self._cmat, self._mask = self._selectModesInIntMatAndRecConstruction(intMatModesVector, commandId)
         self._intMatModesVector = intMatModesVector
 
-        img = self._c4d.acq4d(n_images, 0)
+        img = self._interf.acquire_phasemap(n_images)
         name = 'StartImage.fits'
         tt = Timestamp.now()
         dove = os.path.join(self._storageFolder(), self._tt + '--' + tt)
         os.makedirs(dove)
-        self._c4d.save_phasemap(dove, name, img)
+        self._interf.save_phasemap(dove, name, img)
 
         if self._cal._who=='PAR + RM':
             cmd, zernike_vector, total_coef = self._commandGenerator(img)

@@ -11,7 +11,6 @@ from m4.utils.optical_alignment import OpticalAlignment
 from m4.utils.optical_calibration import OpticalCalibration
 from m4.utils.roi import ROI
 from m4.ground import zernike
-from m4.ground.interface_4D import comm4d
 
 class Alignment():
     """
@@ -32,13 +31,13 @@ class Alignment():
         cmd = a.m4_alignement(zCoefComa, tt)
     """
 
-    def __init__(self, ott):
+    def __init__(self, ott, interf):
         """The constructor """
         self._logger = logging.getLogger('ALIGNMENT:')
-        self._cal = OpticalCalibration()
+        self._cal = OpticalCalibration(ott, interf)
         self._roi = ROI()
         self._ott = ott
-        self._c4d = comm4d()
+        self._interf = interf
 
 
     def ott_calibration(self, n_frames, command_amp_vector, n_push_pull, old_or_new, mask_index):
@@ -62,7 +61,7 @@ class Alignment():
                 tt: string
                     tracking number of measurements made
         '''
-        self._tt = self._cal.measureCalibrationMatrix(self._ott, 0, command_amp_vector,
+        self._tt = self._cal.measureCalibrationMatrix(0, command_amp_vector,
                                                       n_push_pull, n_frames, old_or_new)
         int_mat, rec = self._cal.analyzerCalibrationMeasurement(self._tt,
                                                                 mask_index)
@@ -97,20 +96,20 @@ class Alignment():
                     vector of command to apply to RM dof
         """
         if tt is None:
-            al = OpticalAlignment(self._tt)
+            al = OpticalAlignment(self._tt, self._ott, self._interf)
         else:
-            al = OpticalAlignment(tt)
-        par_cmd, rm_cmd, dove = al.opt_align(self._ott, n_images, intMatModesVector, commandId)
+            al = OpticalAlignment(tt,  self._ott, self._interf)
+        par_cmd, rm_cmd, dove = al.opt_align(n_images, intMatModesVector, commandId)
         if move == 1:
-            pos_par = self._ott.parab()
-            self._ott.parab(pos_par + par_cmd)
-            pos_rm = self._ott.refflat()
-            self._ott.refflat(pos_rm + rm_cmd)
-        image = self._c4d.acq4d(n_images, 0)
+            pos_par = self._ott.parabola.getPosition()
+            self._ott.parabola.setPosition(pos_par + par_cmd)
+            pos_rm = self._ott.referenceMirror.getPosition()
+            self._ott.referenceMirror.setPosition(pos_rm + rm_cmd)
+        image = self._interf.acquire_phasemap(n_images)
         name = 'FinalImage.fits'
         total_coef, zernike_vector = al._zernikeCoeff(image)
         self._alignmentLog(al, total_coef, commandId, move)
-        self._c4d.save_phasemap(dove, name, image)
+        self._interf.save_phasemap(dove, name, image)
         return par_cmd, rm_cmd
 
     def _alignmentLog(self, al, total_coef, commandId, move):
@@ -124,6 +123,9 @@ class Alignment():
         file.write('%s \n ************\n' %commandId)
         file.close()
 
+
+
+### da sviluppare ###
     def m4_calibration(self, commandAmpVector_ForM4Calibration,
                        nPushPull_ForM4Calibration, maskIndex_ForM4Alignement,
                        nFrames):

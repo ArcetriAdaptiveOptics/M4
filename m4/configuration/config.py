@@ -6,7 +6,8 @@ import os
 
 mirror_conf = '20170430'
 optical_conf = '20150730'
-simulated = 0 # 1 per il simulatore
+simulated = 1  # 1 per il simulatore
+
 
 class path_name():
     '''
@@ -15,12 +16,14 @@ class path_name():
     #BASE_PATH _vecchio= '/home/m4/data/M4/Data'
     #BASE_PATH = '/Users/rm/Desktop/Arcetri/M4/Data'
     #BASE_PATH = '/home/labot/data/M4/Data'
+
     CONFIGURATION_ROOT_FOLDER = os.path.join(BASE_PATH, 'SYSCONFData')
     CALIBRATION_ROOT_FOLDER = os.path.join(BASE_PATH, 'M4Data')
     OPT_DATA_FOLDER = os.path.join(CALIBRATION_ROOT_FOLDER, 'OPTData')
     OUT_FOLDER = os.path.join(CALIBRATION_ROOT_FOLDER, 'Results')
     MIRROR_FOLDER = os.path.join(BASE_PATH, 'MIRROR_System')
     OPTICAL_FOLDER = os.path.join(BASE_PATH, 'OPTICAL_System')
+
 
 class fold_name(path_name):
     '''
