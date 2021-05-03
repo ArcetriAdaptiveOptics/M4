@@ -86,7 +86,7 @@ class OpcUaParameters():
     server = "opc.tcp://192.168.22.100:48050"
     num_PT_sensor = 24
     min_angle, max_angle = np.array([-171, 181])
-    min_r_slide, max_r_slide = np.array([-50, 9000])
+    min_r_slide, max_r_slide = np.array([-9000, 9000])  #modified RB 20210423: was -50; 9000
     min_slide, max_slide = np.array([-10000, 10000])
 
     RA = 0 #angolo di rotazione
@@ -120,8 +120,15 @@ class OpcUaParameters():
     zabbix_port = 10051
     accelerometers_server = 'tcp://192.168.22.100:6660'
     accelerometers_data_folder = '/mnt/acc_data'
-    accelerometers_dt = 2.5e-4
-
+    accelerometers_dt_plc = 2.5e-4
+    accelerometers_dt = 5e-3
+    accelerometers_sn = ['', '', '', '', 'a', 'a', 'a', 'b']
+    accelerometers_plc_id = np.array([5,7,8]) #final vector is time, accelerom, --> first accelerom is 1
+    accelerometrs_directions = ['', '', '', '', 'X', 'Z', 'Y', 'Z']
+    accelerometers_sensitivity = np.array([0.,0,0,0,0.1,0.1,0.1,10])   #accel sentivity [V/g]
+    accelerometers_plc_range = np.array([0.,0,0,0,0.32,20,0.32,1.28]) #this is the full range of measurement. i.e. the total span, where the signal is sampled with 2**24 counts
+    accelerometers_plc_totcounts = 2**24 #tot counts is 2**24, for positive and negative range
+ 
 class OtherParameters():
     ''' '''
     MASK_INDEX_SIMULATORE = 4

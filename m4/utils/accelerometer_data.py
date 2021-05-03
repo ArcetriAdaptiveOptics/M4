@@ -8,82 +8,261 @@ import numpy as np
 import zmq
 import h5py
 import time
+from m4.ground import rebinner
 from m4.configuration.config import fold_name
 from m4.configuration.ott_parameters import OpcUaParameters
 from matplotlib import pyplot as plt
 from m4.ground.timestamp import Timestamp
 
+class Accelerometers():
 
-def acquire_acc_data(recording_seconds=5):
-    '''
-    Parameters
-    ----------
-    recording_seconds: int
-        recording seconds for data acquisition
+    def __init__(self):
+        """The constructor """
+        self._rebinnig_factor = OpcUaParameters.accelerometers_dt/OpcUaParameters.accelerometers_dt_plc
+        self.dt = OpcUaParameters.accelerometers_dt
+        self.id_vector = OpcUaParameters.accelerometers_plc_id
+        self.directions = OpcUaParameters.accelerometrs_directions
+        self._datah5 = None
 
-    Returns
-    -------
-    h5_file_name: string
-        tracking number of measurement
-    '''
-    context = zmq.Context()
-    socket = context.socket(zmq.REQ)
-    socket.connect(OpcUaParameters.accelerometers_server)
-    socket.send_string("START %d" %recording_seconds)
-    time.sleep(1)
-    try:
-        reply = socket.recv(1)
-        print('Data from %s' %reply)
-    except:
-        raise OSError('No reply from socket')
-    socket.disconnect(OpcUaParameters.accelerometers_server)
-    #time.sleep(recording_seconds+2)
-    
-    list = os.listdir(OpcUaParameters.accelerometers_data_folder)
-    list.sort()
-    h5_file_name = list[len(list)-1]
-    tt = Timestamp.now()
-    name = tt + '.h5'
-    final_destination = os.path.join(fold_name.ACC_ROOT_FOLDER, name)
-    print( 'To %s' %final_destination)
-    start = os.path.join(OpcUaParameters.accelerometers_data_folder, h5_file_name)
+    @staticmethod
+    def _storageFolder():
+        """ Creates the path where to save measurement data"""
+        return fold_name.ACC_ROOT_FOLDER
 
-    t0 = os.path.getmtime(start)
-    time.sleep(2)
-    t1 = os.path.getmtime(start)
-    diff = t1-t0
-    while diff != 0:
-        #print(diff)
+    def acquisitionAndShow(self, recording_seconds=5):
+        tt = self.acquire_acc_data(recording_seconds)
+        #print(tt)
+        data = self.read_data()
+        spe, freq = self.power_spectrum(data)
+        self.plot_power_spectrum(spe, freq)
+        #plt.pause(plot_seconds)
+        #plt.close()
+        return tt
+
+    def readAndShow(self, tt):
+        acc = Accelerometers.reload_acc_info(tt)
+        data = acc.read_data()
+        spe, freq = acc.power_spectrum(data)
+        acc.plot_power_spectrum(spe, freq)
+
+    def acquire_acc_data(self, recording_seconds=5):
+        '''
+        Parameters
+        ----------
+        recording_seconds: int
+            recording seconds for data acquisition
+
+        Returns
+        -------
+        h5_file_name: string
+            tracking number of measurement
+        '''
+        context = zmq.Context()
+        socket = context.socket(zmq.REQ)
+        socket.connect(OpcUaParameters.accelerometers_server)
+        time.sleep(0.2)
+        socket.send_string("START %d" %recording_seconds)
+        time.sleep(0.5)
+        try:
+            reply = socket.recv(1)
+            print('Data from %s' %reply)
+        except:
+            raise OSError('No reply from socket')
+        time.sleep(0.5)
+        socket.disconnect(OpcUaParameters.accelerometers_server)
+        time.sleep(0.5)
+        #time.sleep(recording_seconds+2)
+
+        list = os.listdir(OpcUaParameters.accelerometers_data_folder)
+        list.sort()
+        h5_file_name = list[len(list)-1]
+        tt = Timestamp.now()
+        name = tt + '.h5'
+        final_destination = os.path.join(Accelerometers._storageFolder(), name)
+        print( 'To %s' %final_destination)
+        start = os.path.join(OpcUaParameters.accelerometers_data_folder, h5_file_name)
+
         t0 = os.path.getmtime(start)
         time.sleep(2)
         t1 = os.path.getmtime(start)
         diff = t1-t0
+        while diff != 0:
+            #print(diff)
+            t0 = os.path.getmtime(start)
+            time.sleep(2)
+            t1 = os.path.getmtime(start)
+            diff = t1-t0
 
-    os.system('cp %s %s' %(start, final_destination)) #popen
-    #shutil.copy(start, final_destination)
-    #os.chmod(final_destination, stat.S_IWGRP)
-    #shutil.copy(start, final_destination)
-    return name
+        self._convertAndSaveData(start, final_destination)
+        
+        #if self._rebinnig_factor == 1:
+         #   os.system('cp %s %s' %(start, final_destination)) #popen
+        #else:
+         #   self._rebinAndSaveData(start, final_destination)
+        
+        self._tt = name
+        return name
 
-def read_acc_data(name):
-    '''
-    Parameters
-    ----------
-    h5_file_name: string
-        tracking number of measurement
+    def _convertAndSaveData(self, start, final_destination):    
+        hf = h5py.File(start, 'r')
+        data = hf.get('Accelerometers')
 
-    Returns
-    -------
-    data:
-    '''
-    h5_file_path = os.path.join(fold_name.ACC_ROOT_FOLDER, name)
-    hf = h5py.File(h5_file_path, 'r')
-    #hf.keys()
-    datah5 = hf.get('Accelerometers')
-    #data = datah5[()]
-    #hf.close()
-    return datah5
+        vec = data[:, OpcUaParameters.accelerometers_plc_id]
+        #here starts modRB to implement data conversion all the time
+        if self._rebinnig_factor != 1:
+            rebinning_size = np.int(vec.shape[0]/self._rebinnig_factor)
+            v_list=[]
+            for i in range(vec.shape[1]):
+                v_list.append(rebinner.rebin(vec[:, i], rebinning_size)) #1050
+        
+            out_vector = np.array(v_list)
+            time = rebinner.rebin(data[:, 0], rebinning_size)
+        
+        else:
+            out_vector = vec
+            time = data[:, 0]
 
+        nacc = out_vector.shape[0]
+        print('Counts StDev:')
+        for i in range(nacc):
+            print(out_vector[i,:].std())
+        
+        vector_ms2 = self.counts_to_ms2(out_vector)
+
+        hf = h5py.File(final_destination, 'w')
+        hf.create_dataset('Accelerometers', data=vector_ms2)
+        hf.attrs['DT'] = OpcUaParameters.accelerometers_dt
+        hf.attrs['ID'] = OpcUaParameters.accelerometers_plc_id
+        hf.attrs['DIR'] = OpcUaParameters.accelerometrs_directions
+        hf.attrs['TIME'] = time
+        hf.attrs['PLC_VoltScale'] = OpcUaParameters.accelerometers_plc_range
+        hf.attrs['PLC_CountScale'] = OpcUaParameters.accelerometers_plc_totcounts
+        hf.attrs['Sensitivity'] = OpcUaParameters.accelerometers_sensitivity
+        
+        hf.close()
+
+    @staticmethod
+    def reload_acc_info(h5_name):
+        '''
+        Parameters
+        ----------
+        h5_file_name: string
+            tracking number of measurement
+
+        Returns
+        -------
+        data:
+        '''
+        h5_file_path = os.path.join(Accelerometers._storageFolder(), h5_name)
+        theObject = Accelerometers()
+        theObject._tt = h5_name
+        hf = h5py.File(h5_file_path, 'r')
+        #hf.keys()
+        #theObject.datah5 = hf.get('Accelerometers')
+        #data = datah5[()]
+        #hf.close()
+        try:
+            theObject.dt = hf.attrs['DT']
+            theObject.id_vector = hf.attrs['ID']
+            theObject.directions = hf.attrs['DIR']
+            theObject.time = hf.attrs['TIME']
+            theObject.plc_voltscale= hf.attrs['PLC_VoltScale']
+            theObject.plc_countscale= hf.attrs['PLC_CountScale']
+            theObject.sensitivity= hf.attrs['Sensitivity']
+            
+        except:
+            theObject.dt = OpcUaParameters.accelerometers_dt_plc
+            theObject.id_vector = OpcUaParameters.accelerometers_plc_id
+            theObject.directions = ['X', 'Z', 'Y', 'Z']
+        return theObject
+
+    def read_data(self, tt=None):
+        if tt is not None:
+            self._tt = tt
+        h5_file_path = os.path.join(Accelerometers._storageFolder(), self._tt)
+        hf = h5py.File(h5_file_path, 'r')
+        self.datah5 = hf.get('Accelerometers')[()]
+        
+        return self.datah5
+
+    def get_dt(self):
+        return self.dt
+
+    def power_spectrum(self, vec):
+        '''
+        Parameters
+        ----------
+            vec: numpy array
+                matrix containing the signal projections
+                or signals to analyze
+        Returns
+        -------
+            spe_list: list
+                    list containing the spectrum of vectors composing
+                    the matrix z
+            freq_list: list
+                    list containing the frequencies of vectors composing
+                    the matrix z
+        '''
+        if self.dt == OpcUaParameters.accelerometers_dt_plc:
+            vec_cut = vec[:, OpcUaParameters.accelerometers_plc_id]
+            z = vec_cut.T
+        else:
+            z = vec
+        #dt = OpcUaParameters.accelerometers_dt
+        #z = vec.T
+    #         #spe = np.fft.fftshift(np.fft.rfft(vector, norm='ortho'))
+    #         #freq = np.fft.fftshift(np.fft.rfftfreq(vector.size, d=self._dt))
+        spe  = np.fft.rfft(z, axis=1, norm='ortho')
+        nn   = np.sqrt(spe.shape[1])   #modRB 
+        spe  = (np.abs(spe)) / nn
+        freq = np.fft.rfftfreq(z.shape[1], d=self.dt)
+        return spe, freq
+    #clf(); plot(freq[0], np.abs(spe[0]), label='proiezione1');
+    #plot(freq[1], np.abs(spe[1]), label='proiezione2');
+    #plot(freq[2], np.abs(spe[2]), label='proiezione3'); plt.xlabel('Freq[Hz]');
+    #plt.ylabel('FFT|sig|'); plt.legend()
+
+    def plot_power_spectrum(self, spe, freq):
+        spe1 = spe[:, 1:]
+        freq1 = freq[1:]
+        plt.figure()
+        label_list=[]
+        
+        for i in OpcUaParameters.accelerometers_plc_id:
+            ss = 'Ch-'+str(i)+' '+OpcUaParameters.accelerometrs_directions[i-1]
+            label_list.append(ss)
+            
+        #label_list = OpcUaParameters.accelerometrs_directions[OpcUaParameters.accelerometers_plc_id]
+        for i in range(spe1.shape[0]):
+            plt.plot(freq1, np.abs(spe1[i,:]), '-', label=label_list[i])
+        plt.xlabel('Freq[Hz]')
+        plt.ylabel('Amplitude Spectrum |m/s2|')
+        plt.xlim([0,100])
+        plt.title(self._tt)
+
+        plt.ion()
+        plt.show()
+        plt.pause(0.01)
+        plt.legend()
+        plt.grid()
+        
+        
+    def counts_to_ms2(self, vec):
+        id = OpcUaParameters.accelerometers_plc_id -1
+        sens = OpcUaParameters.accelerometers_sensitivity[id]
+        plcfs = OpcUaParameters.accelerometers_plc_range[id]
+        cal_list = []
+        for i in range(vec.shape[1]):
+            cal_vec = (vec[:, i] /OpcUaParameters.accelerometers_plc_totcounts)*plcfs*9.81/sens
+            cal_list.append(cal_vec)
+        cal_vec = np.array(cal_list)
+        return cal_vec.T
+
+
+
+
+### FUNZIONI NON USATE ###
 def _create_test_signal(self):
     T = 10
     n = int(T/self._dt)
@@ -128,69 +307,26 @@ def data_projection(vv_c):
 #plot(t, z[1,:], label='proizione2'); plot(t, z[2,:], label='proiezione3');
 #plt.xlabel('Time[s]'); plt.legend()
 
-def power_spectrum(vec):
-    '''
-    Parameters
-    ----------
-        vec: numpy array
-            matrix containing the signal projections
-            or signals to analyze
-    Returns
-    -------
-        spe_list: list
-                list containing the spectrum of vectors composing
-                the matrix z
-        freq_list: list
-                list containing the frequencies of vectors composing
-                the matrix z
-    '''
-    dt = OpcUaParameters.accelerometers_dt
-    z = vec.T
-#         #spe = np.fft.fftshift(np.fft.rfft(vector, norm='ortho'))
-#         #freq = np.fft.fftshift(np.fft.rfftfreq(vector.size, d=self._dt))
-    spe = np.fft.rfft(z, axis=1, norm='ortho')
-    freq = np.fft.rfftfreq(z.shape[1], d=dt)
-    return spe, freq
-#clf(); plot(freq[0], np.abs(spe[0]), label='proiezione1');
-#plot(freq[1], np.abs(spe[1]), label='proiezione2');
-#plot(freq[2], np.abs(spe[2]), label='proiezione3'); plt.xlabel('Freq[Hz]');
-#plt.ylabel('FFT|sig|'); plt.legend()
+### FINE FUNZIONI NON USATE ###
 
 
-def plot_power_spectrum(spe, freq):
-    spe1 = spe[:, 1:]
-    freq1 = freq[1:]
-    plt.figure()
-    label_list = ['acc05', 'acc06', 'acc07']
-    for i in range(spe1.shape[0]):
-        plt.plot(freq1, np.abs(spe1[i,:]), '-', label=label_list[i])
-    plt.xlabel('Freq[Hz]')
-    plt.ylabel('FFT|sig|')
-    plt.xlim([0,100])
-    plt.ion()
-    plt.show()
-    plt.pause(0.01)
-    plt.legend()
-    plt.grid()
-    
-
-def main(recording_seconds=5, plot_seconds=10):
-    tt = acquire_acc_data(recording_seconds)
-    print(tt)
-    data = read_acc_data(tt)
-    vec = data[:, 5:8]
-    spe, freq = power_spectrum(vec)
-    plot_power_spectrum(spe, freq)
-    plt.pause(plot_seconds)
-    plt.close()
-    return tt
-
-if __name__ == '__main__':
-    tt = acquire_acc_data()
-    print(tt)
-    data = read_acc_data(tt)
-    vec = data[:, 5:8]
-    spe, freq = power_spectrum(vec)
-    plot_power_spectrum(spe, freq)
-    plt.pause(5)
-    plt.close()
+# def main(recording_seconds=5, plot_seconds=10):
+#     tt = acquire_acc_data(recording_seconds)
+#     print(tt)
+#     data = read_acc_data(tt)
+#     vec = data[:, 5:9]
+#     spe, freq = power_spectrum(vec)
+#     plot_power_spectrum(spe, freq)
+#     plt.pause(plot_seconds)
+#     plt.close()
+#     return tt
+# 
+# if __name__ == '__main__':
+#     tt = acquire_acc_data()
+#     print(tt)
+#     data = read_acc_data(tt)
+#     vec = data[:, 5:9]
+#     spe, freq = power_spectrum(vec)
+#     plot_power_spectrum(spe, freq)
+#     plt.pause(5)
+#     plt.close()
