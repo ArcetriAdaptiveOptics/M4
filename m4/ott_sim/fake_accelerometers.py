@@ -28,7 +28,7 @@ class FakeAccelerometers(BaseAccelerometers):
         freqSin = 2
         ampSin = 1
         vector = ampSin * np.sin(2*np.pi*freqSin*t)
-        for i in range(7):
+        for i in range(9):
             if i == 0:
                 signal = np.column_stack((vector, vector))
             else:
