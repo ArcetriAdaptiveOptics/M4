@@ -74,8 +74,7 @@ class OpticalCalibration():
         self._who = who
         self._old_or_new = old_or_new
 
-        save = tracking_number_folder.TtFolder(self._storageFolder())
-        dove, self._tt = save._createFolderToStoreMeasurements()
+        dove, self._tt = tracking_number_folder.makeTrackingNumberFolder(self._storageFolder())
         self._logger.info('Measure of calibration. Location: %s', self._tt)
         self._saveCommandAmplitudeAsFits(dove)
 

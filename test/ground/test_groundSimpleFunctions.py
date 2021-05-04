@@ -11,7 +11,7 @@ from m4.ground import find_directory
 from m4.ground import smooth_function
 from m4.ground.timestamp import Timestamp
 from m4.ground import logger_set_up
-from m4.ground.tracking_number_folder import TtFolder
+from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.ground import read_data
 
@@ -64,8 +64,7 @@ class Test(unittest.TestCase):
     @unittest.skip('Dove mettere il file')
     def testTtFolder(self):
         store_in_folder = '?'
-        t = TtFolder(store_in_folder)
-        t._createFolderToStoreMeasurements()
+        tracking_number_folder.makeTrackingNumberFolder(store_in_folder)
 
     def testZernike(self):
         img = np.random.rand(500, 500)

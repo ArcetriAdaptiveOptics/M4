@@ -104,8 +104,7 @@ class IFFunctionsMaker():
         self._cmdMatrixTag = cmd_matrix_fits_file_name
 
         indexing_input = copy.copy(modes_vector)
-        save = tracking_number_folder.TtFolder(self._storageFolder())
-        dove, tt = save._createFolderToStoreMeasurements()
+        dove, tt = tracking_number_folder.makeTrackingNumberFolder(self._storageFolder())
 
         diagonal_mat = self._diagonalControll(cmd_matrix)
         if np.count_nonzero(diagonal_mat -

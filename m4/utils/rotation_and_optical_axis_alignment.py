@@ -65,8 +65,7 @@ class RotOptAlign():
                     tracking number of measurements
         """
         self._logger.info('Images acquisition')
-        save = tracking_number_folder.TtFolder(RotOptAlign._storageFolder())
-        dove, tt = save._createFolderToStoreMeasurements()
+        dove, tt = tracking_number_folder.makeTrackingNumberFolder(RotOptAlign._storageFolder())
 
         self._checkAngle(start_point)
         self._checkAngle(end_point)

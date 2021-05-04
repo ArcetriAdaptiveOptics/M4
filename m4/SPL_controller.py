@@ -109,8 +109,7 @@ class SPL():
         tt: string
             tracking number of measurements
         '''
-        save = tracking_number_folder.TtFolder(self._storageFolder())
-        self._dove, self._tt = save._createFolderToStoreMeasurements()
+        self._dove, self._tt = tracking_number_folder.makeTrackingNumberFolder(self._storageFolder())
         fits_file_name = os.path.join(self._dove, 'lambda_vector.fits')
         pyfits.writeto(fits_file_name, lambda_vector)
 
