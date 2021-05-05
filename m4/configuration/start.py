@@ -20,7 +20,7 @@ from m4.devices.reference_mirror_slider import OpcUaReferenceMirrorSlider
 from m4.devices.angle_rotator import OpcUaAngleRotator
 from m4.devices.parabola import OpcUaParabola
 from m4.devices.reference_mirror import OpcUaReferenceMirror
-from m4.devices.m4 import OpcUaM4
+from m4.devices.m4_controller import OpcUaM4
 from m4.devices.temperature_sensors import OpcUaTemperatureSensors
 from m4.devices.accelerometers import ZmqAccelerometes
 from m4.devices.interferometer import I4dArcetri
