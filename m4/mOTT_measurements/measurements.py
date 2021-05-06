@@ -24,7 +24,7 @@ from m4.ground.timestamp import Timestamp
 
 
 ott, interf = start.create_ott()
-a = Alignment(ott)
+a = Alignment(ott, interf)
 opc = OpcUaController()
 
 
