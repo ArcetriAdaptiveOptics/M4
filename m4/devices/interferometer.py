@@ -10,6 +10,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from astropy.io import fits as pyfits
 from m4.configuration.config import fold_name
+from m4.configuration.ott_parameters import Interferometer
+from m4.ground.read_data import InterferometerConverter
 from m4.devices.base_interferometer import BaseInterferometer
 
 class I4dArcetri(BaseInterferometer):
@@ -19,7 +21,6 @@ class I4dArcetri(BaseInterferometer):
     def __init__(self):
         """The constructor """
         from oaautils import i4d
-        from m4.ground.read_data import InterferometerConverter
         self._ic = InterferometerConverter()
         self._interf = i4d.I4D()
         self._logger = logging.getLogger('4D')
@@ -101,3 +102,44 @@ class I4dArcetri(BaseInterferometer):
         shutil.rmtree(fName + '/raw')
 
         return self._ic.from4D('/tmp/prova4d_m00.h5')
+
+
+class I4d6110(BaseInterferometer):
+    ''' Class for i4d 6110 interferometer
+    '''
+
+    def __init__(self):
+        """The constructor """
+        from m4.devices.i4d import I4D
+        self._i4d = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
+        self._ic = InterferometerConverter()
+        self._logger = logging.getLogger('4D')
+
+    def acquire_phasemap(self, nframes=1, show=0):
+        """
+        Parameters
+        ----------
+            nframes: int
+                number of frames
+            show: int
+                0 to not show the image
+
+        Returns
+        -------
+            masked_ima: numpy masked array
+                    interferometer image
+        """
+        pass
+
+    def save_phasemap(self, location, file_name, masked_image):
+        """
+        Parameters
+        ----------
+        location: string
+            measurement file path
+        file_name: string
+            measuremnet fits file name
+        masked_image: numpy masked array
+            data to save
+        """
+        pass

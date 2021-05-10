@@ -20,6 +20,8 @@ tnconf = ''
 class Interferometer():
     ''' Interferometer parameters
     '''
+    i4d_IP = ''
+    i4d_port = ''
     N_PIXEL = np.array([512, 512]) #2048
     BIN_PIX = 1
     HORIZ_CROP = 100
