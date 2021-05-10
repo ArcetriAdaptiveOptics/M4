@@ -129,7 +129,17 @@ class I4d6110(BaseInterferometer):
             masked_ima: numpy masked array
                     interferometer image
         """
-        pass
+        if nframes == 1:
+            width, height, pixel_size_in_microns, data_array = self._i4d.takeSingleMeasurement()
+        else:
+            data_array = np.zeros(4000000)
+            #self._interf.takeAveragedMeasurement(nframes)
+        data = np.reshape(data_array, (2000, 2000))
+        idx, idy = np.where(np.isnan(data))
+        mask = np.ones(data.shape[0], data.shape[1])
+        mask[idx, idy] = 0
+        masked_ima = np.ma.masked_array(data, mask=mask)
+        return masked_ima
 
     def save_phasemap(self, location, file_name, masked_image):
         """
@@ -142,4 +152,6 @@ class I4d6110(BaseInterferometer):
         masked_image: numpy masked array
             data to save
         """
-        pass
+        fits_file_name = os.path.join(location, file_name)
+        pyfits.writeto(fits_file_name, masked_image.data)
+        pyfits.append(fits_file_name, masked_image.mask.astype(int))
