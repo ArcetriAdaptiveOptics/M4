@@ -136,9 +136,9 @@ class I4d6110(BaseInterferometer):
             #self._interf.takeAveragedMeasurement(nframes)
         data = np.reshape(data_array, (width, height))
         idx, idy = np.where(np.isnan(data))
-        mask = np.ones(data.shape[0], data.shape[1])
-        mask[idx, idy] = 0
-        masked_ima = np.ma.masked_array(data, mask=mask)
+        mask = np.zeros((data.shape[0], data.shape[1]))
+        mask[idx, idy] = 1
+        masked_ima = np.ma.masked_array(data, mask=mask.astype(bool))
 
         if show != 0:
             plt.clf()
