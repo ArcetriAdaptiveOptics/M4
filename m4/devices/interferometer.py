@@ -52,7 +52,7 @@ class I4dArcetri(BaseInterferometer):
             masked_ima = np.ma.mean(cube_images, axis=2)
         if show != 0:
             plt.clf()
-            plt.imshow(masked_ima)
+            plt.imshow(masked_ima, origin='lower')
             plt.colorbar()
         return masked_ima
 
@@ -134,11 +134,16 @@ class I4d6110(BaseInterferometer):
         else:
             data_array = np.zeros(4000000)
             #self._interf.takeAveragedMeasurement(nframes)
-        data = np.reshape(data_array, (2000, 2000))
+        data = np.reshape(data_array, (width, height))
         idx, idy = np.where(np.isnan(data))
         mask = np.ones(data.shape[0], data.shape[1])
         mask[idx, idy] = 0
         masked_ima = np.ma.masked_array(data, mask=mask)
+
+        if show != 0:
+            plt.clf()
+            plt.imshow(masked_ima, origin='lower')
+            plt.colorbar()
         return masked_ima
 
     def save_phasemap(self, location, file_name, masked_image):
