@@ -1,6 +1,6 @@
 '''
 Authors
-  - C. Selmi: written in 2020
+  - C. Selmi: written in 2021
 '''
 import unittest
 import mock
