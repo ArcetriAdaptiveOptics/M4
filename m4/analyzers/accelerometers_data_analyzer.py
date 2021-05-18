@@ -1,6 +1,6 @@
 '''
 Authors
-  - C. Selmi: written in 2020
+  - C. Selmi: written in 2021
 '''
 
 import os
@@ -30,7 +30,9 @@ class AccelerometersDataAnalyzer():
             self.dt = OpcUaParameters.accelerometers_dt_plc
             self.id_vector = OpcUaParameters.accelerometers_plc_id
             self.directions = ['X', 'Z', 'Y', 'Z']
-        self.datah5 = None
+        self._datah5 = None
+        self._spe = None
+        self._freq = None
 
     @staticmethod
     def _storageFolder():
@@ -38,24 +40,24 @@ class AccelerometersDataAnalyzer():
         return fold_name.ACC_ROOT_FOLDER
 
     def readAndShow(self):
-        data = self.read_data()
-        spe, freq = self.power_spectrum(data)
-        self.plot_power_spectrum(spe, freq)
+        spe, freq = self.power_spectrum()
+        self.plot_power_spectrum()
 
-    def read_data(self):
+    def _read_data(self):
+        '''
+        Returns
+        -------
+            _datah5: numpy array
+                measurements data
+        '''
         h5_file_path = os.path.join(AccelerometersDataAnalyzer._storageFolder(),
                                     self.tt)
         hf = h5py.File(h5_file_path, 'r')
-        self.datah5 = hf.get('Accelerometers')[()]
-        return self.datah5
+        self._datah5 = hf.get('Accelerometers')[()]
+        return self._datah5
 
-    def power_spectrum(self, vec):
+    def power_spectrum(self):
         '''
-        Parameters
-        ----------
-            vec: numpy array
-                matrix containing the signal projections
-                or signals to analyze
         Returns
         -------
             spe_list: list
@@ -65,24 +67,27 @@ class AccelerometersDataAnalyzer():
                     list containing the frequencies of vectors composing
                     the matrix z
         '''
+        if self._datah5 is None:
+            self._datah5 = self._read_data()
+
         if self.dt == OpcUaParameters.accelerometers_dt_plc:
-            vec_cut = vec[:, OpcUaParameters.accelerometers_plc_id]
+            vec_cut = self._datah5[:, OpcUaParameters.accelerometers_plc_id]
             z = vec_cut.T
         else:
-            z = vec
+            z = self._datah5
         #dt = OpcUaParameters.accelerometers_dt
         #z = vec.T
     #         #spe = np.fft.fftshift(np.fft.rfft(vector, norm='ortho'))
     #         #freq = np.fft.fftshift(np.fft.rfftfreq(vector.size, d=self._dt))
         spe  = np.fft.rfft(z, axis=1, norm='ortho')
         nn   = np.sqrt(spe.shape[1])   #modRB 
-        spe  = (np.abs(spe)) / nn
-        freq = np.fft.rfftfreq(z.shape[1], d=self.dt)
-        return spe, freq
+        self._spe  = (np.abs(spe)) / nn
+        self._freq = np.fft.rfftfreq(z.shape[1], d=self.dt)
+        return self._spe, self._freq
 
-    def plot_power_spectrum(self, spe, freq):
-        spe1 = spe[:, 1:]
-        freq1 = freq[1:]
+    def plot_power_spectrum(self):
+        spe1 = self._spe[:, 1:]
+        freq1 = self._freq[1:]
         plt.figure()
         label_list=[]
 
