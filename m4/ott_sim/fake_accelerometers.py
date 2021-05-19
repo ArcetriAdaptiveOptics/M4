@@ -41,7 +41,7 @@ class FakeAccelerometers(BaseAccelerometers):
         hf = h5py.File(final_destination, 'w')
         hf.create_dataset('Accelerometers', data=signal[:,1:])
         hf.attrs['DT'] = OpcUaParameters.accelerometers_dt
-        hf.attrs['ID'] = OpcUaParameters.accelerometers_dt
+        hf.attrs['ID'] = OpcUaParameters.accelerometers_plc_id
         hf.attrs['DIR'] = ['X', 'Z', 'Y', 'Z']
         hf.attrs['TIME'] = signal[:,0]
         hf.close()
