@@ -13,7 +13,6 @@ class TestZmqAccelerometers(unittest.TestCase):
     def setUp(self):
         self.acc = ZmqAccelerometes()
 
-
-    @mock.patch('zmq', autospect=True)
+    @mock.patch('zmq.Context', autospect=True)
     def testForDataAcquisition(self, zmq_mock):
         pass

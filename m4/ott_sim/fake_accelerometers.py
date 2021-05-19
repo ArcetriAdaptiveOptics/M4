@@ -11,6 +11,7 @@ from m4.ground.timestamp import Timestamp
 from m4.configuration.ott_parameters import OpcUaParameters
 from m4.devices.base_accelerometers import BaseAccelerometers
 
+
 class FakeAccelerometers(BaseAccelerometers):
     ''' Class for simulated accelerometers control
     '''
@@ -23,11 +24,11 @@ class FakeAccelerometers(BaseAccelerometers):
     def acquireData(self, recording_seconds=5):
         ''' some function to simulate accelerometers data '''
         T = recording_seconds
-        n = int(T/self._dt)
+        n = int(T / self._dt)
         t = np.linspace(0, T, n)
         freqSin = 2
         ampSin = 1
-        vector = ampSin * np.sin(2*np.pi*freqSin*t)
+        vector = ampSin * np.sin(2 * np.pi * freqSin * t)
         for i in range(9):
             if i == 0:
                 signal = np.column_stack((vector, vector))
@@ -37,12 +38,12 @@ class FakeAccelerometers(BaseAccelerometers):
         tt = Timestamp.now()
         name = tt + '.h5'
         final_destination = os.path.join(fold_name.ACC_ROOT_FOLDER, name)
-        #simulatore non rebinnato
+        # simulatore non rebinnato
         hf = h5py.File(final_destination, 'w')
-        hf.create_dataset('Accelerometers', data=signal[:,1:])
+        hf.create_dataset('Accelerometers', data=signal[:, 1:])
         hf.attrs['DT'] = OpcUaParameters.accelerometers_dt
         hf.attrs['ID'] = OpcUaParameters.accelerometers_plc_id
         hf.attrs['DIR'] = ['X', 'Z', 'Y', 'Z']
-        hf.attrs['TIME'] = signal[:,0]
+        hf.attrs['TIME'] = signal[:, 0]
         hf.close()
         return name
