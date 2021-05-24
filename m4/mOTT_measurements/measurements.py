@@ -107,6 +107,58 @@ def opticalMonitoring(n_images, delay):
     return tt
 
 
+def diffOpticalMonitoring(n_images, delayshort, delaylong):
+    '''
+    Parameters
+    ----------
+    n_images: int
+        number of images to acquire
+    delayshort: float
+        time gap between images couple
+    delaylong: float
+        time gap between images couple    
+    Returns
+    ------
+    tt: string
+        tracking number of measurements
+    '''
+    #opc = OpcUaController()
+    store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
+    save = tracking_number_folder.TtFolder(store_in_folder)
+    dove, tt = save._createFolderToStoreMeasurements()
+
+    zer_list = []
+    temp_list = []
+    t0 = time.time()
+    for i in range(n_images):
+        for i in range(2):
+            ti = time.time()
+            dt = ti - t0
+            masked_ima = interf.acquire_phasemap(1)
+            temp_vect = ott.temperature.getTemperature()
+            name = Timestamp.now() + '.fits'
+            fits_file_name = os.path.join(dove, name)
+            pyfits.writeto(fits_file_name, masked_ima.data)
+            pyfits.append(fits_file_name, masked_ima.mask.astype(int))
+    
+            coef, mat = zernike.zernikeFit(masked_ima, np.arange(10) + 1)
+            vect = np.append(dt, coef)
+            zer_list.append(vect)
+            temp_list.append(temp_vect)
+    
+            fits_file_name = os.path.join(dove, 'zernike.fits')
+            pyfits.writeto(fits_file_name, np.array(zer_list), overwrite=True)
+            fits_file_name = os.path.join(dove, 'temperature.fits')
+            pyfits.writeto(fits_file_name, np.array(temp_list), overwrite=True)
+            print('Waiting for next frame in pair')
+            time.sleep(delayshort)
+            
+        print('Waiting for next iterations')
+        time.sleep(delaylong)
+        
+    return tt
+
+
 def actsRepeatability(n_meas, piston_value, n_frames):
     '''
     Parameters

@@ -383,8 +383,14 @@ def convection_noise(data_file_path, tau_vector):
     if h5_or_fits is None:
         x = tau_vector * (1/27.58)
         param = [5, 0.5, 32]
-        pp,fit = _curvFit(param, x, rms_nm)
-        decorr_time = 1/pp[0]+pp[1]
+        try:
+            
+            pp,fit = _curvFit(param, x, rms_nm)
+            decorr_time = 1/pp[0]+pp[1]
+        except:
+            pp = np.array([0,0,rms[-1]*1e9])
+            decorr_time = -1
+            fit=rms_nm.copy()*0
         plt.clf()
         plt.plot(x, rms * 1e9, '-o', label='meas')
         plt.xlabel('time [s]')
