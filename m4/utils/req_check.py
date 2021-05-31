@@ -446,7 +446,7 @@ def imageOpticOffset(data_file_path, start, stop):
     return image
 
 
-def robustImageFromDataSet(n_images, data_file_path, offset=None):
+def robustImageFromDataSet(n_images, data_file_path, zernike_vector_to_subtract, offset=None):
     ''' From fits files and whit offset subtraction
 
     Parameters
@@ -524,7 +524,7 @@ def robustImageFromDataSet(n_images, data_file_path, offset=None):
                 cube = np.ma.dstack((cube, image))
         final_image = np.ma.mean(cube, axis=2)
 
-    coef, mat = zernike.zernikeFit(final_image, np.array([1,2,3,4,5,6]))
+    coef, mat = zernike.zernikeFit(final_image, zernike_vector_to_subtract)
     surf = zernike.zernikeSurface(final_image, coef, mat)
     image_ttr = final_image - surf
     return image_ttr

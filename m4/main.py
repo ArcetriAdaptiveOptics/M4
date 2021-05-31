@@ -484,7 +484,7 @@ def piston_noise(data_file_path):
     plt.savefig(os.path.join(dove, 'piston_spectrum.png'))
 
 
-def analysis_req(data_file_path, step=None, offset=None):
+def analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=None):
     ''' Simultaneous analysis of noise requirements for a tn
 
     Parameters
@@ -517,11 +517,11 @@ def analysis_req(data_file_path, step=None, offset=None):
     file.close()
 
     print('Creating cube 50')
-    image50 = req_check.robustImageFromDataSet(50, data_file_path, offset)
+    image50 = req_check.robustImageFromDataSet(50, data_file_path, zernike_vector_to_subtract, offset)
     print('Creating cube 100')
-    image100 = req_check.robustImageFromDataSet(100, data_file_path, offset)
+    image100 = req_check.robustImageFromDataSet(100, data_file_path, zernike_vector_to_subtract, offset)
     print('Creating cube 300')
-    image300 = req_check.robustImageFromDataSet(300, data_file_path, offset)
+    image300 = req_check.robustImageFromDataSet(300, data_file_path, zernike_vector_to_subtract, offset)
 #     print('Creating cube 600')
 #     image600 = req_check.robustImageFromDataSet(600, data_file_path, offset)
 
