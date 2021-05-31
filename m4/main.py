@@ -522,10 +522,10 @@ def analysis_req(data_file_path, step=None, offset=None):
     image100 = req_check.robustImageFromDataSet(100, data_file_path, offset)
     print('Creating cube 300')
     image300 = req_check.robustImageFromDataSet(300, data_file_path, offset)
-    print('Creating cube 600')
-    image600 = req_check.robustImageFromDataSet(600, data_file_path, offset)
+#     print('Creating cube 600')
+#     image600 = req_check.robustImageFromDataSet(600, data_file_path, offset)
 
-    image_list = [image50, image100, image300, image600]
+    image_list = [image50, image100, image300]#, image600]
     slop_list = []
     diff_piston_list = []
     roc_list = []
@@ -543,9 +543,9 @@ def analysis_req(data_file_path, step=None, offset=None):
         print('Producing rms51')
         rms500.append(req_check.test243(image, 0.1, step, n_patches=None))
 
-    x = np.array([50,100,300,600])
+    x = np.array([50,100,300])#,600])
     #GRAFICO STD IMAGES
-    y = np.array([image50.std(),image100.std(),image300.std(),image600.std()])
+    y = np.array([image50.std(),image100.std(),image300.std()])#,image600.std()])
     plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')
     plt.ylabel('rms_image [m]')
