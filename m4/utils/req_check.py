@@ -445,52 +445,6 @@ def imageOpticOffset(data_file_path, start, stop):
     pyfits.append(fits_file_name, image.mask.astype(int), overwrite=True)
     return image
 
-# def robustImageFromH5DataSet(n_images, path):
-#     ''' From h5 files
-#     Parameters
-#     ----------
-#     n_images: int
-#         number of images to analyze
-#     path: string
-#         total path for data analysis
-# 
-#     Returns
-#     -------
-#     robust_image: numpy masked array
-#         robust image from data set
-#     '''
-#     list_tot = glob.glob(os.path.join(path, '*.h5'))
-#     list_tot.sort()
-#     list = list_tot[0: n_images]
-#     half = np.int(len(list)/2)
-#     list1 = list[0:half]
-#     list2 = list[half:]
-# 
-#     cube1 = None
-#     print('Creating cube 1:')
-#     for name in list1:
-#         print(name)
-#         image = read_data.InterferometerConverter.from4D(name)
-#         if cube1 is None:
-#             cube1 = image
-#         else:
-#             cube1 = np.ma.dstack((cube1, image))
-# 
-#     cube2 = None
-#     print('Creating cube 2:')
-#     for name in list2:
-#         print(name)
-#         image = read_data.InterferometerConverter.from4D(name)
-#         if cube2 is None:
-#             cube2 = image
-#         else:
-#             cube2 = np.ma.dstack((cube1, image))
-# 
-#     mean1 = np.ma.mean(cube1, axis=2)
-#     mean2 = np.ma.mean(cube2, axis=2)
-# 
-#     image = mean2 -mean1
-#     return image
 
 def robustImageFromDataSet(n_images, data_file_path, offset=None):
     ''' From fits files and whit offset subtraction

@@ -6,7 +6,7 @@ Authors
 import numpy as np
 import logging
 from skimage.draw import circle
-from scipy import ndimage as ndi
+from skimage import measure
 from m4.configuration.ott_parameters import OttParameters
 
 
@@ -45,7 +45,9 @@ class ROI():
 
         '''
         self._logger.info('Creation of roi list')
-        labels = ndi.label(np.invert(ima.mask))[0]
+        labels = measure.label(np.invert(ima.mask))
+        #from scipy import ndimage as ndi
+        #labels = ndi.label(np.invert(ima.mask))[0]
         #import skimage.morphology as skm
         #pro= skm.watershed(ima, markers)
         roiList = []
