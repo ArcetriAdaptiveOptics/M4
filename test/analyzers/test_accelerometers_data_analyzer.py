@@ -22,5 +22,4 @@ class TestAccelerometersDataAnalyzer(unittest.TestCase):
 
         tt = '20210519_160814'
         self.ana = AccelerometersDataAnalyzer(tt)
-        pass
-
+        self.ana.readAndShow()

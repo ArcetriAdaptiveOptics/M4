@@ -51,9 +51,7 @@ class AccelerometersDataAnalyzer():
             _datah5: numpy array
                 measurements data
         '''
-        h5_file_path = os.path.join(AccelerometersDataAnalyzer._storageFolder(),
-                                    self.tt)
-        hf = h5py.File(h5_file_path, 'r')
+        hf = h5py.File(self._h5_file_path, 'r')
         self._datah5 = hf.get('Accelerometers')[()]
         return self._datah5
 
