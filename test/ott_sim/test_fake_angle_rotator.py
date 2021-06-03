@@ -4,6 +4,7 @@ Authors
 '''
 import unittest
 from m4.ott_sim.fake_angle_rotator import FakeAngleRotator
+from m4.devices.base_angle_rotator import BaseAngleRotator
 
 
 class TestFakeAngleRotator(unittest.TestCase):
@@ -18,3 +19,14 @@ class TestFakeAngleRotator(unittest.TestCase):
         fin_pos = self.angle.setPosition(curr_pos + off)
 
         self.assertAlmostEqual(init_pos + off, fin_pos)
+
+    @unittest.skip('Non fa defire la classe')
+    def testExceptionBaseAngleRotator(self):
+
+        class AngleRotator(BaseAngleRotator):
+
+            def getAngle(self):
+                angle = 'ciao'
+                return angle
+
+        #self.angle = AngleRotator()
