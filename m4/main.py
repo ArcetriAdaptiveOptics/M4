@@ -283,10 +283,11 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
         file.write('%s \n' %tt)
     file.close()
 
-    rms_medio, quad_medio, n_temp = n.different_template_analyzer(tt_list)
+    rms_medio, quad_medio, n_temp, ptv_medio = n.different_template_analyzer(tt_list)
     pyfits.writeto(os.path.join(dove, 'rms_vector_%d.fits' %tidy_or_shuffle), rms_medio, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'tiptilt_vector_%d.fits' %tidy_or_shuffle), quad_medio, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'n_temp_vector_%d.fits' %tidy_or_shuffle), n_temp, overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'ptv_%d.fits' %tidy_or_shuffle), ptv_medio, overwrite=True)
 
     tt = data_file_path.split('/')[-2]
     plt.clf()
@@ -307,6 +308,16 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
     plt.title('%s' %tt)
     plt.grid()
     name = os.path.join(dove, 'tiptilt_ntemp_%d.png' %tidy_or_shuffle)
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
+    
+    plt.figure()
+    plt.plot(n_temp, ptv_medio*1e9, '-o'); plt.xlabel('n_temp')
+    plt.ylabel('PtV [nm]')
+    plt.title('%s' %tt)
+    plt.grid()
+    name = os.path.join(dove, 'ptv_ntemp_%d.png' %tidy_or_shuffle)
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)

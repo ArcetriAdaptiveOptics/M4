@@ -335,6 +335,62 @@ def longTerm_rmsConvection(tn):
     plt.savefig(name)
     return rms
 
+def tipTiltVSTime(data_file_path, start, stop):
+    '''
+    
+    '''
+    last_name = data_file_path.split('/')[-1]
+    if last_name == 'hdf5':
+        list_tot = glob.glob(os.path.join(data_file_path, '*.h5'))
+        tt = data_file_path.split('/')[-2]
+        ext = 1
+    else:
+        list_tot = glob.glob(os.path.join(data_file_path, '*.fits'))
+        tt = data_file_path.split('/')[-1]
+        ext = 0
+
+    list_tot.sort()
+    list = list_tot[start:stop]
+    
+    if last_name == 'hdf5':
+        time = np.arange(0, len(list)) * 1/27.58
+    else:
+        time = 'calcolare dal tt'
+    
+    tip_tilt = []
+    for name in list:
+        image = read_data.read_phasemap(name, ext)
+        coef, mat = zernike.zernikeFit(image, np.array([1,2,3]))
+        tip_tilt.append(coef)
+    
+    tip = np.array(tip_tilt)[:, 1]
+    tilt = np.array(tip_tilt)[:, 2]
+    #PLOT
+    plt.figure(figsize=(10, 6))
+    plt.plot(time, tip*1e9, label='TIP')
+    plt.plot(time, tilt*1e9, label='TILT')
+    plt.legend()
+    plt.title(tt)
+    plt.ylabel('zernike coef [nm]')
+    plt.xlabel('time [s]')
+    
+    #SAVE
+    results_path = os.path.join(config.path_name.OUT_FOLDER, 'Noise')
+    x = data_file_path.split("/")
+    if last_name == 'hdf5':
+        dove = os.path.join(results_path, x[len(x)-2])
+    else:
+        dove = os.path.join(results_path, x[len(x)-1])
+    if os.path.exists(dove):
+        dove = dove
+    else:
+        os.makedirs(dove)
+    name = os.path.join(dove, 'tipTilt_time.png')
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
+
+    return np.array(tip_tilt), time
 
 ###ALTRO###
 def pippo(tt):

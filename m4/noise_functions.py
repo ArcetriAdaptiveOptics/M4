@@ -119,8 +119,8 @@ class Noise():
 
         self._saveInfo(dove, tidy_or_shuffle, an._template, an._actsVector, an._nPushPull)
 
-        rms_mean, quad_mean, tilt_mean = self.rmsFromCube(self._cubeFromAnalysis)
-        self._saveResults(rms_mean, quad_mean, dove)
+        rms_mean, quad_mean, tilt_mean, ptv_mean = self.rmsFromCube(self._cubeFromAnalysis)
+        self._saveResults(rms_mean, quad_mean, ptv_mean, dove)
         return tt
 
     def rmsFromCube(self, cube_to_process):
@@ -144,23 +144,28 @@ class Noise():
         coef_tilt_list = []
         coef_tip_list = []
         quad_list = []
+        ptv_list = []
         for i in range(cube_to_process.shape[2]):
             image = cube_to_process[:, :, i]
             coef, mat = zernike.zernikeFit(image, np.array([1, 2, 3]))
             sur = zernike.zernikeSurface(image, coef, mat)
             image_ttr = image - sur
+            ptv = np.max(image_ttr)-np.min(image_ttr)
+            ptv_list.append(ptv)
             rms = image_ttr.std()
             rms_list.append(rms)
             coef_tip_list.append(coef[1])
             coef_tilt_list.append(coef[2])
             quad = np.sqrt(coef[1]**2 + coef[2]**2)
             quad_list.append(quad)
+        ptv_vector = np.array(ptv_list)
         rms_vector = np.array(rms_list)
         tip = np.array(coef_tip_list).mean()
         tilt = np.array(coef_tilt_list).mean()
         quad_tt = np.array(quad_list).mean()
         rms_mean = np.mean(rms_vector)
-        return rms_mean, quad_tt, tilt
+        ptv_mean = np.mean(ptv_vector)
+        return rms_mean, quad_tt, tilt, ptv_mean
 
     def _spectrumAllData(self, data_file_path):
         list = glob.glob(os.path.join(data_file_path, '*.h5'))
@@ -191,12 +196,12 @@ class Noise():
         return spe, freq
 
 
-    def _saveResults(self, rms_mean, quad_mean, destination_file_path):
+    def _saveResults(self, rms_mean, quad_mean, ptv_mean, destination_file_path):
         ''' Save results as text file
         '''
         fits_file_name = os.path.join(destination_file_path, 'results.txt')
         file = open(fits_file_name, 'w+')
-        file.write('%e %e' %(rms_mean, quad_mean))
+        file.write('%e %e %e' %(rms_mean, quad_mean, ptv_mean))
         file.close()
 
     def _saveInfo(self, dove, tidy_or_shuffle, template, actsVector, n_push_pull):
@@ -258,23 +263,26 @@ class Noise():
         self._logger.info('Analysis whit different template')
         self._logger.debug('tt_list used: %s', tt_list)
         rms_list = []
+        ptv_list = []
         quad_list = []
         tilt_list = []
         n_temp_list = []
         for tt in tt_list:
             cube = self._readCube(tt)
             n_temp = self._readTempFromInfoFile(tt)
-            rms, quad, tilt = self.rmsFromCube(cube)
+            rms, quad, tilt, ptv = self.rmsFromCube(cube)
             rms_list.append(rms)
             quad_list.append(quad)
             tilt_list.append(tilt)
+            ptv_list.append(ptv)
             n_temp_list.append(n_temp)
 
         rms_medio = np.array(rms_list)
         quad = np.array(quad_list)
         tilt = np.array(tilt_list)
         n_temp = np.array(n_temp_list)
-        return rms_medio, quad, n_temp
+        ptv_medio = np.array(ptv_list)
+        return rms_medio, quad, n_temp, ptv_medio
     ### tt_list ###
     # measurementFolder ='/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Noise'
     # list= os.listdir(measurementFolder); list.sort()
