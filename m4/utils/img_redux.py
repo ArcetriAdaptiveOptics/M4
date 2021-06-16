@@ -69,8 +69,7 @@ class TipTiltDetrend():
         for i in range(len(analysis_ind)):
             coef_list.append(coefList[analysis_ind[i]])
 
-        tip = np.average(coef_list[0], axis=0)
-        tilt = np.average(coef_list[1], axis=0)
+        piston, tip, tilt = np.average(coef_list, axis=0)
 
         surfcoef = np.array([tip, tilt])
 #         surface_map = \
