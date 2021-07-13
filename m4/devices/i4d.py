@@ -226,6 +226,10 @@ class I4D():
         data = numberOfSamples
         self._readJsonData(url, data)
 
+    def loadConfiguration(self, configurationPath):
+        url = '%s%s' % (self._systemServiceAddress, 'LoadConfiguration')
+        self._readJsonData(url, configurationPath)
+
 
     ### FRAME BURST PROXY ###
     def burstFramesToSpecificDirectory(self, directory, numberOfFrames):
