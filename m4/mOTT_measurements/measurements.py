@@ -608,14 +608,15 @@ def alignTest(tt, n_images, perturbation_vec, pre=False):
 
 def main0713TestSpider(numberOfFrames, measurementsDirectory):
     from m4.devices.i4d import I4D
-    i4d = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
+    from m4.configuration.ott_parameters import Interferometer
+    interf = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
     rawFramesDirectory = "C:/Users/PhaseCam/Desktop/prova"
-    interf.burstFramesToSpecificDirectory(directory, numberOfFrames)
+    interf.burstFramesToSpecificDirectory(rawFramesDirectory, numberOfFrames)
 
     configurationPath = 'D:/config/20210708-spider.4Dini'
     configurationPath1 = 'D:/config/20210708-spider.4Dini'
     configurationPath2 = 'D:/config/20210708-spider2.4Dini'
-    inter.loadConfiguration(configurationPath)
+    interf.loadConfiguration(configurationPath)
 
     interf.convertRawFramesInDirectoryToMeasurementsInDestinationDirectory(measurementsDirectory,
                                                                             rawFramesDirectory)
