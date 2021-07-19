@@ -22,7 +22,7 @@ from m4.devices.parabola import OpcUaParabola
 from m4.devices.reference_mirror import OpcUaReferenceMirror
 from m4.devices.m4 import OpcUaM4
 from m4.devices.temperature_sensors import OpcUaTemperatureSensors
-from m4.devices.accelerometers import ZmqAccelerometes
+from m4.devices.accelerometers import ZmqAccelerometers
 from m4.devices.interferometer import I4dArcetri
 
 
@@ -55,7 +55,7 @@ def create_ott(config=config):
         reference_mirror = OpcUaReferenceMirror(opcUa)
         m4 = OpcUaM4(opcUa)
         temperature_sensor = OpcUaTemperatureSensors(opcUa)
-        accelerometers = ZmqAccelerometes()
+        accelerometers = ZmqAccelerometers()
         interf = I4dArcetri()
 
     ott = OTT(parabola_slider, reference_mirror_slider, angle_rotator,

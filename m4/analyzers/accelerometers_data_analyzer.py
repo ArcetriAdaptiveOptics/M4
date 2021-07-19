@@ -3,35 +3,21 @@ Authors
   - C. Selmi: written in 2021
 '''
 
-import os
 import numpy as np
-import h5py
 from matplotlib import pyplot as plt
 from m4.configuration.ott_parameters import OpcUaParameters
 from m4.configuration.config import fold_name
+from m4.type.accelerometers_data import AccelerometersData
 
 
 class AccelerometersDataAnalyzer():
 
     def __init__(self, tt):
         """The constructor """
+        self.acc = AccelerometersData.loadInfoFromAccTtFolder(tt)
         self.tt = tt
-        self._h5_file_path = os.path.join(
-            AccelerometersDataAnalyzer._storageFolder(), tt + '.h5')
-        hf = h5py.File(self._h5_file_path, 'r')
-        try:
-            self.dt = hf.attrs['DT']
-            self.id_vector = hf.attrs['ID']
-            self.directions = hf.attrs['DIR']
-            self.time = hf.attrs['TIME']
-            self.plc_voltscale = hf.attrs['PLC_VoltScale']
-            self.plc_countscale = hf.attrs['PLC_CountScale']
-            self.sensitivity = hf.attrs['Sensitivity']
-        except Exception:
-            self.dt = OpcUaParameters.accelerometers_dt_plc
-            self.id_vector = OpcUaParameters.accelerometers_plc_id
-            self.directions = ['X', 'Z', 'Y', 'Z']
-        self._datah5 = None
+        self._h5_file_path = self.acc._h5_file_path
+        self.datah5 = None
         self._spe = None
         self._freq = None
 
@@ -41,48 +27,9 @@ class AccelerometersDataAnalyzer():
         return fold_name.ACC_ROOT_FOLDER
 
     def readAndShow(self):
-        spe, freq = self.power_spectrum()
+        self._spe, self._freq = self.acc.power_spectrum()
+        self.datah5 = self.acc.datah5
         self.plot_power_spectrum()
-
-    def _read_data(self):
-        '''
-        Returns
-        -------
-            _datah5: numpy array
-                measurements data
-        '''
-        hf = h5py.File(self._h5_file_path, 'r')
-        self._datah5 = hf.get('Accelerometers')[()]
-        return self._datah5
-
-    def power_spectrum(self):
-        '''
-        Returns
-        -------
-            spe_list: list
-                    list containing the spectrum of vectors composing
-                    the matrix z
-            freq_list: list
-                    list containing the frequencies of vectors composing
-                    the matrix z
-        '''
-        if self._datah5 is None:
-            self._datah5 = self._read_data()
-
-        if self.dt == OpcUaParameters.accelerometers_dt_plc:
-            vec_cut = self._datah5[:, OpcUaParameters.accelerometers_plc_id]
-            z = vec_cut.T
-        else:
-            z = self._datah5
-        # dt = OpcUaParameters.accelerometers_dt
-        # z = vec.T
-    #         #spe = np.fft.fftshift(np.fft.rfft(vector, norm='ortho'))
-    #         #freq = np.fft.fftshift(np.fft.rfftfreq(vector.size, d=self._dt))
-        spe = np.fft.rfft(z, axis=1, norm='ortho')
-        nn = np.sqrt(spe.shape[1])  # modRB
-        self._spe = (np.abs(spe)) / nn
-        self._freq = np.fft.rfftfreq(z.shape[1], d=self.dt)
-        return self._spe, self._freq
 
     def plot_power_spectrum(self):
         spe1 = self._spe[:, 1:]
