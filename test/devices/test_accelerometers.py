@@ -5,14 +5,14 @@ Authors
 import os
 import unittest
 from test.test_helper import testDataRootDir
-from m4.devices.accelerometers import ZmqAccelerometes
+from m4.devices.accelerometers import ZmqAccelerometers
 import mock
 
 
 class TestZmqAccelerometers(unittest.TestCase):
 
     def setUp(self):
-        self.acc = ZmqAccelerometes()
+        self.acc = ZmqAccelerometers()
 
     @mock.patch('m4.devices.accelerometers.fold_name', autospect=True)
     @mock.patch('m4.devices.accelerometers.OpcUaParameters', autospect=True)
@@ -25,5 +25,5 @@ class TestZmqAccelerometers(unittest.TestCase):
         mock_start_fold_name.accelerometers_data_folder = want_acc_root_folder
         print(mock_start_fold_name.accelerometers_data_folder)
 
-        acc = ZmqAccelerometes()
+        acc = ZmqAccelerometers()
         #name = acc.acquireData()

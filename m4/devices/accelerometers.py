@@ -6,6 +6,7 @@ import logging
 import os
 import time
 import zmq
+from m4.configuration.config import fold_name
 from m4.ground.timestamp import Timestamp
 from m4.configuration.ott_parameters import OpcUaParameters
 from m4.devices.base_accelerometers import BaseAccelerometers
@@ -49,7 +50,7 @@ class ZmqAccelerometers(BaseAccelerometers):
         h5_file_name = list[len(list)-1]
         tt = Timestamp.now()
         name = tt + '.h5'
-        final_destination = os.path.join(self._acc._storageFolder(), name)
+        final_destination = os.path.join(fold_name.ACC_ROOT_FOLDER, name)
         print( 'To %s' %final_destination)
         start = os.path.join(OpcUaParameters.accelerometers_data_folder,
                              h5_file_name)

@@ -32,10 +32,10 @@ class AccelerometersData():
         self.plc_countscale = None
         self.sensitivity = None
 
-    @staticmethod
-    def _storageFolder():
-        """ Creates the path where to save measurement data"""
-        return fold_name.ACC_ROOT_FOLDER
+#     @staticmethod
+#     def _storageFolder():
+#         """ Creates the path where to save measurement data"""
+#         return fold_name.ACC_ROOT_FOLDER
 
 # Functions for acquisition #
     def convertAndSaveData(self, start, final_destination):
@@ -104,7 +104,7 @@ class AccelerometersData():
         theObject = AccelerometersData()
         theObject.tt = tt
         theObject._h5_file_path = os.path.join(
-            AccelerometersData._storageFolder(), tt + '.h5')
+            fold_name.ACC_ROOT_FOLDER, tt + '.h5')
         hf = h5py.File(theObject._h5_file_path, 'r')
         try:
             theObject.dt = hf.attrs['DT']
