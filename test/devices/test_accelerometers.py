@@ -7,6 +7,7 @@ import unittest
 from test.test_helper import testDataRootDir
 from m4.devices.accelerometers import ZmqAccelerometers
 import mock
+from m4.type.accelerometers_data import AccelerometersData
 
 
 class TestZmqAccelerometers(unittest.TestCase):
@@ -25,5 +26,12 @@ class TestZmqAccelerometers(unittest.TestCase):
         mock_start_fold_name.accelerometers_data_folder = want_acc_root_folder
         print(mock_start_fold_name.accelerometers_data_folder)
 
-        acc = ZmqAccelerometers()
+        #acc = ZmqAccelerometers()
         #name = acc.acquireData()
+
+        tt = '20210519_160814.h5'
+        acc = AccelerometersData()
+        start = os.path.join(mock_start_fold_name.accelerometers_data_folder, tt)
+        final_destination = os.path.join(mock_final_fold_name.ACC_ROOT_FOLDER, tt)
+        #acc.convertAndSaveData(start, final_destination)
+

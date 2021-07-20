@@ -21,11 +21,6 @@ class AccelerometersDataAnalyzer():
         self._spe = None
         self._freq = None
 
-    @staticmethod
-    def _storageFolder():
-        """ Creates the path where to save measurement data"""
-        return fold_name.ACC_ROOT_FOLDER
-
     def readAndShow(self):
         self._spe, self._freq = self.acc.power_spectrum()
         self.datah5 = self.acc.datah5

@@ -14,7 +14,7 @@ class TestAccelerometersDataAnalyzer(unittest.TestCase):
         pass
 
     @mock.patch('m4.type.accelerometers_data.fold_name', autospect=True)
-    def testName(self, mock_fold_name):
+    def testReadingAndAnalysis(self, mock_fold_name):
         want_acc_root_folder = os.path.join(
             testDataRootDir(), 'base', 'M4Data',
             'OPTData', 'AccelerometersData')

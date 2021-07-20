@@ -32,10 +32,6 @@ class AccelerometersData():
         self.plc_countscale = None
         self.sensitivity = None
 
-#     @staticmethod
-#     def _storageFolder():
-#         """ Creates the path where to save measurement data"""
-#         return fold_name.ACC_ROOT_FOLDER
 
 # Functions for acquisition #
     def convertAndSaveData(self, start, final_destination):
