@@ -3,7 +3,6 @@ Authors
   - C. Selmi: written in 2020
 '''
 from m4.configuration.create_ott import OTT
-# from m4.ground.interface_4D import comm4d
 from m4.configuration import config
 from m4.devices.opc_ua_controller import OpcUaController
 from m4.ott_sim.fake_parabola_slider import FakeParabolaSlider
@@ -62,5 +61,5 @@ def create_ott(config=config):
               parab, reference_mirror, m4, temperature_sensor, accelerometers)
     if config.simulated == 1:
         interf.set_ott(ott)
-    # interf = comm4d()
+
     return ott, interf

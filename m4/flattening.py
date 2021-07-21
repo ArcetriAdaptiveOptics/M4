@@ -8,10 +8,10 @@ import numpy as np
 from astropy.io import fits as pyfits
 from m4.configuration.ott_parameters import OttParameters
 from m4.utils.roi import ROI
-from m4.configuration.create_ott import DMirror
+#from m4.configuration.create_ott import DMirror
 from m4.ground.timestamp import Timestamp
 from m4.configuration.config import fold_name
-from m4.ground.tracking_number_folder import TtFolder
+from m4.ground import tracking_number_folder
 
 
 class Flattenig():
@@ -27,7 +27,7 @@ class Flattenig():
         self._an = analyzerIFFunctions
         self._who = self._an._who
         self._roi = ROI()
-        self._mirror = DMirror()
+        #self._mirror = DMirror()
         self._command = None
         self._flatteningWf = None
 
@@ -109,8 +109,7 @@ class Flattenig():
         """ Function to save the info file
         """
         store_in_folder = Flattenig._storageFolder()
-        save = TtFolder(store_in_folder)
-        dove, tt = save._createFolderToStoreMeasurements()
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
         fits_file_name = os.path.join(dove, 'info.fits')
         header = pyfits.Header()
         header['WHO'] = self._who

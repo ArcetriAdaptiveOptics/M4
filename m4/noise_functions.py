@@ -108,8 +108,7 @@ class Noise():
         '''
         an = self._defAnalyzer(data_file_path, tidy_or_shuffle, template, actsVector, n_push_pull)
 
-        save = tracking_number_folder.TtFolder(self._storageFolder())
-        dove, tt = save._createFolderToStoreMeasurements()
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(self._storageFolder())
 
         self._logger.info('Creating analysis in %s', tt)
         self._cubeFromAnalysis = an.createCubeFromImageFolder(data_file_path)
@@ -402,38 +401,35 @@ class Noise():
         return np.array(mean_list), time
 
     def tiptilt_series(self, data_file_path):
-            ''' Remove tip and tilt from image and average the results
-            .. dovrei vedere una variazione nel tempo
-    
-            Parameters
-            ----------
-                data_file_path: string
-                                measurement data folder
-    
-            Returns
-            -------
-                mean: numpy array
-                    vector containing images's mean
-                time: numpy array
-                    vector of the time at which the image were taken
-            '''
-            list = glob.glob(os.path.join(data_file_path, '*.h5'))
-            image_number = len(list)
-            time = np.arange(image_number) * (1/27.58)
-    
-            tt_list = []
-            for j in range(image_number):
-                name = 'img_%04d.h5' %j
-                file_name = os.path.join(data_file_path, name)
-                image = self._ic.from4D(file_name)
-                coeff, mat = zernike.zernikeFit(image,np.array([1,2, 3]))
-                                                                  
-                tt_list.append(coeff)
-                
-            tt = np.array(tt_list)
-                
-                
-            return tt
-            
-        
-    
+        ''' Remove tip and tilt from image and average the results
+        .. dovrei vedere una variazione nel tempo
+
+        Parameters
+        ----------
+            data_file_path: string
+                            measurement data folder
+
+        Returns
+        -------
+            mean: numpy array
+                vector containing images's mean
+            time: numpy array
+                vector of the time at which the image were taken
+        '''
+        list = glob.glob(os.path.join(data_file_path, '*.h5'))
+        image_number = len(list)
+        time = np.arange(image_number) * (1/27.58)
+
+        tt_list = []
+        for j in range(image_number):
+            name = 'img_%04d.h5' %j
+            file_name = os.path.join(data_file_path, name)
+            image = self._ic.from4D(file_name)
+            coeff, mat = zernike.zernikeFit(image,np.array([1,2, 3]))
+
+            tt_list.append(coeff)
+
+        tt = np.array(tt_list)
+
+
+        return tt

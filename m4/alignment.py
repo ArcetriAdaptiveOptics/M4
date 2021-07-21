@@ -177,9 +177,9 @@ class Alignment():
         """
         #self._moveRM(0.)
         if tt is None:
-            al = OpticalAlignment(self._tt)
+            al = OpticalAlignment(self._tt, self._ott, self._interf)
         else:
-            al = OpticalAlignment(tt)
+            al = OpticalAlignment(tt, self._ott, self._interf)
         m4_cmd = al.opt_align(self._ott, zernike_coef_coma)
         #self._applyM4Command(m4_cmd)
         return m4_cmd
@@ -187,7 +187,7 @@ class Alignment():
 
     def _measureComaOnSegmentMask(self, nFrames):
         #ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
-        ima = self._c4d.acq4d(nFrames, self._ott)
+        ima = self._interf.acquire_phasemap(nFrames)
         roi = self._roi.roiGenerator(ima)
         segment_ima = np.ma.masked_array(ima.data, mask=roi[5])
 

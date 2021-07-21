@@ -196,7 +196,7 @@ def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
             tracking number of measurement
     '''
     from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
-    ro = RotOptAlign(ott)
+    ro = RotOptAlign(ott, interf)
 
     tt = ro.image_acquisition(start_point, end_point, n_points)
 
@@ -649,8 +649,7 @@ def PT_calibration(n_meas):
     client.connect()
 
     folder = config.fold_name.PT_ROOT_FOLDER
-    save = tracking_number_folder.TtFolder(folder)
-    dove, tt = save._createFolderToStoreMeasurements()
+    dove, tt = tracking_number_folder.createFolderToStoreMeasurements(folder)
 
     for i in range(n_meas):
         time.sleep(2)

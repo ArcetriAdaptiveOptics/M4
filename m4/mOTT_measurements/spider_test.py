@@ -8,7 +8,7 @@ from m4.devices.i4d import I4D
 from m4.configuration.ott_parameters import Interferometer
 
 class SpiderTest():
-    
+
     def __init__(self):
         """The constructor """
         self._interf = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
@@ -17,11 +17,10 @@ class SpiderTest():
         self._measurementsDirectory = 'D:/M4/SpiderTest/h5'
 
     def rawAcquisition(self, numberOfFrames):
-        save = tracking_number_folder.TtFolder(self._rawFramesDirectory)
-        dove, tt = save._createFolderToStoreMeasurements()
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(self._rawFramesDirectory)
         self._interf.burstFramesToSpecificDirectory(dove, numberOfFrames)
         return tt
-    
+
     def convertRawWithSelectedConfig(self, tt_rawFrame, configurationName):
         confLabel = configurationName.split('.')[0]
         configurationPath = os.path.join(self._configDirectory, configurationName)
@@ -32,7 +31,7 @@ class SpiderTest():
         self._interf.convertRawFramesInDirectoryToMeasurementsInDestinationDirectory(measurementsFolder,
                                                                                 rawFramesFolder)
         return tt_conf
-    
+
     def seriesConvertion(self, tt_rawFrame, configurationNameList):
         for name in configurationNameList:
             tt_conf = self.convertRawWithSelectedConfig(tt_rawFrame, name)
@@ -40,7 +39,7 @@ class SpiderTest():
 
 
 
-### 
+###
 def main0713TestSpider(numberOfFrames, measurementsDirectory):
     from m4.devices.i4d import I4D
     from m4.configuration.ott_parameters import Interferometer

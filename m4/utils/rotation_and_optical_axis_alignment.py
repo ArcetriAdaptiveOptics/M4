@@ -10,7 +10,6 @@ import logging
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from m4.utils import tip_tilt_interf_fit
-from m4.ground.interface_4D import comm4d
 from m4.configuration.config import fold_name
 from m4.ground import tracking_number_folder
 from m4.ground import zernike
@@ -29,10 +28,10 @@ class RotOptAlign():
         tt = ro.image_acquisition(start_point, end_point, n_points)
         centro, axs, raggio = ro.data_analyzer(tt)
     """
-    def __init__(self, ott):
+    def __init__(self, ott, interf):
         """The constructor """
         self._logger = logging.getLogger('ROTOPTALIGN')
-        self._c4d = comm4d()
+        self._interf = interf
         self._ott = ott
         self._parab = ParabolIdent()
         self._n = Noise()
@@ -65,8 +64,7 @@ class RotOptAlign():
                     tracking number of measurements
         """
         self._logger.info('Images acquisition')
-        save = tracking_number_folder.TtFolder(RotOptAlign._storageFolder())
-        dove, tt = save._createFolderToStoreMeasurements()
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(RotOptAlign._storageFolder())
 
         self._checkAngle(start_point)
         self._checkAngle(end_point)
@@ -89,9 +87,9 @@ class RotOptAlign():
             self._ott.angle(start_angle + k*rot_angle*direction)
             angle_list.append(start_angle + k*rot_angle*direction)
             time.sleep(5)
-            masked_ima = self._c4d.acq4d(1, self._ott)
+            masked_ima = self._interf.acquire_phasemap(1)
             name = 'Frame_%04d.fits' %k
-            self._c4d.save_phasemap(dove, name, masked_ima)
+            self._interf.save_phasemap(dove, name, masked_ima)
             if self._cube is None:
                 self._cube = masked_ima
             else:
@@ -188,7 +186,7 @@ class RotOptAlign():
                     Interferometers values
         """
         if masked_ima is None:
-            masked_ima = self._c4d.acq4d(1, self._ott)
+            masked_ima = self._interf.acquire_phasemap(1)
         else:
             masked_ima = masked_ima
         coef, mat = zernike.zernikeFit(masked_ima,
