@@ -8,10 +8,10 @@ import numpy as np
 class TestCalc(unittest.TestCase):
 
     def setUp(self):
-        from m4.configuration.create_ott import OTT
-        self.ott = OTT()
+        from m4.configuration import start
+        self.ott, self._interf = start.create_ott()
         from m4.utils.optical_calibration import OpticalCalibration
-        self.cal = OpticalCalibration()
+        self.cal = OpticalCalibration(self.ott, self._interf)
 
     def tearDown(self):
         del(self.cal, self.ott)
@@ -23,7 +23,7 @@ class TestCalc(unittest.TestCase):
         n_push_pull = 1
         n_frames = 1
         mask_index = 4 #4 per il simulatore
-        tt = self.cal.measureCalibrationMatrix(self.ott, 0, command_amp_vector,
-                                                n_push_pull, n_frames, old_or_new)
+        tt = self.cal.measureCalibrationMatrix(0, command_amp_vector,
+                                               n_push_pull, n_frames, old_or_new)
         int_mat, rec = self.cal.analyzerCalibrationMeasurement(tt,
                                                                 mask_index)

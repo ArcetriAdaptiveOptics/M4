@@ -7,11 +7,10 @@ import os
 import numpy as np
 from skimage.draw import circle
 from m4.ground import geo
-from m4.ground import find_directory
 from m4.ground import smooth_function
 from m4.ground.timestamp import Timestamp
 from m4.ground import logger_set_up
-from m4.ground.tracking_number_folder import TtFolder
+from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.ground import read_data
 
@@ -23,7 +22,7 @@ class Test(unittest.TestCase):
     @unittest.skip('Mettere dei file')
     def testFindDirectory(self):
         tt = '2021...'
-        find_directory.findTtPath(tt)
+        tracking_number_folder.findTrackingNumberPath(tt)
 
     def testGeometry(self):
         img = np.random.rand(500, 500)
@@ -64,8 +63,7 @@ class Test(unittest.TestCase):
     @unittest.skip('Dove mettere il file')
     def testTtFolder(self):
         store_in_folder = '?'
-        t = TtFolder(store_in_folder)
-        t._createFolderToStoreMeasurements()
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
 
     def testZernike(self):
         img = np.random.rand(500, 500)
