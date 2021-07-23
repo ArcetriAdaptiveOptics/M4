@@ -2,10 +2,11 @@
 Authors
   - C. Selmi: written in 2020
 '''
-from abc import ABC, abstractmethod
+import six
+from abc import ABCMeta, abstractmethod
 
-
-class BaseAccelerometers(ABC):
+@six.add_metaclass(ABCMeta)
+class BaseAccelerometers():
     '''
     Abstract class for parabola
     '''

@@ -2,10 +2,11 @@
 Authors
   - C. Selmi: written in 2020
 '''
-from abc import ABC, abstractmethod
+import six
+from abc import ABCMeta, abstractmethod
 
-
-class BaseInterferometer(ABC):
+@six.add_metaclass(ABCMeta)
+class BaseInterferometer():
     '''
     Abstract class for the interferometer
     '''

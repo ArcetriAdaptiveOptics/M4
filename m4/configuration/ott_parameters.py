@@ -20,6 +20,8 @@ tnconf = ''
 class Interferometer():
     ''' Interferometer parameters
     '''
+    i4d_IP = '193.206.155.193'
+    i4d_port = 8011
     N_PIXEL = np.array([512, 512]) #2048
     BIN_PIX = 1
     HORIZ_CROP = 100
@@ -123,10 +125,10 @@ class OpcUaParameters():
     accelerometers_dt_plc = 2.5e-4
     accelerometers_dt = 5e-3
     accelerometers_sn = ['', '', '', '', 'a', 'a', 'a', 'b']
-    accelerometers_plc_id = np.array([5,7,8]) #final vector is time, accelerom, --> first accelerom is 1
+    accelerometers_plc_id = np.array([5,6,7,8]) #final vector is time, accelerom, --> first accelerom is 1
     accelerometrs_directions = ['', '', '', '', 'X', 'Z', 'Y', 'Z']
     accelerometers_sensitivity = np.array([0.,0,0,0,0.1,0.1,0.1,10])   #accel sentivity [V/g]
-    accelerometers_plc_range = np.array([0.,0,0,0,0.32,20,0.32,1.28]) #this is the full range of measurement. i.e. the total span, where the signal is sampled with 2**24 counts
+    accelerometers_plc_range = np.array([0.,0,0,0,0.32,0.32,0.32,1.28]) #this is the full range of measurement. i.e. the total span, where the signal is sampled with 2**24 counts
     accelerometers_plc_totcounts = 2**24 #tot counts is 2**24, for positive and negative range
  
 class OtherParameters():

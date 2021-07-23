@@ -2,8 +2,6 @@
 
 Software per la calibrazione dello specchio deformabile M4
 
-Branch - Simulated Devices
-
 Read How_to_use_it.txt
 
 ## COVERAGE

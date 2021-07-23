@@ -52,11 +52,12 @@ class TipTiltDetrend():
         self._totalMatList = []
         coefList = []
         for r in roi:
-            imag = np.ma.masked_array(image.data, mask=r)
-            ima = np.ma.MaskedArray.copy(imag)
-            coef, mat = zernike.zernikeFit(ima, np.array([2, 3]))
-            self._totalMatList.append(mat)
-            coefList.append(coef)
+            if np.any(r == 0):
+                imag = np.ma.masked_array(image.data, mask=r)
+                ima = np.ma.MaskedArray.copy(imag)
+                coef, mat = zernike.zernikeFit(ima, np.array([1, 2, 3]))
+                self._totalMatList.append(mat[:,1:])
+                coefList.append(coef)
 
         if analysis_ind is None:
             analysis_ind = np.array([1, 2]) #from roi
@@ -68,65 +69,15 @@ class TipTiltDetrend():
         for i in range(len(analysis_ind)):
             coef_list.append(coefList[analysis_ind[i]])
 
-        tip, tilt = np.average(coef_list, axis=0)
+        piston, tip, tilt = np.average(coef_list, axis=0)
 
         surfcoef = np.array([tip, tilt])
-#         surface_map = \
-#                     self._zOnM4.zernikeSurface(surfcoef, roi_copy[final_index],
-#                                                self._totalMatList[final_index])
-        surface_map = zernike.zernikeSurface(image, surfcoef, self._totalMatList[final_index])
 
-        cx = self._pupilXYRadius[0]
-        cy = self._pupilXYRadius[1]
-        r = self._pupilXYRadius[2]
-        ima_cut = image[cy-r:cy+r, cx-r:cx+r]
-        image_ttr = np.ma.masked_array(ima_cut.data - surface_map,
-                                       mask=roi[final_index])
-
+        image_whit_tt = np.ma.masked_array(image.data, mask=roi[final_index])
+        zernike_surface_to_subtract = zernike.zernikeSurface(image_whit_tt, surfcoef,
+                                                             self._totalMatList[final_index])
+        image_ttr = image_whit_tt - zernike_surface_to_subtract
         return image_ttr
-
-#     def ttRemoverFromCoeff(self, zernike_coeff_array, image):
-#         '''
-#         Parameters
-#         ----------
-#             zernike_coeff_array: np.array([coeff_Z2, coeff_Z3])
-#                                 vector of zernike coefficients
-#             image: masked array
-#                 image to be analyzed
-# 
-#         Returns
-#         -------
-#             image_ttr: numpy array
-#                          image without tip and tilt
-#         '''
-#         self._zg = ZernikeGenerator(image.shape[1])
-#         zernike_surface_map = self._createZernikeSurface(zernike_coeff_array)
-#         image_ttr = image - zernike_surface_map
-#         return image_ttr
-
-    def _createZernikeSurface(self, zernike_coeff_array):
-        ''' Creates the Zernike mode on a circular surface with the diameter...
-
-            args:
-            zernike_coeff_array = array containing the amplitude of the mode
-                to create located in the its corresponding position
-                exemple: np.array([z2, z3, z4....])
-
-            returns:
-                    zernike_surface = surface map for the zernike mode
-        '''
-        zernike_surface_map = 0.0
-        first_zern_mode_index = 2
-        last_zern_mode_index = 2 + len(zernike_coeff_array)
-        index_zernike_modes = np.arange(first_zern_mode_index, last_zern_mode_index)
-        zd = self._zg.getZernikeDict(index_zernike_modes)
-
-        for i in index_zernike_modes:
-            zernike_surface_map = zernike_surface_map + \
-                                    zernike_coeff_array[i-2] * zd[i]
-
-        return zernike_surface_map
-
 
 
 
@@ -217,7 +168,7 @@ class SignalUnwrap():
         HOW TO USE IT::
 
             from m4.utils.img_redux import SignalUnwrap
-            SW = SignalUnwrap
+            SW = SignalUnwrap()
     """
 
     def __init__(self):
@@ -228,26 +179,27 @@ class SignalUnwrap():
         res, = np.nonzero(np.ravel(condition))
         return res
 
-    def signal_unwrap(self, x, phase, threshold=None, show=None, mask=None,
-                      sample=None, silent=None):
+    def signal_unwrap(self, x, phase, threshold=None, mask=None,
+                      sample=None):
         '''
         Parameters
         ----------
-            x:
-            phase:
+            x: numpy array
+                vector to unwrap
+            phase: int
+                lambda/2 [same unit of x]
+
         Other Parameters
-        ----------
+        ----------------
             threshold:
-            show:
             mask:
             sample:
-            silent:
 
         Returns
         -------
-            x1:
+            x1: numpy array
+                unwrapped vector
         '''
-
         thresh = phase/2
         if threshold != None:
             thresh = threshold

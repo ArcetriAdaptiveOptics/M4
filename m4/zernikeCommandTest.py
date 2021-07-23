@@ -83,7 +83,7 @@ class ZernikeCommand():
                 m4ImagesCube: numpy array [512, 512, n_modes]
                     cube consisting of the 6 images of the segments
         '''
-        self._ampVector = zernike_modes_vector_amplitude 
+        self._ampVector = zernike_modes_vector_amplitude
         self._dove, self._tt = tracking_number_folder.createFolderToStoreMeasurements(self._storageFolder())
 
         self._saveMeasurementInfo()

@@ -31,7 +31,7 @@ class RotOptAlign():
     def __init__(self, ott, interf):
         """The constructor """
         self._logger = logging.getLogger('ROTOPTALIGN')
-        self._c4d = interf
+        self._interf = interf
         self._ott = ott
         self._parab = ParabolIdent()
         self._n = Noise()
@@ -87,9 +87,9 @@ class RotOptAlign():
             self._ott.angle(start_angle + k*rot_angle*direction)
             angle_list.append(start_angle + k*rot_angle*direction)
             time.sleep(5)
-            masked_ima = self._c4d.acq4d(1, self._ott)
+            masked_ima = self._interf.acquire_phasemap(1)
             name = 'Frame_%04d.fits' %k
-            self._c4d.save_phasemap(dove, name, masked_ima)
+            self._interf.save_phasemap(dove, name, masked_ima)
             if self._cube is None:
                 self._cube = masked_ima
             else:
@@ -186,7 +186,7 @@ class RotOptAlign():
                     Interferometers values
         """
         if masked_ima is None:
-            masked_ima = self._c4d.acq4d(1, self._ott)
+            masked_ima = self._interf.acquire_phasemap(1)
         else:
             masked_ima = masked_ima
         coef, mat = zernike.zernikeFit(masked_ima,

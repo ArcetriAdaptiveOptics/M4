@@ -17,7 +17,7 @@ from m4.configuration.ott_parameters import OttParameters
 #from m4.ground.interface_4D import comm4d
 
 
-#ad ora pensata per comandare il segmento
+#ad ora pensata per comandare il segmento; manca l'interferometro
 class IFFunctionsMaker():
     '''
     This class is responsible for the application of zonal or global commands

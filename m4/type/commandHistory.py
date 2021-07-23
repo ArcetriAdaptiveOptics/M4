@@ -254,8 +254,7 @@ class CmdHistory():
             tracking number
         """
         store_in_folder = CmdHistory._storageFolder()
-        save = tracking_number_folder.TtFolder(store_in_folder)
-        dove, tt = save._createFolderToStoreMeasurements()
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
 
         if fits_or_h5 == 0:
             fits_file_name = os.path.join(dove, 'info.fits')

@@ -62,7 +62,7 @@ class Test(unittest.TestCase):
     @unittest.skip('Dove mettere il file')
     def testTtFolder(self):
         store_in_folder = '?'
-        tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
 
     def testZernike(self):
         img = np.random.rand(500, 500)

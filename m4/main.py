@@ -196,7 +196,7 @@ def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
             tracking number of measurement
     '''
     from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
-    ro = RotOptAlign(ott)
+    ro = RotOptAlign(ott, interf)
 
     tt = ro.image_acquisition(start_point, end_point, n_points)
 
@@ -283,10 +283,11 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
         file.write('%s \n' %tt)
     file.close()
 
-    rms_medio, quad_medio, n_temp = n.different_template_analyzer(tt_list)
+    rms_medio, quad_medio, n_temp, ptv_medio = n.different_template_analyzer(tt_list)
     pyfits.writeto(os.path.join(dove, 'rms_vector_%d.fits' %tidy_or_shuffle), rms_medio, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'tiptilt_vector_%d.fits' %tidy_or_shuffle), quad_medio, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'n_temp_vector_%d.fits' %tidy_or_shuffle), n_temp, overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'ptv_%d.fits' %tidy_or_shuffle), ptv_medio, overwrite=True)
 
     tt = data_file_path.split('/')[-2]
     plt.clf()
@@ -307,6 +308,16 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
     plt.title('%s' %tt)
     plt.grid()
     name = os.path.join(dove, 'tiptilt_ntemp_%d.png' %tidy_or_shuffle)
+    if os.path.isfile(name):
+        os.remove(name)
+    plt.savefig(name)
+    
+    plt.figure()
+    plt.plot(n_temp, ptv_medio*1e9, '-o'); plt.xlabel('n_temp')
+    plt.ylabel('PtV [nm]')
+    plt.title('%s' %tt)
+    plt.grid()
+    name = os.path.join(dove, 'ptv_ntemp_%d.png' %tidy_or_shuffle)
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
@@ -383,8 +394,14 @@ def convection_noise(data_file_path, tau_vector):
     if h5_or_fits is None:
         x = tau_vector * (1/27.58)
         param = [5, 0.5, 32]
-        pp,fit = _curvFit(param, x, rms_nm)
-        decorr_time = 1/pp[0]+pp[1]
+        try:
+            
+            pp,fit = _curvFit(param, x, rms_nm)
+            decorr_time = 1/pp[0]+pp[1]
+        except:
+            pp = np.array([0,0,rms[-1]*1e9])
+            decorr_time = -1
+            fit=rms_nm.copy()*0
         plt.clf()
         plt.plot(x, rms * 1e9, '-o', label='meas')
         plt.xlabel('time [s]')
@@ -478,7 +495,7 @@ def piston_noise(data_file_path):
     plt.savefig(os.path.join(dove, 'piston_spectrum.png'))
 
 
-def analysis_req(data_file_path, step=None, offset=None):
+def analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=None):
     ''' Simultaneous analysis of noise requirements for a tn
 
     Parameters
@@ -511,15 +528,15 @@ def analysis_req(data_file_path, step=None, offset=None):
     file.close()
 
     print('Creating cube 50')
-    image50 = req_check.robustImageFromDataSet(50, data_file_path, offset)
+    image50 = req_check.robustImageFromDataSet(50, data_file_path, zernike_vector_to_subtract, offset)
     print('Creating cube 100')
-    image100 = req_check.robustImageFromDataSet(100, data_file_path, offset)
+    image100 = req_check.robustImageFromDataSet(100, data_file_path, zernike_vector_to_subtract, offset)
     print('Creating cube 300')
-    image300 = req_check.robustImageFromDataSet(300, data_file_path, offset)
-    print('Creating cube 600')
-    image600 = req_check.robustImageFromDataSet(600, data_file_path, offset)
+    image300 = req_check.robustImageFromDataSet(300, data_file_path, zernike_vector_to_subtract, offset)
+#     print('Creating cube 600')
+#     image600 = req_check.robustImageFromDataSet(600, data_file_path, offset)
 
-    image_list = [image50, image100, image300, image600]
+    image_list = [image50, image100, image300]#, image600]
     slop_list = []
     diff_piston_list = []
     roc_list = []
@@ -537,9 +554,9 @@ def analysis_req(data_file_path, step=None, offset=None):
         print('Producing rms51')
         rms500.append(req_check.test243(image, 0.1, step, n_patches=None))
 
-    x = np.array([50,100,300,600])
+    x = np.array([50,100,300])#,600])
     #GRAFICO STD IMAGES
-    y = np.array([image50.std(),image100.std(),image300.std(),image600.std()])
+    y = np.array([image50.std(),image100.std(),image300.std()])#,image600.std()])
     plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')
     plt.ylabel('rms_image [m]')
