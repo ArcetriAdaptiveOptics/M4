@@ -632,7 +632,7 @@ def PT_calibration(n_meas):
     client.connect()
 
     folder = config.fold_name.PT_ROOT_FOLDER
-    dove, tt = tracking_number_folder.makeTrackingNumberFolder(folder)
+    dove, tt = tracking_number_folder.createFolderToStoreMeasurements(folder)
 
     for i in range(n_meas):
         time.sleep(2)

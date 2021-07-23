@@ -108,7 +108,7 @@ class Noise():
         '''
         an = self._defAnalyzer(data_file_path, tidy_or_shuffle, template, actsVector, n_push_pull)
 
-        dove, tt = tracking_number_folder.makeTrackingNumberFolder(self._storageFolder())
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(self._storageFolder())
 
         self._logger.info('Creating analysis in %s', tt)
         self._cubeFromAnalysis = an.createCubeFromImageFolder(data_file_path)

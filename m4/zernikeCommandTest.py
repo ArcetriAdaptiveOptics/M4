@@ -84,7 +84,7 @@ class ZernikeCommand():
                     cube consisting of the 6 images of the segments
         '''
         self._ampVector = zernike_modes_vector_amplitude 
-        self._dove, self._tt = tracking_number_folder.makeTrackingNumberFolder(self._storageFolder())
+        self._dove, self._tt = tracking_number_folder.createFolderToStoreMeasurements(self._storageFolder())
 
         self._saveMeasurementInfo()
         self._logger.debug('Info file creation')

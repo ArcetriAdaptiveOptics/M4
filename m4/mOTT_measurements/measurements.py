@@ -77,7 +77,7 @@ def opticalMonitoring(n_images, delay):
     '''
     #opc = OpcUaController()
     store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
-    dove, tt = tracking_number_folder.makeTrackingNumberFolder(store_in_folder)
+    dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
 
     zer_list = []
     temp_list = []
@@ -123,7 +123,7 @@ def actsRepeatability(n_meas, piston_value, n_frames):
         tracking number of measurements
     '''
     store_in_folder = fold_name.REPEATABILITY_ROOT_FOLDER
-    dove, tt = tracking_number_folder.makeTrackingNumberFolder(store_in_folder)
+    dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
 
     piston = np.array([0, 0, piston_value, 0, 0, 0])
     pos_par = ott.parabola.getPosition()
@@ -201,7 +201,7 @@ def scanAstigmComa(stepamp, nstep, nframes=10):  # by RB 20210117.
     '''
     # goal: to measure coma and astigmatism at different PAR position, spanning 500 arcsec
     store_in_folder = fold_name.CALIBRATION_ROOT_FOLDER
-    dove, tt = tracking_number_folder.makeTrackingNumberFolder(store_in_folder)
+    dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
     par2rm = -2.05
     zern_vect = []
     parpos = []
@@ -287,7 +287,7 @@ def parPistonTest(piston_value, deltapos_filepath, amp, tt_for_align):
     deltapos = hduList[0].data
     dx = deltapos[:, 0] * amp
     dy = deltapos[:, 1] * amp
-    dove, tt = tracking_number_folder.makeTrackingNumberFolder(fold_name.PISTON_TEST_ROOT_FOLDER)
+    dove, tt = tracking_number_folder.createFolderToStoreMeasurements(fold_name.PISTON_TEST_ROOT_FOLDER)
     par0 = ott.parabola.getPosition()
     rm0 = ott.referenceMirror.getPosition()
     n_frames_meas = 10
@@ -403,7 +403,7 @@ def mappingPar(shift, n_iter, tt_for_align):
     delta_object2 = []
     delta_object3 = []
 
-    dove, tt = tracking_number_folder.makeTrackingNumberFolder(fold_name.MAPPING_TEST_ROOT_FOLDER)
+    dove, tt = tracking_number_folder.createFolderToStoreMeasurements(fold_name.MAPPING_TEST_ROOT_FOLDER)
     if shift[2] != 0:
         shift[0] = shift[1] = 0
         object_to_move = 'ANGLE'
@@ -541,7 +541,7 @@ def alignTest(tt, n_images, perturbation_vec, pre=False):
 
     store_in_folder = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER,
                                    'Alignment')
-    dove, tt = tracking_number_folder.makeTrackingNumberFolder(store_in_folder)
+    dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
     fits_file_name = os.path.join(dove, 'zernike.fits')
     pyfits.writeto(fits_file_name, coeff_matrix, overwrite=True)
 
