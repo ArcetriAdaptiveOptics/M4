@@ -73,6 +73,8 @@ setup(name=NAME,
                 'm4.ground',
                 'm4.type',
                 'm4.utils',
+                'm4.devices',
+                'm4.ott_sim'
                 ],
       install_requires=["numpy",
                         "astropy",
@@ -83,7 +85,8 @@ setup(name=NAME,
                         "mock",
                         "zmq",
                         "sklearn",
-                        "pyzabbix"
+                        "pyzabbix",
+                        "guietta"
                         ],
       test_suite='test',
       cmdclass={'upload': UploadCommand, },
