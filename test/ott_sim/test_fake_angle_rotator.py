@@ -4,7 +4,7 @@ Authors
 '''
 import unittest
 from m4.ott_sim.fake_angle_rotator import FakeAngleRotator
-from m4.devices.base_angle_rotator import BaseAngleRotator
+#from m4.devices.base_angle_rotator import BaseAngleRotator
 
 
 class TestFakeAngleRotator(unittest.TestCase):
@@ -20,13 +20,6 @@ class TestFakeAngleRotator(unittest.TestCase):
 
         self.assertAlmostEqual(init_pos + off, fin_pos)
 
-    @unittest.skip('Non fa defire la classe')
-    def testExceptionBaseAngleRotator(self):
-
-        class AngleRotator(BaseAngleRotator):
-
-            def getAngle(self):
-                angle = 'ciao'
-                return angle
-
-        #self.angle = AngleRotator()
+#non riesco a testare il raise exception del BaseAngleRotator
+#perchè non fa definire la classe senza le due definzioni:
+#Can't instantiate abstract class AngleRotator with abstract methods getPosition, setPosition
