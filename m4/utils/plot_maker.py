@@ -59,3 +59,10 @@ def createActMap(cmd):
     return
 
     #plt.plot(input_number,y, 'ro')
+    
+    
+    def closeAll():
+        plt.close('all')
+        
+        
+    

@@ -74,7 +74,7 @@ setup(name=NAME,
                 'm4.type',
                 'm4.utils',
                 'm4.devices',
-                'm4.ott_sim'
+                'm4.ott_sim',
                 ],
       install_requires=["numpy",
                         "astropy",

@@ -14,10 +14,10 @@ from m4.configuration.config import fold_name
 from m4.type.commandHistory import CmdHistory
 from m4.ground import read_data
 from m4.configuration.ott_parameters import OttParameters
-from m4.ground.interface_4D import comm4d
+#from m4.ground.interface_4D import comm4d
 
 
-#ad ora pensata per comandare il segmento
+#ad ora pensata per comandare il segmento; manca l'interferometro
 class IFFunctionsMaker():
     '''
     This class is responsible for the application of zonal or global commands
@@ -40,7 +40,7 @@ class IFFunctionsMaker():
         """The constructor """
         self._logger = logging.getLogger('IFF_MAKER:')
         self._nActs = OttParameters.N_ACT_SEG
-        self._c4d = comm4d()
+        #self._interf = interf
 
         self._nPushPull = None
         self._template = None
@@ -104,8 +104,7 @@ class IFFunctionsMaker():
         self._cmdMatrixTag = cmd_matrix_fits_file_name
 
         indexing_input = copy.copy(modes_vector)
-        save = tracking_number_folder.TtFolder(self._storageFolder())
-        dove, tt = save._createFolderToStoreMeasurements()
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(self._storageFolder())
 
         diagonal_mat = self._diagonalControll(cmd_matrix)
         if np.count_nonzero(diagonal_mat -
