@@ -34,16 +34,17 @@ class SpiderTest():
         configurationPath = os.path.join(self._configDirectory, configurationName)
         self._interf.loadConfiguration(configurationPath)
         rawFramesFolder = os.path.join(self._rawFramesDirectory, tt_rawFrame)
-        tt_conf = tt_rawFrame + '_' + confLabel
+        tt_conf = tt_rawFrame + '-' + confLabel
         measurementsFolder = os.path.join(self._measurementsDirectory, tt_conf)
         self._interf.convertRawFramesInDirectoryToMeasurementsInDestinationDirectory(measurementsFolder,
                                                                                 rawFramesFolder)
         return tt_conf
 
-    def seriesConvertion(self, tt_rawFrame, configurationNameList):
-        for name in configurationNameList:
-            tt_conf = self.convertRawWithSelectedConfig(tt_rawFrame, name)
-            print(tt_conf)
+    def seriesConversion(self, tt_rawList, configurationNameList):
+        for tt in tt_rawList:
+            for name in configurationNameList:
+                tt_conf = self.convertRawWithSelectedConfig(tt, name)
+                print(tt_conf)
 
     def _convertAndSaveSingle4DDataToSlimFits(self, filePath4D, filePathfits):
         '''
@@ -129,9 +130,30 @@ def main0713TestSpider(numberOfFrames, measurementsDirectory):
 
 def main0908ConvertionAndAnalysis():
     sp = SpiderTest()
-    tt_list = ['20210721_103804_20210720-spider6',
-               '20210721_104344_20210720-spider6',
-               '20210721_104858_20210720-spider6']
+    # tt_list = ['20210721_103804_20210720-spider6',
+    #            '20210721_104344_20210720-spider6',
+    #            '20210721_104858_20210720-spider6']
+    # tt_list = ['20210721_103804_20210720-spider4', #2
+    #            '20210721_104344_20210720-spider4', #3
+    #            '20210721_104858_20210720-spider4', #4
+    #            '20210721_111701_20210720-spider4'] #9
+    # tt_list = ['20210721_103804_20210720-spider10', #2
+    #            '20210721_104344_20210720-spider10', #3
+    #            '20210721_104858_20210720-spider10', #4
+    #            '20210721_111701_20210720-spider10'] #9
+
+    tt_list = ['20210721_103804_20210720-spider5',
+               '20210721_104344_20210720-spider5',
+               '20210721_104858_20210720-spider5',
+               '20210721_111701_20210720-spider5',
+               '20210721_103804_20210720-spider11',
+               '20210721_104344_20210720-spider11',
+               '20210721_104858_20210720-spider11',
+               '20210721_111701_20210720-spider11',
+               '20210721_103804_20210720-spider12',
+               '20210721_104344_20210720-spider12',
+               '20210721_104858_20210720-spider12',
+               '20210721_111701_20210720-spider12']
     for tt in tt_list:
         print('Converting tt = %s' %tt)
         sp.convert4DDataToSlimFits(tt)
