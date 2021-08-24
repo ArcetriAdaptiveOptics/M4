@@ -8,7 +8,7 @@ import numpy as np
 import logging
 from scipy import ndimage
 from astropy.io import fits as pyfits
-from m4.configuration.config import fold_name
+from m4.configuration import config_folder_names as fold_name
 from m4.configuration.ott_parameters import OttParameters
 from m4.ground import zernike
 from m4.flattening import Flattenig

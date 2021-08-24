@@ -12,3 +12,4 @@ mock
 sklearn
 pyzabbix
 zmq
+yaml

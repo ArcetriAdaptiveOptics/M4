@@ -6,7 +6,7 @@ import os
 from astropy.io import fits as pyfits
 import h5py
 import numpy as np
-from m4.configuration.config import fold_name
+from m4.configuration import config_folder_names as fold_name
 
 
 class ModesVector(object):

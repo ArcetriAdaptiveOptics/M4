@@ -1,14 +1,12 @@
 '''
 Authors
-  - C. Selmi: written in 2020
+  - C. Selmi: written in 2021
 '''
 import os
 import yaml
 
-mirror_conf = '20170430'
-optical_conf = '20150730'
 #    simulated = 0  # 1 per il simulatore
-
+#    BASE_PATH = '/home/labot/data/M4/Data'
 
 class configuration_path():
     '''
