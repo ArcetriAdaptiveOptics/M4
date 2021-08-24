@@ -9,7 +9,7 @@ import logging
 # import h5py
 # import zmq
 # from m4.ground import rebinner
-# from m4.configuration.config import fold_name
+# from m4.configuration.read_config import fold_name
 # from m4.ground.timestamp import Timestamp
 # from m4.configuration.ott_parameters import OpcUaParameters
 from m4.devices.base_accelerometers import BaseAccelerometers

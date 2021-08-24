@@ -13,7 +13,7 @@ from skimage.draw import circle as draw_circle
 from m4.ground import zernike
 from scipy.ndimage.interpolation import shift
 from m4.ground import read_data
-from m4.configuration import config
+from m4.configuration import config_folder_names as config
 
 def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None):
     '''
@@ -439,7 +439,7 @@ def imageOpticOffset(data_file_path, start, stop):
 
     image = np.mean(cube, axis=2)
 
-    results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req', tt)
+    results_path = os.path.join(config.OUT_FOLDER, 'Req', tt)
     fits_file_name = os.path.join(results_path, 'OptOffset.fits')
     pyfits.writeto(fits_file_name, image.data, overwrite=True)
     pyfits.append(fits_file_name, image.mask.astype(int), overwrite=True)
@@ -508,7 +508,7 @@ def robustImageFromDataSet(n_images, data_file_path, zernike_vector_to_subtract,
         final_image = mean2 - mean1
 
     else:
-        fits_file_name = os.path.join(config.path_name.OUT_FOLDER, 'Req', tt,
+        fits_file_name = os.path.join(config.OUT_FOLDER, 'Req', tt,
                                       'OptOffset.fits')
         image_optOffset = read_data.readFits_maskedImage(fits_file_name)
 

@@ -33,7 +33,7 @@ import glob
 import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
-from m4.configuration import config
+from m4.configuration import config_folder_names as config
 from m4.noise_functions import Noise
 from m4.alignment import Alignment
 from m4.ground import logger_set_up as lsu
@@ -50,7 +50,7 @@ def start_log(logging_level):
                     Warning = 30, Info = 20, Debug = 10, Notset = 0
 
     """
-    file_path = config.fold_name.LOG_ROOT_FOLDER
+    file_path = config.LOG_ROOT_FOLDER
     lsu.set_up_logger(file_path, logging_level)
     return file_path
 
@@ -210,7 +210,7 @@ def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
 ######### Misure di noise ##########
 def _path_noise_results(data_file_path, h5_or_fits=None):
     ''' Function to get tt'''
-    results_path = os.path.join(config.path_name.OUT_FOLDER, 'Noise')
+    results_path = os.path.join(config.OUT_FOLDER, 'Noise')
     x = data_file_path.split("/")
     if h5_or_fits is None:
         dove = os.path.join(results_path, x[len(x)-2])
@@ -513,7 +513,7 @@ def analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=N
     else:
         tt = data_file_path.split('/')[-1]
 
-    results_path = os.path.join(config.path_name.OUT_FOLDER, 'Req')
+    results_path = os.path.join(config.OUT_FOLDER, 'Req')
     dove = os.path.join(results_path, tt)
     if os.path.exists(dove):
         dove = dove
@@ -648,7 +648,7 @@ def PT_calibration(n_meas):
     client = Client(url=server)
     client.connect()
 
-    folder = config.fold_name.PT_ROOT_FOLDER
+    folder = config.PT_ROOT_FOLDER
     dove, tt = tracking_number_folder.createFolderToStoreMeasurements(folder)
 
     for i in range(n_meas):
@@ -673,7 +673,7 @@ def analyzer_PT_meas(tt):
     #tt = '20200911_142702'
     from m4.ground import smooth_function
 
-    folder = config.fold_name.PT_ROOT_FOLDER
+    folder = config.PT_ROOT_FOLDER
     name = os.path.join(folder, tt)
     list = os.listdir(name)
     list.sort()

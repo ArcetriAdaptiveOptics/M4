@@ -13,7 +13,7 @@ from m4.ground.read_data import InterferometerConverter
 from m4.influence_functions_maker import IFFunctionsMaker
 from m4.utils.roi import ROI
 from m4.utils.img_redux import TipTiltDetrend
-from m4.configuration.config import fold_name
+from m4.configuration import config_folder_names as fold_name
 
 
 class AnalyzerIFF():
