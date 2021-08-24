@@ -7,8 +7,7 @@ Authors
 import os
 import fnmatch
 from m4.ground.timestamp import Timestamp
-from m4.configuration.config import path_name
-
+from m4.configuration import config_folder_names as fold_name
 
 def createFolderToStoreMeasurements(store_in_folder):
     """
