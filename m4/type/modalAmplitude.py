@@ -4,6 +4,7 @@ Autors
 '''
 
 import os
+import numpy as np
 from astropy.io import fits as pyfits
 import h5py
 from m4.configuration import config_folder_names as fold_name
