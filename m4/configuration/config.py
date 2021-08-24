@@ -3,77 +3,233 @@ Authors
   - C. Selmi: written in 2020
 '''
 import os
-from m4.configuration.configReader import Configuration
+import yaml
 
 mirror_conf = '20170430'
 optical_conf = '20150730'
-simulated = 0  # 1 per il simulatore
+#    simulated = 0  # 1 per il simulatore
 
 
-class path_name():
+class configuration_path():
     '''
     '''
-
-    #BASE_PATH = '/mnt/m4storage/Data'
-    #BASE_PATH _vecchio= '/home/m4/data/M4/Data'
-    #BASE_PATH = '/Users/rm/Desktop/Arcetri/M4/Data'
-    #BASE_PATH = '/home/labot/data/M4/Data'
 
     def __init__(self, confFile):
-        self.confFile = confFile
+        with open(confFile) as file:
+            self._conf = yaml.load(file, Loader=yaml.FullLoader)
 
-    myconf = Configuration(self.confFile)
+    @property
+    def simulated(self):
+        return self._conf['simulated']
 
-    CONFIGURATION_ROOT_FOLDER = os.path.join(myconf.BASE_PATH, 'SYSCONFData')
-    CALIBRATION_ROOT_FOLDER = os.path.join(myconf.BASE_PATH, 'M4Data')
-    OPT_DATA_FOLDER = os.path.join(myconf.CALIBRATION_ROOT_FOLDER, 'OPTData')
-    OUT_FOLDER = os.path.join(myconf.CALIBRATION_ROOT_FOLDER, 'Results')
-    MIRROR_FOLDER = os.path.join(myconf.BASE_PATH, 'MIRROR_System')
-    OPTICAL_FOLDER = os.path.join(myconf.BASE_PATH, 'OPTICAL_System')
+### PATH_NAME ###
+    @property
+    def BASE_PATH(self):
+        if 'base_path' in self._conf.keys():
+            return self._conf['base_path']
+        else:
+            return '/mnt/m4storage/Data'
 
+    @property
+    def CONFIGURATION_ROOT_FOLDER(self):
+        if 'configuration_root_folder' in self._conf.keys():
+            return self._conf['configuration_root_folder']
+        else:
+            return os.path.join(self.BASE_PATH, 'SYSCONFData')
 
-class fold_name(path_name):
-    '''
-    '''
-    OPD_IMAGES_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER, 'OPDImages')
-    PHASECAM_ROOT_FOLDER = '/home/m4/4d/Zcopy/'
-    LOG_ROOT_FOLDER = os.path.join(path_name.BASE_PATH,
-                                   'LOGData/mylog')
-    IFFUNCTIONS_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                           'IFFunctions')
-    FLAT_ROOT_FOLD = os.path.join(path_name.OPT_DATA_FOLDER, "Flattening")
-    CALIBRATION_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                           "Calibration")
-    ALIGNMENT_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER, "Alignment")
-    ZERNIKECOMMANDTEST_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                                  "ZernikeCommandTest")
-    NOISE_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER, "Noise")
-    SPL_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER, "SPL")
-    CALIBALL_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                        "Caliball")
-    MODESVECTOR_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                           "ModesVector")
-    MODALBASE_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                         "ModalBase")
-    MODALAMPLITUDE_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                              "ModalAmplitude")
-    COMMANDHISTORY_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                              "CommandHistory")
-    GEOTRANSFORM_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                            "GeomTransf")
-    ROT_OPT_ALIGN_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                             "RotOptAlignment")
+    @property
+    def ALL_CALIBRATION_DATA_ROOT_FOLDER(self):
+        if 'all_calibration_data_root_folder' in self._conf.keys():
+            return self._conf['all_calibration_data_root_folder']
+        else:
+            return os.path.join(self.BASE_PATH, 'M4Data')
 
-    PT_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                  "PTCalibration")
-    OPD_SERIES_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                  "OPD_series")
-    REPEATABILITY_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                  "Repeatability")
-    PISTON_TEST_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                  "PistonTest")
-    MAPPING_TEST_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                  "Mapping")
-    ACC_ROOT_FOLDER = os.path.join(path_name.OPT_DATA_FOLDER,
-                                  "AccelerometersData")
-    # metterci tutti i path di tutte le classi
+    @property
+    def OPT_DATA_FOLDER(self):
+        if 'opt_data_folder' in self._conf.keys():
+            return self._conf['opt_data_folder']
+        else:
+            return os.path.join(self.BASE_PATH, 'OPTData')
+
+    @property
+    def OUT_FOLDER(self):
+        if 'out_folder' in self._conf.keys():
+            return self._conf['out_folder']
+        else:
+            return os.path.join(self.BASE_PATH, 'Results')
+
+    @property
+    def MIRROR_FOLDER(self):
+        if 'mirror_folder' in self._conf.keys():
+            return self._conf['mirror_folder']
+        else:
+            return os.path.join(self.BASE_PATH, 'MIRROR_System')
+
+    @property
+    def OPTICAL_FOLDER(self):
+        if 'optical_folder' in self._conf.keys():
+            return self._conf['optical_folder']
+        else:
+            return os.path.join(self.BASE_PATH, 'OPTICAL_System')
+
+### FOLD_NAME ###
+    @property
+    def OPD_IMAGES_ROOT_FOLDER(self):
+        if 'opd_images_root_folder' in self._conf.keys():
+            return self._conf['opd_images_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'OPDImages')
+
+    @property
+    def LOG_ROOT_FOLDER(self):
+        if 'log_root_folder' in self._conf.keys():
+            return self._conf['log_root_folder']
+        else:
+            return os.path.join(self.BASE_PATH, 'LOGData/mylog')
+
+    @property
+    def PHASECAM_ROOT_FOLDER(self):
+        if 'phasecam_root_folder' in self._conf.keys():
+            return self._conf['phasecam_root_folder']
+        else:
+            return '/home/m4/4d/Zcopy/'
+
+    @property
+    def IFFUNCTIONS_ROOT_FOLDER(self):
+        if 'iffunctions_root_folder' in self._conf.keys():
+            return self._conf['iffunctions_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'IFFunctions')
+
+    @property
+    def FLAT_ROOT_FOLD(self):
+        if 'flat_root_folder' in self._conf.keys():
+            return self._conf['flat_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'Flattening')
+
+    @property
+    def CALIBRATION_ROOT_FOLDER(self):
+        if 'calibration_root_folder' in self._conf.keys():
+            return self._conf['calibration_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'Calibration')
+
+    @property
+    def ALIGNMENT_ROOT_FOLDER(self):
+        if 'alignment_root_folder' in self._conf.keys():
+            return self._conf['alignment_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'Alignment')
+
+    @property
+    def ZERNIKECOMMANDTEST_ROOT_FOLDER(self):
+        if 'zernikecommandtest_root_folder' in self._conf.keys():
+            return self._conf['zernikecommandtest_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'ZernikeCommandTest')
+
+    @property
+    def NOISE_ROOT_FOLDER(self):
+        if 'noise_root_folder' in self._conf.keys():
+            return self._conf['noise_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'Noise')
+
+    @property
+    def SPL_ROOT_FOLDER(self):
+        if 'spl_root_folder' in self._conf.keys():
+            return self._conf['spl_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'SPL')
+
+    @property
+    def CALIBALL_ROOT_FOLDER(self):
+        if 'caliball_root_folder' in self._conf.keys():
+            return self._conf['caliball_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'Caliball')
+
+    @property
+    def MODESVECTOR_ROOT_FOLDER(self):
+        if 'modesvector_root_folder' in self._conf.keys():
+            return self._conf['modesvector_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'ModesVector')
+
+    @property
+    def MODALBASE_ROOT_FOLDER(self):
+        if 'modalbase_root_folder' in self._conf.keys():
+            return self._conf['modalbase_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'ModalBase')
+
+    @property
+    def MODALAMPLITUDE_ROOT_FOLDER(self):
+        if 'modalamplitude_root_folder' in self._conf.keys():
+            return self._conf['modalamplitude_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'ModalAmplitude')
+
+    @property
+    def COMMANDHISTORY_ROOT_FOLDER(self):
+        if 'commandhistory_root_folder' in self._conf.keys():
+            return self._conf['commandhistory_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'CommandHistory')
+
+    @property
+    def GEOTRANSFORM_ROOT_FOLDER(self):
+        if 'geotransform_root_folder' in self._conf.keys():
+            return self._conf['geotransform_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'GeomTransf')
+
+    @property
+    def ROT_OPT_ALIGN_ROOT_FOLDER(self):
+        if 'rot_opt_align_root_folder' in self._conf.keys():
+            return self._conf['rot_opt_align_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'RotOptAlignment')
+
+    @property
+    def PT_ROOT_FOLDER(self):
+        if 'pt_root_folder' in self._conf.keys():
+            return self._conf['pt_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'PTCalibration')
+
+    @property
+    def OPD_SERIES_ROOT_FOLDER(self):
+        if 'opd_series_root_folder' in self._conf.keys():
+            return self._conf['opd_series_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'OPD_series')
+
+    @property
+    def REPEATABILITY_ROOT_FOLDER(self):
+        if 'repeatability_root_folder' in self._conf.keys():
+            return self._conf['repeatability_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'Repeatability')
+
+    @property
+    def PISTON_TEST_ROOT_FOLDER(self):
+        if 'piston_test_root_folder' in self._conf.keys():
+            return self._conf['piston_test_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'PistonTest')
+
+    @property
+    def MAPPING_TEST_ROOT_FOLDER(self):
+        if 'mapping_test_root_folder' in self._conf.keys():
+            return self._conf['mapping_test_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'Mapping')
+
+    @property
+    def ACC_ROOT_FOLDER(self):
+        if 'acc_root_folder' in self._conf.keys():
+            return self._conf['acc_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'AccelerometersData')
