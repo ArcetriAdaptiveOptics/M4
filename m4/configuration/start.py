@@ -26,7 +26,7 @@ from m4.devices.interferometer import I4dArcetri
 
 from m4.configuration.upload_config import config_rewriter
 
-def create_ott(config='/Users/rm/eclipse-workspace/M4/m4/configuration/towerConfig.yaml'):
+def create_ott(config_file_name='/Users/rm/eclipse-workspace/M4/m4/configuration/towerConfig.yaml'):
     ''' Function for the ott creation
 
     Returns
@@ -36,7 +36,7 @@ def create_ott(config='/Users/rm/eclipse-workspace/M4/m4/configuration/towerConf
     interf: object
         interferometer
     '''
-    conf_obj = configuration_path(config)
+    conf_obj = configuration_path(config_file_name)
     cr = config_rewriter(conf_obj)
     cr.upload()
 
