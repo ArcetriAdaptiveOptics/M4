@@ -86,7 +86,7 @@ setup(name=NAME,
                         "zmq",
                         "sklearn",
                         "pyzabbix",
-                        "yaml"
+                        "pyyaml"
                         ],
       test_suite='test',
       cmdclass={'upload': UploadCommand, },
