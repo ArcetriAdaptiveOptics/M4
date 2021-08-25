@@ -9,7 +9,7 @@ import shutil
 import numpy as np
 from matplotlib import pyplot as plt
 from astropy.io import fits as pyfits
-from m4.configuration.config import fold_name
+from m4.configuration import config_folder_names as fold_name
 from m4.configuration.ott_parameters import Interferometer
 from m4.ground.read_data import InterferometerConverter
 from m4.devices.base_interferometer import BaseInterferometer

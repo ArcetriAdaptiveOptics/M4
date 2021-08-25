@@ -10,7 +10,7 @@ import h5py
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
-from m4.configuration.config import fold_name
+from m4.configuration import config_folder_names as fold_name
 from m4.type.commandHistory import CmdHistory
 from m4.ground import read_data
 from m4.configuration.ott_parameters import OttParameters

@@ -7,8 +7,7 @@ Authors
 import os
 import fnmatch
 from m4.ground.timestamp import Timestamp
-from m4.configuration.config import path_name
-
+from m4.configuration import config_folder_names
 
 def createFolderToStoreMeasurements(store_in_folder):
     """
@@ -47,7 +46,7 @@ def findTrackingNumberPath(tt):
         final_path: string
             total path
     '''
-    rootPath = path_name.OPT_DATA_FOLDER
+    rootPath = config_folder_names.OPT_DATA_FOLDER
     pattern = tt
 
     for root, dirs, files in os.walk(rootPath):

@@ -7,7 +7,7 @@ import numpy as np
 from scipy import ndimage
 from astropy.io import fits as pyfits
 from photutils.centroids import fit_2dgaussian
-from m4.configuration.config import fold_name
+from m4.configuration import config_folder_names as fold_name
 
 class GeomTransf():
     ''' Class to obtain the transformation that allows you to bring the coordinates

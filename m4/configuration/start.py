@@ -3,7 +3,7 @@ Authors
   - C. Selmi: written in 2020
 '''
 from m4.configuration.create_ott import OTT
-from m4.configuration import config
+from m4.configuration.read_config import configuration_path
 from m4.devices.opc_ua_controller import OpcUaController
 from m4.ott_sim.fake_parabola_slider import FakeParabolaSlider
 from m4.ott_sim.fake_reference_mirror_slider import FakeReferenceMirrorSlider
@@ -24,8 +24,9 @@ from m4.devices.temperature_sensors import OpcUaTemperatureSensors
 from m4.devices.accelerometers import ZmqAccelerometers
 from m4.devices.interferometer import I4dArcetri
 
+from m4.configuration.upload_config import config_rewriter
 
-def create_ott(config=config):
+def create_ott(config_file_name='/Users/rm/eclipse-workspace/M4/m4/configuration/towerConfig.yaml'):
     ''' Function for the ott creation
 
     Returns
@@ -35,7 +36,11 @@ def create_ott(config=config):
     interf: object
         interferometer
     '''
-    if config.simulated == 1:
+    conf_obj = configuration_path(config_file_name)
+    cr = config_rewriter(conf_obj)
+    cr.upload()
+
+    if conf_obj.simulated == 1:
         parabola_slider = FakeParabolaSlider()
         reference_mirror_slider = FakeReferenceMirrorSlider()
         angle_rotator = FakeAngleRotator()
@@ -59,7 +64,7 @@ def create_ott(config=config):
 
     ott = OTT(parabola_slider, reference_mirror_slider, angle_rotator,
               parab, reference_mirror, m4, temperature_sensor, accelerometers)
-    if config.simulated == 1:
+    if conf_obj.simulated == 1:
         interf.set_ott(ott)
 
     return ott, interf
