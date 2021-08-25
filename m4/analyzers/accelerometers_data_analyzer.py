@@ -6,7 +6,7 @@ Authors
 import numpy as np
 from matplotlib import pyplot as plt
 from m4.configuration.ott_parameters import OpcUaParameters
-from m4.configuration.config import fold_name
+from m4.configuration import config_folder_names as fold_name
 from m4.type.accelerometers_data import AccelerometersData
 
 
