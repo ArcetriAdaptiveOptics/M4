@@ -3,7 +3,7 @@ Authors
   - C. Selmi: written in 2020
 '''
 from m4.configuration.create_ott import OTT
-from m4.configuration.read_config import configuration_path
+from m4.configuration.config_reader import configuration_path
 from m4.devices.opc_ua_controller import OpcUaController
 from m4.ott_sim.fake_parabola_slider import FakeParabolaSlider
 from m4.ott_sim.fake_reference_mirror_slider import FakeReferenceMirrorSlider
@@ -24,10 +24,15 @@ from m4.devices.temperature_sensors import OpcUaTemperatureSensors
 from m4.devices.accelerometers import ZmqAccelerometers
 from m4.devices.interferometer import I4dArcetri
 
-from m4.configuration.upload_config import config_rewriter
+from m4.configuration.config_uploader import config_rewriter
 
 def create_ott(config_file_name='/Users/rm/eclipse-workspace/M4/m4/configuration/towerConfig.yaml'):
     ''' Function for the ott creation
+
+    Parameters
+    ---------
+    config_file_name: string
+        configuration path to use
 
     Returns
     -------

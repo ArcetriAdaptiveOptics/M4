@@ -9,10 +9,11 @@ import yaml
 #    BASE_PATH = '/home/labot/data/M4/Data'
 
 class configuration_path():
-    '''
+    ''' class for reading data from yaml file
     '''
 
     def __init__(self, confFile):
+        ''' The constructor'''
         with open(confFile) as file:
             self._conf = yaml.load(file, Loader=yaml.FullLoader)
 

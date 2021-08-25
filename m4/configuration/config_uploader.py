@@ -5,11 +5,16 @@ Authors
 from m4.configuration import config_folder_names as config
 
 class config_rewriter():
+    ''' Class used to rewrite the file containing fixed paths
+    '''
 
     def __init__(self, conf_obj):
+        ''' The constructur '''
         self.cc = conf_obj
 
     def upload(self):
+        ''' Function for set the global path
+        '''
         config.simulated = self.cc.simulated
         config.BASE_PATH = self.cc.BASE_PATH
         config.CONFIGURATION_ROOT_FOLDER = self.cc.CONFIGURATION_ROOT_FOLDER
