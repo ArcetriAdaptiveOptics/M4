@@ -45,13 +45,13 @@ class ZmqAccelerometers(BaseAccelerometers):
             raise OSError('No reply from socket')
         socket.disconnect(OpcUaParameters.accelerometers_server)
 
-        list = os.listdir(OpcUaParameters.accelerometers_data_folder)
-        list.sort()
-        h5_file_name = list[len(list)-1]
+        lista = os.listdir(OpcUaParameters.accelerometers_data_folder)
+        lista.sort()
+        h5_file_name = lista[len(lista)-1]
         tt = Timestamp.now()
         name = tt + '.h5'
         final_destination = os.path.join(fold_name.ACC_ROOT_FOLDER, name)
-        print( 'To %s' %final_destination)
+        print('To %s' %final_destination)
         start = os.path.join(OpcUaParameters.accelerometers_data_folder,
                              h5_file_name)
 

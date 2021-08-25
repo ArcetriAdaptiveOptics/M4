@@ -12,7 +12,7 @@ from m4.configuration import config_folder_names as fold_name
 
 
 class AccelerometersData():
-    '''
+    ''' Class used to manage accelerometer data
     '''
 
     def __init__(self):
@@ -35,6 +35,14 @@ class AccelerometersData():
 
 # Functions for acquisition #
     def convertAndSaveData(self, start, final_destination):
+        '''
+        Parameters
+        ----------
+        start: string
+            path containing the initial data
+        final_destination: string
+            path to save final data
+        '''
         hf = h5py.File(start, 'r')
         data = hf.get('Accelerometers')
 
@@ -42,7 +50,7 @@ class AccelerometersData():
         #here starts modRB to implement data conversion all the time
         if self._rebinnig_factor != 1:
             rebinning_size = np.int(vec.shape[0]/self._rebinnig_factor)
-            v_list=[]
+            v_list = []
             for i in range(vec.shape[1]):
                 v_list.append(rebinner.rebin(vec[:, i], rebinning_size)) #1050
 
@@ -56,7 +64,7 @@ class AccelerometersData():
         nacc = out_vector.shape[0]
         print('Counts StDev:')
         for i in range(nacc):
-            print(out_vector[i,:].std())
+            print(out_vector[i, :].std())
 
         vector_ms2 = self.counts_to_ms2(out_vector)
 
@@ -72,6 +80,17 @@ class AccelerometersData():
         hf.close()
 
     def counts_to_ms2(self, vec):
+        '''
+        Parameters
+        ----------
+        vec: numpy array
+            data vector in accelerometers plc units
+
+        Returns
+        -------
+        cal_vec: numpy array
+            data vector in m/s*2
+        '''
         id = OpcUaParameters.accelerometers_plc_id - 1
         sens = OpcUaParameters.accelerometers_sensitivity[id]
         plcfs = OpcUaParameters.accelerometers_plc_range[id]
