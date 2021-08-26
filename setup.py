@@ -87,6 +87,7 @@ setup(name=NAME,
                         "sklearn",
                         "pyzabbix",
                         "guietta"
+                        "pyyaml"
                         ],
       test_suite='test',
       cmdclass={'upload': UploadCommand, },

@@ -13,3 +13,4 @@ sklearn
 pyzabbix
 zmq
 guietta
+pyyaml

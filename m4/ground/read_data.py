@@ -19,7 +19,6 @@ import h5py
 from m4.type.modalAmplitude import ModalAmplitude
 from m4.type.modalBase import ModalBase
 from m4.type.modesVector import ModesVector
-from m4.configuration.config import fold_name
 
 
 def read_phasemap(file_path, ext=0):
@@ -66,6 +65,13 @@ def readFits_maskedImage(fits_file_path):
     '''
     hduList = pyfits.open(fits_file_path)
     immagine = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
+    return immagine
+
+def readFitsSlimImage(fits_file_path):
+    hduList = pyfits.open(fits_file_path)
+    data = hduList[0].data
+    mask = np.invert(np.isfinite(data))
+    immagine = np.ma.masked_array(data, mask=mask)
     return immagine
 ###
 

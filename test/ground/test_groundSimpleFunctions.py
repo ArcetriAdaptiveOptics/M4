@@ -12,8 +12,9 @@ from m4.ground import logger_set_up
 from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.ground import read_data
+from test.test_helper import testDataRootDir
 
-TESTDATA_DIR = os.path.dirname(__file__)
+
 
 
 class Test(unittest.TestCase):
@@ -42,9 +43,9 @@ class Test(unittest.TestCase):
 
     def testReadData(self):
         ic = read_data.InterferometerConverter()
-        file_path = os.path.join(TESTDATA_DIR, 'img_0046.h5')
+        file_path = os.path.join(testDataRootDir(), 'img_0046.h5')
         ima = ic.from4D(file_path)
-        file_path = os.path.join(TESTDATA_DIR, '0.4D')
+        file_path = os.path.join(testDataRootDir(), '0.4D')
         ima2 = ic.fromNew4D(file_path)
 
     def testSmoothFunction(self):
