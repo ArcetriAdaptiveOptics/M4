@@ -5,9 +5,6 @@ Authors
 
 import numpy as np
 import matplotlib.pyplot as plt
-from m4.configuration import start
-
-from m4.configuration.create_ott import OTT
 from m4.ott_sim.ott_images import OttImages
 
 from guietta import Gui, M, _, ___, III, VS
@@ -15,11 +12,10 @@ from guietta import Ax
 from guietta import Empty
 
 
-def main():
+def main(ott, interf):
 #     a = M('plot')
 #     print(isinstance(a,QWidget))
     image = np.arange(512**2).reshape((512, 512))
-    ott, interf = start.create_ott()
     ott.referenceMirror.setPosition(np.array([0.e+00, 0.e+00, 0.e+00, 1.e-07, -4.e-07, 0.e+00]))
     ott.parabola.setPosition(np.array([0, 0, 9.9999997e-06, 1.0836526e-07, 2.2898718e-09, 0]))
     ott.parabolaSlider.setPosition(0.75)
