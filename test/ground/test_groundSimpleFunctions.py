@@ -8,12 +8,13 @@ import numpy as np
 from skimage.draw import circle
 from m4.ground import geo
 from m4.ground import smooth_function
-from m4.ground.timestamp import Timestamp
 from m4.ground import logger_set_up
 from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.ground import read_data
 from test.test_helper import testDataRootDir
+
+
 
 
 class Test(unittest.TestCase):
@@ -50,14 +51,6 @@ class Test(unittest.TestCase):
     def testSmoothFunction(self):
         data = np.arange(100)
         smooth_function.smooth(data, 4)
-
-    def testTimestamp(self):
-        t = Timestamp()
-        t.asNowString()
-        t.asTodayString()
-        t.now()
-        t.nowUSec()
-        t.today()
 
     @unittest.skip('Dove mettere il file')
     def testTtFolder(self):

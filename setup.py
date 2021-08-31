@@ -86,6 +86,7 @@ setup(name=NAME,
                         "zmq",
                         "sklearn",
                         "pyzabbix",
+                        "guietta"
                         "pyyaml"
                         ],
       test_suite='test',

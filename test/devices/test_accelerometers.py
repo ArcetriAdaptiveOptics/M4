@@ -26,7 +26,7 @@ class TestZmqAccelerometers(unittest.TestCase):
         mock_start_fold_name.accelerometers_data_folder = want_acc_root_folder
         print(mock_start_fold_name.accelerometers_data_folder)
 
-        #acc = ZmqAccelerometers()
+        acc = ZmqAccelerometers()
         #name = acc.acquireData()
 
         tt = '20210519_160814.h5'

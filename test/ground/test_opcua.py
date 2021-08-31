@@ -6,7 +6,7 @@ import unittest
 import mock
 
 
-class Test(unittest.TestCase):
+class TestOpcUaController(unittest.TestCase):
 
     @mock.patch('opcua.Client', autospec=True)
     def setUp(self, mock_client):

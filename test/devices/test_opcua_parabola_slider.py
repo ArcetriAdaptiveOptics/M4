@@ -26,14 +26,25 @@ class TestOpcUaParabolaSlider(unittest.TestCase):
         self.opc.wait_for_stop.assert_called_once_with(OpcUaParameters.ST)
         self.assertAlmostEqual(pos, 3.14)
 
-    # @lb 210503
-    @unittest.skip("Too complex to mock. FIX ME")
     def testMoveRelativeToCurrentPosition(self):
+
+        self._mocked_pos = {}
+
+        def side_effect_get(key):
+            return self._mocked_pos[key]
+
+        def side_effect_set(key, val):
+            self._mocked_pos[key] = val
+            print("%s" % self._mocked_pos)
+
+        self.opc.get_position = mock.Mock(side_effect=side_effect_get)
+        self.opc.set_target_position = mock.Mock(side_effect=side_effect_set)
+
         init_pos = 42
-        self.opc.get_position = mock.Mock(return_value=init_pos)
+        self.slider.setPosition(init_pos)
+        curr_pos = self.slider.getPosition()
 
         off = 19.3
-        curr_pos = self.slider.getPosition()
         fin_pos = self.slider.setPosition(curr_pos + off)
 
         self.assertAlmostEqual(init_pos + off, fin_pos)
