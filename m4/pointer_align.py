@@ -24,8 +24,14 @@ class Pointer_align():
                                     #timeout
         return images
 
-    def centroid_calculator(self):
-        pass
+    def centroid_calculator(self, data):
+        from photutils import centroids
+        x, y = centroids.centroid_com(data, mask=None) #Calculates the object “center of mass” from 2D image moments
+        x, y = centroids.centroid_1dg(data, error=None, mask=None) #Calculates the centroid by fitting 1D Gaussians to the marginal x and y distributions of the data.
+        x, y = centroids.centroid_2dg(data, error=None, mask=None) #Calculates the centroid by fitting a 2D Gaussian to the 2D distribution of the data.
+        #https://photutils.readthedocs.io/en/v0.3.1/photutils/centroids.html
+        par = centroids.fit_2dgaussian(data)._parameters #uguale a 2dg
 
-    def center_calculator(self):
+
+    def center_calculator(self, data):
         pass
