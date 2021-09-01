@@ -60,6 +60,8 @@ print("%s (VERSION %s)" % (project, version))
 
 today_fmt = '%B %d, %Y'
 
+autodoc_mock_imports = ['sip', 'PyQt5', 'PyQt5.QtGui', 'PyQt5.QtCore', 'PyQt5.QtWidgets']
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
