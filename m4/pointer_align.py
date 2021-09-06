@@ -38,13 +38,12 @@ class Pointer_align():
         fits_file_name = os.path.join(self._dove, name)
         pyfits.writeto(fits_file_name, image)
 
-    def doAlign(self, dy_offset=None):
-        if dy_offset is not None:
-            print('che devo ruotare?') #box
-
-        images = self.take_images(2)
+    def dyCalculator(self):
+        images = self.take_images(1)
         coord0 = self.centroid_calculator(images[0])
-        coord1 = self.centroid_calculator(images[1])
+        #stop: aspettare finche uno non pigia qualcosa #rotazione
+        images = self.take_images(1)
+        coord1 = self.centroid_calculator(images[0])
 
         dy = coord1[1]-coord0[1]
         print('Y offset [um, as]')
@@ -53,32 +52,22 @@ class Pointer_align():
         image = images[0] + 2*images[1]
         return dy, image
 
-    def doDecenter(self):
-        'da finire'
-        images = self.take_images(2)
-        coord0 = self.centroid_calculator(images[0])
-        coord1 = self.centroid_calculator(images[1])
-
-        image = images[0] + 2*images[1]
-        d = np.max(image) #p?
-
-        dc = coord1[1]-coord0[1]
-        print('Y decenter [um]')
-        print(dc*self._pixs*1e6)
-        return image
 
 
 
 
     def main(self):
-        dy0, image_a = self.doAlign()
+        dy0, image_a = self.dyCalculator()
         self._saveImage(image_a, 'xTilt.fits')
-
-        dy1, image_b = self.doAlign(dy0)
+        #altro stop: spostare camera
+        dy1, image_b = self.dyCalculator()
         self._saveImage(image_b, 'yTilt.fits')
 
-        image_c = self.doDecenter()
-        self._saveImage(image_c, 'xDecenter.fits')
+        point0 = 'differenza'
+        self.target_center(point0) #1 vite
+        #stop
+        point1 = 'differenza'
+        self.target_center(point1) #2 vite
 
 
 
@@ -104,5 +93,6 @@ class Pointer_align():
         return [x, y]
 
 
-    def center_calculator(self, data):
+    def target_center(self, point):
+        #fa immagine e traccia croce su punto
         pass
