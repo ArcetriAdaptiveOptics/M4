@@ -232,3 +232,10 @@ class configuration_path():
             return self._conf['acc_root_folder']
         else:
             return os.path.join(self.OPT_DATA_FOLDER, 'AccelerometersData')
+
+    @property
+    def POINTER_ALIGN_ROOT_FOLDER(self):
+        if 'pointer_align_root_folder' in self._conf.keys():
+            return self._conf['pointer_align_root_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'PointerAlign')
