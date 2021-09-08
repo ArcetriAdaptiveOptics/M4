@@ -47,3 +47,4 @@ class config_rewriter():
         config.PISTON_TEST_ROOT_FOLDER = self.cc.PISTON_TEST_ROOT_FOLDER
         config.MAPPING_TEST_ROOT_FOLDER = self.cc.MAPPING_TEST_ROOT_FOLDER
         config.ACC_ROOT_FOLDER = self.cc.ACC_ROOT_FOLDER
+        config.POINTER_ALIGN_ROOT_FOLDER = self.cc.POINTER_ALIGN_ROOT_FOLDER

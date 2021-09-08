@@ -48,7 +48,7 @@ class configuration_path():
         if 'opt_data_folder' in self._conf.keys():
             return self._conf['opt_data_folder']
         else:
-            return os.path.join(self.BASE_PATH, 'OPTData')
+            return os.path.join(self.ALL_CALIBRATION_DATA_ROOT_FOLDER, 'OPTData')
 
     @property
     def OUT_FOLDER(self):
