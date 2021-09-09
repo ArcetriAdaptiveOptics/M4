@@ -47,6 +47,8 @@ def findTrackingNumberPath(tt):
             total path
     '''
     rootPath = config_folder_names.OPT_DATA_FOLDER
+    if rootPath is None:
+        raise OSError('No configuration has been loaded!')
     pattern = tt
 
     for root, dirs, files in os.walk(rootPath):
