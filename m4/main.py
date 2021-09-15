@@ -495,6 +495,7 @@ def piston_noise(data_file_path):
     plt.savefig(os.path.join(dove, 'piston_spectrum.png'))
 
 
+### ANALISI DEI REQUISITI ###
 def analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=None):
     ''' Simultaneous analysis of noise requirements for a tn
 
@@ -537,6 +538,29 @@ def analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=N
 #     image600 = req_check.robustImageFromDataSet(600, data_file_path, offset)
 
     image_list = [image50, image100, image300]#, image600]
+    slop_list, diff_piston_list, roc_list, rms31, rms500 = fromImagesToReq(image_list, step)
+
+    x = np.array([50,100,300])#,600])
+    #GRAFICO STD IMAGES
+    y = np.array([image50.std(),image100.std(),image300.std()])#,image600.std()])
+    plotAndSave(x, y, 'sqrt(n_frames)', 'rms_image [m]', dove, 'std.png')
+    #GRAFICO SLOPE
+    y = np.array(slop_list)
+    plotAndSave(x, y, 'sqrt(n_frames)', 'rms_slope [arcsec]', dove, 'slope.png')
+    #GRAFICO DIFF PISTON
+    y = np.array(diff_piston_list)
+    plotAndSave(x, y, 'sqrt(n_frames)', 'diff_piston [m]', dove, 'diff_piston.png')
+    #GRAFICO ROC
+    y = np.array(roc_list)
+    plotAndSave(x, y, 'sqrt(n_frames)', 'roc [m]', dove, 'roc.png')
+    #GRAFICO RMS 31 MM
+    y = np.array(rms31)
+    plotAndSave(x, y, 'sqrt(n_frames)', 'rms_31mm [m]', dove, 'rms_31mm.png')
+    #GRAFICO RMS 500 MM
+    y = np.array(rms500)
+    plotAndSave(x, y, 'sqrt(n_frames)', 'rms_500mm [m]', dove, 'rms_500mm.png')
+
+def fromImagesToReq(image_list, pscale=None, step=None, n_patches=None):
     slop_list = []
     diff_piston_list = []
     roc_list = []
@@ -544,85 +568,25 @@ def analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=N
     rms500 = []
     for image in image_list:
         print('Producing slope')
-        slop_list.append(req_check.test242(image))
+        slop_list.append(req_check.test242(image, pscale))
         print('Producing differential piston')
         diff_piston_list.append(req_check.diffPiston(image))
         print('Producing roc')
-        roc_list.append(req_check.test283(image))
+        roc_list.append(req_check.test283(image, pscale))
         print('Producing rms31')
-        rms31.append(req_check.test243(image, 0.015, step, n_patches=None))
+        rms31.append(req_check.test243(image, 0.015, pscale, step, n_patches))
         print('Producing rms51')
-        rms500.append(req_check.test243(image, 0.1, step, n_patches=None))
+        rms500.append(req_check.test243(image, 0.1, pscale, step, n_patches))
+    return slop_list, diff_piston_list, roc_list, rms31, rms500
 
-    x = np.array([50,100,300])#,600])
-    #GRAFICO STD IMAGES
-    y = np.array([image50.std(),image100.std(),image300.std()])#,image600.std()])
+def plotAndSave(x, y, xlabel, ylabel, dove, image_name):
     plt.figure(figsize=(10,6))
     plt.plot(np.sqrt(x), y, '-o')
-    plt.ylabel('rms_image [m]')
-    plt.xlabel('sqrt(n_frames)')
+    plt.ylabel(ylabel)
+    plt.xlabel(xlabel)
+    tt = dove.split('/')[-1]
     plt.title('%s' %tt)
-    name = os.path.join(dove, 'std.png')
-    if os.path.isfile(name):
-        os.remove(name)
-    plt.savefig(name)
-
-    #GRAFICO SLOPE
-    y = np.array(slop_list)
-    plt.figure(figsize=(10,6))
-    plt.plot(np.sqrt(x), y, '-o')
-    plt.ylabel('rms_slope [arcsec]')
-    plt.xlabel('sqrt(n_frames)')
-    plt.title('%s' %tt)
-    name = os.path.join(dove, 'slope.png')
-    if os.path.isfile(name):
-        os.remove(name)
-    plt.savefig(name)
-
-    #GRAFICO DIFF PISTON
-    y = np.array(diff_piston_list)
-    plt.figure(figsize=(10,6))
-    plt.plot(np.sqrt(x), y, '-o')
-    plt.ylabel('diff_piston [m]')
-    plt.xlabel('sqrt(n_frames)')
-    plt.title('%s' %tt)
-    name = os.path.join(dove, 'diff_piston.png')
-    if os.path.isfile(name):
-        os.remove(name)
-    plt.savefig(name)
-
-    #GRAFICO ROC
-    y = np.array(roc_list)
-    plt.figure(figsize=(10,6))
-    plt.plot(np.sqrt(x), y, '-o')
-    plt.ylabel('roc [m]')
-    plt.xlabel('sqrt(n_frames)')
-    plt.title('%s' %tt)
-    name = os.path.join(dove, 'roc.png')
-    if os.path.isfile(name):
-        os.remove(name)
-    plt.savefig(name)
-
-    #GRAFICO RMS 31 MM
-    y = np.array(rms31)
-    plt.figure(figsize=(10,6))
-    plt.plot(np.sqrt(x), y, '-o')
-    plt.ylabel('rms_31mm [m]')
-    plt.xlabel('sqrt(n_frames)')
-    plt.title('%s' %tt)
-    name = os.path.join(dove, 'rms_31mm.png')
-    if os.path.isfile(name):
-        os.remove(name)
-    plt.savefig(name)
-
-    #GRAFICO RMS 500 MM
-    y = np.array(rms500)
-    plt.figure(figsize=(10,6))
-    plt.plot(np.sqrt(x), y, '-o')
-    plt.ylabel('rms_500mm [m]')
-    plt.xlabel('sqrt(n_frames)')
-    plt.title('%s' %tt)
-    name = os.path.join(dove, 'rms_500mm.png')
+    name = os.path.join(dove, image_name)
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)

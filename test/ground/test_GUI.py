@@ -22,4 +22,4 @@ class TestGui(unittest.TestCase):
 
         conf = os.path.join(testDataRootDir(), 'base', 'ottSim','testConf.yaml')
         ott, interf = start.create_ott(conf)
-        #GUI.main(ott, interf)
+        GUI.main(ott, interf)

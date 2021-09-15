@@ -296,7 +296,7 @@ def slope(image, pscale):
 
 ### REQ ###
 
-def test242(image):
+def test242(image, pscale=None):
     '''
     Parameters
     ----------
@@ -310,7 +310,10 @@ def test242(image):
     '''
     mask = np.invert(image.mask).astype(int)
     x, y, r, xx, yy = geo.qpupil(mask)
-    pscale = r * (1/0.17)
+    if pscale is None:
+        pscale = r * (1/0.17)
+    else:
+        pscale = pscale
 
     sp = slope(image, pscale)
     # sp in pixel * fattore di conversione da rad ad arcsec
@@ -318,7 +321,7 @@ def test242(image):
     rms = slope_arcsec.std()
     return rms
 
-def test243(image, radius_m, step=None, n_patches=None):
+def test243(image, radius_m, pscale=None, step=None, n_patches=None):
     ''' Return rms at the interactuator scale 31 mm or 150 mm (thresh = 0.95)
 
     Parameters
@@ -344,12 +347,15 @@ def test243(image, radius_m, step=None, n_patches=None):
     # radius_m = 0.015 or 0.1
     mask = np.invert(image.mask).astype(int)
     x, y, r, xx, yy = geo.qpupil(mask)
-    pscale = r * (1/0.17)
+    if pscale is None:
+        pscale = r * (1/0.17)
+    else:
+        pscale = pscale
 
     rms, list_ima, result_vect = patches_analysis(image, radius_m, pscale, step, n_patches)
     return rms
 
-def test283(image, step=None):
+def test283(image, pscale=None, step=None):
     ''' Return roc on 80 mm spatial scale (thresh = 0.05)
 
     Parameters
@@ -369,7 +375,10 @@ def test283(image, step=None):
 '''
     mask = np.invert(image.mask).astype(int)
     x, y, r, xx, yy = geo.qpupil(mask)
-    pscale = r * (1/0.17)
+    if pscale is None:
+        pscale = r * (1/0.17)
+    else:
+        pscale = pscale
 
     roc, list_ima, result_vect = patches_analysis(image, 0.04, pscale, step)
     return roc
