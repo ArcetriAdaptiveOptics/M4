@@ -12,6 +12,7 @@ from m4.utils.optical_calibration import OpticalCalibration
 from m4.utils.roi import ROI
 from m4.ground import zernike
 
+
 class Alignment():
     """
     Class to be used for alignment of the optical tower
@@ -38,7 +39,6 @@ class Alignment():
         self._roi = ROI()
         self._ott = ott
         self._interf = interf
-
 
     def ott_calibration(self, n_frames, command_amp_vector, n_push_pull, old_or_new, mask_index):
         '''Calibration of the optical tower
@@ -98,7 +98,7 @@ class Alignment():
         if tt is None:
             al = OpticalAlignment(self._tt, self._ott, self._interf)
         else:
-            al = OpticalAlignment(tt,  self._ott, self._interf)
+            al = OpticalAlignment(tt, self._ott, self._interf)
         par_cmd, rm_cmd, dove = al.opt_align(n_images, intMatModesVector, commandId)
         if move == 1:
             pos_par = self._ott.parabola.getPosition()
@@ -116,14 +116,12 @@ class Alignment():
         fits_file_name = os.path.join(al._storageFolder(), 'AlignmentLog.txt')
         file = open(fits_file_name, 'a+')
         for i in range(total_coef.size):
-            file.write('%9.3e ' %total_coef[i])
+            file.write('%9.3e ' % total_coef[i])
         file.write('\n')
-        if move==0:
+        if move == 0:
             commandId = -1
-        file.write('%s \n ************\n' %commandId)
+        file.write('%s \n ************\n' % commandId)
         file.close()
-
-
 
 ### da sviluppare ###
     def m4_calibration(self, commandAmpVector_ForM4Calibration,
@@ -175,23 +173,22 @@ class Alignment():
                 m4_cmd: numpy array
                     vector of command to apply to M4 dof
         """
-        #self._moveRM(0.)
+        # self._moveRM(0.)
         if tt is None:
             al = OpticalAlignment(self._tt, self._ott, self._interf)
         else:
             al = OpticalAlignment(tt, self._ott, self._interf)
         m4_cmd = al.opt_align(self._ott, zernike_coef_coma)
-        #self._applyM4Command(m4_cmd)
+        # self._applyM4Command(m4_cmd)
         return m4_cmd
 
-
     def _measureComaOnSegmentMask(self, nFrames):
-        #ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
+        # ima = obj.readImageFromFitsFileName('Allineamento/20191001_081344/img.fits')
         ima = self._interf.acquire_phasemap(nFrames)
         roi = self._roi.roiGenerator(ima)
         segment_ima = np.ma.masked_array(ima.data, mask=roi[5])
 
-        coef, mat = zernike.zernikeFit(segment_ima, np.arange(10)+1)
+        coef, mat = zernike.zernikeFit(segment_ima, np.arange(10) + 1)
         coma = coef[6]
         coma_surface = zernike.zernikeSurface(segment_ima, coma, mat)
         return coma, coma_surface
@@ -200,7 +197,7 @@ class Alignment():
         dove = os.path.join(self._cal._storageFolder(), self._tt)
         fits_file_name = os.path.join(dove, 'z_coma.txt')
         file = open(fits_file_name, 'w+')
-        file.write('%4e' %zernike_coef_coma)
+        file.write('%4e' % zernike_coef_coma)
         file.close()
         fits_file_name = os.path.join(dove, 'z_coma.fits')
         header = pyfits.Header()

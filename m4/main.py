@@ -54,11 +54,12 @@ def start_log(logging_level):
     lsu.set_up_logger(file_path, logging_level)
     return file_path
 
-
 ####### Allineamento Torre ########
+
 
 ott, interf = start.create_ott('/mnt/data/M4/Data/SYSCONFData/Config.yaml')
 a = Alignment(ott, interf)
+
 
 def ott_alignment_calibration(n_frames, commandAmpVector, nPushPull, old_or_new, move):
     '''
@@ -83,7 +84,7 @@ def ott_alignment_calibration(n_frames, commandAmpVector, nPushPull, old_or_new,
     print('PAR + RM calibration')
     if move == 1:
         tt_tower = a.ott_calibration(n_frames, commandAmpVector, nPushPull, old_or_new, 0)
-    #mask_index = 3 per il simulatore  e 0 per la mott
+    # mask_index = 3 per il simulatore  e 0 per la mott
         return tt_tower
     else:
         mat, cmdList = a._cal._createCommandMatrix(0, commandAmpVector, old_or_new)
@@ -91,6 +92,7 @@ def ott_alignment_calibration(n_frames, commandAmpVector, nPushPull, old_or_new,
         plt.imshow(mat, origin='lower')
         plt.colorbar()
         return mat
+
 
 def ott_alignment(tt_tower, n_images, move=1, intMatModesVector=None, commandId=None):
     '''
@@ -116,18 +118,18 @@ def ott_alignment(tt_tower, n_images, move=1, intMatModesVector=None, commandId=
     print('comandi separati')
     print(par_cmd)
     print(rm_cmd)
-    #check
+    # check
 #    if move == 1:
-#	    for i in range(OttParameters.PARABOLA_DOF.size):
-#	        if par_cmd[OttParameters.PARABOLA_DOF[i]] < OttParameters.parab_max_displacement[OttParameters.PARABOLA_DOF[i]]:
-#	            print('ok')
-#	        else:
-#	            raise OSError('Par command to large')
-#	    for i in range(OttParameters.RM_DOF.size):
-#	        if rm_cmd[OttParameters.RM_DOF[i]] < OttParameters.rm_max_displacement[OttParameters.RM_DOF[i]]:
-#	            print('ok')
-#	        else:
-#	            raise OSError('Rm command to large')
+# 	    for i in range(OttParameters.PARABOLA_DOF.size):
+# 	        if par_cmd[OttParameters.PARABOLA_DOF[i]] < OttParameters.parab_max_displacement[OttParameters.PARABOLA_DOF[i]]:
+# 	            print('ok')
+# 	        else:
+# 	            raise OSError('Par command to large')
+# 	    for i in range(OttParameters.RM_DOF.size):
+# 	        if rm_cmd[OttParameters.RM_DOF[i]] < OttParameters.rm_max_displacement[OttParameters.RM_DOF[i]]:
+# 	            print('ok')
+# 	        else:
+# 	            raise OSError('Rm command to large')
 
 
 def m4_alignment_calibration(nFrames, commandAmpVector_ForM4Calibration=None,
@@ -156,6 +158,7 @@ def m4_alignment_calibration(nFrames, commandAmpVector_ForM4Calibration=None,
                                                      nPushPull_ForM4Calibration, 5, nFrames)
     return tt_m4
 
+
 def m4_alignment(tt_m4):
     '''
     Parameters
@@ -167,15 +170,16 @@ def m4_alignment(tt_m4):
     zCoefComa = a._readZcoef(tt_m4)
     cmd_m4 = a.m4_alignment(zCoefComa, tt_m4)
     print(cmd_m4)
-    #check
-    #applicare comando
+    # check
+    # applicare comando
     for i in range(OttParameters.M4_DOF.size):
         if cmd_m4[OttParameters.M4_DOF[i]] < OttParameters.m4_max_displacement[OttParameters.M4_DOF[i]]:
             print('ok')
         else:
             raise OSError('Command to large')
-    #a._write_m4(cmd_m4)
+    # a._write_m4(cmd_m4)
     return cmd_m4
+
 
 def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
     '''
@@ -202,9 +206,8 @@ def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
 
     centro, axs, raggio = ro.data_analyzer(tt)
     print(centro, axs, raggio)
-    #le immagini le fa l'analyzer
+    # le immagini le fa l'analyzer
     return ro, tt
-
 
 
 ######### Misure di noise ##########
@@ -213,14 +216,15 @@ def _path_noise_results(data_file_path, h5_or_fits=None):
     results_path = os.path.join(config.OUT_FOLDER, 'Noise')
     x = data_file_path.split("/")
     if h5_or_fits is None:
-        dove = os.path.join(results_path, x[len(x)-2])
+        dove = os.path.join(results_path, x[len(x) - 2])
     else:
-        dove = os.path.join(results_path, x[len(x)-1])
+        dove = os.path.join(results_path, x[len(x) - 1])
     if os.path.exists(dove):
         dove = dove
     else:
         os.makedirs(dove)
     return dove
+
 
 def _createTemplateList(numbers_array):
     '''
@@ -238,19 +242,20 @@ def _createTemplateList(numbers_array):
     vec = np.array([1, -1])
     for i in numbers_array:
         if i % 2 == 0:
-            #pari
-            k = i-2
-            temp = np.tile(vec, np.int(i/2))
-        elif i %2 == 1:
-            #dispari
-            k = i-2
+            # pari
+            k = i - 2
+            temp = np.tile(vec, np.int(i / 2))
+        elif i % 2 == 1:
+            # dispari
+            k = i - 2
             if k == 1:
                 temp_pari = vec
             else:
-                temp_pari = np.tile(vec, np.int((i-1)/2))
+                temp_pari = np.tile(vec, np.int((i - 1) / 2))
             temp = np.append(temp_pari, 1)
         template_list.append(temp)
     return template_list
+
 
 def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
     '''
@@ -276,48 +281,48 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
         time.sleep(1)
         tt_list.append(tt)
 
-    fits_file_name = os.path.join(dove, 'trackingnumbers_%d.txt' %tidy_or_shuffle)
+    fits_file_name = os.path.join(dove, 'trackingnumbers_%d.txt' % tidy_or_shuffle)
     file = open(fits_file_name, 'w+')
-    file.write('Tidy or shuffle = %d \n' %tidy_or_shuffle)
-    for tt in tt_list: 
-        file.write('%s \n' %tt)
+    file.write('Tidy or shuffle = %d \n' % tidy_or_shuffle)
+    for tt in tt_list:
+        file.write('%s \n' % tt)
     file.close()
 
     rms_medio, quad_medio, n_temp, ptv_medio = n.different_template_analyzer(tt_list)
-    pyfits.writeto(os.path.join(dove, 'rms_vector_%d.fits' %tidy_or_shuffle), rms_medio, overwrite=True)
-    pyfits.writeto(os.path.join(dove, 'tiptilt_vector_%d.fits' %tidy_or_shuffle), quad_medio, overwrite=True)
-    pyfits.writeto(os.path.join(dove, 'n_temp_vector_%d.fits' %tidy_or_shuffle), n_temp, overwrite=True)
-    pyfits.writeto(os.path.join(dove, 'ptv_%d.fits' %tidy_or_shuffle), ptv_medio, overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'rms_vector_%d.fits' % tidy_or_shuffle), rms_medio, overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'tiptilt_vector_%d.fits' % tidy_or_shuffle), quad_medio, overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'n_temp_vector_%d.fits' % tidy_or_shuffle), n_temp, overwrite=True)
+    pyfits.writeto(os.path.join(dove, 'ptv_%d.fits' % tidy_or_shuffle), ptv_medio, overwrite=True)
 
     tt = data_file_path.split('/')[-2]
     plt.clf()
-    #WFE = 2*rms_medio
-    plt.plot(n_temp, rms_medio*1e9, '-o')
+    # WFE = 2*rms_medio
+    plt.plot(n_temp, rms_medio * 1e9, '-o')
     plt.xlabel('n_temp')
     plt.ylabel('rms [nm]')
-    plt.title('%s' %tt)
+    plt.title('%s' % tt)
     plt.grid()
-    name = os.path.join(dove, 'rms_ntemp_%d.png' %tidy_or_shuffle)
+    name = os.path.join(dove, 'rms_ntemp_%d.png' % tidy_or_shuffle)
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
 
     plt.figure()
-    plt.plot(n_temp, quad_medio*1e9, '-o'); plt.xlabel('n_temp')
+    plt.plot(n_temp, quad_medio * 1e9, '-o'); plt.xlabel('n_temp')
     plt.ylabel('TipTilt [nm]')
-    plt.title('%s' %tt)
+    plt.title('%s' % tt)
     plt.grid()
-    name = os.path.join(dove, 'tiptilt_ntemp_%d.png' %tidy_or_shuffle)
+    name = os.path.join(dove, 'tiptilt_ntemp_%d.png' % tidy_or_shuffle)
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
-    
+
     plt.figure()
-    plt.plot(n_temp, ptv_medio*1e9, '-o'); plt.xlabel('n_temp')
+    plt.plot(n_temp, ptv_medio * 1e9, '-o'); plt.xlabel('n_temp')
     plt.ylabel('PtV [nm]')
-    plt.title('%s' %tt)
+    plt.title('%s' % tt)
     plt.grid()
-    name = os.path.join(dove, 'ptv_ntemp_%d.png' %tidy_or_shuffle)
+    name = os.path.join(dove, 'ptv_ntemp_%d.png' % tidy_or_shuffle)
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
@@ -326,6 +331,7 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
 #     plt.ylabel('|FFT(sig)|'); plt.title('tip_tilt_%d' %tidy_or_shuffle)
 #     plt.savefig(os.path.join(dove, 'tiptilt_spectrum_%d.png' %tidy_or_shuffle))
     return
+
 
 def spectrumFromData(data_file_path):
     '''
@@ -356,6 +362,7 @@ def spectrumFromData(data_file_path):
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
+
 
 def convection_noise(data_file_path, tau_vector):
     '''
@@ -390,18 +397,18 @@ def convection_noise(data_file_path, tau_vector):
     pyfits.writeto(os.path.join(dove, 'tau_vector.fits'), tau_vector,
                    overwrite=True)
 
-    rms_nm = rms*1e9
+    rms_nm = rms * 1e9
     if h5_or_fits is None:
-        x = tau_vector * (1/27.58)
+        x = tau_vector * (1 / 27.58)
         param = [5, 0.5, 32]
         try:
-            
-            pp,fit = _curvFit(param, x, rms_nm)
-            decorr_time = 1/pp[0]+pp[1]
+
+            pp, fit = _curvFit(param, x, rms_nm)
+            decorr_time = 1 / pp[0] + pp[1]
         except:
-            pp = np.array([0,0,rms[-1]*1e9])
+            pp = np.array([0, 0, rms[-1] * 1e9])
             decorr_time = -1
-            fit=rms_nm.copy()*0
+            fit = rms_nm.copy() * 0
         plt.clf()
         plt.plot(x, rms * 1e9, '-o', label='meas')
         plt.xlabel('time [s]')
@@ -409,33 +416,33 @@ def convection_noise(data_file_path, tau_vector):
         plt.plot(x, fit, '-', label='fit')
         plt.grid()
         plt.plot([x[0], x[-1]], [pp[2], pp[2]], '--r', linewidth=3,
-                 label='%.2f [nm]' %pp[2])
+                 label='%.2f [nm]' % pp[2])
 #         plt.plot(decorr_time, _funFit(decorr_time,*pp), 'og',
 #                  label='Dec time = %d [s]' %np.round(decorr_time))
         plt.legend()
         tt = dove.split('/')[-1]
-        plt.title('%s' %tt)
+        plt.title('%s' % tt)
         name = os.path.join(dove, 'rms_tau.png')
         if os.path.isfile(name):
             os.remove(name)
         plt.savefig(name)
         return pp[2], decorr_time
     else:
-        time_diff = timeForPlot(data_file_path)
-        x = tau_vector*time_diff
+        time_diff = _time_for_plot(data_file_path)
+        x = tau_vector * time_diff
         plt.clf()
-        plt.plot(x, rms * 1e9, '-o', label='time_diff = %d' %time_diff)
+        plt.plot(x, rms * 1e9, '-o', label='time_diff = %d' % time_diff)
         plt.xlabel('time [s]')
         plt.ylabel('rms [nm]')
         plt.grid()
         plt.legend()
         tt = dove.split('/')[-1]
-        plt.title('%s' %tt)
+        plt.title('%s' % tt)
         name = os.path.join(dove, 'rms_tau.png')
         if os.path.isfile(name):
             os.remove(name)
         plt.savefig(name)
-    #stimare tc dal grafico e usare 2*tau_c = epsilon_c / np.sqrt(n) n = 4000
+    # stimare tc dal grafico e usare 2*tau_c = epsilon_c / np.sqrt(n) n = 4000
 #     tau_c = 30 * (1/27.58)
 #     epsilon_c = 2 * tau_c * np.sqrt(n_meas)
 #     fits_file_name = os.path.join(dove, 'epsilon_c.txt')
@@ -443,7 +450,8 @@ def convection_noise(data_file_path, tau_vector):
 #     file.write('Epsilon_c = %e' %epsilon_c)
 #     file.close()
 
-def timeForPlot(stab_path):
+
+def _time_for_plot(stab_path):
     listtot = glob.glob(os.path.join(stab_path, '*.fits'))
     listtot.sort()
     aa = listtot[0].split('/')
@@ -451,25 +459,30 @@ def timeForPlot(stab_path):
     bb = listtot[1].split('/')
     t1 = bb[-1].split('_')[1].split('.')[0]
 
-    hs = float(t0[0: 2])*3600
-    ms = float(t0[2: 4])*60
-    s = float( t0[4::])
+    hs = float(t0[0: 2]) * 3600
+    ms = float(t0[2: 4]) * 60
+    s = float(t0[4::])
     t0s = hs + ms + s
-    hs = float(t1[0: 2])*3600
-    ms = float(t1[2: 4])*60
-    s = float( t1[4::])
+    hs = float(t1[0: 2]) * 3600
+    ms = float(t1[2: 4]) * 60
+    s = float(t1[4::])
     t1s = hs + ms + s
 
-    time_diff = t1s-t0s
+    time_diff = t1s - t0s
     return time_diff
+
+
 def _funFit(x, a, b, c):
-    fun = -np.exp(-a*(x-b)) + c
+    fun = -np.exp(-a * (x - b)) + c
     return fun
+
+
 def _curvFit(param, x, rms_nm):
     from scipy.optimize import curve_fit
     pp, pcov = curve_fit(_funFit, x, rms_nm, param)
     fit = _funFit(x, *pp)
     return pp, fit
+
 
 def piston_noise(data_file_path):
     '''
@@ -537,28 +550,29 @@ def analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=N
 #     print('Creating cube 600')
 #     image600 = req_check.robustImageFromDataSet(600, data_file_path, offset)
 
-    image_list = [image50, image100, image300]#, image600]
+    image_list = [image50, image100, image300]  # , image600]
     slop_list, diff_piston_list, roc_list, rms31, rms500 = fromImagesToReq(image_list, None, step)
 
-    x = np.array([50,100,300])#,600])
-    #GRAFICO STD IMAGES
-    y = np.array([image50.std(),image100.std(),image300.std()])#,image600.std()])
+    x = np.array([50, 100, 300])  # ,600])
+    # GRAFICO STD IMAGES
+    y = np.array([image50.std(), image100.std(), image300.std()])  # ,image600.std()])
     plotAndSave(x, y, 'sqrt(n_frames)', 'rms_image [m]', dove, 'std.png')
-    #GRAFICO SLOPE
+    # GRAFICO SLOPE
     y = np.array(slop_list)
     plotAndSave(x, y, 'sqrt(n_frames)', 'rms_slope [arcsec]', dove, 'slope.png')
-    #GRAFICO DIFF PISTON
+    # GRAFICO DIFF PISTON
     y = np.array(diff_piston_list)
     plotAndSave(x, y, 'sqrt(n_frames)', 'diff_piston [m]', dove, 'diff_piston.png')
-    #GRAFICO ROC
+    # GRAFICO ROC
     y = np.array(roc_list)
     plotAndSave(x, y, 'sqrt(n_frames)', 'roc [m]', dove, 'roc.png')
-    #GRAFICO RMS 31 MM
+    # GRAFICO RMS 31 MM
     y = np.array(rms31)
     plotAndSave(x, y, 'sqrt(n_frames)', 'rms_31mm [m]', dove, 'rms_31mm.png')
-    #GRAFICO RMS 500 MM
+    # GRAFICO RMS 500 MM
     y = np.array(rms500)
     plotAndSave(x, y, 'sqrt(n_frames)', 'rms_500mm [m]', dove, 'rms_500mm.png')
+
 
 def fromImagesToReq(image_list, pscale=None, step=None, n_patches=None):
     slop_list = []
@@ -580,20 +594,21 @@ def fromImagesToReq(image_list, pscale=None, step=None, n_patches=None):
         rms500.append(req_check.test243(image, 0.1, pscale, step, n_patches))
     return slop_list, diff_piston_list, roc_list, rms31, rms500
 
+
 def plotAndSave(x, y, xlabel, ylabel, dove, image_name):
-    plt.figure(figsize=(10,6))
+    plt.figure(figsize=(10, 6))
     plt.plot(np.sqrt(x), y, '-o')
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
     tt = dove.split('/')[-1]
-    plt.title('%s' %tt)
+    plt.title('%s' % tt)
     name = os.path.join(dove, image_name)
     if os.path.isfile(name):
         os.remove(name)
     plt.savefig(name)
 
-
 ######## Sensori PT #######
+
 
 def PT_calibration(n_meas):
     '''
@@ -622,11 +637,12 @@ def PT_calibration(n_meas):
         temp_list = temp.get_value()
         temp_vector = np.array(temp_list.get_value())
 
-        fits_file_name = os.path.join(dove, 'temperature_%04.fits' %i)
+        fits_file_name = os.path.join(dove, 'temperature_%04.fits' % i)
         pyfits.writeto(fits_file_name, temp_vector)
 
-        print('Misura %04d' %i)
+        print('Misura %04d' % i)
     return dove
+
 
 def analyzer_PT_meas(tt):
     '''
@@ -635,7 +651,7 @@ def analyzer_PT_meas(tt):
     tt: string
         tracking number folder
     '''
-    #tt = '20200911_142702'
+    # tt = '20200911_142702'
     from m4.ground import smooth_function
 
     folder = config.PT_ROOT_FOLDER
@@ -651,16 +667,16 @@ def analyzer_PT_meas(tt):
         hduList = pyfits.open(os.path.join(name, t))
         temp = hduList[0].data
         matrix[i,:] = temp
-        i = i+1
+        i = i + 1
 
     matrixDiff = matrix - matrix[0,:]
-    i=0
+    i = 0
     for i in range(OpcUaParameters.num_PT_sensor):
-        ss = smooth_function.smooth(matrixDiff[:,i],9)
-        matrix_s[:,i] = ss
-        i=i+1
+        ss = smooth_function.smooth(matrixDiff[:, i], 9)
+        matrix_s[:, i] = ss
+        i = i + 1
 
-    t = np.arange(0,2*len(list),2)
-    plt.plot(t, matrix_s/100)
-    plt.xlabel('Time [s]'); plt.ylabel('Temperature [C]'); 
+    t = np.arange(0, 2 * len(list), 2)
+    plt.plot(t, matrix_s / 100)
+    plt.xlabel('Time [s]'); plt.ylabel('Temperature [C]');
     plt.title('PT Calibration')

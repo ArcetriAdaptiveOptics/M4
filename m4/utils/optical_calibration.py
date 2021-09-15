@@ -37,7 +37,6 @@ class OpticalCalibration():
         """ Creates the path where to save measurement data"""
         return fold_name.CALIBRATION_ROOT_FOLDER
 
-
     def measureCalibrationMatrix(self, who, command_amp_vector, n_push_pull,
                                  n_frames, old_or_new):
         '''
@@ -68,7 +67,7 @@ class OpticalCalibration():
         tt : string
             tracking number
         '''
-        #self._ott = ott
+        # self._ott = ott
         self._nPushPull = n_push_pull
         self._commandAmpVector = command_amp_vector
         self._who = who
@@ -85,6 +84,9 @@ class OpticalCalibration():
         self._saveCMat(dove)
         self._measureAndStore(who, self._commandList, n_push_pull, dove, n_frames)
         return self._tt
+
+    def getCommandMatrix(self):
+        return self._commandMatrix
 
     def analyzerCalibrationMeasurement(self, tt, mask_index):
         '''
@@ -103,11 +105,11 @@ class OpticalCalibration():
                          reconstructor
         '''
         a = OpticalCalibration.loadCommandMatrixFromFits(tt)
-        #cubo non normalizzato
+        # cubo non normalizzato
         a.createCube(tt, 0)
         cube = a.getCube()
 
-        ima = cube[:,:,0]
+        ima = cube[:,:, 0]
         from m4.utils.roi import ROI
         r = ROI()
         roi = r.roiGenerator(ima)
@@ -119,7 +121,7 @@ class OpticalCalibration():
         fits_file_name = os.path.join(dove, 'InteractionMatrix.fits')
         pyfits.writeto(fits_file_name, self._intMat, overwrite=True)
 
-        #cubo normalizzato
+        # cubo normalizzato
         if a._old_or_new == 1:
             a.createCube(tt)
             cube_norm = a.getCube()
@@ -131,52 +133,52 @@ class OpticalCalibration():
     def _measureAndStore(self, who, command_list, n_push_pull, dove, n_frames):
         if who == 0:
             vec_push_pull = np.array((1, -1))
-            #mis = (len(command_list)-2) * n_push_pull * vec_push_pull.size
+            # mis = (len(command_list)-2) * n_push_pull * vec_push_pull.size
             par0 = self._ott.parabola.getPosition()
             rm0 = self._ott.referenceMirror.getPosition()
             for k in range(n_push_pull):
-                for i in range(len(command_list)-2):
-                    j = (len(command_list)-2)*k *2
-                    mis = np.array([j , j +1])
-                    if i==0:
+                for i in range(len(command_list) - 2):
+                    j = (len(command_list) - 2) * k * 2
+                    mis = np.array([j , j + 1])
+                    if i == 0:
                         pcmd = np.array(command_list[i])
                         for v in range(vec_push_pull.size):
                             par1 = pcmd * vec_push_pull[v]
                             print(par1)
-                            self._ott.parabola.setPosition(par0+par1)
+                            self._ott.parabola.setPosition(par0 + par1)
                             masked_ima = self._interf.acquire_phasemap(n_frames)
-                            name = 'Frame_%04d.fits' %(2*i+mis[v])
+                            name = 'Frame_%04d.fits' % (2 * i + mis[v])
                             print(name)
                             self._interf.save_phasemap(dove, name, masked_ima)
                             self._ott.parabola.setPosition(par0)
-                    elif i==1 or i==2:
-                        if i==1:
-                            l=i
+                    elif i == 1 or i == 2:
+                        if i == 1:
+                            l = i
                         else:
-                            l=i+1
+                            l = i + 1
                         pcmd = np.array(command_list[l])
-                        rcmd = np.array(command_list[l+1])
+                        rcmd = np.array(command_list[l + 1])
                         for v in range(vec_push_pull.size):
                             par1 = pcmd * vec_push_pull[v]
                             rm1 = rcmd * vec_push_pull[v]
-                            self._ott.parabola.setPosition(par0+par1)
-                            if np.count_nonzero(rm1) !=0:
-                                self._ott.referenceMirror.setPosition(rm0+rm1)
+                            self._ott.parabola.setPosition(par0 + par1)
+                            if np.count_nonzero(rm1) != 0:
+                                self._ott.referenceMirror.setPosition(rm0 + rm1)
                             print(par1, rm1)
                             masked_ima = self._interf.acquire_phasemap(n_frames)
-                            name = 'Frame_%04d.fits' %(2*i+mis[v])
+                            name = 'Frame_%04d.fits' % (2 * i + mis[v])
                             print(name)
                             self._interf.save_phasemap(dove, name, masked_ima)
                             self._ott.parabola.setPosition(par0)
                             self._ott.referenceMirror.setPosition(rm0)
                     else:
-                        rcmd = np.array(command_list[i+2])
+                        rcmd = np.array(command_list[i + 2])
                         for v in range(vec_push_pull.size):
                             rm1 = rcmd * vec_push_pull[v]
-                            self._ott.referenceMirror.setPosition(rm0+rm1)
+                            self._ott.referenceMirror.setPosition(rm0 + rm1)
                             print(rm1)
                             masked_ima = self._interf.acquire_phasemap(n_frames)
-                            name = 'Frame_%04d.fits' %(2*i+mis[v])
+                            name = 'Frame_%04d.fits' % (2 * i + mis[v])
                             print(name)
                             self._interf.save_phasemap(dove, name, masked_ima)
                             self._ott.referenceMirror.setPosition(rm0)
@@ -185,9 +187,8 @@ class OpticalCalibration():
         elif who == 2:
             pass
         elif who == 3:
-            #m4 calib
+            # m4 calib
             pass
-
 
     def _createCommandMatrix(self, who, command_amp_vector, old_or_new):
         '''
@@ -232,34 +233,34 @@ class OpticalCalibration():
         old_or_new = 0 for new (mixed), 1 for old (not mixed)
         '''
         if old_or_new == 0:
-            #crea matrice 5 x 5
+            # crea matrice 5 x 5
             command_matrix = np.zeros((command_amp_vector.size, command_amp_vector.size))
             for i in range(command_amp_vector.shape[0]):
                 j = i
-                if i==1 or i==2:
-                    command_matrix[i,j] = command_amp_vector[i]
-                    command_matrix[i,j+2] = OttParameters.par_rm_coef_for_coma_measuremets*command_amp_vector[i]
+                if i == 1 or i == 2:
+                    command_matrix[i, j] = command_amp_vector[i]
+                    command_matrix[i, j + 2] = OttParameters.par_rm_coef_for_coma_measuremets * command_amp_vector[i]
                 else:
-                    command_matrix[i,j] = command_amp_vector[i]
+                    command_matrix[i, j] = command_amp_vector[i]
         elif old_or_new == 1:
             command_matrix = np.zeros((command_amp_vector.size, command_amp_vector.size))
             for i in range(command_amp_vector.shape[0]):
-                command_matrix[i,i] = command_amp_vector[i]
+                command_matrix[i, i] = command_amp_vector[i]
 
-        #crea i comandi
+        # crea i comandi
         command_list = []
         for i in range(command_matrix.shape[0]):
-            if i==1 or i==2:
+            if i == 1 or i == 2:
                 cmd = np.zeros(6)
-                cmd[dofIndex_vector[i]] = command_matrix[i,i]
+                cmd[dofIndex_vector[i]] = command_matrix[i, i]
                 command_list.append(cmd)
                 cmd1 = np.zeros(6)
-                cmd1[dofIndex_vector[i+2]] = command_matrix[i,i+2]
+                cmd1[dofIndex_vector[i + 2]] = command_matrix[i, i + 2]
                 command_list.append(cmd1)
             else:
-                cmd_amp = command_matrix[i,i]
+                cmd_amp = command_matrix[i, i]
                 cmd = np.zeros(6)
-                cmd[dofIndex_vector[i]] = command_matrix[i,i]
+                cmd[dofIndex_vector[i]] = command_matrix[i, i]
                 command_list.append(cmd)
         return command_matrix, command_list
 
@@ -329,9 +330,9 @@ class OpticalCalibration():
         fold = os.path.join(OpticalCalibration._storageFolder(), tt)
         for i in range(self._commandAmpVector.shape[0]):
             for j in range(self._nPushPull):
-                k = 2*i + 2*self._commandAmpVector.shape[0]*j
-                name_pos = 'Frame_%04d.fits' %k
-                name_neg = 'Frame_%04d.fits' %(k+1)
+                k = 2 * i + 2 * self._commandAmpVector.shape[0] * j
+                name_pos = 'Frame_%04d.fits' % k
+                name_neg = 'Frame_%04d.fits' % (k + 1)
                 file = os.path.join(fold, name_pos)
                 hduList = pyfits.open(file)
                 image_pos = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
@@ -374,9 +375,9 @@ class OpticalCalibration():
     def _createInteractionMatrixAndReconstructor(self, mask):
         coefList = []
         for i in range(self._cube.shape[2]):
-            ima = np.ma.masked_array(self._cube[:,:,i], mask=mask)
-            coef, mat = zernike.zernikeFit(ima, np.arange(10)+1)
-            #z= np.array([2,3,4,7,8])
+            ima = np.ma.masked_array(self._cube[:,:, i], mask=mask)
+            coef, mat = zernike.zernikeFit(ima, np.arange(10) + 1)
+            # z= np.array([2,3,4,7,8])
             z = np.array([1, 2, 3, 6, 7])
             final_coef = np.zeros(z.shape[0])
             final_coef = coef[z]
@@ -388,7 +389,6 @@ class OpticalCalibration():
             self._intMat.T[j] = coefList[j]
 
         self._rec = np.linalg.pinv(self._intMat)
-
 
     def getInteractionMatrix(self, mask):
         '''
