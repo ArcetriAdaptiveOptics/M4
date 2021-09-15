@@ -57,7 +57,7 @@ def start_log(logging_level):
 
 ####### Allineamento Torre ########
 
-ott, interf = start.create_ott()
+ott, interf = start.create_ott('/mnt/data/M4/Data/SYSCONFData/Config.yaml')
 a = Alignment(ott, interf)
 
 def ott_alignment_calibration(n_frames, commandAmpVector, nPushPull, old_or_new, move):
@@ -538,7 +538,7 @@ def analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=N
 #     image600 = req_check.robustImageFromDataSet(600, data_file_path, offset)
 
     image_list = [image50, image100, image300]#, image600]
-    slop_list, diff_piston_list, roc_list, rms31, rms500 = fromImagesToReq(image_list, step)
+    slop_list, diff_piston_list, roc_list, rms31, rms500 = fromImagesToReq(image_list, None, step)
 
     x = np.array([50,100,300])#,600])
     #GRAFICO STD IMAGES
@@ -566,13 +566,14 @@ def fromImagesToReq(image_list, pscale=None, step=None, n_patches=None):
     roc_list = []
     rms31 = []
     rms500 = []
+    print(pscale)
     for image in image_list:
         print('Producing slope')
         slop_list.append(req_check.test242(image, pscale))
         print('Producing differential piston')
         diff_piston_list.append(req_check.diffPiston(image))
         print('Producing roc')
-        roc_list.append(req_check.test283(image, pscale))
+        roc_list.append(req_check.test283(image, pscale, step))
         print('Producing rms31')
         rms31.append(req_check.test243(image, 0.015, pscale, step, n_patches))
         print('Producing rms51')

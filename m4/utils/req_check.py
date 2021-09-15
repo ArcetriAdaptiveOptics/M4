@@ -47,6 +47,7 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
     else:
         ps = 1/pixelscale
 
+    print(ps)
     raggio_px = radius_m/ps
 
     nn = image.compressed().shape[0]
@@ -315,7 +316,8 @@ def test242(image, pscale=None):
     else:
         pscale = pscale
 
-    sp = slope(image, pscale)
+    print(pscale)
+    sp = slope(image, pscale) #pscale [px/m]
     # sp in pixel * fattore di conversione da rad ad arcsec
     slope_arcsec = sp * 206265
     rms = slope_arcsec.std()
@@ -376,10 +378,11 @@ def test283(image, pscale=None, step=None):
     mask = np.invert(image.mask).astype(int)
     x, y, r, xx, yy = geo.qpupil(mask)
     if pscale is None:
-        pscale = r * (1/0.17)
+        pscale = r * (1/0.17) #pscale[px/m]
     else:
         pscale = pscale
 
+    print(pscale)
     roc, list_ima, result_vect = patches_analysis(image, 0.04, pscale, step)
     return roc
 
