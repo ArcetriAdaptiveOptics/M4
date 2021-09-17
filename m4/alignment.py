@@ -35,36 +35,32 @@ class Alignment():
     def __init__(self, ott, interf):
         """The constructor """
         self._logger = logging.getLogger('ALIGNMENT:')
-        self._cal = OpticalCalibration(ott, interf)
-        self._roi = ROI()
         self._ott = ott
         self._interf = interf
+        self._cal = OpticalCalibration(ott, interf)
+        self._tt = None
+        self._roi = ROI()
 
-    def ott_calibration(self, n_frames, command_amp_vector, n_push_pull, old_or_new, mask_index):
+    def ott_calibration(self, n_frames, command_amp_vector, n_push_pull):
         '''Calibration of the optical tower
 
         Parameters
         ----------
-                command_amp_vector: numpy array
-                                  vector containing the movement values
-                                  of the 5 degrees of freedom
-                n_push_pull: int
-                            number of push pull for each degree of freedom
-                mask_index: int
-                            3 for the simulatore's RM mask (non ruotate 2)
-                            0 for standard mask in real ott
-                old_or_new: int
-                        0 for new (mixed), 1 for old (not mixed)
+        command_amp_vector: numpy array
+                          vector containing the movement values
+                          of the 5 degrees of freedom
+        n_push_pull: int
+                    number of push pull for each degree of freedom
+        n_frames: int
+                number of frame for 4D measurement
 
         Returns
         -------
-                tt: string
-                    tracking number of measurements made
+        tt: string
+            tracking number of measurements made
         '''
-        self._tt = self._cal.measureCalibrationMatrix(0, command_amp_vector,
-                                                      n_push_pull, n_frames, old_or_new)
-        int_mat, rec = self._cal.analyzerCalibrationMeasurement(self._tt,
-                                                                mask_index)
+        self._tt = self._cal.measureAndAnalysisCalibrationMatrix(0, command_amp_vector,
+                                                                 n_push_pull, n_frames)
         return self._tt
 
     def ott_alignment(self, n_images, move, intMatModesVector=None, commandId=None,

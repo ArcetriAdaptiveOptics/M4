@@ -15,12 +15,14 @@ from m4.configuration.ott_parameters import OtherParameters
 
 class OpticalCalibration():
     """
-    Class for the optical calibration
+    Class for the optical calibration and interaction matrix creation
 
     HOW TO USE IT::
 
         from m4.utils.optical_calibration import OpticalCalibration
-        cal = OpticalCalibration()
+        cal = OpticalCalibration(ott, interf)
+        cal.measureAndAnalysisCalibrationMatrix(who, command_amp_vector,
+                                            n_push_pull, n_frames)
     """
 
     def __init__(self, ott, interf):
@@ -30,7 +32,7 @@ class OpticalCalibration():
         self._ott = ott
         #start
         self._nPushPull = None
-        self._commandAmpVector = None 
+        self._commandAmpVector = None
         self._who = None
         #from calibration
         self._dofIndex = None
@@ -47,36 +49,26 @@ class OpticalCalibration():
         """ Creates the path where to save measurement data"""
         return fold_name.CALIBRATION_ROOT_FOLDER
 
-    def measureAndAnalysisCalibrationMatrix(self, who, command_amp_vector, n_push_pull,
-                                            n_frames):
+    def measureAndAnalysisCalibrationMatrix(self, who, command_amp_vector,
+                                            n_push_pull, n_frames):
         '''
         Parameters
         ----------
-                ott = object
-                    tower
-                who: int
-                     number indicating the optical element
-                    on which to perform the calibration
-                    0 for mixing
-                    1 for parable
-                    2 for reference mirror
-                    3 for deformable mirror
-                command_amp_vector: numpy array
-                                    vector containing the amplitude of the
-                                    commands to give degrees of freedom to
-                                    calibrate
-                n_push_pull: int
-                            number of push pull
-                n_frames: int
-                        number of frame for 4D measurement
-                mixed_method: int
-                        0 for new (mixed), 1 for old (not mixed)
-
-        Other Parameters
-        ----------------
-            mixed_method: boolean
-                standard = True for mixed method (use par_rm_coef_for_coma_measuremets)
-                False for not mixed
+        who: int
+             number indicating the optical element
+            on which to perform the calibration
+            0 for mixing
+            1 for parable
+            2 for reference mirror
+            3 for deformable mirror
+        command_amp_vector: numpy array
+                            vector containing the amplitude of the
+                            commands to give degrees of freedom to
+                            calibrate
+        n_push_pull: int
+                    number of push pull
+        n_frames: int
+                number of frame for 4D measurement
 
         Returns
         -------
@@ -116,7 +108,7 @@ class OpticalCalibration():
         from m4.utils.roi import ROI
         r = ROI()
         roi = r.roiGenerator(ima)
-        if  fold_name.simulated==1:
+        if  fold_name.simulated == 1:
             mask_index = OtherParameters.MASK_INDEX_SIMULATORE
         else:
             mask_index = OtherParameters.MASK_INDEX_TOWER
@@ -124,9 +116,21 @@ class OpticalCalibration():
         return mask
 
     def getCommandMatrix(self):
+        '''
+        Returns
+        -------
+        commandMatrix: numpy array
+                    command matrix used for calibration
+        '''
         return self._commandMatrix
 
     def getMask(self):
+        '''
+        Returns
+        -------
+        mask: numpy array
+            mask used for interaction matrix calculation
+        '''
         return self._mask
 
     def _measureAndStore(self, command_list, dove, n_frames):
@@ -138,7 +142,7 @@ class OpticalCalibration():
             for k in range(self._nPushPull):
                 for i in range(len(command_list) - 2):
                     j = (len(command_list) - 2) * k * 2
-                    mis = np.array([j , j + 1])
+                    mis = np.array([j, j + 1])
                     if i == 0:
                         pcmd = np.array(command_list[i])
                         for v in range(vec_push_pull.size):
@@ -191,12 +195,11 @@ class OpticalCalibration():
 
     def _logAndDefineDovIndexForCommandMatrixCreation(self, who):
         '''
-            args:
-                who=
-                    0 per mixing
-                    1 per parable
-                    2 per reference mirror
-                    3 per deformable mirror
+        who:
+            0 per mixing
+            1 per parable
+            2 per reference mirror
+            3 per deformable mirror
         '''
         if who == 0:
             self._who = 'PAR + RM'
@@ -218,11 +221,6 @@ class OpticalCalibration():
 
     def _createCmatAndCmdList(self, command_amp_vector, dofIndex_vector):
         '''
-        Parameters
-        ---------
-        mixed_method: boolean
-                True for mixed method (use par_rm_coef_for_coma_measuremets)
-                False for not mixed
         '''
         # crea matrice 5 x 5
         command_matrix = np.zeros((command_amp_vector.size, command_amp_vector.size))
@@ -289,13 +287,13 @@ class OpticalCalibration():
 
         Parameters
         ----------
-                tt: string
-                    tracking number
+        tt: string
+            tracking number
 
         Returns
         -------
-                theObject: ibjecct
-                         opt_calibration class object
+        theObject: ibjecct
+                 opt_calibration class object
         """
         ott = None
         interf = None
@@ -369,7 +367,7 @@ class OpticalCalibration():
         coefList = []
         self._cube = self.getCube()
         for i in range(self._cube.shape[2]):
-            ima = np.ma.masked_array(self._cube[:,:, i], mask=mask)
+            ima = np.ma.masked_array(self._cube[:, :, i], mask=mask)
             coef, mat = zernike.zernikeFit(ima, np.arange(10) + 1)
             # z= np.array([2,3,4,7,8])
             z = np.array([1, 2, 3, 6, 7])
@@ -385,11 +383,6 @@ class OpticalCalibration():
 
     def getInteractionMatrix(self):
         '''
-        Parameters
-        ----------
-        mask: numpy array
-            reference mirror mask
-
         Returns
         -------
         intMat: numpy array

@@ -57,37 +57,40 @@ def start_log(logging_level):
 ####### Allineamento Torre ########
 
 
-ott, interf = start.create_ott('/mnt/data/M4/Data/SYSCONFData/Config.yaml')
-a = Alignment(ott, interf)
+# ott, interf = start.create_ott('/mnt/data/M4/Data/SYSCONFData/Config.yaml')
+# a = Alignment(ott, interf)
 
 
-def ott_alignment_calibration(n_frames, commandAmpVector, nPushPull, old_or_new, move):
+def ott_alignment_calibration(ott, interf, n_frames, commandAmpVector, nPushPull, move):
     '''
     Parameters
     ----------------
-            command_amp_vector: numpy array
-                                  vector containing the movement values
-                                  of the 5 degrees of freedom
-            n_push_pull: int
-                        number of push pull for each degree of freedom
-            move: int
-                1 to move the tower
-                other to show matrix delta command
-            old_or_new: int
-                        0 for new (mixed), 1 for old (not mixed)
+    ott: object
+        tower
+    interf: object
+        interferometer
+    command_amp_vector: numpy array
+                          vector containing the movement values
+                          of the 5 degrees of freedom
+    n_push_pull: int
+                number of push pull for each degree of freedom
+    move: int
+        1 to move the tower
+        other to show matrix delta command
+
 
     Returns
     -------
             tt_tower: string
                     calibration measurement
     '''
+    a = Alignment(ott, interf)
     print('PAR + RM calibration')
     if move == 1:
-        tt_tower = a.ott_calibration(n_frames, commandAmpVector, nPushPull, old_or_new, 0)
-    # mask_index = 3 per il simulatore  e 0 per la mott
+        tt_tower = a.ott_calibration(n_frames, commandAmpVector, nPushPull)
         return tt_tower
     else:
-        mat, cmdList = a._cal._createCommandMatrix(0, commandAmpVector, old_or_new)
+        mat, cmdList = a._cal._createCommandMatrix(0, commandAmpVector)
         plt.clf()
         plt.imshow(mat, origin='lower')
         plt.colorbar()
