@@ -132,6 +132,9 @@ class OpticalCalibration():
             mask used for interaction matrix calculation
         '''
         return self._mask
+    
+    def getWho(self):
+        return self._who
 
     def _measureAndStore(self, command_list, dove, n_frames):
         if self._who == 'PAR + RM':
