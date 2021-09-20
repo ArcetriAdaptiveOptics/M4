@@ -9,7 +9,6 @@ import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from m4.configuration import config_folder_names as fold_name
-from m4.configuration import config_folder_names as conf
 from m4.utils.optical_calibration import OpticalCalibration
 from m4.ground import zernike
 from m4.configuration.ott_parameters import OttParameters, OtherParameters
@@ -24,8 +23,8 @@ class OpticalAlignment():
     HOW TO USE IT::
 
         from m4.utils.optical_alignment import opt_alignment
-        al = OpticalAlignment(tt)
-        command = al.opt_align(ott, piston=None)
+        al = OpticalAlignment(tt, ott, interf)
+        par_command, rm_command, dove = al.opt_aligner(n_images, zernike_to_be_corrected, dof_command_id)
     """
 
     def __init__(self, tt_cal, ott, interf):
@@ -54,7 +53,7 @@ class OpticalAlignment():
         return fold_name.ALIGNMENT_ROOT_FOLDER
 
 
-    def opt_align(self, n_images, intMatModesVector=None, commandId=None):
+    def opt_aligner(self, n_images, zernike_to_be_corrected=None, dof_command_id=None):
         """
         Parameters
         ----------
@@ -79,9 +78,9 @@ class OpticalAlignment():
         m4_position = self._ott.m4.getPosition()
         self._logger.info('Calculation of the alignment command for %s',
                           self.tt_cal)
-        self._intMatModesVector = intMatModesVector
-        self._commandId = commandId
-        self._intMat, self._rec, self._cmat = self._selectModesInIntMatAndRecConstruction(intMatModesVector, commandId)
+        self._intMatModesVector = zernike_to_be_corrected
+        self._commandId = dof_command_id
+        self._intMat, self._rec, self._cmat = self._selectModesInIntMatAndRecConstruction(zernike_to_be_corrected, dof_command_id)
 
         img = self._interf.acquire_phasemap(n_images)
         name = 'StartImage.fits'
@@ -90,13 +89,13 @@ class OpticalAlignment():
         os.makedirs(dove)
         self._interf.save_phasemap(dove, name, img)
 
-        if self._who=='PAR + RM':
+        if self._who == 'PAR + RM':
             cmd, self._zernikeVectorSelected, total_zernike_vector = self._commandGenerator(img)
-            self.par_command, self.rm_command = self._reorgCmdForParAndRm(cmd, commandId)
+            self.par_command, self.rm_command = self._reorgCmdForParAndRm(cmd, dof_command_id)
             self._saveData(dove, par_position, rm_position)
             self._alignmentLog(total_zernike_vector, self.tt_al)
             return self.par_command, self.rm_command, dove
-        elif self._who=='M4':
+        elif self._who == 'M4':
             pass
             #cmd, zernike_vector = self._commandGenerator(img)
             #m4_command, zernike_vector_selected, total_zernike_vector = self._reorgCmdForM4(cmd)
@@ -201,7 +200,7 @@ class OpticalAlignment():
                             (zernike modes 2,3,4,7,8)
                 final_coef_selected = zernike selected using intMatModesVector (zernike2control)
         """
-        if  conf.simulated ==1:
+        if  fold_name.simulated == 1:
             mask_index = OtherParameters.MASK_INDEX_SIMULATORE
         else:
             mask_index = OtherParameters.MASK_INDEX_TOWER
@@ -231,10 +230,10 @@ class OpticalAlignment():
         pyfits.append(fits_file_name, self._rec, header)
         pyfits.append(fits_file_name, self._cmat, header)
         if self._intMatModesVector is None:
-            self._intMatModesVector = np.array([0,1,2,3,4,5])
+            self._intMatModesVector = np.array([0, 1, 2, 3, 4, 5])
         pyfits.append(fits_file_name, self._intMatModesVector, header)
         if self._commandId is None:
-            self._commandId = np.array([0,1,2,3,4,5])
+            self._commandId = np.array([0, 1, 2, 3, 4, 5])
         pyfits.append(fits_file_name, self._commandId, header)
         pyfits.append(fits_file_name, self._zernikeVectorSelected, header)
 
@@ -255,7 +254,7 @@ class OpticalAlignment():
 
     @staticmethod
     def loadAlignmentObjectFromFits(tt):
-        """ Creates the object using information contained in calibration fits file
+        """ Creates the object using information contained in alignment fits file
 
         Parameters
         ----------
