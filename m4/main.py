@@ -35,9 +35,8 @@ from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from m4.configuration import config_folder_names as config
 from m4.noise_functions import Noise
-from m4.alignment import Alignment
+from m4.ott_calibrator_and_aligner import OttCalibAndAlign
 from m4.ground import logger_set_up as lsu
-from m4.configuration import start
 from m4.utils import req_check
 from m4.configuration.ott_parameters import OttParameters, OpcUaParameters
 
@@ -61,7 +60,7 @@ def start_log(logging_level):
 # a = Alignment(ott, interf)
 
 
-def ott_alignment_calibration(ott, interf, n_frames, commandAmpVector, nPushPull, move):
+def ott_calibrator(ott, interf, n_frames, command_amp_vector, nPushPull, move):
     '''
     Parameters
     ----------------
@@ -74,8 +73,8 @@ def ott_alignment_calibration(ott, interf, n_frames, commandAmpVector, nPushPull
                           of the 5 degrees of freedom
     n_push_pull: int
                 number of push pull for each degree of freedom
-    move: int
-        1 to move the tower
+    move: boolean
+        True to move the tower
         other to show matrix delta command
 
 
@@ -84,20 +83,22 @@ def ott_alignment_calibration(ott, interf, n_frames, commandAmpVector, nPushPull
             tt_tower: string
                     calibration measurement
     '''
-    a = Alignment(ott, interf)
+    c_a = OttCalibAndAlign(ott, interf)
     print('PAR + RM calibration')
-    if move == 1:
-        tt_tower = a.ott_calibration(n_frames, commandAmpVector, nPushPull)
+    if move is True:
+        tt_tower = c_a.ott_calibration(n_frames, command_amp_vector, nPushPull)
         return tt_tower
     else:
-        mat, cmdList = a._cal._createCommandMatrix(0, commandAmpVector)
+        mat, cmdList = c_a._cal._createCmatAndCmdList(command_amp_vector,
+                                                      np.append(OttParameters.PARABOLA_DOF,
+                                                                OttParameters.RM_DOF))
         plt.clf()
         plt.imshow(mat, origin='lower')
         plt.colorbar()
         return mat
 
 
-def ott_alignment(tt_tower, n_images, move=1, intMatModesVector=None, commandId=None):
+def ott_aligner(ott, interf, tt_calib, n_images, move, zernike_to_be_corrected=None, dof_command_id=None):
     '''
     Parameters
     ----------
@@ -105,8 +106,8 @@ def ott_alignment(tt_tower, n_images, move=1, intMatModesVector=None, commandId=
             calibration measurement to use for alignment
     n_images: int
             number of interferometers frames
-    move: int
-        1 to move the tower
+    move: boolean
+        True to move the tower
         other to show commands
     Other Parameters
     ----------
@@ -116,75 +117,20 @@ def ott_alignment(tt_tower, n_images, move=1, intMatModesVector=None, commandId=
     commandId: numpy array
             array containing the number of degrees of freedom to be commanded
     '''
+
     print('Ott alignemnt')
-    par_cmd, rm_cmd = a.ott_alignment(n_images, move, intMatModesVector, commandId, tt_tower)
+    c_a = OttCalibAndAlign(ott, interf)
+    par_cmd, rm_cmd = c_a.ott_alignment( move, tt_calib, n_images,
+                      zernike_to_be_corrected, dof_command_id)
     print('comandi separati')
     print(par_cmd)
     print(rm_cmd)
-    # check
-#    if move == 1:
-# 	    for i in range(OttParameters.PARABOLA_DOF.size):
-# 	        if par_cmd[OttParameters.PARABOLA_DOF[i]] < OttParameters.parab_max_displacement[OttParameters.PARABOLA_DOF[i]]:
-# 	            print('ok')
-# 	        else:
-# 	            raise OSError('Par command to large')
-# 	    for i in range(OttParameters.RM_DOF.size):
-# 	        if rm_cmd[OttParameters.RM_DOF[i]] < OttParameters.rm_max_displacement[OttParameters.RM_DOF[i]]:
-# 	            print('ok')
-# 	        else:
-# 	            raise OSError('Rm command to large')
+
+#### Calibrazione ed allineamneto per m4 (in cartellaBella.m4.toImplement.ott_calibrator_and_aligner ###
 
 
-def m4_alignment_calibration(nFrames, commandAmpVector_ForM4Calibration=None,
-                     nPushPull_ForM4Calibration=None):
-    """
-    Other Parameters
-    ----------------
-            commandAmpVector_ForM4Calibration: numpy array
-                                            amplitude to be applied to m4
-            nPushPull_ForM4Calibration: int
-                                        number of push pull for m4 dof
-            nFrames = int
-                    frames for 4D
-
-    Returns
-    -------
-            tt_m4: string
-                    calibration measurement
-    """
-    print('M4 calibration')
-    if commandAmpVector_ForM4Calibration is None:
-        commandAmpVector_ForM4Calibration = np.array([5.0e-06, 5.0e-06])
-    if nPushPull_ForM4Calibration is None:
-        nPushPull_ForM4Calibration = 3
-    tt_m4, zCoefComa, comaSurface = a.m4_calibration(commandAmpVector_ForM4Calibration,
-                                                     nPushPull_ForM4Calibration, 5, nFrames)
-    return tt_m4
-
-
-def m4_alignment(tt_m4):
-    '''
-    Parameters
-    ----------
-    tt_m4: string
-            calibration measurement to use for alignment
-    '''
-    print('M4 alignment')
-    zCoefComa = a._readZcoef(tt_m4)
-    cmd_m4 = a.m4_alignment(zCoefComa, tt_m4)
-    print(cmd_m4)
-    # check
-    # applicare comando
-    for i in range(OttParameters.M4_DOF.size):
-        if cmd_m4[OttParameters.M4_DOF[i]] < OttParameters.m4_max_displacement[OttParameters.M4_DOF[i]]:
-            print('ok')
-        else:
-            raise OSError('Command to large')
-    # a._write_m4(cmd_m4)
-    return cmd_m4
-
-
-def rotation_and_optical_axis_alignment(start_point, end_point, n_points):
+### Rotation for alignment
+def rotation_and_optical_axis_alignment(ott, interf, start_point, end_point, n_points):
     '''
     Parameters
     ----------
@@ -610,9 +556,8 @@ def plotAndSave(x, y, xlabel, ylabel, dove, image_name):
         os.remove(name)
     plt.savefig(name)
 
+
 ######## Sensori PT #######
-
-
 def PT_calibration(n_meas):
     '''
     Parameters

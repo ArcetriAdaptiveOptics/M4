@@ -1,6 +1,7 @@
 '''
 Authors
-  - C. Selmi:  written in 2019
+  - C. Selmi: written in 2019
+              modified in 2021
 '''
 
 import os
@@ -220,6 +221,10 @@ class OpticalAlignment():
             final_coef_selected = np.zeros(self._intMatModesVector.size)
             for i in range(self._intMatModesVector.size):
                 final_coef_selected[i] = all_final_coef[self._intMatModesVector[i]]
+        return all_final_coef, final_coef_selected
+
+    def getZernikeWhitAlignerObjectOptions(self, image):
+        all_final_coef, final_coef_selected = self._zernikeCoeffCalculator(image)
         return all_final_coef, final_coef_selected
 
     def _saveData(self, dove, par_position, rm_position):

@@ -1,6 +1,7 @@
 '''
 Authors
   - C. Selmi:  written in 2019
+               modified in 2021
 '''
 import os
 import logging
