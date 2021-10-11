@@ -566,7 +566,6 @@ def fromImagesToReq(image_list, pscale=None, step=None, n_patches=None):
     roc_list = []
     rms31 = []
     rms500 = []
-    print(pscale)
     for image in image_list:
         print('Producing slope')
         slop_list.append(req_check.test242(image, pscale))

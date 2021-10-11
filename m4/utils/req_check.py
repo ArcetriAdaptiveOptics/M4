@@ -14,6 +14,7 @@ from m4.ground import zernike
 from scipy.ndimage.interpolation import shift
 from m4.ground import read_data
 from m4.configuration import config_folder_names as config
+#from matplotlib import pyplot as plt
 
 def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None):
     '''
@@ -105,6 +106,7 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
                 new_ima = tiptilt_fit(ima)
                 list_ima.append(new_ima)
                 result_list.append(np.std(new_ima))
+        #plt.imshow(image + ima*3)
 
     result_vect = np.array(result_list)
     result_sort = np.copy(result_vect)
@@ -316,7 +318,6 @@ def test242(image, pscale=None):
     else:
         pscale = pscale
 
-    print(pscale)
     sp = slope(image, pscale) #pscale [px/m]
     # sp in pixel * fattore di conversione da rad ad arcsec
     slope_arcsec = sp * 206265
@@ -382,7 +383,6 @@ def test283(image, pscale=None, step=None):
     else:
         pscale = pscale
 
-    print(pscale)
     roc, list_ima, result_vect = patches_analysis(image, 0.04, pscale, step)
     return roc
 
