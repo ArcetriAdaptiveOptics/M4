@@ -12,6 +12,8 @@ from m4.ground import tracking_number_folder
 IP = '192.168.1.18'
 PORT = 7100 #ma anche 7110
 
+#vecchio IP dal file conf di Lorenzo 192.168.29.159
+
 class PointerAligner():
     '''
     https://github.com/ArcetriAdaptiveOptics/pysilico
