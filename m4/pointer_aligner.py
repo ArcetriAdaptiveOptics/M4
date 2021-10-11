@@ -22,7 +22,7 @@ class PointerAligner():
         Parameters
         ----------
         pysilico: object
-            camera forframe acquisition
+            camera for frame acquisition
         poniterId: string
             'NGS' or 'LGS'
         '''
@@ -105,7 +105,7 @@ class PointerAligner():
         images = self._camera.getFutureFrames(numberOfReturnedImages,
                                      numberOfFramesToAverageForEachImage=1)
                                     #timeout
-        return images
+        return images.ToNumpyArray()
 
     def centroid_calculator(self, data):
         '''
