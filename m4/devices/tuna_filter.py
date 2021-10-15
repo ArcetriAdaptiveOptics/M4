@@ -33,9 +33,17 @@ class TunaFilt:
         else:
             return nw
 
-    def connect(self, port='/dev/ttyUSB1', speed=115200):
+    def connect(self, port=None, speed=None):
+        if port is None:
+            port = self.currfilt.port
+        if speed is None:
+            speed = self.currfilt.baud_rate
+
         if self.ser is None:
-            self.ser = serial.Serial(port, speed)
+            self.ser = serial.Serial(port, speed,
+                                     bytesize=self.currfilt.data_bits,
+                                     parity=self.currfilt.parity,
+                                     stopbits=self.currfilt.stop_bits)
             out = self.get_status()
             return out
         else:
@@ -64,7 +72,7 @@ class TunaFilt:
 
     def reset(self):
         cmd = bytes(self.currfilt.reset, 'utf-8')
-        tmp = self.ser.write(cmd) #modo di esprire la @ con python3 (con b ritorna quello di python2)
+        tmp = self.ser.write(cmd)
         nw = self._pollSerial()
         out = self.ser.read(self.ser.inWaiting()) 
         return out
@@ -108,6 +116,10 @@ class CurrentFilterReader():
         return self._currFilt['READ_WL']
 
     @property
+    def reset(self):
+        return self._currFilt['RESET']
+
+    @property
     def read_status(self):
         return self._currFilt['READ_STATUS']
 
@@ -118,3 +130,27 @@ class CurrentFilterReader():
     @property
     def escape(self):
         return self._currFilt['ESCAPE']
+
+    @property
+    def port(self):
+        return self._currFilt['PORT']
+
+    @property
+    def baud_rate(self):
+        return self._currFilt['SPEED']
+
+    @property
+    def data_bits(self):
+        return self._currFilt['DATABITS']
+
+    @property
+    def parity(self):
+        return self._currFilt['PARITY']
+
+    @property
+    def stop_bits(self):
+        return self._currFilt['STOPBITS']
+
+    @property
+    def flow_controll(self):
+        return self._currFilt['FLOWCONTROLL']
