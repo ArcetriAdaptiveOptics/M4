@@ -1,0 +1,6 @@
+WRITE_WL: "W%5.3f\r"
+READ_WL: "W?\r"
+RESET: "R1\r"
+READ_STATUS: "@"
+BUSY_CHECK: "!"
+ESCAPE: chr(27)
