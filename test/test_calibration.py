@@ -18,12 +18,12 @@ class TestCalc(unittest.TestCase):
 
     @unittest.skip('Salvataggio e lettura dati')
     def testCalibration(self):
-        old_or_new = 1
+        mixed_method = 1
         command_amp_vector = np.ones(5)
         n_push_pull = 1
         n_frames = 1
         mask_index = 4 #4 per il simulatore
         tt = self.cal.measureCalibrationMatrix(0, command_amp_vector,
-                                               n_push_pull, n_frames, old_or_new)
+                                               n_push_pull, n_frames, mixed_method)
         int_mat, rec = self.cal.analyzerCalibrationMeasurement(tt,
                                                                 mask_index)
