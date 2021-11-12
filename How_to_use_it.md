@@ -51,7 +51,7 @@ vecchio file in CartellaBella
   	- spe, freq = an.getSpecAndFreq() 
   	- data = an.datah5
   	- an.plot_power_spectrum()
-  	- an.readAndShow()
- Nota: l'analisi non salva nulla
+  	- an.readAndShow()  
+Nota: l'analisi non salva nulla
  
  ## Attività su mOTT ##
