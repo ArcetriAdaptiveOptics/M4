@@ -92,7 +92,7 @@ def calibrate_PARAndRM(ott, interf, n_frames, command_amp_vector, nPushPull):
     '''
     c_a = OttCalibAndAlign(ott, interf)
     print('PAR + RM calibration')
-    tt_tower = c_a.ott_calibration(n_frames, command_amp_vector, nPushPull)
+    tt_tower = c_a.par_and_rm_calibrator(n_frames, command_amp_vector, nPushPull)
     return tt_tower
 
 def showCommandForParAndRmBeforeAlignement(ott, interf, tt_cal, n_images,
@@ -129,7 +129,7 @@ def align_PARAndRM(ott, interf, tt_calib, n_images,
     Other Parameters
     ----------
     intMatModesVecor: numpy array
-                    None is equal to np.array([0,1,2,3,4,5])
+                    None is equal to np.array([0,1,2,3,4])
                     for tip, tilt, fuoco, coma, coma
     commandId: numpy array
             array containing the number of degrees of freedom to be commanded
@@ -137,13 +137,14 @@ def align_PARAndRM(ott, interf, tt_calib, n_images,
     move = True
     print('Ott alignemnt')
     c_a = OttCalibAndAlign(ott, interf)
-    par_cmd, rm_cmd, dove = c_a.ott_alignment(move, tt_calib, n_images,
+    par_cmd, rm_cmd, dove = c_a.par_and_rm_aligner(move, tt_calib, n_images,
                                               zernike_to_be_corrected,
                                               dof_command_id)
+    tt_align = dove.split('/')[-1]
     print('comandi separati')
     print(par_cmd)
     print(rm_cmd)
-    return dove
+    return tt_align
 
 #### Calibrazione ed allineamneto per m4 (in cartellaBella.m4.toImplement.ott_calibrator_and_aligner ###
 def calibrate_M4():

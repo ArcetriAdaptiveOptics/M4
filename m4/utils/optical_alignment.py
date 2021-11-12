@@ -63,16 +63,21 @@ class OpticalAlignment():
 
         Other Parameters
         ----------
-            intMatModesVecor: numpy array
+            zernike_to_be_corrected: numpy array
                         None is equal to np.array([0,1,2,3,4,5])
                         for tip, tilt, fuoco, coma, coma
             commandId: numpy array
                     array containing the number of degrees of freedom to be commanded
 
+        nota: gli zernike possono essere [0,1], [0,1,3,4], [0,1,2,3,4]  
+             e vanno in coppia con i dof [3,4], [1,2,3,4], [0,1,2,3,4]
+
         Returns
         -------
                 cmd: numpy array
                     final delta command for the optical alignment
+                dove: string
+                    file path containing measurements
         """
         par_position = self._ott.parabola.getPosition()
         rm_position = self._ott.referenceMirror.getPosition()
@@ -128,6 +133,9 @@ class OpticalAlignment():
                     for tip, tilt, fuoco, coma, coma
         commandId: numpy array
                 array containing the number of degrees of freedom to be commanded
+
+        nota: gli zernike possono essere [0,1], [0,1,3,4], [0,1,2,3,4]  
+             e vanno in coppia con i dof [3,4], [1,2,3,4], [0,1,2,3,4]
         '''
         intMat = self.cal.getInteractionMatrix()
         cmat = self.cal.getCommandMatrix()
@@ -175,18 +183,28 @@ class OpticalAlignment():
                 rm_command[dofIndex[i]] = cmd[i]
 
         return par_command, rm_command
-    
+
     def getReorganizatedCommandForParAndRm(self, cmd, commandId=None):
+        '''
+        Function that returns the command reorganized according to
+        the selected degrees of freedom
+        '''
         par_command, rm_command = self._reorgCmdForParAndRm(cmd, commandId)
         return par_command, rm_command
 
     def _commandGenerator(self, img):
         """
         args:
-            img = image
+            img: numpy array
+                image
 
         returns:
-            cmd = command for the dof
+            cmd: numpy array
+                command not ready to apply
+            zernike_vector_selected: numpy array
+                vector of zernike to be corrected (selected by zernike2control)
+            total_zernike_vector: numpy array
+                all five zernike measured before the selection by total_zernike_vector
         """
         total_zernike_vector, zernike_vector_selected = self._zernikeCoeffCalculator(img)
         print('zernike:')
@@ -228,6 +246,14 @@ class OpticalAlignment():
         return all_final_coef, final_coef_selected
 
     def getZernikeWhitAlignerObjectOptions(self, image):
+        '''
+        Returns
+        -------
+        all_final_coef: numpy array
+            zernike five coefficients on the image (zernike modes 2,3,4,7,8)
+        final_coef_selected: numpy array
+            zernike selected using intMatModesVector (zernike2control)
+        '''
         all_final_coef, final_coef_selected = self._zernikeCoeffCalculator(image)
         return all_final_coef, final_coef_selected
 
@@ -252,10 +278,10 @@ class OpticalAlignment():
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, vector)
         if self._intMatModesVector is not None:
-            fits_file_name = os.path.join(dove, 'intMatModesVector')
+            fits_file_name = os.path.join(dove, 'intMatModesVector.fits')
             pyfits.writeto(fits_file_name, self._intMatModesVector)
         if self._commandId is not None:
-            fits_file_name = os.path.join(dove, 'commandId')
+            fits_file_name = os.path.join(dove, 'commandId.fits')
             pyfits.writeto(fits_file_name, self._commandId)
         name = 'Zernike.fits'
         fits_file_name = os.path.join(dove, name)

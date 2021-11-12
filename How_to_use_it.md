@@ -19,5 +19,21 @@ vecchio file in CartellaBella
       Tutti gli interferogrammi acquisiti
 
  2) __Allineamento della parabola e specchio di riferimento__
-    - Il comando per effettuare l'allineamento è main.
+ 	- Prima di allineare è possibile calcolare i comandi di allineamento di parabola e specchio di riferimento tramite il comando
+ 		_main.showCommandForParAndRmBeforeAlignement(ott, interf, tt_cal, n_images, zernike_to_be_corrected, dof_command_id)_ dove:  
+ 		ott e interf sono gli oggetti precedentemente creati nello start up  
+ 		tt_cal è la stringa contenente il tracking number di calibrazione che si vuole utilizzare  
+ 		n_images corrisponde al numero di frame da acquisire con l'interferometro per l'immagine da allineare  
+ 		zernike_to_be_corrected è il vettore che indica quali modi di zernike correggere (np.array([0,1,2,3,4]) indicano rispettivamente tip, tilt, fuoco, coma, coma)  
+ 		dof_command_id è il vettore che indica con quali gradi di libertà si vuole fare la correzione  
+ 		NOTA: gli zernike possono essere [0,1], [0,1,3,4], [0,1,2,3,4]  
+ 			e vanno in coppia con i dof [3,4], [1,2,3,4], [0,1,2,3,4]
+    - Il comando per effettuare l'allineamento è _main.align_PARAndRM(ott, interf, tt_calib, n_images, zernike_to_be_corrected=None, dof_command_id=None)  
+    	la funzione stampa i comandi applicati a PAR e RM, gli zernike calcolati e restituisce il traching number della misura di allineamento appena eseguita
+    	che contiene:  
+    	AlignmentInfo.fits in cui sono scritte tutte le info usate per allineare  
+    	le stesse informazioni separte (commandId.fits, IntMatModeVector.fits che sono gli zernike_to_be_corrected, PositionAndDeltaCommand.fits 
+    	e Zernike.fits che contiene gli zernike selezionati prima della correzione)
+    	Immagini prima e dopo l'allinemanto
+ 
  	

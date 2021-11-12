@@ -20,11 +20,11 @@ class OttCalibAndAlign():
 
         from m4.alignment import OttCalibAndAlign
         from m4.configuration import start
-        ott, interf = start.create_ott()
-        a = OttCalibAndAlign(ott, interf)
-        #for the optical tower
-        tt = a.ott_calibration(commandAmpVector, nPushPull, maskIndex)
-        par_cmd, rm_cmd = a.ott_alignement(tt)
+        ott, interf = start.create_ott(conf='.../youConf.yaml')
+        ac = OttCalibAndAlign(ott, interf)
+        #for PAR+RM
+        tt_calib = a.par_and_rm_calibrator(commandAmpVector, nPushPull, maskIndex)
+        par_cmd, rm_cmd = a.par_and_rm_aligner(tt_calib)
     """
 
     def __init__(self, ott, interf):
@@ -36,7 +36,7 @@ class OttCalibAndAlign():
         self._tt = None
         self._roi = ROI()
 
-    def ott_calibration(self, n_frames, command_amp_vector, n_push_pull):
+    def par_and_rm_calibrator(self, n_frames, command_amp_vector, n_push_pull):
         '''Calibration of the optical tower
 
         Parameters
@@ -58,7 +58,7 @@ class OttCalibAndAlign():
                                                                  n_push_pull, n_frames)
         return self._tt
 
-    def ott_alignment(self, move, tt_cal, n_images,
+    def par_and_rm_aligner(self, move, tt_cal, n_images,
                       zernike_to_be_corrected=None, dof_command_id=None):
         """
         Parameters

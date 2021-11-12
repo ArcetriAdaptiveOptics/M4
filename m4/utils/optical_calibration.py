@@ -13,6 +13,10 @@ from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.configuration.ott_parameters import OtherParameters
 
+WHO_PAR_AND_RM = 'PAR+RM'
+WHO_PARABLE = 'PAR'
+WHO_RM = 'RM'
+WHO_M4 = 'M4'
 
 class OpticalCalibration():
     """
@@ -24,6 +28,7 @@ class OpticalCalibration():
         cal = OpticalCalibration(ott, interf)
         cal.measureAndAnalysisCalibrationMatrix(who, command_amp_vector,
                                             n_push_pull, n_frames)
+
     """
 
     def __init__(self, ott, interf):
@@ -55,14 +60,14 @@ class OpticalCalibration():
         '''
         Parameters
         ----------
-        who: int
-             number indicating the optical element
+        who: string
+            string indicating the optical element
             on which to perform the calibration
-            0 for mixing
-            1 for parable
-            2 for reference mirror
-            3 for deformable mirror
-        command_amp_vector: numpy array
+            cal.WHO_PAR_AND_RM for parabola and reference mirror
+            cal.WHO_PARABLE for parabola (non implemented)
+            cal.WHO_RM for reference mirror (not implemented)
+            cal.WHO_M4 for deformable mirror
+        command_amp_vector: numpy array [mm]
                             vector containing the amplitude of the
                             commands to give degrees of freedom to
                             calibrate
@@ -200,21 +205,21 @@ class OpticalCalibration():
     def _logAndDefineDovIndexForCommandMatrixCreation(self, who):
         '''
         who:
-            0 per mixing
-            1 per parable
-            2 per reference mirror
-            3 per deformable mirror
+            cal.WHO_PAR_AND_RM for parabola and reference mirror
+            cal.WHO_PARABLE for parabola (non implemented)
+            cal.WHO_RM for reference mirror (not implemented)
+            cal.WHO_M4 for deformable mirror
         '''
-        if who == 0:
+        if who == 'PAR + RM':
             self._who = 'PAR + RM'
             self._dofIndex = np.append(OttParameters.PARABOLA_DOF, OttParameters.RM_DOF)
-        elif who == 1:
+        elif who == 'PAR':
             self._who = 'PAR'
             self._dofIndex = OttParameters.PARABOLA_DOF
-        elif who == 2:
+        elif who == 'RM':
             self._who = 'RM'
             self._dofIndex = OttParameters.RM_DOF
-        elif who == 3:
+        elif who == 'M4':
             self._who = 'M4'
             self._dofIndex = OttParameters.M4_DOF
         else:
@@ -223,9 +228,27 @@ class OpticalCalibration():
         self._logger.info('Creation of the command matrix for %s', self._who)
         return self._dofIndex
 
-    
+
     def createCmatAndCmdList(self, command_amp_vector, dofIndex_vector):
         '''
+        Function to allow the creation of the matrix of commands and the
+        decomposition of them in a list of commands to assign to devices
+
+        Parameters
+        ----------
+        command_amp_vector: numpy array [mm]
+            vector containing the amplitude of the
+            commands to give degrees of freedom to calibrate
+        dofIndex_vector: numpy array
+            vector containing position of Dof to move in standard vector of
+            six position for command devices
+
+        Returns
+        -------
+        command_matrix: numpy array
+            matrix 5x5 composed using command_amp_vector values and relationship between them
+        command_list: list
+            decomposition of command matrix in list of command
         '''
         # crea matrice 5 x 5
         command_matrix = np.zeros((command_amp_vector.size, command_amp_vector.size))
@@ -297,7 +320,7 @@ class OpticalCalibration():
 
         Returns
         -------
-        theObject: ibjecct
+        theObject: object
                  opt_calibration class object
         """
         ott = None
