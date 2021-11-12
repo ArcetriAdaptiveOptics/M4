@@ -29,11 +29,29 @@ vecchio file in CartellaBella
  		NOTA: gli zernike possono essere [0,1], [0,1,3,4], [0,1,2,3,4]  
  			e vanno in coppia con i dof [3,4], [1,2,3,4], [0,1,2,3,4]
     - Il comando per effettuare l'allineamento è _main.align_PARAndRM(ott, interf, tt_calib, n_images, zernike_to_be_corrected=None, dof_command_id=None)  
-    	la funzione stampa i comandi applicati a PAR e RM, gli zernike calcolati e restituisce il traching number della misura di allineamento appena eseguita
-    	che contiene:  
-    	AlignmentInfo.fits in cui sono scritte tutte le info usate per allineare  
-    	le stesse informazioni separte (commandId.fits, IntMatModeVector.fits che sono gli zernike_to_be_corrected, PositionAndDeltaCommand.fits 
-    	e Zernike.fits che contiene gli zernike selezionati prima della correzione)
-    	Immagini prima e dopo l'allinemanto
- 
+    - La funzione stampa i comandi applicati a PAR e RM, gli zernike calcolati e restituisce il traching number della misura di allineamento appena eseguita
+	   	che contiene:  
+	   	AlignmentInfo.fits in cui sono scritte tutte le info usate per allineare  
+	   	le stesse informazioni separte (commandId.fits, IntMatModeVector.fits che sono gli zernike_to_be_corrected, PositionAndDeltaCommand.fits 
+	   	e Zernike.fits che contiene gli zernike selezionati prima della correzione)
+	   	Immagini prima e dopo l'allinemanto
+
+ ## Accelerometri ##
+ __Acquisizione dati__
+ - ott.accelerometrs.acquireData(recording_seconds)
+ 	Nota: se non specificato acquisisce per 5 secondi
+ - L'acquisizione restituisce il tracking number della misura appena effettuata dove sono salvati:
+ 	i dati, dt, plc_id, directions, time, plc_range, plc_totcounts, sensitivity
  	
+ 
+ __Analisi dati__
+ - from m4.analyzers.accelerometers_data_analyzer import AccelerometersDataAnalyzer
+ - an = AccelerometersDataAnalyzer(tt)
+ - Dopodichè si hanno a disposizione diversi modi di accedere/vedere i dati
+  	- spe, freq = an.getSpecAndFreq() 
+  	- data = an.datah5
+  	- an.plot_power_spectrum()
+  	- an.readAndShow()
+ Nota: l'analisi non salva nulla
+ 
+ ## Attività su mOTT ##

@@ -46,4 +46,4 @@ class FakeAccelerometers(BaseAccelerometers):
         hf.attrs['DIR'] = ['X', 'Z', 'Y', 'Z']
         hf.attrs['TIME'] = signal[:, 0]
         hf.close()
-        return name
+        return tt
