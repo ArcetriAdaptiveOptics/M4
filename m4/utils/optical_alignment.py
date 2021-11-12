@@ -81,7 +81,7 @@ class OpticalAlignment():
                           self.tt_cal)
         self._intMatModesVector = zernike_to_be_corrected
         self._commandId = dof_command_id
-        self._intMat, self._rec, self._cmat = self._selectModesInIntMatAndRecConstruction(zernike_to_be_corrected, dof_command_id)
+        self._intMat, self._rec, self._cmat = self.selectModesInIntMatAndRecConstruction(zernike_to_be_corrected, dof_command_id)
 
         img = self._interf.acquire_phasemap(n_images)
         name = 'StartImage.fits'
@@ -118,7 +118,7 @@ class OpticalAlignment():
 #         file.write('%s \n ************\n' %commandId)
         file.close()
 
-    def _selectModesInIntMatAndRecConstruction(self, zernike2control=None,
+    def selectModesInIntMatAndRecConstruction(self, zernike2control=None,
                                                commandId=None):
         '''
         Other Parameters
@@ -174,6 +174,10 @@ class OpticalAlignment():
             else:
                 rm_command[dofIndex[i]] = cmd[i]
 
+        return par_command, rm_command
+    
+    def getReorganizatedCommandForParAndRm(self, cmd, commandId=None):
+        par_command, rm_command = self._reorgCmdForParAndRm(cmd, commandId)
         return par_command, rm_command
 
     def _commandGenerator(self, img):

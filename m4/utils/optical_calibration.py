@@ -84,7 +84,7 @@ class OpticalCalibration():
 
         #measurement
         dofIndex_vector = self._logAndDefineDovIndexForCommandMatrixCreation(who)
-        self._commandMatrix, self._commandList = self._createCmatAndCmdList(command_amp_vector,
+        self._commandMatrix, self._commandList = self.createCmatAndCmdList(command_amp_vector,
                                                                             dofIndex_vector)
         self._measureAndStore(self._commandList, dove, n_frames)
         #analysis
@@ -133,7 +133,7 @@ class OpticalCalibration():
             mask used for interaction matrix calculation
         '''
         return self._mask
-    
+
     def getWho(self):
         return self._who
 
@@ -223,7 +223,8 @@ class OpticalCalibration():
         self._logger.info('Creation of the command matrix for %s', self._who)
         return self._dofIndex
 
-    def _createCmatAndCmdList(self, command_amp_vector, dofIndex_vector):
+    
+    def createCmatAndCmdList(self, command_amp_vector, dofIndex_vector):
         '''
         '''
         # crea matrice 5 x 5

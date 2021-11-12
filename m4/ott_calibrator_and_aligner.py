@@ -101,7 +101,7 @@ class OttCalibAndAlign():
         all_final_coef, final_coef_selected = aliner.getZernikeWhitAlignerObjectOptions(image)
         self._alignmentLog(aliner, all_final_coef, dof_command_id, move)
         self._interf.save_phasemap(dove, name, image)
-        return par_cmd, rm_cmd
+        return par_cmd, rm_cmd, dove
 
     def _alignmentLog(self, aligner, total_coef, dof_command_id, move):
         fits_file_name = os.path.join(aligner._storageFolder(), 'AlignmentLog.txt')

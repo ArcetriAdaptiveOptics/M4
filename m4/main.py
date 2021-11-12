@@ -55,24 +55,35 @@ def start_log(logging_level):
 # ott, interf = start.create_ott('/mnt/data/M4/Data/SYSCONFData/Config.yaml')
 # a = Alignment(ott, interf)
 
+def showCommandMatrixBeforeCalibration(command_amp_vector):
+    from m4.utils.optical_calibration import OpticalCalibration
+    cal = OpticalCalibration('nulla', 'niente')
+    mat, cmdList = cal.createCmatAndCmdList(command_amp_vector,
+                                            np.append(OttParameters.PARABOLA_DOF,
+                                                      OttParameters.RM_DOF))
+    plt.clf()
+    plt.imshow(mat, origin='lower')
+    plt.colorbar()
+    return mat
 
-def ott_calibrator(ott, interf, n_frames, command_amp_vector, nPushPull, move):
+def calibrate_PARAndRM(ott, interf, n_frames, command_amp_vector, nPushPull):
     '''
+    Function to be used to calibrate parabola and reference mirror dof
+
     Parameters
     ----------------
     ott: object
         tower
     interf: object
         interferometer
-    command_amp_vector: numpy array
-                          vector containing the movement values
-                          of the 5 degrees of freedom
+    command_amp_vector: numpy array [mm]
+                    vector containing the movement values
+                    of the 5 degrees of freedom
+                    [par_piston, par_tip, par_tilt, rm_tip, rm_tilt]
+                note: the application of par_tip corresponds to the application of rm_tip=-2.05*par_tip
+                    same for par_tilt
     n_push_pull: int
                 number of push pull for each degree of freedom
-    move: boolean
-        True to move the tower
-        other to show matrix delta command
-
 
     Returns
     -------
@@ -81,20 +92,30 @@ def ott_calibrator(ott, interf, n_frames, command_amp_vector, nPushPull, move):
     '''
     c_a = OttCalibAndAlign(ott, interf)
     print('PAR + RM calibration')
-    if move is True:
-        tt_tower = c_a.ott_calibration(n_frames, command_amp_vector, nPushPull)
-        return tt_tower
-    else:
-        mat, cmdList = c_a._cal._createCmatAndCmdList(command_amp_vector,
-                                                      np.append(OttParameters.PARABOLA_DOF,
-                                                                OttParameters.RM_DOF))
-        plt.clf()
-        plt.imshow(mat, origin='lower')
-        plt.colorbar()
-        return mat
+    tt_tower = c_a.ott_calibration(n_frames, command_amp_vector, nPushPull)
+    return tt_tower
 
+def showCommandForParAndRmBeforeAlignement(ott, interf, tt_cal, n_images,
+                                           zernike_to_be_corrected=None, dof_command_id=None):
+    from m4.utils.optical_alignment import OpticalAlignment
+    al = OpticalAlignment(tt_cal, ott, interf)
+    print('Calculation of the alignment command for %s' %tt_cal)
+    intMat, rec, cmat = al.selectModesInIntMatAndRecConstruction(zernike_to_be_corrected, dof_command_id)
 
-def ott_aligner(ott, interf, tt_calib, n_images, move, zernike_to_be_corrected=None, dof_command_id=None):
+    image = interf.acquire_phasemap(n_images)
+    al._intMatModesVector = zernike_to_be_corrected
+    total_zernike_vector, zernike_vector_selected = al.getZernikeWhitAlignerObjectOptions(image)
+    print('zernike:')
+    print(zernike_vector_selected)
+    M = np.dot(cmat, rec)
+    cmd = - np.dot(M, zernike_vector_selected)
+    par_command, rm_command = al.getReorganizatedCommandForParAndRm(cmd, dof_command_id)
+    print('comandi separati')
+    print(par_command)
+    print(rm_command)
+
+def align_PARAndRM(ott, interf, tt_calib, n_images,
+                   zernike_to_be_corrected=None, dof_command_id=None):
     '''
     Parameters
     ----------
@@ -113,17 +134,23 @@ def ott_aligner(ott, interf, tt_calib, n_images, move, zernike_to_be_corrected=N
     commandId: numpy array
             array containing the number of degrees of freedom to be commanded
     '''
-
+    move = True
     print('Ott alignemnt')
     c_a = OttCalibAndAlign(ott, interf)
-    par_cmd, rm_cmd = c_a.ott_alignment( move, tt_calib, n_images,
-                      zernike_to_be_corrected, dof_command_id)
+    par_cmd, rm_cmd, dove = c_a.ott_alignment(move, tt_calib, n_images,
+                                              zernike_to_be_corrected,
+                                              dof_command_id)
     print('comandi separati')
     print(par_cmd)
     print(rm_cmd)
+    return dove
 
 #### Calibrazione ed allineamneto per m4 (in cartellaBella.m4.toImplement.ott_calibrator_and_aligner ###
+def calibrate_M4():
+    pass
 
+def align_M4():
+    pass
 
 ### Rotation for alignment
 def rotation_and_optical_axis_alignment(ott, interf, start_point, end_point, n_points):
