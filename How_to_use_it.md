@@ -55,3 +55,30 @@ vecchio file in CartellaBella
 Nota: l'analisi non salva nulla
  
  ## Attività su mOTT ##
+ 
+ #### Rotazione della torre per allineamento asse ottico ####
+__Acquisizione dati__
+- La funzione ha come obiettivo quello di ottenere gli interferegrammi a diversi valori di angolo di rotazione della torre
+e, da questi, calcolare i valori di tip e tilt presenti. I vettori ottenuti (tip = [tipa at angle0, tip at angle1...],
+tilt = [tilt at angle0, tilt at angle1 ...]) vengono utilizzati per fittare l'ellisse e restituire le coordinate del centro.
+- I comandi per eseguire la misura e l'analisi sono:
+	```
+	
+	from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
+    ro = RotOptAlign(ott, interf)
+    tt = ro.image_acquisition(start_point, end_point, n_points)
+    centro, axs, raggio = ro.data_analyzer()
+	```
+- Questi restituiscono l'oggetto _ro_, con cui è possibile rianalizzare o rivisualizzare i dati, il tracking number della misura effettuata
+  che contiene:  
+	Cube.fits che è il cubo delle immagini acquisite  
+	angle_list.txt che è lista degli angoli usati per la misura e
+	theta.fits, cioè la stessa lista di angoli in versione vettore
+  centro, axs e raggio corrispondono agli output del fitting dell'ellisse sui vettori di tip e tilt ottenuti con le misure effettuate
+- Per analizzare nuovamente una misura di cui si conosce il tracking number usare:
+	```
+	
+	from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
+	ro = RotOptAlign.reloadROObject(tt)
+	centro, axs, raggio = ro.data_analyzer()
+	```

@@ -5,28 +5,26 @@ Authors
 
 import os
 import time
-import numpy as np
 import logging
+import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
-from m4.utils import tip_tilt_interf_fit
 from m4.configuration import config_folder_names as fold_name
 from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.utils.parabola_identification import ParabolIdent
-from m4.noise_functions import Noise
-from m4.configuration.ott_parameters import OpcUaParameters
 
 class RotOptAlign():
     """
     Class for alignment data acquisition and analysis::
 
-        fom m4.configuration import start
-        ott = start.create_ott()
+        from m4.configuration import start
+        conf = '..../MyConfiguration.yaml'
+        ott, interf = start.create_ott(conf)
         from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
-        ro = RotOptAlign(ott)
+        ro = RotOptAlign(ott, interf)
         tt = ro.image_acquisition(start_point, end_point, n_points)
-        centro, axs, raggio = ro.data_analyzer(tt)
+        centro, axs, raggio = ro.data_analyzer()
     """
     def __init__(self, ott, interf):
         """The constructor """
@@ -34,49 +32,42 @@ class RotOptAlign():
         self._interf = interf
         self._ott = ott
         self._parab = ParabolIdent()
-        self._n = Noise()
+        self._cube = None
+        self._angles = None
+        self.tt = None
 
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
         return fold_name.ROT_OPT_ALIGN_ROOT_FOLDER
 
-    def _checkAngle(self, angle):
-        if angle <= OpcUaParameters.min_angle or angle >= OpcUaParameters.max_angle:
-            raise OSError(' The required angle is incorrect: %d' % angle)
-        else:
-            pass
-
     def image_acquisition(self, start_point, end_point, n_points):
         """
         Parameters
         ----------
-                start_point: int
-                            value of start angle
-                end_point: int
-                            value of end angle
-                n_points:int
-                        number of images desired
+        start_point: int [deg]
+                    absolute position in deg for the value of start angle
+        end_point: int [deg]
+                    absolute position in deg for the value of end angle
+        n_points:int
+                number of images desired
 
         Returns
         -------
-                tt: string
-                    tracking number of measurements
+        tt: string
+            tracking number of measurements
         """
         self._logger.info('Images acquisition')
-        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(RotOptAlign._storageFolder())
-
-        self._checkAngle(start_point)
-        self._checkAngle(end_point)
+        dove, self.tt = tracking_number_folder.createFolderToStoreMeasurements(RotOptAlign._storageFolder())
 
         total_angle = np.abs(end_point - start_point)/1.
-        self._ott.angle(start_point)
+        self._ott.angleRotator.setPosition(start_point)
         rot_angle = total_angle/n_points
         number_of_image = np.int(total_angle/rot_angle)
         angle_list = []
         self._cube = None
 
-        start_angle = self._ott.angle()
+        start_angle = self._ott.angleRotator.getPosition()
         if end_point < start_point:
             direction = -1
         elif end_point > start_point:
@@ -84,7 +75,7 @@ class RotOptAlign():
 
         for k in range(number_of_image+1):
             #start_angle = self.ott.angle()
-            self._ott.angle(start_angle + k*rot_angle*direction)
+            self._ott.angleRotator.setPosition(start_angle + k*rot_angle*direction)
             angle_list.append(start_angle + k*rot_angle*direction)
             time.sleep(5)
             masked_ima = self._interf.acquire_phasemap(1)
@@ -95,16 +86,12 @@ class RotOptAlign():
             else:
                 self._cube = np.ma.dstack((self._cube, masked_ima))
         self._saveCube(dove)
-        self._saveAngles(angle_list, tt)
-        return tt
+        self._angles = angle_list
+        self._saveAngles(self._angles, self.tt)
+        return self.tt
 
-    def data_analyzer(self, tt):
+    def data_analyzer(self):
         """
-        Parameters
-        ----------
-                tt: string
-                    tracking number of measurements
-
         Returns
         -------
             centro: numpy array
@@ -115,7 +102,7 @@ class RotOptAlign():
                     radius of the parabola circumference
         """
         self._logger.info('Images analysis')
-        cube = self._readCube(tt)
+        cube = self.getCube()
         tip, tilt = self._tipTiltCalculator(cube)
         self._plot(tip, tilt)
         centro, axs, raggio = self._parab._fitEllipse(tip, tilt)
@@ -152,6 +139,28 @@ class RotOptAlign():
         self._cube = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
         return self._cube
 
+    def getCube(self):
+        '''
+        Returns
+        -------
+        cube: numpy masked array
+            image acquired during the measurements
+        '''
+        if self._cube is None:
+            self._cube = self._readCube(self.tt)
+        return self._cube
+
+    def getAngles(self):
+        '''
+        Returns
+        -------
+        angles: numpy array
+            values of angles [deg] used during the measuremnts
+        '''
+        if self._angles is None:
+            self._angles = self._readTheta(self.tt)
+        return self._angles
+
     def _tipTiltCalculator(self, cube):
         coef_tilt_list = []
         coef_tip_list = []
@@ -168,35 +177,6 @@ class RotOptAlign():
         #fare il plot di tip, tilt (plot isometrico:stesse dimensioni x y)
         return tip, tilt
 
-    def singleImage(self, masked_ima=None):
-        """
-        On single image returns the coefficients of tip and tilt both in Zernike of Noll
-        and in units of the interferometer
-
-        Other Parameters
-        ---------------
-                masked_ima: numpy masked array
-                    if it is not passed acquires the interferometer
-
-        Returns
-        -------
-            tip_tilt: numpy array
-                    Zernike Noll coefficients
-            cc: numpy array
-                    Interferometers values
-        """
-        if masked_ima is None:
-            masked_ima = self._interf.acquire_phasemap(1)
-        else:
-            masked_ima = masked_ima
-        coef, mat = zernike.zernikeFit(masked_ima,
-                                       np.array([2, 3]))
-        tip = -coef[0]/(633e-9) *np.sqrt(2)
-        tilt = coef[1]/(633e-9) *np.sqrt(2)
-
-        cc = tip_tilt_interf_fit.fit(masked_ima)
-        return np.array([tip, tilt]), cc
-
     def _rotationMatrix(self, theta):
         rot_mat = np.zeros((2,2))
         rot_mat[0,0] = np.cos(theta)
@@ -204,3 +184,19 @@ class RotOptAlign():
         rot_mat[1,0] = np.sin(theta)
         rot_mat[1,1] = np.cos(theta)
         return rot_mat
+
+    @staticmethod
+    def reloadROObject(tt):
+        ''' Function used to create the rotation and optical alignment object
+        from tracking number
+
+        Parameters
+        ----------
+        tt: string
+            tracking number of measuremnts
+        '''
+        theObject = RotOptAlign('nulla', 'niente')
+        theObject.tt = tt
+        theObject._cube = theObject.getCube()
+        theObject._angles = theObject.getAngles()
+        return theObject

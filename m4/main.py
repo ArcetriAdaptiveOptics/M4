@@ -154,33 +154,7 @@ def align_M4():
     pass
 
 ### Rotation for alignment
-def rotation_and_optical_axis_alignment(ott, interf, start_point, end_point, n_points):
-    '''
-    Parameters
-    ----------
-            start_point: int
-                        value of start angle
-            end_point: int
-                        value of end angle
-            n_points:int
-                    number of images desired
-
-    Returns
-    -------
-        ro: object
-            rotation_and_optical_axis_alignment class object
-        tt: strig
-            tracking number of measurement
-    '''
-    from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
-    ro = RotOptAlign(ott, interf)
-
-    tt = ro.image_acquisition(start_point, end_point, n_points)
-
-    centro, axs, raggio = ro.data_analyzer(tt)
-    print(centro, axs, raggio)
-    # le immagini le fa l'analyzer
-    return ro, tt
+#tolto per usare direttamente la sua classe. Vecchia funzione in CartellaBella.copie.main
 
 
 ######### Misure di noise ##########
