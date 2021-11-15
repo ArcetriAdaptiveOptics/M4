@@ -3,12 +3,23 @@ vecchio file in CartellaBella
 ## Calibrazione ed allineamento OTT ##
  1) __Calibrazione della parabola con lo specchio di riferimento__
     - Scegliere un vettore di comandi con cui calibrare i gradi di libertà della parabola (PAR) e quello dello specchio di riferimento (RM).
+ 		 ```
+	 
  		  command_amp_vector = [par_piston, par_tip, par_tilt, rm_tip, rm_tilt] espressi in millimetri
+ 		  ```
  	    Nota: tenere presente che il metodo di calibrazione usato prevede che all'applicazione del comando par_tip corrisponda un'applicazione del comando rm_tip=-2.05*par_ti.
  		    stessa relazione sussiste tra par_tip ed rm_tip
     - Possibiltà di visualizzazione della matrice dei comandi di calibrazione prima dell'effetiva applicazione tramite il comando
- 		  _main.showCommandMatrixBeforeCalibration(command_amp_vector)_
-    - Il comando per effettuare la calibrazione è _main.calibrate_PARAndRM(ott, interf, n_frames, command_amp_vector, nPushPull)_ dove:  
+ 		  ```
+ 		  
+ 		  main.showCommandMatrixBeforeCalibration(command_amp_vector)
+ 		  ```
+    - Il comando per effettuare la calibrazione è
+      ```
+      
+      main.calibrate_PARAndRM(ott, interf, n_frames, command_amp_vector, nPushPull)
+      ```
+      dove:  
       ott e interf sono gli oggetti precedentemente creati nello start up  
       n_frame corrisponde al numero di frame da acquisire con l'interferometro per ogni misura da effettuare  
       command_amp_vector è il vettore da utilizzare per la calibrazione  
@@ -20,7 +31,11 @@ vecchio file in CartellaBella
 
  2) __Allineamento della parabola e specchio di riferimento__
  	- Prima di allineare è possibile calcolare i comandi di allineamento di parabola e specchio di riferimento tramite il comando
- 		_main.showCommandForParAndRmBeforeAlignement(ott, interf, tt_cal, n_images, zernike_to_be_corrected, dof_command_id)_ dove:  
+ 		```
+ 		
+ 		main.showCommandForParAndRmBeforeAlignement(ott, interf, tt_cal, n_images, zernike_to_be_corrected, dof_command_id)
+ 		```
+ 		dove:  
  		ott e interf sono gli oggetti precedentemente creati nello start up  
  		tt_cal è la stringa contenente il tracking number di calibrazione che si vuole utilizzare  
  		n_images corrisponde al numero di frame da acquisire con l'interferometro per l'immagine da allineare  
@@ -28,13 +43,22 @@ vecchio file in CartellaBella
  		dof_command_id è il vettore che indica con quali gradi di libertà si vuole fare la correzione  
  		NOTA: gli zernike possono essere [0,1], [0,1,3,4], [0,1,2,3,4]  
  			e vanno in coppia con i dof [3,4], [1,2,3,4], [0,1,2,3,4]
-    - Il comando per effettuare l'allineamento è _main.align_PARAndRM(ott, interf, tt_calib, n_images, zernike_to_be_corrected=None, dof_command_id=None)  
+    - Il comando per effettuare l'allineamento è
+    ```
+    
+    main.align_PARAndRM(ott, interf, tt_calib, n_images, zernike_to_be_corrected=None, dof_command_id=None)
+    ```
     - La funzione stampa i comandi applicati a PAR e RM, gli zernike calcolati e restituisce il traching number della misura di allineamento appena eseguita
 	   	che contiene:  
 	   	AlignmentInfo.fits in cui sono scritte tutte le info usate per allineare  
 	   	le stesse informazioni separte (commandId.fits, IntMatModeVector.fits che sono gli zernike_to_be_corrected, PositionAndDeltaCommand.fits 
 	   	e Zernike.fits che contiene gli zernike selezionati prima della correzione)
-	   	Immagini prima e dopo l'allinemanto
+	   	Immagini prima e dopo l'allineamento
+	   	
+3)__Calibrazione M4__
+
+4)__Allineamento M4__
+
 
  ## Accelerometri ##
  __Acquisizione dati__
@@ -56,11 +80,12 @@ Nota: l'analisi non salva nulla
  
  ## Attività su mOTT ##
  
- #### Rotazione della torre per allineamento asse ottico ####
+ ### Allineamento asse ottico e asse di rotazione meccanico ###
 __Acquisizione dati__
-- La funzione ha come obiettivo quello di ottenere gli interferegrammi a diversi valori di angolo di rotazione della torre
+- La funzione ha come obiettivo quello di ottenere interferegrammi a diversi valori di angolo di rotazione della torre
 e, da questi, calcolare i valori di tip e tilt presenti. I vettori ottenuti (tip = [tipa at angle0, tip at angle1...],
 tilt = [tilt at angle0, tilt at angle1 ...]) vengono utilizzati per fittare l'ellisse e restituire le coordinate del centro.
+In questo modo è possibile conoscere come muovere le viti dello spider per riallineare la L3.
 - I comandi per eseguire la misura e l'analisi sono:
 	```
 	
