@@ -112,3 +112,23 @@ In questo modo è possibile conoscere come muovere le viti dello spider per rial
 	centro, axs, raggio = ro.data_analyzer()
 	```
 NOTA: per maggiori informazioni fare riferimento anche alla seguente pagina wiki [WikiPage](https://redmine.ict.inaf.it/projects/adopt_oaa/wiki/MOTT-20200915)
+
+## Interferometro ##
+### 4D PhaseCam 6110 ###
+I comandi da utilizzare sono:
+```
+
+from m4.devices.i4d import I4D
+from m4.configuration.ott_parameters import Interferometer
+interf = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
+```
+
+the "interf" class contains all the commands documented by 4D. In particular:
+
+- interf.burstFramesToSpecificDirectory(directory, numberOfFrames)
+- interf.convertRawFramesInDirectoryToMeasurementsInDestinationDirectory(measurementsDirectory, rawFramesDirectory). 
+
+the "burst" instruction requires the full absolute destination path, including the folder to be created  
+the "convert" instruction requires the full absolute destination path, including the folder to be created and where to store the phasemaps
+
+NOTA: in Arcetri i4d_IP = '193.206.155.193' e i4d_port = 8011
