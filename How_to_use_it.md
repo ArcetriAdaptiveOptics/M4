@@ -1,19 +1,17 @@
-vecchio file in CartellaBella
-
 ## Calibrazione ed allineamento OTT ##
  1) __Calibrazione della parabola con lo specchio di riferimento__
     - Scegliere un vettore di comandi con cui calibrare i gradi di libertà della parabola (PAR) e quello dello specchio di riferimento (RM).
  		 ```
 	 
  		  command_amp_vector = [par_piston, par_tip, par_tilt, rm_tip, rm_tilt] espressi in millimetri
- 		  ```
- 	    Nota: tenere presente che il metodo di calibrazione usato prevede che all'applicazione del comando par_tip corrisponda un'applicazione del comando rm_tip=-2.05*par_ti.
- 		    stessa relazione sussiste tra par_tip ed rm_tip
+ 		  
+
+ 	NOTA: tenere presente che il metodo di calibrazione usato prevede che all'applicazione del comando par_tip corrisponda un'applicazione del comando rm_tip=-2.05*par_tip. Stessa relazione sussiste tra par_tilt ed rm_tilt.
     - Possibiltà di visualizzazione della matrice dei comandi di calibrazione prima dell'effetiva applicazione tramite il comando
  		  ```
  		  
  		  main.showCommandMatrixBeforeCalibration(command_amp_vector)
- 		  ```
+ 
     - Il comando per effettuare la calibrazione è
       ```
       
@@ -55,22 +53,28 @@ vecchio file in CartellaBella
 	   	e Zernike.fits che contiene gli zernike selezionati prima della correzione)
 	   	Immagini prima e dopo l'allineamento
 	   	
-3)__Calibrazione M4__
+3) __Calibrazione M4__
 
-4)__Allineamento M4__
+4) __Allineamento M4__
 
 
  ## Accelerometri ##
  __Acquisizione dati__
- - ott.accelerometrs.acquireData(recording_seconds)
- 	Nota: se non specificato acquisisce per 5 secondi
+ ```
+ 
+ ott.accelerometrs.acquireData(recording_seconds)
+```
+ Nota: se non specificato acquisisce per 5 secondi
  - L'acquisizione restituisce il tracking number della misura appena effettuata dove sono salvati:
  	i dati, dt, plc_id, directions, time, plc_range, plc_totcounts, sensitivity
  	
  
  __Analisi dati__
- - from m4.analyzers.accelerometers_data_analyzer import AccelerometersDataAnalyzer
- - an = AccelerometersDataAnalyzer(tt)
+ ```
+ 
+ from m4.analyzers.accelerometers_data_analyzer import AccelerometersDataAnalyzer
+ an = AccelerometersDataAnalyzer(tt)
+ ```
  - Dopodichè si hanno a disposizione diversi modi di accedere/vedere i dati
   	- spe, freq = an.getSpecAndFreq() 
   	- data = an.datah5
@@ -107,3 +111,4 @@ In questo modo è possibile conoscere come muovere le viti dello spider per rial
 	ro = RotOptAlign.reloadROObject(tt)
 	centro, axs, raggio = ro.data_analyzer()
 	```
+NOTA: per maggiori informazioni fare riferimento anche alla seguente pagina wiki [WikiPage](https://redmine.ict.inaf.it/projects/adopt_oaa/wiki/MOTT-20200915)
