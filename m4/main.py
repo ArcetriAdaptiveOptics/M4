@@ -147,3 +147,4 @@ def align_M4():
 
 
 ### ANALISI DEI REQUISITI ###
+#spostata in m4.requirements_checker

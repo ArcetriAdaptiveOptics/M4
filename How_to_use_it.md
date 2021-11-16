@@ -150,6 +150,22 @@ Nel caso in cui si voglia applicare l'analisi dei requisiti avando a disposizion
 ```
 NOTA: per maggiori informazioni fare riferimento anche alla seguente pagina wiki [WikiPage](https://redmine.ict.inaf.it/projects/adopt_oaa/wiki/MOTT-20210408)
 
+### Analisi del rumore ###
+Le funzione per l'analisi del rumore si ottengono con il comando _from m4 import noise_ e comprendono:  
+- noise.noise_vibrations(dataFilePath, numbersArray, tidyOrShuffle)  
+	Questa funzione analizza i file presenti nella cartella dataFilePath utilizzando l'algoritmo scritto per l'analisi delle funzioni di influenza
+	(con numero di push/pull pari a 6 e vettore di attuatori lungo nTotImagesInFolder / (template.size * nPushPull))
+	e utilizzando l'input tidyOrShuffle per determinare l'ordine di accoppiamento delle immagini.  
+	numbersArray è il vettore che indica tutte le lunghezze del vettore template che si vogliono utilizzare. 
+	Esempio: numbersArray = np.array([3,5,7]) corrisponde all'utilizzo dei vettore template uguali a [1,-1,1], [1,-1,1,-1,1], [1,-1,1,-1,1,-1,1]  
+	La funzione crea quindi una cartella con un cubo per ogni vettore di template utilizzato e per ognuno di essi calcola
+	rms, somma in quadratura di tip e tilt, solo tilt e ptv delle immagini (Nota: a queste immagini viengono sottratti gli zernike
+	1, 2 e 3). Restituisce poi un unico valore per ognuno di questi output mediandoli.  
+	Salva e visualizza i plot in funzione del numero di template.
+- noise.spectrumFromData(dataFilePath)
+- noise.convection_noise(dataFilePath, tauVector)
+- noise.piston_noise(dataFilePath)
+
 ## Interferometro ##
 ### 4D PhaseCam 6110 ###
 I comandi da utilizzare sono:
