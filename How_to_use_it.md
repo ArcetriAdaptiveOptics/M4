@@ -118,12 +118,12 @@ Con i comandi
 ```
 	
 	from m4.main import requirements_checker as rc
-    rc.analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=None)
+	rc.analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=None)
 ```
 dove zernike_vector_to_subtract è il vettore degli zernike che si vuole sottrarre all'immagine robusta, step è la distanza tra le patches (necessaria 
 per il calcolo del raggio di curvatura e dell'rms interactuator) e piston distingue il metodo di creazione dell'immagine robusta: se è None l'immagine viene
 creata sottraendo tra loro i due cubi creati con la metà del numero di misure indicato, altrimenti al numero di misure indicato viene sottratta un'immagine di offset
-precedentemente salvata nella cartella con le misure.  
+precedentemente salvata nella cartella con le misure,  
 NOTA: l'immagine di offset viene creata con i seguenti comandi
 ```
 
@@ -132,11 +132,11 @@ NOTA: l'immagine di offset viene creata con i seguenti comandi
 ```
 è possibile utilizzare una procedura standard che prevede la creazione di tre immagini robuste (create utilizzando 50, 100 e 300 file presenti nella cartella
 delle misure da analizzare). Le immagini robuste vengono analizzate e vengono automaticamente plottati e salvati i seguenti risultati:  
-	- slop
-	- differential piston
-	- radius of curvature 
-	- rms at the interactuator scale 31 mm
-	- rms at the interactuator scale 500 mm
+	- slop  
+	- differential piston  
+	- radius of curvature  
+	- rms at the interactuator scale 31 mm  
+	- rms at the interactuator scale 500 mm  
 
 Nel caso in cui si voglia applicare l'analisi dei requisiti avando a disposizione una sola immagine utilizzare
 ```
