@@ -471,6 +471,8 @@ def robustImageFromDataSet(n_images, data_file_path, zernike_vector_to_subtract,
     Other Parameters
     ----------------
     offset: if it is None data analysis is made by split n_images in two
+            else re-reads the offset image saved in the tt folder and subtracts it
+            to each image during cube creation
 
     Returns
     -------
