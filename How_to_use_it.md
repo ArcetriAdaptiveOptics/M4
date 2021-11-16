@@ -148,6 +148,7 @@ Nel caso in cui si voglia applicare l'analisi dei requisiti avando a disposizion
 	rms31 = ra.test243(image, 0.015, pscale, step, n_patches)
 	rms500 = ra.est243(image, 0.1, pscale, step, n_patches)
 ```
+NOTA: per maggiori informazioni fare riferimento anche alla seguente pagina wiki [WikiPage](https://redmine.ict.inaf.it/projects/adopt_oaa/wiki/MOTT-20210408)
 
 ## Interferometro ##
 ### 4D PhaseCam 6110 ###
