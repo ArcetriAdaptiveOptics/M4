@@ -118,11 +118,11 @@ class Noise():
 
         self._saveInfo(dove, tidy_or_shuffle, an._template, an._actsVector, an._nPushPull)
 
-        rms_mean, quad_mean, tilt_mean, ptv_mean = self.rmsFromCube(self._cubeFromAnalysis)
+        rms_mean, quad_mean, tilt_mean, ptv_mean = self._rmsFromCube(self._cubeFromAnalysis)
         self._saveResults(rms_mean, quad_mean, ptv_mean, dove)
         return tt
 
-    def rmsFromCube(self, cube_to_process):
+    def _rmsFromCube(self, cube_to_process):
         '''
         Parameters
         ----------
@@ -166,7 +166,7 @@ class Noise():
         ptv_mean = np.mean(ptv_vector)
         return rms_mean, quad_tt, tilt, ptv_mean
 
-    def _spectrumAllData(self, data_file_path):
+    def spectrumAllData(self, data_file_path):
         list = glob.glob(os.path.join(data_file_path, '*.h5'))
         coef_tilt_list = []
         coef_tip_list = []
@@ -180,7 +180,10 @@ class Noise():
             coef_tilt_list.append(coef[1])
         tip = np.array(coef_tip_list)
         tilt = np.array(coef_tilt_list)
-        return tip, tilt
+
+        spe_tip, freq_tip = self._fft(tip)
+        spe_tilt, freq_tilt = self._fft(tilt)
+        return spe_tip, freq_tip, spe_tilt, freq_tilt
 
     def _fft(self, vector):
         dt = 35e-3
@@ -269,7 +272,7 @@ class Noise():
         for tt in tt_list:
             cube = self._readCube(tt)
             n_temp = self._readTempFromInfoFile(tt)
-            rms, quad, tilt, ptv = self.rmsFromCube(cube)
+            rms, quad, tilt, ptv = self._rmsFromCube(cube)
             rms_list.append(rms)
             quad_list.append(quad)
             tilt_list.append(tilt)
@@ -398,7 +401,9 @@ class Noise():
             image_ttr = image - sur
             mean = image_ttr.mean()
             mean_list.append(mean)
-        return np.array(mean_list), time
+
+        spe, freq = self._fft(mean)
+        return np.array(mean_list), time, spe, freq
 
     def tiptilt_series(self, data_file_path):
         ''' Remove tip and tilt from image and average the results

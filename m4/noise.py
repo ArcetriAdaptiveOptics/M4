@@ -146,9 +146,7 @@ def spectrumFromData(data_file_path):
     n = Noise()
     dove = _path_noise_results(data_file_path)
 
-    tip, tilt = n._spectrumAllData(data_file_path)
-    spe_tip, freq_tip = n._fft(tip)
-    spe_tilt, freq_tilt = n._fft(tilt)
+    spe_tip, freq_tip, spe_tilt, freq_tilt = n.spectrumAllData(data_file_path)
 
     plt.clf()
     plt.plot(freq_tip, np.absolute(spe_tip), 'o'); plt.xlabel('Freq[HZ]')
@@ -296,8 +294,7 @@ def piston_noise(data_file_path):
     n = Noise()
     dove = _path_noise_results(data_file_path)
 
-    mean, time = n.piston_noise(data_file_path)
-    spe, freq = n._fft(mean)
+    mean, time, spe, freq = n.piston_noise(data_file_path)
     pyfits.writeto(os.path.join(dove, 'piston_vector.fits'), mean)
     pyfits.writeto(os.path.join(dove, 'time_vector.fits'), time)
 
