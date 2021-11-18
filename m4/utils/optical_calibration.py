@@ -199,8 +199,19 @@ class OpticalCalibration():
         elif self._who == 'RM':
             pass
         elif self._who == 'M4':
-            # m4 calib
-            pass
+            vec_push_pull = np.array((1, -1))
+            m0 = self._ott.m4.getPosition()
+            for k in range(self._nPushPull):
+                for i in range(len(command_list)):
+                    j = (len(command_list)) * k * 2
+                    mis = np.array([j, j + 1])
+                    for v in range(vec_push_pull.size):
+                        m4_cmd = command_list[i] * vec_push_pull[v]
+                        self._ott.me.setPosition(m0 + m4_cmd)
+                        masked_ima = self._interf.acquire_phasemap(n_frames)
+                        name = 'Frame_%04d.fits' %( 2*i + mis[v])
+                        self._interf.save_phasemap(dove, name, masked_ima)
+            self._ott.m4.setPosition(m0)
 
     def _logAndDefineDovIndexForCommandMatrixCreation(self, who):
         '''
