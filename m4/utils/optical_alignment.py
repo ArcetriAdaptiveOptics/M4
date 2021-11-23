@@ -23,7 +23,7 @@ class OpticalAlignment():
 
     HOW TO USE IT::
 
-        from m4.utils.optical_alignment import opt_alignment
+        from m4.utils.optical_alignment import OpticalAlignment
         al = OpticalAlignment(tt, ott, interf)
         par_command, rm_command, dove = al.opt_aligner(n_images, zernike_to_be_corrected, dof_command_id)
     """
@@ -31,6 +31,7 @@ class OpticalAlignment():
     def __init__(self, tt_cal, ott, interf):
         """The constructor """
         self._logger = logging.getLogger('OPT_ALIGN:')
+        self._loggerRuna = logging.getLogger('PIPPO:')
         self.tt_cal = tt_cal
         self.cal = OpticalCalibration.loadCalibrationObjectFromFits(tt_cal)
         self._who = self.cal.getWho()
@@ -64,12 +65,12 @@ class OpticalAlignment():
         Other Parameters
         ----------
             zernike_to_be_corrected: numpy array
-                        None is equal to np.array([0,1,2,3,4,5])
+                        None is equal to np.array([0,1,2,3,4])
                         for tip, tilt, fuoco, coma, coma
             commandId: numpy array
                     array containing the number of degrees of freedom to be commanded
 
-        nota: gli zernike possono essere [0,1], [0,1,3,4], [0,1,2,3,4]  
+        nota: gli zernike possono essere [0,1], [0,1,3,4], [0,1,2,3,4]
              e vanno in coppia con i dof [3,4], [1,2,3,4], [0,1,2,3,4]
 
         Returns
@@ -82,7 +83,7 @@ class OpticalAlignment():
         par_position = self._ott.parabola.getPosition()
         rm_position = self._ott.referenceMirror.getPosition()
         m4_position = self._ott.m4.getPosition()
-        self._logger.info('Calculation of the alignment command for %s',
+        self._logger.info('Calculation of the alignment command using calibration measurements in tt = %s',
                           self.tt_cal)
         self._intMatModesVector = zernike_to_be_corrected
         self._commandId = dof_command_id
@@ -99,7 +100,10 @@ class OpticalAlignment():
             cmd, self._zernikeVectorSelected, total_zernike_vector = self._commandGenerator(img)
             self.par_command, self.rm_command = self._reorgCmdForParAndRm(cmd, dof_command_id)
             self._saveData(dove, par_position, rm_position)
-            self._alignmentLog(total_zernike_vector, self.tt_al)
+            #self._alignmentLog(total_zernike_vector, self.tt_al)
+            self._loggerRuna.info('Calibration tt used = %s', self.tt_cal)
+            self._loggerRuna.info('Zernike calculate on image before alignment =  %s', str(total_zernike_vector))
+            self._loggerRuna.info('Tracking number for alignment measurements = %s',  self.tt_al)
             return self.par_command, self.rm_command, dove
         elif self._who == 'M4':
             pass
@@ -109,19 +113,19 @@ class OpticalAlignment():
             #self._saveZernikeVector(dove, zernike_vector_selected)
             #return m4_command, dove
 
-    def _alignmentLog(self, start_total_coef, tt):
-        fits_file_name = os.path.join(self._storageFolder(), 'AlignmentLog.txt')
-        file = open(fits_file_name, 'a+')
-        file.write('%s ' %self.tt_al)
-        for i in range(start_total_coef.size):
-            file.write('%9.3e ' %start_total_coef[i])
-        file.write('\n')
-        file.write('%s ' %tt)
-#         for i in range(total_coef.size):
-#             file.write('%9.3e ' %total_coef[i])
+#     def _alignmentLog(self, start_total_coef, tt):
+#         fits_file_name = os.path.join(self._storageFolder(), 'AlignmentLog.txt')
+#         file = open(fits_file_name, 'a+')
+#         file.write('%s ' %self.tt_al)
+#         for i in range(start_total_coef.size):
+#             file.write('%9.3e ' %start_total_coef[i])
 #         file.write('\n')
-#         file.write('%s \n ************\n' %commandId)
-        file.close()
+#         file.write('%s ' %tt)
+#                 #         for i in range(total_coef.size):
+#                 #             file.write('%9.3e ' %total_coef[i])
+#                 #         file.write('\n')
+#                 #         file.write('%s \n ************\n' %commandId)
+#         file.close()
 
     def selectModesInIntMatAndRecConstruction(self, zernike2control=None,
                                                commandId=None):
@@ -129,7 +133,7 @@ class OpticalAlignment():
         Other Parameters
         ----------
         zernike2control: numpy array
-                    None is equal to np.array([0,1,2,3,4,5])
+                    None is equal to np.array([0,1,2,3,4])
                     for tip, tilt, fuoco, coma, coma
         commandId: numpy array
                 array containing the number of degrees of freedom to be commanded
@@ -265,10 +269,10 @@ class OpticalAlignment():
         pyfits.append(fits_file_name, self._rec, header)
         pyfits.append(fits_file_name, self._cmat, header)
         if self._intMatModesVector is None:
-            self._intMatModesVector = np.array([0, 1, 2, 3, 4, 5])
+            self._intMatModesVector = np.array([0, 1, 2, 3, 4])
         pyfits.append(fits_file_name, self._intMatModesVector, header)
         if self._commandId is None:
-            self._commandId = np.array([0, 1, 2, 3, 4, 5])
+            self._commandId = np.array([0, 1, 2, 3, 4])
         pyfits.append(fits_file_name, self._commandId, header)
         pyfits.append(fits_file_name, self._zernikeVectorSelected, header)
 

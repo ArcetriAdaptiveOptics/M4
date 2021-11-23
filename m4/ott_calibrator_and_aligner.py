@@ -29,7 +29,7 @@ class OttCalibAndAlign():
 
     def __init__(self, ott, interf):
         """The constructor """
-        self._logger = logging.getLogger('ALIGNMENT:')
+        self._logger = logging.getLogger('PIPPO:')
         self._ott = ott
         self._interf = interf
         self._cal = OpticalCalibration(ott, interf)
@@ -75,7 +75,7 @@ class OttCalibAndAlign():
         Other Parameters
         ----------
         zernike_to_be_corrected: numpy array
-                        None is equal to np.array([0,1,2,3,4,5])
+                        None is equal to np.array([0,1,2,3,4])
                         for tip, tilt, fuoco, coma, coma
         dof_command_id: numpy array
                 array containing the number of degrees of freedom to be commanded
@@ -99,20 +99,22 @@ class OttCalibAndAlign():
         image = self._interf.acquire_phasemap(n_images)
         name = 'FinalImage.fits'
         all_final_coef, final_coef_selected = aliner.getZernikeWhitAlignerObjectOptions(image)
-        self._alignmentLog(aliner, all_final_coef, dof_command_id, move)
+        #self._alignmentLog(aliner, all_final_coef, dof_command_id, move)
+        self._logger.info('Zernike calculate on image after alignment =  %s', str(all_final_coef))
+        self._logger.info('Dof command id used = %s', str(dof_command_id))
         self._interf.save_phasemap(dove, name, image)
         return par_cmd, rm_cmd, dove
 
-    def _alignmentLog(self, aligner, total_coef, dof_command_id, move):
-        fits_file_name = os.path.join(aligner._storageFolder(), 'AlignmentLog.txt')
-        file = open(fits_file_name, 'a+')
-        for i in range(total_coef.size):
-            file.write('%9.3e ' % total_coef[i])
-        file.write('\n')
-        if move == 0:
-            dof_command_id = -1
-        file.write('%s \n ************\n' % dof_command_id)
-        file.close()
+#     def _alignmentLog(self, aligner, total_coef, dof_command_id, move):
+#         fits_file_name = os.path.join(aligner._storageFolder(), 'AlignmentLog.txt')
+#         file = open(fits_file_name, 'a+')
+#         for i in range(total_coef.size):
+#             file.write('%9.3e ' % total_coef[i])
+#         file.write('\n')
+#         if move == 0:
+#             dof_command_id = -1
+#         file.write('%s \n ************\n' % dof_command_id)
+#         file.close()
 
 
 ### M4 calibrator and aligner in cartellaBella.m4.toImplement.ott_calibrator_and_aligner ###
