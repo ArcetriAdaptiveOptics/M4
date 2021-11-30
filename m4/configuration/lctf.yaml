@@ -1,6 +1,13 @@
-WRITE_WL: "W%5.3f\r"
-READ_WL: "W?\r"
+WRITE_WL: "WL=%5.3f\r"
+READ_WL: "WL?\r"
 RESET: "R1\r"
 READ_STATUS: "@"
 BUSY_CHECK: "!"
 ESCAPE: chr(27)
+PORT: '/dev/ttyUSB1'
+SPEED: 115200
+DATABITS: 8 #serial.EIGHTBITS
+PARITY: 'N' #serial.PARITY_NONE
+STOPBITS: 1 #serial.STOPBITS_ONE
+FLOWCONTROLL: None #RTSCTS forse, ma non inserito nel codice
+#inserire gli estremi di lunghezza d'onda
