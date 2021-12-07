@@ -29,7 +29,7 @@ class OttCalibAndAlign():
 
     def __init__(self, ott, interf):
         """The constructor """
-        self._logger = logging.getLogger('PIPPO:')
+        self._logger = logging.getLogger('ALIG_ZER:')
         self._ott = ott
         self._interf = interf
         self._cal = OpticalCalibration(ott, interf)
@@ -54,7 +54,8 @@ class OttCalibAndAlign():
         tt: string
             tracking number of measurements made
         '''
-        self._tt = self._cal.measureAndAnalysisCalibrationMatrix(0, command_amp_vector,
+        self._tt = self._cal.measureAndAnalysisCalibrationMatrix('PAR + RM',
+                                                                 command_amp_vector,
                                                                  n_push_pull, n_frames)
         return self._tt
 

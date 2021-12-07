@@ -13,7 +13,7 @@ from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.configuration.ott_parameters import OtherParameters
 
-WHO_PAR_AND_RM = 'PAR+RM'
+WHO_PAR_AND_RM = 'PAR + RM'
 WHO_PARABLE = 'PAR'
 WHO_RM = 'RM'
 WHO_M4 = 'M4'

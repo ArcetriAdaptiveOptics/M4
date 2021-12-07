@@ -23,7 +23,7 @@ from m4.ground import logger_set_up as lsu
 from m4.configuration.ott_parameters import OttParameters
 
 
-def start_log(logging_level):
+def start_log(logging_level=20):
     """
     Parameters
     ----------
@@ -41,6 +41,20 @@ def start_log(logging_level):
 # a = Alignment(ott, interf)
 
 def showCommandMatrixBeforeCalibration(command_amp_vector):
+    '''
+    Parameters
+    ----------------
+    command_amp_vector: numpy array [mm, arcsec, arcsec, arcsec, arcsec]
+                    vector containing the movement values
+                    of the 5 degrees of freedom
+                    [par_piston, par_tip, par_tilt, rm_tip, rm_tilt]
+                note: the application of par_tip corresponds to the application of rm_tip=-2.05*par_tip
+                    same for par_tilt
+    Returns
+    -------
+    mat: numpy array
+        matrix of command
+    '''
     from m4.utils.optical_calibration import OpticalCalibration
     cal = OpticalCalibration('nulla', 'niente')
     mat, cmdList = cal.createCmatAndCmdList(command_amp_vector,
@@ -61,7 +75,7 @@ def calibrate_PARAndRM(ott, interf, n_frames, command_amp_vector, nPushPull):
         tower
     interf: object
         interferometer
-    command_amp_vector: numpy array [mm]
+    command_amp_vector: numpy array [mm, arcsec, arcsec, arcsec, arcsec]
                     vector containing the movement values
                     of the 5 degrees of freedom
                     [par_piston, par_tip, par_tilt, rm_tip, rm_tilt]
@@ -82,6 +96,26 @@ def calibrate_PARAndRM(ott, interf, n_frames, command_amp_vector, nPushPull):
 
 def showCommandForParAndRmBeforeAlignement(ott, interf, tt_cal, n_images,
                                            zernike_to_be_corrected=None, dof_command_id=None):
+    '''
+    Parameters
+    ----------
+    ott: object
+        tower
+    interf: object
+        interferometer
+    tt_cal: string
+            calibration measurement to use for alignment
+    n_images: int
+            number of interferometers frames
+        
+    Other Parameters
+    ----------
+    zernike_to_be_corrected: numpy array
+                    None is equal to np.array([0,1,2,3,4])
+                    for tip, tilt, fuoco, coma, coma
+    dof_command_id: numpy array
+            array containing the number of degrees of freedom to be commanded
+    '''
     from m4.utils.optical_alignment import OpticalAlignment
     al = OpticalAlignment(tt_cal, ott, interf)
     print('Calculation of the alignment command for %s' %tt_cal)
@@ -104,19 +138,21 @@ def align_PARAndRM(ott, interf, tt_calib, n_images,
     '''
     Parameters
     ----------
+    ott: object
+        tower
+    interf: object
+        interferometer
     tt_tower: string
             calibration measurement to use for alignment
     n_images: int
             number of interferometers frames
-    move: boolean
-        True to move the tower
-        other to show commands
+
     Other Parameters
     ----------
-    intMatModesVecor: numpy array
+    zernike_to_be_corrected: numpy array
                     None is equal to np.array([0,1,2,3,4])
                     for tip, tilt, fuoco, coma, coma
-    commandId: numpy array
+    dof_command_id: numpy array
             array containing the number of degrees of freedom to be commanded
     '''
     move = True

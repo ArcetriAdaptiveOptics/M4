@@ -31,7 +31,7 @@ class OpticalAlignment():
     def __init__(self, tt_cal, ott, interf):
         """The constructor """
         self._logger = logging.getLogger('OPT_ALIGN:')
-        self._loggerRuna = logging.getLogger('PIPPO:')
+        self._loggerRuna = logging.getLogger('ALIG_ZER:')
         self.tt_cal = tt_cal
         self.cal = OpticalCalibration.loadCalibrationObjectFromFits(tt_cal)
         self._who = self.cal.getWho()
