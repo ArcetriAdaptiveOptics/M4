@@ -118,7 +118,7 @@ class SPL():
         ExposureTimeAbs = 1.5 * self._exptime * 1e6
         self._camera.setExposureTime(ExposureTimeAbs)
         self._camera.Timeout = 30
-        reference_image = self._camera.acquireFrame() #double snapshot
+        reference_image = self._camera.getFutureFrames(1)[0] #double snapshot
         #mettergli la maschera gpixmask
         if np.max(reference_image) > 4000:
             print("**************** WARNING: saturation detected!")
