@@ -25,7 +25,8 @@ class TestFakeAccelerometers(unittest.TestCase):
             'OPTData', 'AccelerometersData')
         mock_fold_name.ACC_ROOT_FOLDER = want_acc_root_folder
 
-        name = self.acc.acquireData()
+        tt = self.acc.acquireData()
+        name = tt + '.h5'
         self._fname = os.path.join(want_acc_root_folder, name)
         print("filename %s " % self._fname)
         # TODO: test that the fname contains the correct matrix and attrs

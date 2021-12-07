@@ -4,11 +4,12 @@ Authors
 
 Function for calculating tip and tilt coefficients in interferometer units::
 
-    from m4.ground import tip_tilt_interf
-    coef, interf_coef = tip_tilt_interf.fit(image)
+    from m4.utils import tip_tilt_interf
+    coef, interf_coef = tip_tilt_interf.fit(interf, image=None)
 """
 
 import numpy as np
+from m4.ground import zernike
 
 def fit(image):
     """
@@ -53,3 +54,37 @@ def fit(image):
     return coef, interf_coef
 
 # file_name = '/home/labot/immagine.fits'
+
+def zernikeTipTiltCoefOnSingleImage(interf, masked_ima=None):
+    """
+    On single image returns the coefficients of tip and tilt both in Zernike of Noll
+    and in units of the interferometer
+
+    Parameters
+    ----------
+    interf: object
+        interferometer object
+
+    Other Parameters
+    ---------------
+    masked_ima: numpy masked array
+        if it is not passed acquires the interferometer
+
+    Returns
+    -------
+        tip_tilt: numpy array
+                Zernike Noll coefficients
+        i4d_coef: numpy array
+                Interferometers values
+    """
+    if masked_ima is None:
+        masked_ima = interf.acquire_phasemap(1)
+    else:
+        masked_ima = masked_ima
+    coef, mat = zernike.zernikeFit(masked_ima,
+                                   np.array([2, 3]))
+    tip = -coef[0]/(633e-9) *np.sqrt(2)
+    tilt = coef[1]/(633e-9) *np.sqrt(2)
+
+    i4d_coef = fit(masked_ima)
+    return np.array([tip, tilt]), i4d_coef

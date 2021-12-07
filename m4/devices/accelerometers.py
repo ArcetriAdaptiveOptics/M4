@@ -58,7 +58,7 @@ class ZmqAccelerometers(BaseAccelerometers):
         self._waitForEndAcquisition(start)
         self._acc.convertAndSaveData(start, final_destination)
         #self._tt = name
-        return name
+        return tt
 
 
     def _waitForEndAcquisition(self, data_file_path):

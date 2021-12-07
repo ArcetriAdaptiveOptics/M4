@@ -27,20 +27,19 @@ class IFFunctionsMaker():
 
     HOW TO USE IT::
 
-        from m4.utils import create_device
-        device = create_device.myDevice("segment")         #or "m4"
+        creazione oggetto dm e interf
         from m4.influence_functions_maker import IFFunctionsMaker
-        IFF = IFFunctionsMaker(device)
+        IFF = IFFunctionsMaker(dm, interf)
         tt = IFF.acq_IFFunctions(modesVectorFitsFileName, nPushPull,
                                 amplitudeFitsFileName, cmdMatrixFitsFileName,
-                                shuffle=None)
+                                shuffle=None, template=None)
     '''
 
-    def __init__(self):
+    def __init__(self, deformable_mirror, interf):
         """The constructor """
         self._logger = logging.getLogger('IFF_MAKER:')
-        self._nActs = OttParameters.N_ACT_SEG
-        #self._interf = interf
+        self._nActs = OttParameters.N_ACT_SEG #definire l'oggetto dm in modo da avere questo parametro
+        self._interf = interf
 
         self._nPushPull = None
         self._template = None
@@ -267,7 +266,9 @@ class IFFunctionsMaker():
         """
         store_in_folder = IFFunctionsMaker._storageFolder()
         folder = os.path.join(store_in_folder, tt)
-        theObject = IFFunctionsMaker()
+        dm = 0
+        interf = 0
+        theObject = IFFunctionsMaker(dm, interf)
         if fits_or_h5 == 0 :
             additional_info_fits_file_name = os.path.join(folder, 'info.fits')
             header = pyfits.getheader(additional_info_fits_file_name)

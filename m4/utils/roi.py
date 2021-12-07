@@ -44,7 +44,7 @@ class ROI():
             roiList[3] = RM roi for alignement, roiList[3] = central roi for segment
 
         '''
-        self._logger.info('Creation of roi list')
+        self._logger.debug('Creation of roi list')
         labels = measure.label(np.invert(ima.mask))
         #from scipy import ndimage as ndi
         #labels = ndi.label(np.invert(ima.mask))[0]

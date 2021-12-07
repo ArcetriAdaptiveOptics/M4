@@ -10,7 +10,7 @@ from astropy.io import fits as pyfits
 import numpy as np
 from m4.ground import read_data
 from m4.ground.read_data import InterferometerConverter
-from m4.influence_functions_maker import IFFunctionsMaker
+from m4.utils.influence_functions_maker import IFFunctionsMaker
 from m4.utils.roi import ROI
 from m4.utils.img_redux import TipTiltDetrend
 from m4.configuration import config_folder_names as fold_name
@@ -24,7 +24,7 @@ class AnalyzerIFF():
 
     HOW TO USE IT::
 
-        from m4.analyzer_iffunctions import AnalyzerIFF
+        from m4.analyzers.analyzer_iffunctions import AnalyzerIFF
         fileName = os.path.join(".../IFFunctions", tt)
         an = AnalyzerIFF.loadInfoFromTtFolder(fileName)
         cube = an.createCube(tiptiltDetrend = None, phaseAmbiguity = None)
@@ -70,7 +70,7 @@ class AnalyzerIFF():
                 theObject: object
                         analyzerIFF class object
         """
-        theObject = AnalyzerIFF()
+        #theObject = AnalyzerIFF()
         theObject = IFFunctionsMaker.loadInfo(tt)
         theObject._cmdAmplitude, theObject._actsVector, theObject._cmdMatrix = \
             read_data.readTypeFromFitsName(theObject._amplitudeTag,
