@@ -72,7 +72,7 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
             thresh = 0.05
             ima = _circleImage(image, x[p], y[p], raggio_px)
             if ima is not None:
-                list_ima.append(ima)
+                #list_ima.append(ima)
                 alpha, beta = curv_fit(ima, 2*radius_m)
                 raggi_km = roc(alpha, beta)
                 #raggio = roc(2*radius_m, alpha, beta)
@@ -85,11 +85,12 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
             ima = _circleImage(image, x[p], y[p], r_px1)
             if ima is not None:
                 new_ima = tiptilt_fit(ima)
-                list_big.append(new_ima)
+                #list_big.append(new_ima)
                 if n_patches is None:
                     final_ima = _circleImage(new_ima, x[p], y[p], raggio_px)
                     if final_ima is not None:
-                        list_ima.append(final_ima)
+                        #list_ima.append(final_ima)
+                        final_ima = final_ima - np.mean(final_ima)
                         result_list.append(np.std(final_ima))
                 else:
                     list_circleima = _circleImageList(new_ima, x[p], y[p], n_patches, raggio_px)
@@ -103,7 +104,7 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
             ima = _circleImage(image, x[p], y[p], r_px1)
             if ima is not None:
                 new_ima = tiptilt_fit(ima)
-                list_ima.append(new_ima)
+                #list_ima.append(new_ima)
                 result_list.append(np.std(new_ima))
 
     result_vect = np.array(result_list)
