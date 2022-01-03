@@ -40,3 +40,9 @@ class FakeInterferometer(BaseInterferometer):
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, image.data)
         pyfits.append(fits_file_name, image.mask.astype(int))
+
+    def readImage4D(self, file_name):
+        hduList = pyfits.open(file_name)
+        masked_ima = np.ma.masked_array(hduList[0].data,
+                                        hduList[1].data.astype(bool))
+        return masked_ima

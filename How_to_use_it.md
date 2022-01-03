@@ -113,6 +113,20 @@ In questo modo è possibile conoscere come muovere le viti dello spider per rial
 	```
 NOTA: per maggiori informazioni fare riferimento anche alla seguente [pagina wiki](https://redmine.ict.inaf.it/projects/adopt_oaa/wiki/MOTT-20200915)
 
+ ### SPL ###
+ Attraverso la funzione m4.SPL_controller si hanno a dispposizione le funzioni necessarie alla creazione degli oggetti di interessse (camera e filtro tunabile)
+ e la funzione per l'acquisizione delle immagini con la camera e l'analisi per ottenere il valore di pistone.
+ 	```
+	
+	from m4 import SPL_controller as s
+	camera = s.define_camera()
+	filter = s.define_filter()
+	tt, piston = s.SPL_measurement_and_analysis(camera, filter)
+	```
+I dati acquisiti vengono salvati in BASE_PATH/Data/M4Data/OPTData/SPL/tt che contiene: le immagini acquisite con la camera alle diverse lunghezze d'onda
+selezionate al momento dell'acquisizione (imagenm), il vettore delle lunghezze d'onda usate (lambda_vector.fits), la matrice con le frangie calcolate
+(fringe.fits) e i vettori contenenti il risultato di pistone e pistone smooth (pistonresult.fits)
+
 ### Analisi dei requisiti ###
 Con i comandi
 ```
