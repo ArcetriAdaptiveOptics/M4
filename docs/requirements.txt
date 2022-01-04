@@ -1,2 +1,17 @@
 sphinx>=1.7.5
 numpy>1.17
+scipy
+matplotlib
+astropy
+synphot
+pytest
+h5py
+scikit-image>=0.15,<0.19
+IPython
+opcua
+mock
+sklearn
+pyzabbix
+zmq
+guietta
+pyyaml
