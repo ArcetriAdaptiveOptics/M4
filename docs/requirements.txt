@@ -13,5 +13,4 @@ mock
 sklearn
 pyzabbix
 zmq
-guietta
 pyyaml
