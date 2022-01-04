@@ -22,10 +22,10 @@ class SplAcquirer():
     Class used to acquire images, whit SPL camera, at different wavelengths.
 
     HOW TO USE IT::
-        from m4.SPL_controller import SPL
+        from m4.utils.SPL_data_acquirer import SplAcquirer
         #definizione dell'oggetto filtro e dell'oggetto camera
-        spl = SPL(filtro, camera)
-        lambda_vector = np.arange(530,730,10)
+        spl = SplAcquirer(filtro, camera)
+        lambda_vector = np.arange(530, 730, 10)
         tt = spl.acquire(lambda_vector, exptime=0.7, mask=None)
 
     '''
@@ -58,7 +58,7 @@ class SplAcquirer():
         exptime: float
             best exposure time for camera for laboratory conditions
         mask: numpy array
-            mask for measurents
+            mask for measurements
         Returns
         -------
         tt: string
@@ -73,7 +73,6 @@ class SplAcquirer():
         self._filter.set_wl(600)
         self._camera.feature('ExposureTimeAbs').value = 1.5 * exptime * 1e6
         img = self._camera.acquire_frame(30*1000).buffer_data_numpy()
-        #mettergli la maschera gpixmask
         if mask is None:
             mask = np.zeros(img.shape)
 
@@ -106,7 +105,6 @@ class SplAcquirer():
             #plt.imshow(image)
             #plt.show()
 
-            #mettergli la maschera gpixmask
             crop = self._preProcessing(image, cy, cx)
             crop_rot = scin.rotate(crop, 23,  reshape=False)
             #plt.figure(figsize=(10,5))
@@ -115,13 +113,15 @@ class SplAcquirer():
             file_name = 'image_%dnm.fits' %wl
             self._saveCameraFrame(file_name, crop)
 
-        print('Saved tracking number:',tt)
+        print('Saved tracking number:', tt)
         return tt
 
     def _baricenterCalculator(self, reference_image):
         ''' Calculate the peak position of the image
         args:
             reference_image = camera frame
+        returns:
+            cy, cx = y and x coord
         '''
         counts, bin_edges = np.histogram(reference_image)
         thr = 5 * bin_edges[np.where(counts == max(counts))]
@@ -148,7 +148,6 @@ class SplAcquirer():
         bkg = np.ma.mean(image[id_bkg])
         img = image - bkg #va mascherata con gpixmask
         crop = img[cy-ycrop: cy+ycrop, cx-xcrop: cx+xcrop]
-
         return crop
 
     def _saveCameraFrame(self, file_name, frame):
@@ -165,7 +164,6 @@ class SplAcquirer():
         plt.pause(0.1)
 
     def plot2(self, img1, img2):
-        return
         clear_output(wait=True)
         plt.subplot(1,2,1)
         plt.imshow(img1)
@@ -178,9 +176,8 @@ class SplAcquirer():
 #         fits_file_name = os.path.join(self._dove, file_name)
 #         header = pyfits.Header()
 #         header['PIX2UM'] = self._pix2um
-#         
+#
 #     @staticmethod
 #     def reloadSplAcquirer():
 #         theObject = SPLAquirer(None, None)
 #         theObject._pix2um = header['PIX2UM']
-        

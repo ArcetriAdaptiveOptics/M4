@@ -1,8 +1,13 @@
 m4.type package
 ===============
 
-Submodules
-----------
+m4.type.accelerometers\_data module
+-----------------------------
+
+.. automodule:: m4.type.accelerometers_data
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 m4.type.commandHistory module
 -----------------------------
@@ -36,6 +41,13 @@ m4.type.modesVector module
     :undoc-members:
     :show-inheritance:
 
+m4.type.temperature\_sensors module
+-----------------------------
+
+.. automodule:: m4.type.temperature_sensors
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Module contents
 ---------------

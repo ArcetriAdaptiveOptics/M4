@@ -19,9 +19,16 @@ from m4.configuration import config_folder_names as fold_name
 
 class SplAnalyzer():
     '''
+    Class used to analyze images, whit SPL camera, at different wavelengths.
+
+    HOW TO USE IT::
+        from m4.analyzers.SPL_data_analyzer import SplAnalyzer
+        an = SplAnalyzer()
+        piston, piston_smooth = an.analyzer(tt)
     '''
 
     def __init__(self):
+        """The constructor """
         self._logger = logging.getLogger('SPL_AN:')
         self.tn_fringes = OttParameters.TN_FRINGES
         self._Qm = None
@@ -38,14 +45,17 @@ class SplAnalyzer():
     def analyzer(self, tt):
         '''
         Analyze measurement data and compare it with synthetic data.
+
         Parameters
         ----------
-            tt: string
-                tracking number of the measurement data
+        tt: string
+            tracking number of the measurement data
         Returns
         -------
         piston: int
                 piston value
+        piston_smooth: int
+                piston value after smoothing data
         '''
         dove = os.path.join(self._storageFolder(), tt)
 
@@ -218,7 +228,6 @@ class SplAnalyzer():
         idp_smooth = np.where(R_smooth == max(R_smooth))
         piston = delta[idp]
         piston_smooth = delta[idp_smooth]
-
         return piston, piston_smooth
 
     def _myLambaSynth(self, lambda_synth_from_data):

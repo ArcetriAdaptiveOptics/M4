@@ -9,7 +9,7 @@ Welcome to M4's documentation!
 :Release: |release|
 :Date: |today|
 
-M4 is a collection of tools to perform the optical calibration of ELT M4 adaptive mirror
+M4 is a collection of tools to perform the optical calibration of ELT M4 adaptive mirror.
 
 .. toctree::
    :maxdepth: 2
@@ -18,7 +18,7 @@ M4 is a collection of tools to perform the optical calibration of ELT M4 adaptiv
 
 Tutorial
 --------
-Maybe you want to give some examples of usage here?
+All information about the use of the software can be found at the following link: https://github.com/ChiaraSelmi/M4
 
 
 API Reference

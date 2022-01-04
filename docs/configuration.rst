@@ -2,10 +2,26 @@ m4.configuration package
 ========================
 
 
-m4.configuration.config module
+m4.configuration.config\_folder\_names module
 ------------------------------
 
-.. automodule:: m4.configuration.config
+.. automodule:: m4.configuration.config_folder_names
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.configuration.config\_reader module
+------------------------------
+
+.. automodule:: m4.configuration.config_reader
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.configuration.config\_uploader module
+------------------------------
+
+.. automodule:: m4.configuration.config_uploader
     :members:
     :undoc-members:
     :show-inheritance:

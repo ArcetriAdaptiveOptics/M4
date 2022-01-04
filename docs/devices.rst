@@ -90,6 +90,14 @@ m4.devices.base\_temperature\_sensors module
     :undoc-members:
     :show-inheritance:
 
+m4.devices.i4d module
+---------------------
+
+.. automodule:: m4.devices.i4d
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 m4.devices.interferometer module
 -------------------------------
 
@@ -98,10 +106,18 @@ m4.devices.interferometer module
     :undoc-members:
     :show-inheritance:
 
-m4.devices.m4 module
+m4.devices.m4\_controller module
 -------------------
 
-.. automodule:: m4.devices.m4
+.. automodule:: m4.devices.m4_controller
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+m4.devices.opc\_ua\_controller module
+-------------------
+
+.. automodule:: m4.devices.opc_ua_controller
     :members:
     :undoc-members:
     :show-inheritance:
@@ -145,3 +161,12 @@ m4.devices.temperature\_sensors module
     :members:
     :undoc-members:
     :show-inheritance:
+
+m4.devices.tuna\_filter module
+-------------------
+
+.. automodule:: m4.devices.tuna_filter
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
