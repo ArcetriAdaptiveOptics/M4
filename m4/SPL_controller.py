@@ -1,6 +1,13 @@
 '''
 Authors
     - C. Selmi: written in 2021
+
+HOW TO USE IT::
+
+    from m4.main import SPL_controller as spl
+    camera = spl.define_camera()
+    filter = spl.define_filter89
+    tt, piston = spl.SPL_measurement_and_analysis(camera, filter)
 '''
 import os
 import numpy as np

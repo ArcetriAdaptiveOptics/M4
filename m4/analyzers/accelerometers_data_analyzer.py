@@ -11,6 +11,12 @@ from m4.type.accelerometers_data import AccelerometersData
 
 class AccelerometersDataAnalyzer():
     ''' Class used to analyze accelerometer data
+
+    HOW TO USE IT::
+
+        from m4.analyzers.accelerometers_data_analyzer import AccelerometersDataAnalyzer
+        tt = 'tracking_numeber'
+        acc = AccelerometersDataAnalyzer(tt)
     '''
 
     def __init__(self, tt):
@@ -31,11 +37,15 @@ class AccelerometersDataAnalyzer():
         self.plot_power_spectrum()
 
     def getData(self):
+        ''' Function for getting data in tracking number folder
+        '''
         if self.datah5 is None:
             self.datah5 = self._acc.datah5
         return self.datah5
 
     def getSpecAndFreq(self):
+        ''' Function that returns data spectrum and frequency
+        '''
         if self._spe is None and self._freq is None:
             self._spe, self._freq = self._acc.power_spectrum()
         return self._spe, self._freq

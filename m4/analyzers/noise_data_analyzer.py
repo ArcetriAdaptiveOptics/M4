@@ -167,6 +167,23 @@ class Noise():
         return rms_mean, quad_tt, tilt, ptv_mean
 
     def spectrumAllData(self, data_file_path):
+        '''
+        Parameters
+        ----------
+        data_file_path: string
+                measurement data folder
+
+        Returns
+        -------
+        spe_tip: numpy array
+            spectrum obtained by fft of tip data
+        freq_tip: numpy array
+            frequency obtained by fft of tip data
+        spe_tilt: numpy array
+            spectrum obtained by fft of tilt data
+        freq_tilt: numpy array
+            frequency obtained by fft of tilt data
+        '''
         list = glob.glob(os.path.join(data_file_path, '*.h5'))
         coef_tilt_list = []
         coef_tip_list = []
