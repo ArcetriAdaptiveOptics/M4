@@ -1,6 +1,11 @@
 '''
 Authors
   - C. Selmi:  written in 2021
+
+HOW TO USE IT::
+
+    from m4.main import requirements_checker as rc
+    rc.analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=None)
 '''
 
 import os
@@ -9,12 +14,6 @@ from matplotlib import pyplot as plt
 from m4.configuration import config_folder_names as config
 from m4.analyzers import requirement_analyzer as req_check
 
-'''
-HOW TO USE IT::
-
-    from m4.main import requirements_checker as rc
-    rc.analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=None)
-'''
 
 def analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=None):
     ''' Analysis of noise requirements for a tn that create and use 3 different robust images.
@@ -106,6 +105,19 @@ def fromImagesToReq(image_list, pscale=None, step=None, n_patches=None):
     offset: if it is None data analysis is made by split n_images in two
             else re-reads the offset image saved in the tt folder and subtracts it
             to each image during cube creation
+
+    Returns
+    -------
+    slop_list: list of floats
+        rms slope in arcsec
+    diff_piston_list: list of numpy masked array
+        differential piston on image
+    roc_list: list of floats
+        roc at threshold 0.05
+    rms31: list of floats
+        rms at threshold 0.95
+    rms500: list of floats
+        rms at threshold 0.95
     '''
     slop_list = []
     diff_piston_list = []
@@ -128,7 +140,22 @@ def fromImagesToReq(image_list, pscale=None, step=None, n_patches=None):
 
 
 def plotAndSaveForReqAnalysis(x, y, xlabel, ylabel, dove, image_name):
-    ''' Function for plotting results
+    ''' Function for plotting and saving results
+
+    Parameters
+    ----------
+    x: numpy array
+        vector for x axis
+    y: numpy array
+        vector for y axis
+    xlabel: string
+        label for x axis
+    ylabel: string
+        label for y axis
+    dove: string
+        path for saving data
+    image_name: string
+        name for image to save
     '''
     plt.figure(figsize=(10, 6))
     plt.plot(np.sqrt(x), y, '-o')

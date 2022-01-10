@@ -28,6 +28,13 @@ def define_filter():
 
 def SPL_measurement_and_analysis(camera, filter):
     '''Function for SPL data acquisition and analysis
+
+    Parameters
+    ----------
+    camera: object
+        camera object created with the command spl.define_camera()
+    filter: object
+        filter object created with the command spl.define_filter
     '''
     meas = SplAcquirer(camera, filter)
     lambda_vector = np.arange(530, 730, 10)

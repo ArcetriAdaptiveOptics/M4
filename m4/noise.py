@@ -1,6 +1,13 @@
 '''
 Authors
   - C. Selmi: written in 2020
+
+    Class to be used for alignment of the optical tower
+    and the deformable mirror
+
+    HOW TO USE IT::
+
+        from m4 import noise
 '''
 
 import os

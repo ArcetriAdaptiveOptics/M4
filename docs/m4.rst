@@ -52,7 +52,7 @@ m4.ott\_calibrator\_and\_aligner module
 
 
 m4.requirements\_checker module
---------------------------
+-------------------------------
 
 .. automodule:: m4.requirements_checker
     :members:
@@ -64,6 +64,7 @@ m4.SPL\_controller module
 -------------------------
 
 .. automodule:: m4.SPL_controller
+	:imported-members:
     :members:
     :undoc-members:
     :show-inheritance:
