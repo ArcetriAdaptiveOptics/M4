@@ -14,3 +14,4 @@ pyzabbix
 zmq
 guietta
 pyyaml
+serial

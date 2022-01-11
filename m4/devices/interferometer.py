@@ -14,8 +14,15 @@ from m4.configuration.ott_parameters import Interferometer
 from m4.ground.read_data import InterferometerConverter
 from m4.devices.base_interferometer import BaseInterferometer
 
-class I4dArcetri(BaseInterferometer):
+class I4d4020(BaseInterferometer):
     ''' Class for i4d interferometer
+
+    HOW TO USE IT::
+
+        from m4.devices.interferometer import *
+        i4d4020 = I4d4020()
+        or
+        i4d6110 = I4d6110()
     '''
 
     def __init__(self):

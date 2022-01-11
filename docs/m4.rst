@@ -69,10 +69,10 @@ m4.SPL\_controller module
     :undoc-members:
     :show-inheritance:
 
-m4.zernike\_command\_test module
---------------------------------
+m4.zernikeCommandTest module
+-----------------------------
 
-.. automodule:: m4.zernike_command_test
+.. automodule:: m4.zernikeCommandTest
     :members:
     :undoc-members:
     :show-inheritance:

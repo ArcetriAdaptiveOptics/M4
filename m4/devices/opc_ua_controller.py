@@ -15,10 +15,12 @@ server = OpcUaParameters.server
 
 class OpcUaController():
     """
-    Function for test tower management via OpcUa::
+    Function for test tower management via OpcUa
+
+    HOW TO USE IT::
 
         from m4.devices.opc_ua_controller import OpcUaController
-        opc = OpcUaController()
+        opcUa = OpcUaController()
     """
     STOP_NODE = "ns=7;s=MAIN.b_StopCmd"
     TEMPERATURE_NODE = "ns=7;s=MAIN.i_Temperature_Sensor"

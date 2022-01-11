@@ -14,6 +14,12 @@ from m4.type.accelerometers_data import AccelerometersData
 
 class ZmqAccelerometers(BaseAccelerometers):
     ''' Class for accelerometers control via zmq
+
+    HOW TO USE IT::
+
+        from m4.devices.accelerometers import ZmqAccelerometers
+        acc = ZmqAccelerometers()
+        tt = acc. acquireData(recording_seconds)
     '''
 
     def __init__(self):

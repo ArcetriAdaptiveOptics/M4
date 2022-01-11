@@ -9,6 +9,13 @@ from m4.devices.base_parabola_slider import BaseParabolaSlider
 
 class OpcUaParabolaSlider(BaseParabolaSlider):
     ''' Class for parabola slide control via opc ua
+
+    HOW TO USE IT::
+
+        from m4.devices.opc_ua_controller import OpcUaController
+        opcUa = OpcUaController()
+        from m4.devices.parabola_slider import OpcUaParabolaSlider
+        par_slider = OpcUaParabolaSlider(opcUa)
     '''
 
     def __init__(self, opcUa):

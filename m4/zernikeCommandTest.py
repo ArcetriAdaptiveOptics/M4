@@ -12,7 +12,7 @@ from m4.configuration import config_folder_names as fold_name
 from m4.configuration.ott_parameters import OttParameters
 from m4.ground import zernike
 from m4.flattening import Flattenig
-from m4.analyzer_iffunctions import AnalyzerIFF
+from m4.analyzers.analyzer_iffunctions import AnalyzerIFF
 from m4.ground import tracking_number_folder
 from m4.ground.read_data import InterferometerConverter
 

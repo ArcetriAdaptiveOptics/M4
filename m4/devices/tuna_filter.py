@@ -3,9 +3,9 @@ Authors
   - C. Selmi: written in 2021
 '''
 import os
+import time
 import yaml
 import serial
-import time
 
 class SerialTimeoutException(Exception):
     def __init__(self, value=-1):
@@ -14,6 +14,7 @@ class SerialTimeoutException(Exception):
 class TunaFilt:
 
     def __init__(self, confLctfFile):
+        """The constructor """
         self.currfilt = CurrentFilterReader(confLctfFile)
         self.ser = None
 
@@ -55,47 +56,84 @@ class TunaFilt:
             self.ser = None
 
     def get_wl(self):
+        '''
+        Returns
+        -------
+        out: int [nm]
+            wavelength output from filter
+        '''
         cmd = bytes(self.currfilt.read_wl, 'utf-8')
         tmp = self.ser.write(cmd)
         nw = self._pollSerial()
-        out = self.ser.read(self.ser.inWaiting()) 
+        out = self.ser.read(self.ser.inWaiting())
         return out
 
     def set_wl(self, wl):
+        '''
+        Parameters
+        ----------
+        wl: int [nm]
+            wavelength to set
+
+        Returns
+        -------
+        out: int [nm]
+            wavelength output from filter
+        '''
         if wl < 650 or wl > 1100:
             raise BaseException()
         cmd = bytes(self.currfilt.write_wl % wl, 'utf-8')
         tmp = self.ser.write(cmd)
         nw = self._pollSerial()
-        out = self.ser.read(self.ser.inWaiting()) 
+        out = self.ser.read(self.ser.inWaiting())
         return out
 
     def reset(self):
+        '''
+        Returns
+        -------
+        out:
+        '''
         cmd = bytes(self.currfilt.reset, 'utf-8')
         tmp = self.ser.write(cmd)
         nw = self._pollSerial()
-        out = self.ser.read(self.ser.inWaiting()) 
+        out = self.ser.read(self.ser.inWaiting())
         return out
 
     def get_status(self):
+        '''
+        Returns
+        -------
+        out:
+        '''
         cmd = bytes(self.currfilt.read_status, 'utf-8')
         tmp = self.ser.write(cmd)
         nw = self._pollSerial()
-        out = self.ser.read(self.ser.inWaiting()) 
+        out = self.ser.read(self.ser.inWaiting())
         return out
 
     def isbusy(self):
+        '''
+        Returns
+        -------
+        out:
+        '''
         cmd = bytes(self.currfilt.busy_check, 'utf-8')
         tmp = self.ser.write(cmd)
         nw = self._pollSerial()
-        out = self.ser.read(self.ser.inWaiting()) 
+        out = self.ser.read(self.ser.inWaiting())
         return out
 
     def cancel(self):
+        '''
+        Returns
+        -------
+        out:
+        '''
         cmd = bytes(self.currfilt.escape, 'utf-8')
         tmp = self.ser.write(cmd)
         nw = self._pollSerial()
-        out = self.ser.read(self.ser.inWaiting()) 
+        out = self.ser.read(self.ser.inWaiting())
         return out
 
 class CurrentFilterReader():

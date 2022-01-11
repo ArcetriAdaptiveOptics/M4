@@ -3,7 +3,7 @@ m4.configuration package
 
 
 m4.configuration.config\_folder\_names module
-------------------------------
+---------------------------------------------
 
 .. automodule:: m4.configuration.config_folder_names
     :members:
@@ -11,7 +11,7 @@ m4.configuration.config\_folder\_names module
     :show-inheritance:
 
 m4.configuration.config\_reader module
-------------------------------
+---------------------------------------
 
 .. automodule:: m4.configuration.config_reader
     :members:
@@ -19,7 +19,7 @@ m4.configuration.config\_reader module
     :show-inheritance:
 
 m4.configuration.config\_uploader module
-------------------------------
+----------------------------------------
 
 .. automodule:: m4.configuration.config_uploader
     :members:

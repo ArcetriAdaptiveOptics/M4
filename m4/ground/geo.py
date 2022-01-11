@@ -12,6 +12,21 @@ from scipy import ndimage
 
 def draw_mask(img, cx, cy, r, out=0):
     """ Function to create circular mask
+    Parameters
+    ----------
+    img: numpy array
+        image to mask
+    cx: int [pixel]
+        center x of the mask
+    cy: int [pixel]
+        center y of the mask
+    r: int [pixel]
+        radius of the mask
+
+    Returns
+    -------
+    img1: numpy array
+        start image whit circular mask
     """
     ss = np.shape(img)
     x = np.arange(ss[0])
@@ -37,6 +52,21 @@ def draw_mask(img, cx, cy, r, out=0):
     return img1
 
 def qpupil(mask, xx=None, yy=None, nocircle=0):
+    '''
+    Parameters
+    ----------
+    mask: numpy array
+
+    Returns
+    ------
+    x0:
+    y0:
+    r:
+    xx: numpy array
+        grid of coordinates of the same size as input mask
+    yy: numpy array
+        grid of coordinates of the same size as input mask
+    '''
     idx = np.where(mask == 1)
     ss = np.shape(mask)
     x = np.arange(ss[0]).astype(float)
@@ -69,6 +99,17 @@ def qpupil(mask, xx=None, yy=None, nocircle=0):
 
 def rotate(img, angle):
     ''' Function to rotate the image
+    Parameters
+    ----------
+    image: numpy array
+        The input array
+    angle: float
+        The rotation angle in degrees
+
+    Returns
+    ------
+    img1: numpy array
+        The rotated input
     '''
     img1 = ndimage.rotate(img, angle)
     s0 = np.shape(img)

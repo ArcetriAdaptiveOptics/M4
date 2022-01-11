@@ -68,6 +68,16 @@ def readFits_maskedImage(fits_file_path):
     return immagine
 
 def readFitsSlimImage(fits_file_path):
+    '''
+    Parameters
+    ----------
+    fits_file_path: string
+                    fits file path of masked array to read
+
+    Returns
+    -------
+    immagine: numpy masked array
+    '''
     hduList = pyfits.open(fits_file_path)
     data = hduList[0].data
     mask = np.invert(np.isfinite(data))
@@ -165,6 +175,21 @@ class InterferometerConverter():
 
     @staticmethod
     def fromI4DToSimplerData(i4dname, folder, h5name):
+        ''' Function for converting files from 4d files to H5 files
+        Parameters
+        ----------
+        i4dname: string
+            file name path of 4d data
+        folder: string
+            folder path for new data
+        h5name: string
+            name for h5 data
+
+        Returns
+        -------
+        file_name: string
+            finale path name
+        '''
         file = h5py.File(i4dname, 'r')
         data = file.get('/Measurement/SurfaceInWaves/Data')
 

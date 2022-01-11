@@ -8,7 +8,14 @@ from m4.devices.base_reference_mirror_slider import BaseReferenceMirrorSlider
 
 
 class OpcUaReferenceMirrorSlider(BaseReferenceMirrorSlider):
-    ''' Class for reference mirror slide control via opc ua
+    ''' Class for reference mirror slider control via opc ua
+
+    HOW TO USE IT::
+
+        from m4.devices.opc_ua_controller import OpcUaController
+        opcUa = OpcUaController()
+        from m4.devices.reference_mirror_slider import OpcUaReferenceMirrorSlider
+        rm_slider = OpcUaReferenceMirrorSlider(opcUa)
     '''
 
     def __init__(self, opcUa):

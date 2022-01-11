@@ -22,7 +22,7 @@ from m4.devices.reference_mirror import OpcUaReferenceMirror
 from m4.devices.m4_controller import OpcUaM4
 from m4.devices.temperature_sensors import OpcUaTemperatureSensors
 from m4.devices.accelerometers import ZmqAccelerometers
-from m4.devices.interferometer import I4dArcetri
+from m4.devices.interferometer import I4d4020
 
 from m4.configuration.config_uploader import config_rewriter
 
@@ -65,7 +65,7 @@ def create_ott(config_file_name='/Users/rm/eclipse-workspace/M4/m4/configuration
         m4 = OpcUaM4(opcUa)
         temperature_sensor = OpcUaTemperatureSensors(opcUa)
         accelerometers = ZmqAccelerometers()
-        interf = I4dArcetri()
+        interf = I4d4020()
 
     ott = OTT(parabola_slider, reference_mirror_slider, angle_rotator,
               parab, reference_mirror, m4, temperature_sensor, accelerometers)

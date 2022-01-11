@@ -9,6 +9,14 @@ from m4.devices.base_reference_mirror import BaseReferenceMirror
 
 class OpcUaReferenceMirror(BaseReferenceMirror):
     ''' Class for reference mirror control via opc ua
+
+
+    HOW TO USE IT::
+
+        from m4.devices.opc_ua_controller import OpcUaController
+        opcUa = OpcUaController()
+        from m4.devices.reference_mirror import OpcUaReferenceMirror
+        rm = OpcUaReferenceMirror(opcUa)
     '''
 
     def __init__(self, opcUa):

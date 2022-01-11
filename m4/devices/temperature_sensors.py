@@ -7,6 +7,13 @@ from m4.devices.base_temperature_sensors import BaseTemperatureSensors
 
 class OpcUaTemperatureSensors(BaseTemperatureSensors):
     ''' Class for Pt sensors control via opc ua
+
+    HOW TO USE IT::
+
+        from m4.devices.opc_ua_controller import OpcUaController
+        opcUa = OpcUaController()
+        from m4.devices.temperature_sensors import OpcUaTemperatureSensor
+        sens = OpcUaTemperatureSensor(OpcUa)
     '''
 
     def __init__(self, opcUa):

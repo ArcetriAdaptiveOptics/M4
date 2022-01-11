@@ -26,7 +26,7 @@ m4.ground.logger\_set\_up module
     :show-inheritance:
 
 m4.ground.ottInformation module
---------------------
+-------------------------------
 
 .. automodule:: m4.ground.ottInformation
     :members:
@@ -34,7 +34,7 @@ m4.ground.ottInformation module
     :show-inheritance:
 
 m4.ground.read\_data module
-------------------------------------
+---------------------------
 
 .. automodule:: m4.ground.read_data
     :members:
@@ -42,7 +42,7 @@ m4.ground.read\_data module
     :show-inheritance:
 
 m4.ground.rebinner module
---------------------
+-------------------------
 
 .. automodule:: m4.ground.rebinner
     :members:

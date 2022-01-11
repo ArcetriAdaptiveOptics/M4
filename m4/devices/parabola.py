@@ -10,6 +10,13 @@ from m4.devices.base_parabola import BaseParabola
 
 class OpcUaParabola(BaseParabola):
     ''' Class for parabola control via opc ua
+
+    HOW TO USE IT::
+
+        from m4.devices.opc_ua_controller import OpcUaController
+        opcUa = OpcUaController()
+        from m4.devices.parabola import OpcUaParabola
+        par = OpcUaParabola(opcUa)
     '''
 
     def __init__(self, opcUa):

@@ -7,7 +7,17 @@ from m4.configuration.ott_parameters import OpcUaParameters
 from m4.devices.base_angle_rotator import BaseAngleRotator
 
 class OpcUaAngleRotator(BaseAngleRotator):
-    ''' Class for ring angle rotation control via opc ua '''
+    ''' Class for ring angle rotation control via opc ua 
+
+    HOW TO USE IT::
+
+        from m4.devices.opc_ua_controller import OpcUaController
+        opcUa = OpcUaController()
+        from m4.devices.angle_rotator import OpcUaAngleRotator
+        ang = OpcUaAngleRotator(OpcUa)
+        pos = ang.getPosition()
+        pos = ang.setPosition(absolute_position_in_deg)
+    '''
 
     def __init__(self, opcUa):
         """The constructor """

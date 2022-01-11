@@ -27,7 +27,7 @@ class Flattenig():
         self._an = analyzerIFFunctions
         self._who = self._an._who
         self._roi = ROI()
-        #self._mirror = DMirror()
+        self._mirror = DMirror()
         self._command = None
         self._flatteningWf = None
 
@@ -140,14 +140,13 @@ class Flattenig():
 
 
 #### Usato solo qui quindi temporaneamente posizionato qui ###
-from m4.configuration.config import path_name
 from m4.configuration import ott_parameters
 
 class DMirror():
 
     def __init__(self):
         """The constructor """
-        curr_conffolder = os.path.join(path_name.CONFIGURATION_ROOT_FOLDER,
+        curr_conffolder = os.path.join(fold_name.CONFIGURATION_ROOT_FOLDER,
                                        ott_parameters.tnconf_mirror)
 #         self.vmat = read_data.readFits_data(os.path.join(curr_conffolder, 'vmat.fits'))
 #         self.ff = read_data.readFits_data(os.path.join(curr_conffolder, 'ff_matrix.fits'))
