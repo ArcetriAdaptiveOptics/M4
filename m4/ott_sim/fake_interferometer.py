@@ -10,6 +10,14 @@ from m4.ott_sim.ott_images import OttImages
 from m4.devices.base_interferometer import BaseInterferometer
 
 class FakeInterferometer(BaseInterferometer):
+    '''
+
+    HOW TO USE IT::
+
+        from m4.ott_sim.fake_interferometer import FakeInterferometer
+        interf = FakeInterferometer()
+        image = interf.acquire_phasemap()
+    '''
 
     def __init__(self):
         """The constructor """
@@ -17,6 +25,19 @@ class FakeInterferometer(BaseInterferometer):
         self._ott = None
 
     def acquire_phasemap(self, n_frames=1, show=0):
+        '''
+        Parameters
+        ----------
+            nframes: int
+                number of frames
+            show: int
+                0 to not show the image
+
+        Returns
+        -------
+            masked_ima: numpy masked array
+                    interferometer image
+        '''
         ottIma = OttImages(self._ott)
         opd, mask = ottIma.ott_smap(show=show)
         masked_ima = np.ma.masked_array(opd.T,
@@ -24,6 +45,8 @@ class FakeInterferometer(BaseInterferometer):
         return masked_ima
 
     def set_ott(self, ott):
+        ''' Function for setting optical tower data
+        '''
         self._ott = ott
 
     def save_phasemap(self, dove, name, image):
@@ -42,6 +65,12 @@ class FakeInterferometer(BaseInterferometer):
         pyfits.append(fits_file_name, image.mask.astype(int))
 
     def readImage4D(self, file_name):
+        '''
+        Parameters
+        ----------
+        file_name: string
+            fits file path name of image to read
+        '''
         hduList = pyfits.open(file_name)
         masked_ima = np.ma.masked_array(hduList[0].data,
                                         hduList[1].data.astype(bool))

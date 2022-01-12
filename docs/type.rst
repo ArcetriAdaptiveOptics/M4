@@ -42,7 +42,7 @@ m4.type.modesVector module
     :show-inheritance:
 
 m4.type.temperature\_sensors module
------------------------------
+-----------------------------------
 
 .. automodule:: m4.type.temperature_sensors
     :members:

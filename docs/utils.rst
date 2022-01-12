@@ -2,14 +2,6 @@ m4.utils package
 ================
 
 
-m4.utils.accelerometer\_data module
------------------------------------
-
-.. automodule:: m4.utils.accelerometer_data
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 m4.utils.geometrical\_transforms module
 ---------------------------------------
 
@@ -28,7 +20,7 @@ m4.utils.img\_redux module
     :show-inheritance:
 
 m4.utils.influence\_functions\_maker module
---------------------------
+--------------------------------------------
 
 .. automodule:: m4.utils.influence_functions_maker
     :members:
@@ -76,7 +68,7 @@ m4.utils.rotation\_and\_optical\_axis\_alignment module
     :show-inheritance:
 
 m4.utils.speed\_time\_calculator module
--------------------
+---------------------------------------
 
 .. automodule:: m4.utils.speed_time_calculator
     :members:
@@ -84,7 +76,7 @@ m4.utils.speed\_time\_calculator module
     :show-inheritance:
 
 m4.utils.SPL\_data\_acquirer module
--------------------
+-----------------------------------
 
 .. automodule:: m4.utils.SPL_data_acquirer
     :members:

@@ -28,6 +28,17 @@ class ParabolIdent():
         self._rFiducialPoint = OttParameters.RADIUS_FIDUCIAL_POINT
 
     def testZernikeOnPar(self, image):
+        '''
+        Parameters
+        ----------
+        image: numpy masked array
+            image to test
+
+        Returns
+        -------
+        coef1:
+        coef2:
+        '''
         from m4.ground import zernike
         x, y = self.fiduciali(image)
         centro, axs, raggio = self._fitEllipse(x, y)

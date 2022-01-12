@@ -14,6 +14,12 @@ Copyright (c) 2011 Tim van Werkhoven. All rights reserved.
 This file is licensed under the Creative Commons Attribution-Share Alike
 license versions 3.0 or higher, see
 http://creativecommons.org/licenses/by-sa/3.0/
+
+HOW TO USE IT::
+
+    from m4.ground import zernike
+    coeff, mat = zernike.zernikeFit(img, zernike_index_vector)
+    surf_image = zernike.zernikeSurface(img, coef, mat)
 """
 
 ### Libraries

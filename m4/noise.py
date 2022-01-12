@@ -8,6 +8,11 @@ Authors
     HOW TO USE IT::
 
         from m4 import noise
+        noise.noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle)
+        or
+        noise.spectrumFromData(data_file_path)
+        or
+        noise.convection_noise(data_file_path, tau_vector)
 '''
 
 import os

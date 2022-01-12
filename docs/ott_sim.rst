@@ -2,7 +2,7 @@ m4.ott\_sim package
 ===================
 
 m4.ott\_sim.fake\_accelerometers module
-------------------------------
+---------------------------------------
 
 .. automodule:: m4.ott_sim.fake_accelerometers
     :members:
@@ -10,7 +10,7 @@ m4.ott\_sim.fake\_accelerometers module
     :show-inheritance:
 
 m4.ott\_sim.fake\_angle\_rotator module
-------------------------------
+---------------------------------------
 
 .. automodule:: m4.ott_sim.fake_angle_rotator
     :members:
@@ -18,7 +18,7 @@ m4.ott\_sim.fake\_angle\_rotator module
     :show-inheritance:
 
 m4.ott\_sim.fake\_interferometer module
-------------------------------
+---------------------------------------
 
 .. automodule:: m4.ott_sim.fake_interferometer
     :members:
@@ -26,7 +26,7 @@ m4.ott\_sim.fake\_interferometer module
     :show-inheritance:
 
 m4.ott\_sim.fake\_m4 module
-------------------------------
+---------------------------
 
 .. automodule:: m4.ott_sim.fake_m4
     :members:
@@ -34,7 +34,7 @@ m4.ott\_sim.fake\_m4 module
     :show-inheritance:
 
 m4.ott\_sim.fake\_parabola\_slider module
-------------------------------
+-----------------------------------------
 
 .. automodule:: m4.ott_sim.fake_parabola_slider
     :members:
@@ -42,7 +42,7 @@ m4.ott\_sim.fake\_parabola\_slider module
     :show-inheritance:
 
 m4.ott\_sim.fake\_parabola module
-------------------------------
+---------------------------------
 
 .. automodule:: m4.ott_sim.fake_parabola
     :members:
@@ -50,7 +50,7 @@ m4.ott\_sim.fake\_parabola module
     :show-inheritance:
 
 m4.ott\_sim.fake\_reference\_mirror\_slider module
-------------------------------
+--------------------------------------------------
 
 .. automodule:: m4.ott_sim.fake_reference_mirror_slider
     :members:
@@ -58,7 +58,7 @@ m4.ott\_sim.fake\_reference\_mirror\_slider module
     :show-inheritance:
 
 m4.ott\_sim.fake\_reference\_mirror module
-------------------------------
+------------------------------------------
 
 .. automodule:: m4.ott_sim.fake_reference_mirror
     :members:
@@ -66,7 +66,7 @@ m4.ott\_sim.fake\_reference\_mirror module
     :show-inheritance:
 
 m4.ott\_sim.fake\_temperature\_sensors module
-------------------------------
+---------------------------------------------
 
 .. automodule:: m4.ott_sim.fake_temperature_sensors
     :members:

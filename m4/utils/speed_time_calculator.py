@@ -23,6 +23,9 @@ path_list = [path0, path1, path2]
 cube_name = 'Cube.fits'
 
 def read_data_from_differents_paths(n_frames):
+    '''
+    test for reading time
+    '''
     dt_list = []
     for path in path_list:
         list = glob.glob(os.path.join(path,'*.4D'))
@@ -36,17 +39,18 @@ def read_data_from_differents_paths(n_frames):
     print(dt_list)
 
 def create_test_cubes(n_frames):
-    cube = None
+    '''
+    test for creating times
+    '''
+    cube = []
     dt_list = []
     for path in path_list:
         t0 = time.time()
         list = glob.glob(os.path.join(path,'*.4D'))
         for i in range(n_frames):
             ima = ic.fromNew4D(list[i])
-            if cube is None:
-                cube = ima
-            else:
-                cube = np.ma.dstack((cube, ima))
+            cube.append(ima)
+        cube = np.ma.dstack(cube)
         file_name = os.path.join(path, cube_name)
         pyfits.writeto(file_name, cube.data, overwrite=True)
         pyfits.append(file_name, cube.mask.astype(int), overwrite=True)
@@ -58,6 +62,8 @@ def create_test_cubes(n_frames):
     print(dt_list)
 
 def read_test_cubes():
+    ''' test for reading times
+    '''
     dt_list = []
     for path in path_list:
         t0 = time.time()

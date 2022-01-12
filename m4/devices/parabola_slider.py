@@ -28,8 +28,8 @@ class OpcUaParabolaSlider(BaseParabolaSlider):
 
         Returns
         -------
-            current_pos: int [mm]
-                            parabola slider position
+        current_pos: int [mm]
+            parabola slider position
         '''
         current_pos = self._opcUa.get_position(OpcUaParameters.ST)
         self._logger.debug('Position = %g' % current_pos)
@@ -44,8 +44,8 @@ class OpcUaParabolaSlider(BaseParabolaSlider):
 
         Returns
         -------
-            current_pos: int [mm]
-                        absolute parabola slider position
+        current_pos: int [mm]
+            absolute parabola slider position
         '''
         self._checkSlide(absolute_position_in_mm)
         self._opcUa.set_target_position(

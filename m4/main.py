@@ -169,9 +169,11 @@ def align_PARAndRM(ott, interf, tt_calib, n_images,
 
 #### Calibrazione ed allineamneto per m4 (in cartellaBella.m4.toImplement.ott_calibrator_and_aligner ###
 def calibrate_M4():
+    ''' to be implemented '''
     pass
 
 def align_M4():
+    ''' to be implemented '''
     pass
 
 

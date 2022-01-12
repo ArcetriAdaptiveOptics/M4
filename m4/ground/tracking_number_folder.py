@@ -2,6 +2,13 @@
 Authors
   - C. Selmi: written in 2019
              modified in July 2021
+
+HOW TO USE IT::
+
+    from m4.ground import tracking_numbers_folder as tnf
+    path, tt = tnf.createFolderToStoreMeasurements(store_in_folder)
+    or
+    path = tnf.findTrackingNumberPath(tt)
 '''
 
 import os

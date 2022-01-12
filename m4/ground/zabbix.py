@@ -1,6 +1,11 @@
 '''
 Authors
   - C. Selmi:  written in September 2020
+
+HOW TO USE IT::
+
+    from m4.ground import zabbix
+    zabbix.main()
 '''
 
 import sys

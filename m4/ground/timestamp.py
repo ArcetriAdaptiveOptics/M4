@@ -1,3 +1,14 @@
+'''
+HOW TO USE IT::
+
+    from m4.ground.timestamp import Timestamp
+    now = Timestamp.now()
+    today = Timestamp.today()
+    or
+    ts = Timestamp()
+    now = ts.asNowString()
+    today = ts.asTodayString()
+'''
 import datetime
 
 
@@ -9,17 +20,41 @@ class Timestamp():
         self._now = datetime.datetime.now()
 
     def asNowString(self):
+        '''
+        Returns
+        -------
+        now: string
+            yearMonthDay_hoursMinutesSeconds
+        '''
         return self._now.strftime("%Y%m%d_%H%M%S")
 
     def asTodayString(self):
+        '''
+        Returns
+        -------
+        today: string
+            year month day
+        '''
         return self._now.strftime("%Y%m%d")
 
     @staticmethod
     def now():
+        '''
+        Returns
+        -------
+        now: string
+            yearMonthDay_hoursMinutesSeconds
+        '''
         return Timestamp().asNowString()
 
     @staticmethod
     def today():
+        '''
+        Returns
+        -------
+        today: string
+            year month day
+        '''
         return Timestamp().asTodayString()
 
     def __str__(self):

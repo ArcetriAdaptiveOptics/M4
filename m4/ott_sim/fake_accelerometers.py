@@ -14,6 +14,12 @@ from m4.devices.base_accelerometers import BaseAccelerometers
 
 class FakeAccelerometers(BaseAccelerometers):
     ''' Class for simulated accelerometers control
+
+    HOW TO USE IT::
+
+        from m4.ott_sim.fake_accelerometers import FakeAccelerometers
+        acc = FakeAccelerometers()
+        tt = acc. acquireData(recording_seconds)
     '''
 
     def __init__(self):
@@ -22,7 +28,18 @@ class FakeAccelerometers(BaseAccelerometers):
         self._dt = OpcUaParameters.accelerometers_dt
 
     def acquireData(self, recording_seconds=5):
-        ''' some function to simulate accelerometers data '''
+        ''' some function to simulate accelerometers data
+
+        Parameters
+        ----------
+        recording_seconds: int [s]
+            number of seconds for data recording
+
+        Returns
+        -------
+        tt: string
+            tracking number of mesurements
+        '''
         T = recording_seconds
         n = int(T / self._dt)
         t = np.linspace(0, T, n)

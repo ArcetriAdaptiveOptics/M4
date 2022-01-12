@@ -13,6 +13,13 @@ from m4.configuration import config_folder_names as fold_name
 
 class AccelerometersData():
     ''' Class used to manage accelerometer data
+
+    HOW TO USE IT::
+
+        from m4.type.accelerometers_data import AccelerometersData
+        acc = AccelerometersData()
+        or
+        acc = AccelerometersData.loadInfoFromAccTtFolder()
     '''
 
     def __init__(self):
@@ -108,13 +115,13 @@ class AccelerometersData():
 
         Parameters
         ----------
-                tt: string
-                        measurement tracking number
+        tt: string
+            measurement tracking number
 
         Returns
         -------
-                theObject: object
-                        analyzerIFF class object
+        theObject: object
+            acceleremoters data type class object
         """
         theObject = AccelerometersData()
         theObject.tt = tt
@@ -140,8 +147,8 @@ class AccelerometersData():
         '''
         Returns
         -------
-            _datah5: numpy array
-                measurements data
+        _datah5: numpy array
+            measurements data
         '''
         if self._h5_file_path is None:
             raise OSError('Tracking number folder not specified ')
@@ -153,12 +160,12 @@ class AccelerometersData():
         '''
         Returns
         -------
-            spe_list: list
-                    list containing the spectrum of vectors composing
-                    the matrix z
-            freq_list: list
-                    list containing the frequencies of vectors composing
-                    the matrix z
+        spe_list: list
+                list containing the spectrum of vectors composing
+                the matrix z
+        freq_list: list
+                list containing the frequencies of vectors composing
+                the matrix z
         '''
         if self.datah5 is None:
             self.datah5 = self.read_data()

@@ -120,7 +120,9 @@ class OttCalibAndAlign():
 
 ### M4 calibrator and aligner in cartellaBella.m4.toImplement.ott_calibrator_and_aligner ###
     def m4_calibrator(self):
+        ''' to be implemented '''
         pass
     
     def m4_aligner(self):
+        ''' to be implemented '''
         pass
