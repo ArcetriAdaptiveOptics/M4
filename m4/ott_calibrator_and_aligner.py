@@ -18,7 +18,7 @@ class OttCalibAndAlign():
 
     HOW TO USE IT::
 
-        from m4.alignment import OttCalibAndAlign
+        from m4.ott_calibrator_and_aligner import OttCalibAndAlign
         from m4.configuration import start
         ott, interf = start.create_ott(conf='.../youConf.yaml')
         ac = OttCalibAndAlign(ott, interf)
