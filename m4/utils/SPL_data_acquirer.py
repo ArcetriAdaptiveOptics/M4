@@ -39,10 +39,13 @@ class SplAcquirer():
         self._exptime = None
 
     @staticmethod
-    def _storageFolder():
+    def _storageFolder(path=None):
         """ Creates the path where to save measurement data"""
-        #return Path(__file__).parent/'data'
-        return fold_name.SPL_ROOT_FOLDER
+        if path is not None:
+        	return path
+        else:
+        	#return Path(__file__).parent/'data'
+        	return fold_name.SPL_ROOT_FOLDER
 
 
 # lambda_vector = np.arange(530,730,10)
@@ -64,13 +67,14 @@ class SplAcquirer():
         tt: string
             tracking number of measurements
         '''
-        self._dove, tt = tracking_number_folder.createFolderToStoreMeasurements(self._storageFolder())
+        lift_test_path = '/home/labot/LIFT/SPL/data'
+        self._dove, tt = tracking_number_folder.createFolderToStoreMeasurements(self._storageFolder(lift_test_path))
         fits_file_name = os.path.join(self._dove, 'lambda_vector.fits')
         pyfits.writeto(fits_file_name, lambda_vector)
 
         ## find PSF position ##
         print('Acquiring reference image at 600 nm...')
-        self._filter.set_wl(600)
+        self._filter.move_to(600)
         self._camera.feature('ExposureTimeAbs').value = 1.5 * exptime * 1e6
         img = self._camera.acquire_frame(30*1000).buffer_data_numpy()
         if mask is None:
@@ -96,7 +100,7 @@ class SplAcquirer():
         for wl, expg in zip(lambda_vector, expgain):
 
             print('Acquiring image at %d nm...' % wl)
-            self._filter.set_wl(wl)
+            self._filter.move_to(wl)
             self._camera.feature('ExposureTimeAbs').value = exptime * expg * 1e6
             #time.sleep(3 * ExposureTimeAbs / 1e6)
             image = self._camera.acquire_frame(30*1000).buffer_data_numpy()

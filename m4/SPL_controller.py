@@ -6,31 +6,31 @@ HOW TO USE IT::
 
     from m4.main import SPL_controller as spl
     camera = spl.define_camera()
-    filter = spl.define_filter89
+    filter = spl.define_filter()
     tt, piston = spl.SPL_measurement_and_analysis(camera, filter)
 '''
 import os
 import numpy as np
 from m4.utils.SPL_data_acquirer import SplAcquirer
-from m4.analyzers.SPL_data_analyzer import SplAnalyzer
+#from m4.analyzers.SPL_data_analyzer import SplAnalyzer
 from m4.configuration import config_folder_names as fold_name
 
 def define_camera():
     ''' Function to use to define the camera with pysilico
     '''
+    #far partire pysilico_server_2
     import pysilico
-    IPServer = 'chissà'
-    port = 0000
+    IPServer = 'localhost'
+    port = 7110
     cam = pysilico.camera(IPServer, port)
     return cam
 
 def define_filter():
     ''' Function to use to define the tunable filter
     '''
-    from m4.devices.tuna_filter import TunaFilt
-    conf_file = os.path.join(fold_name.CONFIGURATION_ROOT_FOLDER, 'lctf.yaml')
-    filter = TunaFilt(conf_file)
-    filter.connect()
+    #far partire plico_motor_server_3
+    from plico_motor import motor
+    filter = motor('localhost', 7300, axis=1)
     return filter
 
 def SPL_measurement_and_analysis(camera, filter):
@@ -43,7 +43,7 @@ def SPL_measurement_and_analysis(camera, filter):
     filter: object
         filter object created with the command spl.define_filter
     '''
-    meas = SplAcquirer(camera, filter)
+    meas = SplAcquirer(filter, camera)
     lambda_vector = np.arange(530, 730, 10)
     tt = meas.acquire(lambda_vector, exptime=0.7, mask=None)
     print(tt)
