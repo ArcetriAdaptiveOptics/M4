@@ -222,7 +222,7 @@ class Measurements():
             number of step measurements
         nframes: int
             number of interferometr's frames
-    
+
         Returns
         ------
         tt: string
@@ -429,7 +429,7 @@ class Measurements():
                 number of iterations
         tt_for_align: string
             tracking number for alignment
-    
+
         Returns
         -------
         tt: string
@@ -582,8 +582,7 @@ class Measurements():
                                        n_images,
                                        np.array([0, 1]),
                                        np.array([3, 4]))
-        #a.ott_alignment(n_images, 1, np.array([0,1,2,3,4]),
-                        np.array([0,1,2,3,4]), tt)
+        #a.ott_alignment(n_images, 1, np.array([0,1,2,3,4]), np.array([0,1,2,3,4]), tt)
         image = self._interf.acquire_phasemap(2)
         pippo = zernike.zernikeFit(image, zern_vec)
         coeff.append(pippo[0])
