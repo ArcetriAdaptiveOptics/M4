@@ -4,7 +4,7 @@ Authors
 
 HOW TO USE IT::
 
-    from m4.main import SPL_controller as spl
+    from m4 import SPL_controller as spl
     camera = spl.define_camera()
     filter = spl.define_filter()
     tt, piston = spl.SPL_measurement_and_analysis(camera, filter)
@@ -12,7 +12,7 @@ HOW TO USE IT::
 import os
 import numpy as np
 from m4.utils.SPL_data_acquirer import SplAcquirer
-#from m4.analyzers.SPL_data_analyzer import SplAnalyzer
+from m4.analyzers.SPL_data_analyzer import SplAnalyzer
 from m4.configuration import config_folder_names as fold_name
 
 def define_camera():
@@ -45,7 +45,7 @@ def SPL_measurement_and_analysis(camera, filter):
     '''
     meas = SplAcquirer(filter, camera)
     lambda_vector = np.arange(530, 730, 10)
-    tt = meas.acquire(lambda_vector, exptime=0.7, mask=None)
+    tt = meas.acquire(lambda_vector, exptime=0.02, mask=None)
     print(tt)
     an = SplAnalyzer()
     piston, piston_smooth = an.analyzer(tt)

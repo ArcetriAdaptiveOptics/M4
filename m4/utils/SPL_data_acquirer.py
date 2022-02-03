@@ -41,11 +41,10 @@ class SplAcquirer():
     @staticmethod
     def _storageFolder(path=None):
         """ Creates the path where to save measurement data"""
-        if path is not None:
-        	return path
-        else:
-        	#return Path(__file__).parent/'data'
-        	return fold_name.SPL_ROOT_FOLDER
+        #return Path(__file__).parent/'data'
+        #return fold_name.SPL_ROOT_FOLDER
+        lift_test_path = '/home/labot/LIFT/SPL/data'
+        return lift_test_path
 
 
 # lambda_vector = np.arange(530,730,10)
@@ -67,16 +66,18 @@ class SplAcquirer():
         tt: string
             tracking number of measurements
         '''
-        lift_test_path = '/home/labot/LIFT/SPL/data'
-        self._dove, tt = tracking_number_folder.createFolderToStoreMeasurements(self._storageFolder(lift_test_path))
+        
+        self._dove, tt = tracking_number_folder.createFolderToStoreMeasurements(self._storageFolder())
         fits_file_name = os.path.join(self._dove, 'lambda_vector.fits')
         pyfits.writeto(fits_file_name, lambda_vector)
 
         ## find PSF position ##
         print('Acquiring reference image at 600 nm...')
         self._filter.move_to(600)
-        self._camera.feature('ExposureTimeAbs').value = 1.5 * exptime * 1e6
-        img = self._camera.acquire_frame(30*1000).buffer_data_numpy()
+        self._camera.setExposureTime(1.5 * exptime *1e3)
+        #self._camera.feature('ExposureTimeAbs').value = 1.5 * exptime * 1e6
+        #img = self._camera.acquire_frame(30*1000).buffer_data_numpy()
+        img = self._camera.getFutureFrames(1).toNumpyArray()
         if mask is None:
             mask = np.zeros(img.shape)
 
@@ -90,10 +91,10 @@ class SplAcquirer():
 
         expgain = np.ones(lambda_vector.shape[0])
         expgain[np.where(lambda_vector < 500)] = 8
-        expgain[np.where(lambda_vector < 530)] = 4
-        expgain[np.where(lambda_vector > 680)] = 3
-        expgain[np.where(lambda_vector > 700)] = 8
-        expgain[np.where(lambda_vector >= 720)] = 9
+        expgain[np.where(lambda_vector < 530)] = 10 #4
+        expgain[np.where(lambda_vector > 680)] = 10 #3
+        expgain[np.where(lambda_vector > 700)] = 10 #8
+        expgain[np.where(lambda_vector >= 720)] = 10 #9
 
         self._logger.info('Acquisition of frames')
 
@@ -101,18 +102,18 @@ class SplAcquirer():
 
             print('Acquiring image at %d nm...' % wl)
             self._filter.move_to(wl)
-            self._camera.feature('ExposureTimeAbs').value = exptime * expg * 1e6
+            self._camera.setExposureTime(exptime * expg *1e3)
             #time.sleep(3 * ExposureTimeAbs / 1e6)
-            image = self._camera.acquire_frame(30*1000).buffer_data_numpy()
+            image = self._camera.getFutureFrames(1).toNumpyArray()
             image = np.ma.masked_array(image, mask)
 #            plot(image)
             #plt.imshow(image)
             #plt.show()
 
             crop = self._preProcessing(image, cy, cx)
-            crop_rot = scin.rotate(crop, 23,  reshape=False)
+            #crop_rot = scin.rotate(crop, 23,  reshape=False)
             #plt.figure(figsize=(10,5))
-            self.plot2(crop, crop_rot)
+            #self.plot2(crop, crop_rot)
 
             file_name = 'image_%dnm.fits' %wl
             self._saveCameraFrame(file_name, crop)

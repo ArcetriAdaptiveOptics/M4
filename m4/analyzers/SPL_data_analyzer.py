@@ -40,7 +40,9 @@ class SplAnalyzer():
     def _storageFolder():
         """ Creates the path where to save measurement data"""
         #return Path(__file__).parent/'data'
-        return fold_name.SPL_ROOT_FOLDER
+        #return fold_name.SPL_ROOT_FOLDER
+        lift_path = '/home/labot/LIFT/SPL/data'
+        return lift_path
 
     def analyzer(self, tt):
         '''
