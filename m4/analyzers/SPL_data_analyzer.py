@@ -68,38 +68,7 @@ class SplAnalyzer():
         lambda_vector = hduList[0].data
 
         cube, cube_normalized = self._readCameraFrames(tt)
-        img = np.sum(cube_normalized, 2)
-        pick = self._newThr(img)
-        matrix = np.zeros((pick[3]-pick[2] + 1, lambda_vector.shape[0])) # 150 + 1 pixel
-        matrix_smooth = np.zeros((pick[3]-pick[2] + 1, lambda_vector.shape[0]))
-        crop_frame_cube = None
-        for i in range(lambda_vector.shape[0]):
-            frame = cube[:, :, i]
-            crop_frame = frame[pick[0]:pick[1], pick[2]:pick[3] + 1]
-            #import code
-            #code.interact(local=dict(globals(), **locals()))
-            if np.max(crop_frame) > 4000:
-                print("**************** WARNING: saturation detected!")
-            if crop_frame_cube is None:
-                crop_frame_cube = crop_frame
-            else:
-                crop_frame_cube = np.dstack((crop_frame_cube, crop_frame))
-
-            y = np.sum(crop_frame, 0)
-            area = np.sum(y[:])
-            y_norm = y / area
-            if i == 0:
-                mm = 1.2 * np.max(y_norm)
-            matrix[:, i] = y_norm
-
-            w = sf.smooth(y_norm, 4)
-            w = w[:pick[3]-pick[2] + 1]
-            matrix_smooth[:, i] = w
-
-        matrix[np.where(matrix == np.nan)] = 0
-        self._matrix = matrix
-        self._matrixSmooth = matrix_smooth
-        #self._saveMatrix(matrix)
+        matrix, matrix_smooth = self.matrix_calc(lambda_vector, cube, cube_normalized)
         piston, piston_smooth = self._templateComparison(matrix,
                                                          matrix_smooth,
                                                          lambda_vector)
@@ -120,6 +89,39 @@ class SplAnalyzer():
                                       'fringe_result.fits', tt)
         pyfits.writeto(fits_file_name, matrix)
 
+    def matrix_calc(self, lambda_vector, cube, cube_normalized):
+        img = np.sum(cube_normalized, 2)
+        pick = self._newThr(img)
+        matrix = np.zeros((pick[3]-pick[2] + 1, lambda_vector.shape[0])) # 150 + 1 pixel
+        matrix_smooth = np.zeros((pick[3]-pick[2] + 1, lambda_vector.shape[0]))
+        crop_frame_cube = None
+        for i in range(lambda_vector.shape[0]):
+            frame = cube[:, :, i]
+            crop_frame = frame[pick[0]:pick[1], pick[2]:pick[3] + 1]
+            #import code
+            #code.interact(local=dict(globals(), **locals()))
+
+            if crop_frame_cube is None:
+                crop_frame_cube = crop_frame
+            else:
+                crop_frame_cube = np.dstack((crop_frame_cube, crop_frame))
+
+            y = np.sum(crop_frame, 0)
+            area = np.sum(y[:])
+            y_norm = y / area
+ #           if i == 0:
+ #               mm = 1.2 * np.max(y_norm)
+            matrix[:, i] = y_norm
+
+            w = sf.smooth(y_norm, 4)
+            w = w[:pick[3]-pick[2] + 1]
+            matrix_smooth[:, i] = w
+
+        matrix[np.where(matrix == np.nan)] = 0
+        self._matrix = matrix
+        self._matrixSmooth = matrix_smooth
+        #self._saveMatrix(matrix)
+        return matrix, matrix_smooth
 
     def _readCameraFrames(self, tt):
         ''' Read images in a specific tracking number and return the cube
