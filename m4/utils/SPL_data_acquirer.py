@@ -74,7 +74,9 @@ class SplAcquirer():
         ## find PSF position ##
         print('Acquiring reference image at 600 nm...')
         self._filter.move_to(600)
-        self._camera.setExposureTime(1.5 * exptime *1e3)
+        self._camera.setExposureTime(exptime/2 *1e3)
+        aa = self._camera.exposureTime()
+        print('with exposure time of %d [ms]' %aa)
         #self._camera.feature('ExposureTimeAbs').value = 1.5 * exptime * 1e6
         #img = self._camera.acquire_frame(30*1000).buffer_data_numpy()
         img = self._camera.getFutureFrames(1).toNumpyArray()
@@ -89,12 +91,12 @@ class SplAcquirer():
         cy, cx = self._baricenterCalculator(reference_image)
 
 
-        expgain = np.ones(lambda_vector.shape[0])
-        expgain[np.where(lambda_vector < 500)] = 8
-        expgain[np.where(lambda_vector < 530)] = 10 #4
-        expgain[np.where(lambda_vector > 680)] = 10 #3
-        expgain[np.where(lambda_vector > 700)] = 10 #8
-        expgain[np.where(lambda_vector >= 720)] = 10 #9
+        expgain = np.ones(lambda_vector.shape[0]) * 0.5
+        expgain[np.where(lambda_vector < 550)] = 1 #8
+        #expgain[np.where(lambda_vector < 630)] = 0.5 #4
+        expgain[np.where(lambda_vector > 650)] = 1 #3
+        expgain[np.where(lambda_vector > 700)] = 1.5 #8
+        #expgain[np.where(lambda_vector >= 720)] = 1 #9
 
         self._logger.info('Acquisition of frames')
 
@@ -103,10 +105,12 @@ class SplAcquirer():
             print('Acquiring image at %d nm...' % wl)
             self._filter.move_to(wl)
             self._camera.setExposureTime(exptime * expg *1e3)
+            aa = self._camera.exposureTime()
+            print('with exposure time of %d [ms]' %aa)
             #time.sleep(3 * ExposureTimeAbs / 1e6)
             image = self._camera.getFutureFrames(1).toNumpyArray()
             image = np.ma.masked_array(image, mask)
-#            plot(image)
+            #plot(image)
             #plt.imshow(image)
             #plt.show()
 

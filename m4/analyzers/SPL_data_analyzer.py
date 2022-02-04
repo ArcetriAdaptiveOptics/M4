@@ -90,9 +90,7 @@ class SplAnalyzer():
             y_norm = y / area
             if i == 0:
                 mm = 1.2 * np.max(y_norm)
-                matrix[:, i] = mm
-            else:
-                matrix[:, i] = y_norm
+            matrix[:, i] = y_norm
 
             w = sf.smooth(y_norm, 4)
             w = w[:pick[3]-pick[2] + 1]
@@ -154,11 +152,12 @@ class SplAnalyzer():
 
     def _newThr(self, img):
         ''' Calculate the peak position of the image '''
-        counts, bin_edges = np.histogram(img)
-        edges = (bin_edges[2:] + bin_edges[1:len(bin_edges)-1]) / 2
-        thr = 5 * edges[np.where(counts == max(counts))]
-        idx = np.where(img < thr)
-        img[idx] = 0
+        #histogram thr to be discussed
+#        counts, bin_edges = np.histogram(img)
+#        edges = (bin_edges[2:] + bin_edges[1:len(bin_edges)-1]) / 2
+#        thr = 5 * edges[np.where(counts == max(counts))]
+#        idx = np.where(img < thr)
+#        img[idx] = 0
         # cy, cx = scin.measurements.center_of_mass(img)
         cx, cy = centroids.centroid_2dg(img)
         baricenterCoord = [np.int(round(cy)), np.int(round(cx))]
@@ -202,7 +201,7 @@ class SplAnalyzer():
         self._Qm = Qm
         Qm_smooth = matrix_smooth - np.mean(matrix_smooth)
         self._QmSmooth = Qm_smooth
-        #creare la matrice di Giorgio della giusta dimenzione
+        #creare la matrice di Giorgio della giusta dimensione
         F = []
         for i in range(1, delta.shape[0]):
             file_name = os.path.join(dove, 'Fringe_%05d.fits' %i)
