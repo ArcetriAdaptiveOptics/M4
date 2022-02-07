@@ -46,7 +46,7 @@ class Analysis():
         ----------
         tt: string
             tracking number to be analyzed
-    
+
         Returns
         -------
         pos01_std: numpy array
@@ -61,7 +61,7 @@ class Analysis():
             vector of actuator's start position
         '''
         par, rm = self._readRepData()
-    
+
         pos01_list_std = []
         pos02_list_std = []
         pos01_list_mean = []
@@ -74,10 +74,10 @@ class Analysis():
             pos02_list_std.append(pos02.std())
             pos01_list_mean.append(pos01.mean())
             pos02_list_mean.append(pos02.mean())
-    
+
             pos0 = par[:,0,i]
             pos0_list.append(pos0.std())
-    
+
         pos01_std = np.array(pos01_list_std)
         pos02_std = np.array(pos02_list_std)
         pos01_mean = np.array(pos01_list_mean)
@@ -91,7 +91,7 @@ class Analysis():
         ----------
         tt: string
             tracking number to be analyzed
-    
+
         Returns
         -------
         zer: numpy array
@@ -123,17 +123,17 @@ class Analysis():
         plt.legend(['X', 'Y'])
         plt.title(self.tt)
         return zer, par_pos, rm_pos
-    
+
     def opticalMonitoring(self):
         pass
-    
+
     def parPistonTest(self):
         pass
-    
+
     def parTiltTest(self):
         pass
-    
-    
+
+
     def alignPlot(self):
         '''
         Parameters
@@ -142,7 +142,7 @@ class Analysis():
             zernike coefficients matrix for all the images
         tt: string
             tracking number of measurements
-    
+
         Returns
         -------
         figure plot
@@ -151,7 +151,7 @@ class Analysis():
                                 'Alignment', self.tt, 'zernike.fits')
         hdu = pyfits.open(file_name)
         coeff_matrix = hdu[0].data
-    
+
         x_old = np.arange(coeff_matrix.shape[0])
         if coeff_matrix.shape[0] == 5:
             x = ['Start_image', 'Perturbed_image', '5_param_alignment',
@@ -159,7 +159,7 @@ class Analysis():
         elif coeff_matrix.shape[0] == 6:
             x = ['Start_image', 'Perturbed_image', 'TipTilt pre-alignment',
                  '5_param_alignment', 'TipTilt_alignment', 'Check_image']
-    
+
         plt.figure(figsize=(16, 10))
         plt.subplot(4, 1, 1)
         plt.plot(x_old, coeff_matrix[:, 1:3], '-o')
@@ -181,7 +181,7 @@ class Analysis():
         plt.grid()
         plt.xticks(x_old,x, rotation=0)
         plt.ylabel('Ast rms a.u. [nm]')
-    
+
         plt.suptitle(self.tt + ' Alignment', fontweight='bold', fontsize=20)
         return
 
