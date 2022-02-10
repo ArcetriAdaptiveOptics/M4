@@ -121,14 +121,14 @@ class IFFunctionsMaker():
 
         cmdH = CmdHistory(self._nActs)
 
-        if shuffle is None:
+        if shuffle is False:
             command_history_matrix_to_apply, self._tt_cmdH = \
                     cmdH.tidyCommandHistoryMaker(self._actsVector,
                                                  amplitude,
                                                  cmd_matrix,
                                                  n_push_pull,
                                                  template)
-        else:
+        if shuffle is True:
             command_history_matrix_to_apply, self._tt_cmdH = \
                     cmdH.shuffleCommandHistoryMaker(self._actsVector,
                                                     amplitude,
