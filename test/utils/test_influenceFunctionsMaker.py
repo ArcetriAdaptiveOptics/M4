@@ -4,6 +4,7 @@ Authors
 '''
 import unittest
 import os
+import numpy as np
 from m4.utils.influence_functions_maker import IFFunctionsMaker
 from test.test_helper import testDataRootDir
 import mock
@@ -23,8 +24,8 @@ class TestInfluenceFunctionsMaker(unittest.TestCase):
     @mock.patch('m4.ground.tracking_number_folder.os.makedirs', autospec=True)
     @mock.patch('m4.type.commandHistory.CmdHistory.saveInfo', autospec=True)
     def testIFFsAcquisition(self, mock, mockcmd, mockFilepath1, mockFilepath2):
-        modalBaseTag = 'Hadarmard10.fits'
-        ampTag = 'ampTest10.fits'
+        modalBaseTag = 'Hadamard3.fits'
+        ampTag = 'ampTest3.fits'
         iff = IFFunctionsMaker(self.dm, self.interf)
         iff._interf.save_phasemap = self._skipSave
         iff._interf.acquire_phasemap = self._skipAcq
@@ -34,6 +35,8 @@ class TestInfluenceFunctionsMaker(unittest.TestCase):
         mockFilepath1.return_value = os.path.join(testDataRootDir(), 'base', 'M4Data', 'OPTData', 'ModalBase')
         tt = iff.acq_IFFunctions(n_push_pull, ampTag, modalBaseTag,
                                  shuffle=False, template=None)
+        tt2 = iff.acq_IFFunctions(n_push_pull, ampTag, modalBaseTag,
+                                 shuffle=True, template=np.array([1,-1,1]))
 
     def _createDeformableMirror(self):
         dm = DMtest()
@@ -59,7 +62,7 @@ class DMtest():
     def __init__(self):
         pass
     def getNActs(self):
-        acts = 10
+        acts = 3
         return acts
     def setActsCommand(self, cmd):
         pass

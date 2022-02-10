@@ -183,33 +183,6 @@ class IFFunctionsMaker():
         return new_matrix
 
 
-    def _testIFFunctions_createCube25fromFileFitsMeasure(self):
-        """ Test function: create a measurement cube using data
-        generate whit m4 idl software"""
-        fold_my_pc = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/OIM_25modes.fits'
-        #fold_m4_pc = os.path.join(Configuration.OPD_DATA_FOLDER, 'TestData', 'OIM_25modes.fits')
-        hduList = pyfits.open(fold_my_pc)
-        cube_50 = hduList[0].data
-
-        imaList = []
-        maskList = []
-        for i in range(cube_50.shape[0]):
-            if i%2 == 0:
-                imaList.append(cube_50[i])
-            else:
-                maskList.append(cube_50[i])
-
-        cube_25 = None
-        zipped = zip(imaList, maskList)
-        for ima, mask in zipped:
-            immagine = np.ma.masked_array(ima, mask=mask)
-            if cube_25 is None:
-                cube_25 = immagine
-            else:
-                cube_25 = np.ma.dstack((cube_25, immagine))
-        return cube_25
-
-
     def _saveInfo(self, folder, fits_or_h5):
         """ Save the fits info file containing the input data for
         the creation of iff
