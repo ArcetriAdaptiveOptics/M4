@@ -44,6 +44,8 @@ class Measurements():
 
     def opticalMonitoring(self, n_images, delay):
         '''
+        #monitora
+
         Parameters
         ----------
         n_images: int
@@ -87,6 +89,7 @@ class Measurements():
 
     def diffOpticalMonitoring(self, n_images, delayshort, delaylong):
         '''
+        # Fa due misure poco distanti tra loro e poi aspetta tanto
         Parameters
         ----------
         n_images: int

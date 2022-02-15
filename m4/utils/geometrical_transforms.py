@@ -130,7 +130,8 @@ class GeomTransf():
         cmat = self._calc_cmat_five_points(x1)
         rec = np.linalg.pinv(mat)
         tran = np.dot(x0, rec) #prima c'era x1-sbagliato!-
-        nc = np.dot(tran, cmat)
+        mat1 = self._grid_five_points(x1)
+        nc = np.dot(tran, mat1)
         return nc, x0, x1
 
     def _invertRighe(self, par):
@@ -273,3 +274,53 @@ class GeomTransf():
         tran = np.dot(x0_coord.T, rec)
         nc = np.dot(tran, cmat)
         return nc.T, x0_coord, x1_coord
+
+    def _fiducialiPAROTT(self):
+        mat_par = [(1024,1581), (1024, 470), (1089, 1396), (1312, 1267), (1378, 1154), (1312, 782),
+                   (958, 653), (670, 896), (735, 1267), (1103, 1162), (1182, 1025), (1924, 866),
+                   (865, 1025), (1024, 1183)]
+        mat_ott = [(1024, 81), (1024, 1967), (913, 394), (533, 613), (422, 806), (533, 1436),
+                   (1135, 1655), (1625, 1244), (1513, 613), (889, 791), (754, 1025), (1023, 1294),
+                   (1293, 1025), (1024, 755)]
+        return np.array(mat_par), np.array(mat_ott)
+
+    def main20210214(self):
+        hduList = pyfits.open('/Users/rm/Desktop/Arcetri/M4/Data/M4Data/CCD_PAR_test_14markers_5mm.fits')
+        ima_par = hduList[0].data
+        hduList = pyfits.open('/Users/rm/Desktop/Arcetri/M4/Data/M4Data/CCD_OTT_14markers_5mm.fits')
+        ima_ott = hduList[0].data
+
+        from m4.utils.parabola_identification import ParabolIdent
+        pi = ParabolIdent()
+        mask = np.invert(ima_par.astype(bool))
+        aa = np.ma.masked_array(np.ones((ima_par.shape[0],ima_par.shape[1]))*7, mask=mask)
+        fid_par = pi.fiduciali(aa, 16)
+
+        mat_par, mat_ott = self._fiducialiPAROTT()
+        x1 = mat_par
+        par_x0 = mat_ott
+        x0 = par_x0.T
+        mat = self._grid_five_points(par_x0)
+        cmat = self._calc_cmat_five_points(x1)
+        rec = np.linalg.pinv(mat)
+        tran = np.dot(x0, rec)
+        mat1 = self._grid_five_points(x1)
+        nc = np.dot(tran, mat1) # ottengo i punti x1, bene!
+
+
+
+        aa = np.where(ima_par>0)
+        coord_x0 = np.array(aa)
+        #x0 = coord_x0.T
+        bb = np.where(ima_ott>0)
+        coord_x1 = np.array(bb)
+        mat2 = self._grid_five_points(coord_x1.T)
+        nc2 = np.dot(tran, mat2)
+
+        image = ima_par.copy()*0.
+        image[aa]=1
+
+        nc2_list = nc2[0].astype(int), nc2[1].astype(int)
+        image2 = ima_ott.copy()*0.
+        image2[nc2_list] = 2
+
