@@ -13,6 +13,12 @@ import glob
 from m4.ground import read_data
 
 class SpiderTest():
+    '''
+        HOW TO USE IT::
+
+        from m4.mini_OTT.spider_test import SpiderTest()
+        sp = SpiderTest()
+    '''
 
     def __init__(self):
         """The constructor """

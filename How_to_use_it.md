@@ -115,11 +115,11 @@ NOTA: per maggiori informazioni fare riferimento anche alla seguente [pagina wik
 
 ### Misure ###
 Per ottenere la classe che permette di fare le acquisizioni dati sulla mini ott è necessario usare i comandi
-	```
+```
 	
 	from m4.mini_ott.measurements import Measurements
 	meas = Measurements(ott, interf)
-	```
+```
 - meas.opticalMonitoring(n_images, delay): in ingresso alla funzione si stabilisce il numero di misure da mediare durante l' acquisire e il ritardo
 in secondi tra una acquisizione ed un altra. La funzione salva le immagini nella cartella OPD_SERIES e, per ogni acquisizione, viengono salvati i
 primi 10 coefficienti di zernike e le temperature.
@@ -147,13 +147,19 @@ di acquisizione
 
 ### Analisi ###
 Per ottenere la classe che permette di fare l'analisi dati della mini ott è necessario usare i comandi
-	```
+```
 	
 	from m4.mini_ott.analysis import Analysis
 	an = Analysis(tt)
-	```
+```
 To be continued
 
+### Spider Test ###
+```
+	
+	from m4.mini_OTT.spider_test import SpiderTest()
+    sp = SpiderTest()
+```
 
 ### Analisi dei requisiti ###
 Con i comandi
@@ -220,13 +226,13 @@ Le funzione per l'analisi del rumore si ottengono con il comando _from m4 import
  ## SPL ##
  Attraverso la funzione m4.SPL_controller si hanno a dispposizione le funzioni necessarie alla creazione degli oggetti di interessse (camera e filtro tunabile)
  e la funzione per l'acquisizione delle immagini con la camera e l'analisi per ottenere il valore di pistone.
- 	```
+ ```
 	
 	from m4 import SPL_controller as s
 	camera = s.define_camera()
 	filter = s.define_filter()
 	tt, piston = s.SPL_measurement_and_analysis(camera, filter)
-	```
+```
 I dati acquisiti vengono salvati in BASE_PATH/Data/M4Data/OPTData/SPL/tt che contiene: le immagini acquisite con la camera alle diverse lunghezze d'onda
 selezionate al momento dell'acquisizione (imagenm), il vettore delle lunghezze d'onda usate (lambda_vector.fits), la matrice con le frangie calcolate
 (fringe.fits) e i vettori contenenti il risultato di pistone e pistone smooth (pistonresult.fits)
