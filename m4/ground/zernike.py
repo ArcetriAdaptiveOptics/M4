@@ -39,7 +39,7 @@ def zernikeFit(img, zernike_index_vector):
 
     Returns
     -------
-    coeff: numpy array
+    coeff: numpy array [m]
         vector of zernike coefficients
     mat: numpy array
     '''
@@ -57,7 +57,7 @@ def zernikeSurface(img, coef, mat):
     ----------
     img: numpy masked array
         image for zernike fit
-    coeff: numpy array
+    coeff: numpy array [m]
         vector of zernike coefficients
     mat: numpy array
 

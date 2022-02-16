@@ -10,7 +10,6 @@ import h5py
 import numpy as np
 from m4.ground import tracking_number_folder
 from m4.configuration import config_folder_names as fold_name
-from m4.configuration.ott_parameters import OttParameters
 
 
 class CmdHistory():
@@ -23,10 +22,10 @@ class CmdHistory():
         cmdH = CmdHistory()
     '''
 
-    def __init__(self):
+    def __init__(self, nActs):
         """The constructor """
         self._logger = logging.getLogger('CMD_HISTORY:')
-        self._nActs = OttParameters.N_ACT_SEG
+        self._nActs = nActs
         self._modeVector = None
         self._nPushPull = None
         self._cmdMatrix = None
@@ -92,7 +91,7 @@ class CmdHistory():
         self._cmdHToApply = matrix_to_apply
         tt = self.saveInfo(0)
         self._logger.info('Creation of the ordered commandHistoryMatrix %s', tt)
-        print(tt)
+        print('Command History tt = %s' %tt)
 
         return matrix_to_apply, tt
 
@@ -131,7 +130,7 @@ class CmdHistory():
         self._cmdHToApply = matrix_to_apply
         tt = self.saveInfo(0)
         self._logger.info('Creation of the shuffle commandHistoryMatrix %s', tt)
-        print(tt)
+        print('Command History tt = %s' %tt)
 
         return matrix_to_apply, tt
 

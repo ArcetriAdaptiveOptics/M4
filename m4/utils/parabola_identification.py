@@ -86,7 +86,7 @@ class ParabolIdent():
         y = np.array([359, 512, 665, 512])
         return x, y
 
-    def fiduciali(self, ima):
+    def fiduciali(self, ima, n_clusters=4):
         ''' Calculates the coordinates of the fiducial points of the parabola and
         return it in a single vector of x and y
 
@@ -103,22 +103,22 @@ class ParabolIdent():
                 vector of y coordinates of fiducial points
         '''
         graph = skf_e.image.img_to_graph(ima.data, mask=ima.mask)
-        labels = skc.spectral_clustering(graph, n_clusters=4, eigen_solver='arpack')
+        labels = skc.spectral_clustering(graph, n_clusters, eigen_solver='arpack')
         labels = label(ima.mask.astype(int))
         roiList = []
-        for i in range(1, 13):
+        for i in range(1, n_clusters):
             maski = np.zeros(labels.shape, dtype=np.bool)
             maski[np.where(labels == i)] = 1
             roiList.append(maski)
         x_list = []
         y_list = []
-        for i in np.array([4,6,7,8]):
+        for i in range(1, len(roiList)): #np.array([4,6,7,8])
             aa = np.where(roiList[i]==1)
             x = aa[1].mean()
             y = aa[0].mean()
             x_list.append(x)
             y_list.append(y)
-        return np.array(x_list), np.array(y_list)
+        return np.array(x_list).astype(int), np.array(y_list).astype(int)
 
     def coord(self, image, centro, raggio):
         '''

@@ -11,10 +11,9 @@ import numpy as np
 from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
 from m4.configuration import config_folder_names as fold_name
+from m4.type.modalAmplitude import ModalAmplitude
+from m4.type.modalBase import ModalBase
 from m4.type.commandHistory import CmdHistory
-from m4.ground import read_data
-from m4.configuration.ott_parameters import OttParameters
-#from m4.ground.interface_4D import comm4d
 
 
 #ad ora pensata per comandare il segmento; manca l'interferometro
@@ -38,16 +37,20 @@ class IFFunctionsMaker():
     def __init__(self, deformable_mirror, interf):
         """The constructor """
         self._logger = logging.getLogger('IFF_MAKER:')
-        self._nActs = OttParameters.N_ACT_SEG #definire l'oggetto dm in modo da avere questo parametro
+        self._nActs = deformable_mirror.getNActs() #OttParameters.N_ACT_SEG
+        self._dm = deformable_mirror
         self._interf = interf
 
         self._nPushPull = None
         self._template = None
-        self._modesVectorTag = None
         self._amplitudeTag = None
+        self._amplitude = None
         self._cmdMatrixTag = None
+        self._cmdMatrix = None
+        self._actsVector = None
         self._tt_cmdH = None
         self._indexingList = None
+        self._tt = None
 
     @staticmethod
     def _storageFolder():
@@ -55,17 +58,14 @@ class IFFunctionsMaker():
         return fold_name.IFFUNCTIONS_ROOT_FOLDER
 
 
-    def acq_IFFunctions(self, modes_vector_fits_file_name, n_push_pull,
-                        amplitude_fits_file_name, cmd_matrix_fits_file_name,
+    def acq_IFFunctions(self, n_push_pull, amplitude_fits_file_name,
+                        cmd_matrix_fits_file_name,
                         shuffle=None, template=None):
         '''
         Performs the process of acquiring interferograms
 
         Parameters
         ----------
-             modes_vector_fits_file_name: string
-                                          fits file name
-                                          (Example = modes.fits)
              n_push_pull: int
                           number of push pull on the actuator
              amplitude_fits_file_name: string
@@ -88,62 +88,91 @@ class IFFunctionsMaker():
                 tt: string
                     tracking number of measurements made
         '''
-        amplitude, modes_vector, cmd_matrix = \
-                                read_data.readTypeFromFitsName(amplitude_fits_file_name,
-                                                         modes_vector_fits_file_name,
-                                                         cmd_matrix_fits_file_name)
+        amplitude, cmd_matrix = self._readTypeFromFitsNameTag(amplitude_fits_file_name,
+                                                              cmd_matrix_fits_file_name)
+
         self._nPushPull = n_push_pull
         if template is None:
-            self._template = np.array([1, -1])
+            self._template = np.array([1, -1, 1])
         else:
             self._template = template
 
-        self._modesVectorTag = modes_vector_fits_file_name
         self._amplitudeTag = amplitude_fits_file_name
+        self._amplitude = amplitude
         self._cmdMatrixTag = cmd_matrix_fits_file_name
+        self._cmdMatrix = cmd_matrix
 
-        indexing_input = copy.copy(modes_vector)
+        self._actsVector = np.arange(self._nActs)
+        indexing_input = copy.copy(self._actsVector)
         dove, tt = tracking_number_folder.createFolderToStoreMeasurements(self._storageFolder())
+        self._tt = tt
 
-        diagonal_mat = self._diagonalControll(cmd_matrix)
-        if np.count_nonzero(diagonal_mat -
-                            np.diag(np.diagonal(diagonal_mat))) == 0:
-            print('Measure of zonal IF')
-            self._logger.info("Measurement of zonal influence functions for segment?. Location: %s",
-                              tt)
-        else:
-            print('Measure of global IF')
-            self._logger.info("Measurement of modal influence functions for segment?. Location: %s",
-                              tt)
+#         diagonal_mat = self._diagonalControll(cmd_matrix)
+#         if np.count_nonzero(diagonal_mat -
+#                             np.diag(np.diagonal(diagonal_mat))) == 0:
+#             print('Measure of zonal IF')
+#             self._logger.info("Measurement of zonal influence functions for segment?. Location: %s",
+#                               tt)
+#         else:
+#             print('Measure of global IF')
+#             self._logger.info("Measurement of modal influence functions for segment?. Location: %s",
+#                               tt)
 
 
-        cmdH = CmdHistory()
+        cmdH = CmdHistory(self._nActs)
 
-        if shuffle is None:
+        if shuffle is False:
             command_history_matrix_to_apply, self._tt_cmdH = \
-                    cmdH.tidyCommandHistoryMaker(modes_vector,
+                    cmdH.tidyCommandHistoryMaker(self._actsVector,
                                                  amplitude,
                                                  cmd_matrix,
                                                  n_push_pull,
                                                  template)
-        else:
+        if shuffle is True:
             command_history_matrix_to_apply, self._tt_cmdH = \
-                    cmdH.shuffleCommandHistoryMaker(modes_vector,
+                    cmdH.shuffleCommandHistoryMaker(self._actsVector,
                                                     amplitude,
                                                     cmd_matrix,
                                                     n_push_pull,
                                                     template)
         self._indexingList = cmdH.getIndexingList()
-        self._saveInfo(dove, 0)
-        self._saveInfoSeparately(dove)
+        #self._saveInfo(dove, 0)
+        #self._saveInfoSeparately(dove)
 
+        n_images = 1
         for i in range(command_history_matrix_to_apply.shape[1]):
-            self._applyToDM(command_history_matrix_to_apply[:, i])
-            #acquisizione immagine con 4d
-            #salvataggio immagine
-
+            for j in range(self._template.shape[0]):
+                k = self._template.shape[0]*i +j
+                print('Acquisition of image %d' %k)
+                self._dm.setActsCommand(command_history_matrix_to_apply[:, i]*j) #vecchia setShape
+                masked_image = self._interf.acquire_phasemap(n_images)
+                file_name = 'image_%04d.fits' %k
+                self._interf.save_phasemap(dove, file_name, masked_image)
         return tt
 
+    def _readTypeFromFitsNameTag(self, amplitude_fits_file_name,
+                                 cmd_matrix_fits_file_name):
+        '''
+        Parameters
+        ----------
+            amplitude_fits_file_name: string
+                                     vector with mode amplitude fits file name
+            cmd_matrix_fits_file_name: string
+                                    matrix of mode commands fits file name
+        Returns
+        -------
+            amplitude: numpy array
+                    vector with mode amplitude
+            cmd_matrix: numpy array [nActs x nModes]
+                        matrix of mode commands
+                        diagonal matrix in case of zonal commands
+        '''
+        ma = ModalAmplitude.loadFromFits(amplitude_fits_file_name)
+        amplitude = ma.getModalAmplitude()
+
+        mb = ModalBase.loadFromFits(cmd_matrix_fits_file_name)
+        cmd_matrix = mb.getModalBase()
+        return amplitude, cmd_matrix
 
     def _diagonalControll(self, matrix):
         """ Prepares the matrix for the diagonal control """
@@ -152,38 +181,6 @@ class IFFunctionsMaker():
         vects = np.tile(v, reps)
         new_matrix = np.hstack((matrix, vects))
         return new_matrix
-
-
-    def _applyToDM(self, vector_to_apply):
-        ''' Deve applicare i comandi della command history matrix allo specchio
-        '''
-        pass
-
-    def _testIFFunctions_createCube25fromFileFitsMeasure(self):
-        """ Test function: create a measurement cube using data
-        generate whit m4 idl software"""
-        fold_my_pc = '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Immagini_prova/OIM_25modes.fits'
-        #fold_m4_pc = os.path.join(Configuration.OPD_DATA_FOLDER, 'TestData', 'OIM_25modes.fits')
-        hduList = pyfits.open(fold_my_pc)
-        cube_50 = hduList[0].data
-
-        imaList = []
-        maskList = []
-        for i in range(cube_50.shape[0]):
-            if i%2 == 0:
-                imaList.append(cube_50[i])
-            else:
-                maskList.append(cube_50[i])
-
-        cube_25 = None
-        zipped = zip(imaList, maskList)
-        for ima, mask in zipped:
-            immagine = np.ma.masked_array(ima, mask=mask)
-            if cube_25 is None:
-                cube_25 = immagine
-            else:
-                cube_25 = np.ma.dstack((cube_25, immagine))
-        return cube_25
 
 
     def _saveInfo(self, folder, fits_or_h5):

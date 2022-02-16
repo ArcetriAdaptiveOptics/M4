@@ -1,3 +1,7 @@
+'''
+Authors
+  - C. Selmi:  written in 2021
+'''
 import unittest
 import os
 from m4.analyzers.accelerometers_data_analyzer import AccelerometersDataAnalyzer
