@@ -97,7 +97,7 @@ class Measurements():
         delayshort: float
             time gap between images couple
         delaylong: float
-            time gap between images couple    
+            time gap between images couple
         Returns
         ------
         tt: string
