@@ -16,6 +16,13 @@ from m4.ground import smooth_function as sf
 from m4.configuration.ott_parameters import OttParameters
 from m4.configuration import config_folder_names as fold_name
 
+def get_matrix(tn):
+    destination_file_path = self._storageFolder()
+    fits_file_name = os.path.join(destination_file_path, 'fringe_result.fits', tn)
+    
+    hduList = pyfits.open(fits_file_name)
+    matrix = hduList[0].data
+    return matrix
 
 class SplAnalyzer():
     '''
@@ -69,6 +76,7 @@ class SplAnalyzer():
 
         cube, cube_normalized = self._readCameraFrames(tt)
         matrix, matrix_smooth = self.matrix_calc(lambda_vector, cube, cube_normalized)
+        self._saveMatrix(matrix, tt)
         piston, piston_smooth = self._templateComparison(matrix,
                                                          matrix_smooth,
                                                          lambda_vector)
@@ -85,9 +93,9 @@ class SplAnalyzer():
 
     def _saveMatrix(self, matrix, tt):
         destination_file_path = self._storageFolder()
-        fits_file_name = os.path.join(destination_file_path,
-                                      'fringe_result.fits', tt)
-        pyfits.writeto(fits_file_name, matrix)
+        fits_file_name = os.path.join(destination_file_path,tt,
+                                      'fringe_result.fits')
+        pyfits.writeto(fits_file_name, matrix, overwrite=True)
 
     def matrix_calc(self, lambda_vector, cube, cube_normalized):
         img = np.sum(cube_normalized, 2)
@@ -225,8 +233,12 @@ class SplAnalyzer():
             R_smooth[i] = np.sum(Qm_smooth[:, :]*Qt[:, :, i]) / \
                         (np.sum(Qm_smooth[:, :]**2)**5 * np.sum(Qt[:, :, i]**2)**5)
 
-        plt.plot(R)
-        plt.show()
+#        plt.figure(1)
+#        plt.plot(R)
+#        plt.show()
+#        plt.figure(2)
+#        plt.imshow(matrix.T); plt.title('SPL Signal')
+#        plt.show()
         idp = np.where(R == max(R))
         idp_smooth = np.where(R_smooth == max(R_smooth))
         piston = delta[idp]

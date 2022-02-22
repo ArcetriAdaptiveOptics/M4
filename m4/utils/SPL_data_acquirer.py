@@ -9,6 +9,7 @@ import os
 import logging
 import numpy as np
 #from pathlib import Path
+import scipy
 import scipy.ndimage as scin
 from astropy.io import fits as pyfits
 from photutils import centroids
@@ -132,15 +133,20 @@ class SplAcquirer():
         returns:
             cy, cx = y and x coord
         '''
-        counts, bin_edges = np.histogram(reference_image)
+        #scipy.signal.medfilt(reference_image, 3)
+        counts, bin_edges = np.histogram(reference_image, bins=100)
+        bin_edges=bin_edges[1:]
         thr = 5 * bin_edges[np.where(counts == max(counts))]
         idx = np.where(reference_image < thr)
-        img = reference_image.copy()
-        img[idx] = 0
-        cx, cy = centroids.centroid_2dg(img)
+        img = reference_image.copy()  
+        #img[idx] = 0  
+        cx, cy = centroids.centroid_com(img, mask=(img < thr))
+        #cx, cy = centroids.centroid_2dg(img)
+        #print(np.int(cy))
+        #print(np.int(cx))
         return np.int(cy), np.int(cx)
 
-
+#_baricenterCalculator
     def _preProcessing(self, image, cy, cx):
         ''' Cut the images around the pick position
         args:
