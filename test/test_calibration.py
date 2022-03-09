@@ -37,7 +37,7 @@ class TestCalc(unittest.TestCase):
         pass
 
 
-    @mock.patch('m4.utils.optical_calibration.OpticalCalibration._saveCalibrationInfoAndResultsAsFits', autospec=None)
+    @mock.patch('astropy.io.fits.writeto', autospec=None)
     @mock.patch('m4.ground.tracking_number_folder._error', autospec=None)
     @mock.patch('m4.ground.timestamp.Timestamp.now', autospec=True)
     @mock.patch('m4.utils.optical_calibration.OpticalCalibration._storageFolder', autospec=True)
@@ -53,3 +53,13 @@ class TestCalc(unittest.TestCase):
                                                   'M4Data/OPTData/Calibration')
         self.cal.measureAndAnalysisCalibrationMatrix(who, command_amp_vector,
                                                      n_push_pull, n_frames)
+
+    @mock.patch('m4.utils.optical_calibration.OpticalCalibration._storageFolder', autospec=True)
+    def testReload(self, mockFilepath1):
+        mockFilepath1.return_value = os.path.join(testDataRootDir(), 'base',
+                                                  'M4Data/OPTData/Calibration')
+        tt = '20220217_151631'
+        cal = optical_calibration.OpticalCalibration.loadCalibrationObjectFromFits(tt)
+        cal.getCube()
+        cal.getMask()
+        cal.getWho()
