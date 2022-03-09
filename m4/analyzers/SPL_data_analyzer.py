@@ -11,18 +11,11 @@ import glob
 import logging
 from astropy.io import fits as pyfits
 from photutils import centroids
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from m4.ground import smooth_function as sf
 from m4.configuration.ott_parameters import OttParameters
-from m4.configuration import config_folder_names as fold_name
+#from m4.configuration import config_folder_names as fold_name
 
-def get_matrix(tn):
-    destination_file_path = self._storageFolder()
-    fits_file_name = os.path.join(destination_file_path, 'fringe_result.fits', tn)
-    
-    hduList = pyfits.open(fits_file_name)
-    matrix = hduList[0].data
-    return matrix
 
 class SplAnalyzer():
     '''
@@ -130,6 +123,25 @@ class SplAnalyzer():
         self._matrixSmooth = matrix_smooth
         #self._saveMatrix(matrix)
         return matrix, matrix_smooth
+
+    def get_matrix(self, tn):
+        '''
+        Paramenters
+        -----------
+        tn: string
+            tracking number from which to read matrix
+
+        Returns
+        -------
+        matrix: numpy array
+            matrix of fringes
+        '''
+        destination_file_path = self._storageFolder()
+        fits_file_name = os.path.join(destination_file_path, 'fringe_result.fits', tn)
+        
+        hduList = pyfits.open(fits_file_name)
+        matrix = hduList[0].data
+        return matrix
 
     def _readCameraFrames(self, tt):
         ''' Read images in a specific tracking number and return the cube
