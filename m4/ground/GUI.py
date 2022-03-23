@@ -8,8 +8,7 @@ import numpy as np
 
 from m4.ott_sim.ott_images import OttImages
 
-from guietta import Gui, G, M, _, ___, III
-from guietta import Ax
+from guietta import Gui, G, PGI, _, ___, III
 from guietta import Empty, Exceptions
 
 
@@ -24,11 +23,7 @@ class Runner():
 
         def setPlot2(gui, oi, smap1, smask, cmap='viridis'):
             image = oi.pwrap(smap1, smask)
-            with Ax(gui.plot2) as ax:
-                ax.clear()
-                ax.set_title('Titolo')
-                im = ax.imshow(image, origin='lower', cmap=cmap)
-                #ax.figure.colorbar(im, ax=ax)
+            gui.plot2 = image
 
         def getstatus(gui):
             if self.ott:
@@ -38,11 +33,14 @@ class Runner():
                 gui.pslider = self.ott.parabolaSlider.getPosition()
                 gui.anglepos = self.ott.angleRotator.getPosition()
                 gui.rslider = self.ott.referenceMirrorSlider.getPosition()
+            oi = OttImages(self.ott)
+            smap1, smask = oi.ott_smap()
+            setPlot2(gui, oi, smap1, smask, cmap)
 
-        def movepar(gui):
-            pist = np.array(gui.__parpist__)
-            tip = np.array(gui.__partip__)
-            tilt = np.array(gui.__partilt__)
+        def movepar(gui, *args):
+            pist = np.float(gui.parpist)
+            tip = np.float(gui.partip)
+            tilt = np.float(gui.partilt)
             vec = np.array([0, 0, pist, tip, tilt, 0])
             if self.ott:
                 self.ott.parabola.setPosition(vec)
@@ -68,7 +66,7 @@ class Runner():
             if self.ott:
                 self.ott.referenceMirrorSlider.setPosition(pos)
 
-        def moveangle(gui):
+        def moveangle(gui, *args):
             pos = np.int(gui.angle)
             if self.ott:
                 self.ott.angleRotator.setPosition(pos)
@@ -83,7 +81,7 @@ class Runner():
         cmap = 'viridis'
         #getstatus()
         gui_image = Gui([ ['hot'], ___, ___, ___, ['viridis'], ___ , ___, ___ ],
-                        [ M('plot2'), ___, ___, ___, ___, ___, ___, ___ ],
+                        [ PGI('plot2'), ___, ___, ___, ___, ___, ___, ___ ],
                         [ III, III, III, III, III, III, III, III ],
                         [ III, III, III, III, III, III, III, III ],
                         [ III, III, III, III, III, III, III, III ],
@@ -118,16 +116,16 @@ class Runner():
         control_gui.Set_ReferenceMirrorSlider = moverslider
         control_gui.Set_AngleRotator = moveangle
 
-        gui_image.timer_start(getstatus, 0.1)
+        gui_image.timer_start(getstatus, 1)
 
         self.gui = Gui(
              [ G('OTT') , G('Control') ]
              )
 
         self.gui.Control = control_gui
-        self.gui.Image = gui_image
+        self.gui.OTT = gui_image
 
-        while True:
+        while 0:
             try:
                 name, event = gui_image.get(timeout=1)
 
