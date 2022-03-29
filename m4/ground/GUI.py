@@ -8,7 +8,7 @@ import numpy as np
 
 from m4.ott_sim.ott_images import OttImages
 
-from guietta import Gui, G, PGI, _, ___, III
+from guietta import Gui, G, MA, _, ___, III
 from guietta import Empty, Exceptions
 
 
@@ -46,17 +46,17 @@ class Runner():
                 self.ott.parabola.setPosition(vec)
 
         def moverm(gui):
-            pist = np.array(gui.__rmpist__)
-            tip = np.array(gui.__rmtip__)
-            tilt = np.array(gui.__rmtilt)
+            pist = np.array(gui.rmpist)
+            tip = np.array(gui.rmtip)
+            tilt = np.array(gui.rmtilt)
             vec = np.array([0, 0, pist, tip, tilt, 0])
             if self.ott:
                 self.ott.referenceMirror.setPosition(vec)
 
         def movem4(gui):
-            pist = np.array(gui.__m4pist__)
-            tip = np.array(gui.__m4tip__)
-            tilt = np.array(gui.__m4tilt__)
+            pist = np.array(gui.m4pist)
+            tip = np.array(gui.m4tip)
+            tilt = np.array(gui.m4tilt)
             vec = np.array([0, 0, pist, tip, tilt, 0])
             if self.ott:
                 self.ott.m4.setPosition(vec)
@@ -81,7 +81,7 @@ class Runner():
         cmap = 'viridis'
         #getstatus()
         gui_image = Gui([ ['hot'], ___, ___, ___, ['viridis'], ___ , ___, ___ ],
-                        [ PGI('plot2'), ___, ___, ___, ___, ___, ___, ___ ],
+                        [ MA('plot2'), ___, ___, ___, ___, ___, ___, ___ ],
                         [ III, III, III, III, III, III, III, III ],
                         [ III, III, III, III, III, III, III, III ],
                         [ III, III, III, III, III, III, III, III ],
