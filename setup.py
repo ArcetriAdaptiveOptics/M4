@@ -90,8 +90,7 @@ setup(name=NAME,
                         "pyzabbix",
                         "guietta",
                         "pyyaml",
-                        "serial",
-                        "PyQt5"
+                        "serial"
                         ],
       test_suite='test',
       cmdclass={'upload': UploadCommand, },

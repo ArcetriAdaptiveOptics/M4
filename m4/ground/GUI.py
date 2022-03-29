@@ -21,9 +21,8 @@ class Runner():
 
     def _setUp(self):
 
-        def setPlot2(gui, oi, smap1, smask, cmap='viridis'):
-            image = oi.pwrap(smap1, smask)
-            gui.plot2 = image
+        def setPlot(gui, image):
+            gui.plot = image
 
         def getstatus(gui):
             if self.ott:
@@ -33,35 +32,34 @@ class Runner():
                 gui.pslider = self.ott.parabolaSlider.getPosition()
                 gui.anglepos = self.ott.angleRotator.getPosition()
                 gui.rslider = self.ott.referenceMirrorSlider.getPosition()
-            oi = OttImages(self.ott)
-            smap1, smask = oi.ott_smap()
-            setPlot2(gui, oi, smap1, smask, cmap)
+            image = self.interf.acquire_phasemap()
+            setPlot(gui, image)
 
         def movepar(gui, *args):
-            pist = np.float(gui.parpist)
-            tip = np.float(gui.partip)
-            tilt = np.float(gui.partilt)
+            pist = np.float(gui.parpist or 0) #mettere pos precedente
+            tip = np.float(gui.partip or 0)
+            tilt = np.float(gui.partilt or 0)
             vec = np.array([0, 0, pist, tip, tilt, 0])
             if self.ott:
                 self.ott.parabola.setPosition(vec)
 
-        def moverm(gui):
-            pist = np.array(gui.rmpist)
-            tip = np.array(gui.rmtip)
-            tilt = np.array(gui.rmtilt)
+        def moverm(gui, *args):
+            pist = np.array(gui.rmpist or 0)
+            tip = np.array(gui.rmtip or 0)
+            tilt = np.array(gui.rmtilt or 0)
             vec = np.array([0, 0, pist, tip, tilt, 0])
             if self.ott:
                 self.ott.referenceMirror.setPosition(vec)
 
-        def movem4(gui):
-            pist = np.array(gui.m4pist)
-            tip = np.array(gui.m4tip)
-            tilt = np.array(gui.m4tilt)
+        def movem4(gui, *args):
+            pist = np.array(gui.m4pist or 0)
+            tip = np.array(gui.m4tip or 0)
+            tilt = np.array(gui.m4tilt or 0)
             vec = np.array([0, 0, pist, tip, tilt, 0])
             if self.ott:
                 self.ott.m4.setPosition(vec)
 
-        def moverslider(gui):
+        def moverslider(gui, *args):
             pos = np.int(gui.rmslider)
             if self.ott:
                 self.ott.referenceMirrorSlider.setPosition(pos)
@@ -71,17 +69,16 @@ class Runner():
             if self.ott:
                 self.ott.angleRotator.setPosition(pos)
 
-        def movepslider(gui):
+        def movepslider(gui, *args):
             pos = np.int(gui.parslider)
             if self.ott:
                 self.ott.parabolaSlider.setPosition(pos)
 
 
         image = self.interf.acquire_phasemap()
-        cmap = 'viridis'
         #getstatus()
-        gui_image = Gui([ ['hot'], ___, ___, ___, ['viridis'], ___ , ___, ___ ],
-                        [ MA('plot2'), ___, ___, ___, ___, ___, ___, ___ ],
+        gui_image = Gui([ MA('plot'), ___, ___, ___, ___, ___, ___, ___ ],
+                        [ III, III, III, III, III, III, III, III ],
                         [ III, III, III, III, III, III, III, III ],
                         [ III, III, III, III, III, III, III, III ],
                         [ III, III, III, III, III, III, III, III ],
@@ -105,9 +102,8 @@ class Runner():
                           ['New Angle Rot position', '__angle__', _, _, _, _, _, 'deg'],
                           [['Set_AngleRotator'], ___, ___, ___, ___, ___, ___, ___]) #exceptions=Exceptions.OFF)
 
-        oi = OttImages(self.ott)
-        smap1, smask = oi.ott_smap()
-        setPlot2(gui_image, oi, smap1, smask, cmap)
+        setPlot(gui_image, image)
+
 
         control_gui.Set_Parabola = movepar
         control_gui.Set_RefMirror = moverm
@@ -125,20 +121,20 @@ class Runner():
         self.gui.Control = control_gui
         self.gui.OTT = gui_image
 
-        while 0:
-            try:
-                name, event = gui_image.get(timeout=1)
-
-            except Empty:
-                oi = OttImages(self.ott)
-                smap1, smask = oi.ott_smap()
-                setPlot2(gui_image, oi, smap1, smask, cmap)
-                continue
-
-            if name is None:
-                break
-            if name in ['viridis', 'hot']:
-                cmap = name
+#         while 0:
+#             try:
+#                 name, event = gui_image.get(timeout=1)
+# 
+#             except Empty:
+#                 oi = OttImages(self.ott)
+#                 smap1, smask = oi.ott_smap()
+#                 setPlot(gui_image, image)
+#                 continue
+# 
+#             if name is None:
+#                 break
+#             if name in ['viridis', 'hot']:
+#                 cmap = name
 
     def run(self):
         self._setUp()

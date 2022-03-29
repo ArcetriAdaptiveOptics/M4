@@ -15,4 +15,3 @@ zmq
 guietta
 pyyaml
 serial
-PyQt5 >= 5.12
