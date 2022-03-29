@@ -23,6 +23,7 @@ class Runner():
 
         def setPlot(gui, image):
             gui.plot = image
+            gui.plot.set_clim(vmin=image.min(), vmax=image.max())
 
         def getstatus(gui):
             if self.ott:
@@ -36,47 +37,46 @@ class Runner():
             setPlot(gui, image)
 
         def movepar(gui, *args):
-            pist = np.float(gui.parpist or 0) #mettere pos precedente
-            tip = np.float(gui.partip or 0)
-            tilt = np.float(gui.partilt or 0)
-            vec = np.array([0, 0, pist, tip, tilt, 0])
+            vec = self.ott.parabola.getPosition()
+            vec[2] = np.float(gui.parpist or vec[2])
+            vec[3] = np.float(gui.partip or vec[3])
+            vec[4] = np.float(gui.partilt or vec[4])
             if self.ott:
                 self.ott.parabola.setPosition(vec)
 
         def moverm(gui, *args):
-            pist = np.array(gui.rmpist or 0)
-            tip = np.array(gui.rmtip or 0)
-            tilt = np.array(gui.rmtilt or 0)
-            vec = np.array([0, 0, pist, tip, tilt, 0])
+            vec = self.ott.referenceMirror.getPosition()
+            vec[2] = np.float(gui.rmpist or vec[2])
+            vec[3] = np.float(gui.rmtip or vec[3])
+            vec[4] = np.float(gui.rmtilt or vec[4])
             if self.ott:
                 self.ott.referenceMirror.setPosition(vec)
 
         def movem4(gui, *args):
-            pist = np.array(gui.m4pist or 0)
-            tip = np.array(gui.m4tip or 0)
-            tilt = np.array(gui.m4tilt or 0)
-            vec = np.array([0, 0, pist, tip, tilt, 0])
+            vec = self.ott.m4.getPosition()
+            vec[2] = np.float(gui.m4pist or vec[2])
+            vec[3] = np.float(gui.m4tip or vec[3])
+            vec[4] = np.float(gui.m4tilt or vec[4])
             if self.ott:
                 self.ott.m4.setPosition(vec)
 
         def moverslider(gui, *args):
-            pos = np.int(gui.rmslider)
+            pos = self.ott.referenceMirrorSlider.getPosition() or np.int(gui.rmslider)
             if self.ott:
                 self.ott.referenceMirrorSlider.setPosition(pos)
 
         def moveangle(gui, *args):
-            pos = np.int(gui.angle)
+            pos = self.ott.angleRotator.getPosition() or np.int(gui.angle)
             if self.ott:
                 self.ott.angleRotator.setPosition(pos)
 
         def movepslider(gui, *args):
-            pos = np.int(gui.parslider)
+            pos = self.ott.parabolaSlider.getPosition() or np.int(gui.parslider)
             if self.ott:
                 self.ott.parabolaSlider.setPosition(pos)
 
 
         image = self.interf.acquire_phasemap()
-        #getstatus()
         gui_image = Gui([ MA('plot'), ___, ___, ___, ___, ___, ___, ___ ],
                         [ III, III, III, III, III, III, III, III ],
                         [ III, III, III, III, III, III, III, III ],
@@ -102,7 +102,9 @@ class Runner():
                           ['New Angle Rot position', '__angle__', _, _, _, _, _, 'deg'],
                           [['Set_AngleRotator'], ___, ___, ___, ___, ___, ___, ___]) #exceptions=Exceptions.OFF)
 
-        setPlot(gui_image, image)
+        gui_image.plot = image
+        gui_image.plot.set_title('Un bel titolo')
+        gui_image.plot.colorbar()
 
 
         control_gui.Set_Parabola = movepar
