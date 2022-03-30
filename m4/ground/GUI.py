@@ -148,8 +148,8 @@ class Runner():
              [ G('OTT') , G('Control') ]
              )
 
-        self.gui.Control = control_gui
-        self.gui.OTT = gui_image
+        self.gui_control = control_gui
+        self.gui_image = gui_image
 
 #         while 0:
 #             try:
@@ -165,6 +165,10 @@ class Runner():
 #                 break
 #             if name in ['viridis', 'hot']:
 #                 cmap = name
+
+    def runImage(self):
+        self._setUp()
+        self.gui_image.run()
 
     def run(self):
         ''' Run the GUI '''
