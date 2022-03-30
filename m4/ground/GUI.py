@@ -6,26 +6,48 @@ Authors
 import sys
 import numpy as np
 
-from m4.ott_sim.ott_images import OttImages
-
 from guietta import Gui, G, MA, _, ___, III
-from guietta import Empty, Exceptions
+#from guietta import Empty, Exceptions
 
 
 
 class Runner():
+    '''
+    Class for creating interactive GUI
+
+    HOW TO USE IT::
+
+        conf = 'myConfGlobalPath.yaml'
+        from m4.configuration import start
+        ott, interf = start.create_ott(conf)
+        from m4.ground import GUI
+        g = GUI.Runner(ott, interf)
+        g.run()
+    '''
 
     def __init__(self, ott, interf):
+        '''The constructor
+        ott: object
+            tower object
+        interf: object
+            interferometer object
+        '''
         self.ott = ott
         self.interf = interf
 
     def _setUp(self):
 
         def setPlot(gui, image):
+            '''
+            image: masked numpy array
+                image from the calibration tower
+            '''
             gui.plot = image
             gui.plot.set_clim(vmin=image.min(), vmax=image.max())
 
         def getstatus(gui):
+            ''' Function to reload tower data and image
+            '''
             if self.ott:
                 gui.parpos = self.ott.parabola.getPosition()
                 gui.rmpos = self.ott.referenceMirror.getPosition()
@@ -37,6 +59,7 @@ class Runner():
             setPlot(gui, image)
 
         def movepar(gui, *args):
+            ''' Function to move the parabola'''
             vec = self.ott.parabola.getPosition()
             vec[2] = np.float(gui.parpist or vec[2])
             vec[3] = np.float(gui.partip or vec[3])
@@ -45,6 +68,7 @@ class Runner():
                 self.ott.parabola.setPosition(vec)
 
         def moverm(gui, *args):
+            ''' Function to move the reference mirror '''
             vec = self.ott.referenceMirror.getPosition()
             vec[2] = np.float(gui.rmpist or vec[2])
             vec[3] = np.float(gui.rmtip or vec[3])
@@ -53,6 +77,7 @@ class Runner():
                 self.ott.referenceMirror.setPosition(vec)
 
         def movem4(gui, *args):
+            ''' Function to move the exapode '''
             vec = self.ott.m4.getPosition()
             vec[2] = np.float(gui.m4pist or vec[2])
             vec[3] = np.float(gui.m4tip or vec[3])
@@ -61,16 +86,19 @@ class Runner():
                 self.ott.m4.setPosition(vec)
 
         def moverslider(gui, *args):
+            ''' Function to move the reference mirror slider '''
             pos = self.ott.referenceMirrorSlider.getPosition() or np.int(gui.rmslider)
             if self.ott:
                 self.ott.referenceMirrorSlider.setPosition(pos)
 
         def moveangle(gui, *args):
+            ''' Function to rotate the tower angle'''
             pos = self.ott.angleRotator.getPosition() or np.int(gui.angle)
             if self.ott:
                 self.ott.angleRotator.setPosition(pos)
 
         def movepslider(gui, *args):
+            ''' Function to move the parabola slider '''
             pos = self.ott.parabolaSlider.getPosition() or np.int(gui.parslider)
             if self.ott:
                 self.ott.parabolaSlider.setPosition(pos)
@@ -139,14 +167,15 @@ class Runner():
 #                 cmap = name
 
     def run(self):
+        ''' Run the GUI '''
         self._setUp()
         self.gui.run()
 
-#non funziona
+
 if __name__ == '__main__':
     from m4.configuration import start
-    conf = '/Users/rm/eclipse-workspace/M4/m4/configuration/myConfig.yaml'
-    ott, interf = start.create_ott(conf)                                    
+    conf = '/Users/rm/eclipse-workspace/M4/m4/configuration/myConfig.yaml' #modificare all'occorrenza
+    ott, interf = start.create_ott(conf)
 
     runner = Runner(ott, interf)
     sys.exit(runner.run())
