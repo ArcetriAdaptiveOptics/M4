@@ -5,7 +5,7 @@ Authors
 
 import sys
 import numpy as np
-
+from m4.ott_sim.ott_images import OttImages
 from guietta import Gui, G, MA, _, ___, III
 #from guietta import Empty, Exceptions
 
@@ -21,26 +21,23 @@ class Runner():
         from m4.configuration import start
         ott, interf = start.create_ott(conf)
         from m4.ground import GUI
-        g = GUI.Runner(ott, interf)
+        g = GUI.Runner(ott)
         g.run()
     '''
 
-    def __init__(self, ott, interf):
+    def __init__(self, ott):
         '''The constructor
         ott: object
             tower object
-        interf: object
-            interferometer object
         '''
         self.ott = ott
-        self.interf = interf
 
     def _setUp(self):
 
         def setPlot(gui, image):
             '''
-            image: masked numpy array
-                image from the calibration tower
+            image: numpy array
+                image of the tower
             '''
             gui.plot = image
             gui.plot.set_clim(vmin=image.min(), vmax=image.max())
@@ -55,7 +52,10 @@ class Runner():
                 gui.pslider = self.ott.parabolaSlider.getPosition()
                 gui.anglepos = self.ott.angleRotator.getPosition()
                 gui.rslider = self.ott.referenceMirrorSlider.getPosition()
-            image = self.interf.acquire_phasemap()
+            ottIma = OttImages(self.ott)
+            opd, mask = ottIma.ott_smap()
+            image = np.ma.masked_array(opd.T,
+                                        mask=np.invert(mask.astype(bool)).T)
             setPlot(gui, image)
 
         def movepar(gui, *args):
@@ -104,7 +104,6 @@ class Runner():
                 self.ott.parabolaSlider.setPosition(pos)
 
 
-        image = self.interf.acquire_phasemap()
         gui_image = Gui([ MA('plot'), ___, ___, ___, ___, ___, ___, ___ ],
                         [ III, III, III, III, III, III, III, III ],
                         [ III, III, III, III, III, III, III, III ],
@@ -130,6 +129,10 @@ class Runner():
                           ['New Angle Rot position', '__angle__', _, _, _, _, _, 'deg'],
                           [['Set_AngleRotator'], ___, ___, ___, ___, ___, ___, ___]) #exceptions=Exceptions.OFF)
 
+        ottIma = OttImages(self.ott)
+        opd, mask = ottIma.ott_smap()
+        image = np.ma.masked_array(opd.T,
+                                   mask=np.invert(mask.astype(bool)).T)
         gui_image.plot = image
         gui_image.plot.set_title('Un bel titolo')
         gui_image.plot.colorbar()
@@ -148,6 +151,8 @@ class Runner():
              [ G('OTT') , G('Control') ]
              )
 
+        self.gui.OTT = gui_image
+        self.gui.Control = control_gui
         self.gui_control = control_gui
         self.gui_image = gui_image
 
@@ -181,6 +186,6 @@ if __name__ == '__main__':
     conf = '/Users/rm/eclipse-workspace/M4/m4/configuration/myConfig.yaml' #modificare all'occorrenza
     ott, interf = start.create_ott(conf)
 
-    runner = Runner(ott, interf)
+    runner = Runner(ott)
     sys.exit(runner.run())
 
