@@ -53,9 +53,7 @@ class Runner():
                 gui.anglepos = self.ott.angleRotator.getPosition()
                 gui.rslider = self.ott.referenceMirrorSlider.getPosition()
             ottIma = OttImages(self.ott)
-            opd, mask = ottIma.ott_smap()
-            image = np.ma.masked_array(opd.T,
-                                        mask=np.invert(mask.astype(bool)).T)
+            image = ottIma.ott_view()
             setPlot(gui, image)
 
         def movepar(gui, *args):
@@ -130,9 +128,8 @@ class Runner():
                           [['Set_AngleRotator'], ___, ___, ___, ___, ___, ___, ___]) #exceptions=Exceptions.OFF)
 
         ottIma = OttImages(self.ott)
-        opd, mask = ottIma.ott_smap()
-        image = np.ma.masked_array(opd.T,
-                                   mask=np.invert(mask.astype(bool)).T)
+        image = ottIma.ott_view()
+
         gui_image.plot = image
         gui_image.plot.set_title('Un bel titolo')
         gui_image.plot.colorbar()
