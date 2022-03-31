@@ -4,9 +4,10 @@ Authors
 '''
 
 import sys
+import time
 import numpy as np
 from m4.ott_sim.ott_images import OttImages
-from guietta import Gui, G, MA, _, ___, III
+from guietta import Gui, G, MA, _, ___, III, HB
 #from guietta import Empty, Exceptions
 
 
@@ -41,6 +42,7 @@ class Runner():
             '''
             gui.plot = image
             gui.plot.set_clim(vmin=image.min(), vmax=image.max())
+            gui.heart_empty_30.beat()
 
         def getstatus(gui):
             ''' Function to reload tower data and image
@@ -85,35 +87,33 @@ class Runner():
 
         def moverslider(gui, *args):
             ''' Function to move the reference mirror slider '''
-            pos = self.ott.referenceMirrorSlider.getPosition() or np.int(gui.rmslider)
+            pos = np.int(gui.rmslider) or self.ott.referenceMirrorSlider.getPosition()
             if self.ott:
                 self.ott.referenceMirrorSlider.setPosition(pos)
 
-        def moveangle(gui, *args):
+        def Set_AngleRotator(gui, *args):
             ''' Function to rotate the tower angle'''
-            pos = self.ott.angleRotator.getPosition() or np.int(gui.angle)
+            pos = np.int(gui.angle) or self.ott.angleRotator.getPosition()
             if self.ott:
                 self.ott.angleRotator.setPosition(pos)
 
-        def movepslider(gui, *args):
+        def Set_ParabolaSlider(gui, *args):
             ''' Function to move the parabola slider '''
-            pos = self.ott.parabolaSlider.getPosition() or np.int(gui.parslider)
+            pos = np.int(gui.parslider) or self.ott.parabolaSlider.getPosition()
             if self.ott:
                 self.ott.parabolaSlider.setPosition(pos)
 
 
-        gui_image = Gui([ MA('plot'), ___, ___, ___, ___, ___, ___, ___ ],
-                        [ III, III, III, III, III, III, III, III ],
-                        [ III, III, III, III, III, III, III, III ],
-                        [ III, III, III, III, III, III, III, III ],
-                        [ III, III, III, III, III, III, III, III ],
-                        [ III, III, III, III, III, III, III, III ],
-                        ['Par position:','parpos', ___, ___, ___, ___, ___, 'mm'],
-                        ['Rm position:', 'rmpos', ___, ___, ___, ___, ___, 'mm'],
-                        ['M4 position:', 'm4pos', ___, ___, ___, ___, ___, 'mm'],
-                        ['Par slider position:', 'pslider', ___, ___, ___, ___, ___,'mm'],
-                        ['Rm slider position:', 'rslider', ___, ___, ___, ___, ___,'mm'],
-                        ['Ang rot position:', 'anglepos', ___, ___, ___, ___, ___, 'deg'])
+        gui_image = Gui([ MA('plot')            , ___    , ___, ___ ],
+                        ['Par position:'        ,'parpos', ___, 'mm'],
+                        ['Rm position:'        , 'rmpos', ___, 'mm'],
+                        ['M4 position:'        , 'm4pos', ___, 'mm'],
+                        ['Par slider position:', 'pslider', ___,'mm'],
+                        ['Rm slider position:', 'rslider', ___,'mm'],
+                        ['Ang rot position:', 'anglepos', ___, 'deg'],
+                        [   _               ,    _      ,  HB('heart_empty_30.png',
+                                                              'heart_full_30.png'), _], images_dir='m4/data')
+
         control_gui = Gui(['New Par position', '0', '0', '__parpist__', '__partip__', '__partilt__', '0', 'mm'],
                           [['Set_Parabola'], ___, ___, ___, ___, ___, ___, ___],
                           ['New Rm position', '0', '0', '__rmpist__', '__rmtip__', '__rmtilt__', '0', 'mm'],
@@ -121,11 +121,11 @@ class Runner():
                           ['New M4 position', '0', '0', '__m4pist__', '__m4tip__', '__m4tilt__', '0', 'mm'],
                           [['Set_M4'], ___, ___, ___, ___, ___, ___, ___],
                           ['New Par Slider position', '__parslider__', _, _, _, _, _, 'mm'],
-                          [['Set_ParabolaSlider'], ___, ___, ___, ___, ___, ___, ___],
+                          [Set_ParabolaSlider, ___, ___, ___, ___, ___, ___, ___],
                           ['New Rm Slider position', '__rmslider__', _, _, _, _, _, 'mm'],
                           [['Set_ReferenceMirrorSlider'], ___, ___, ___, ___, ___, ___, ___],
                           ['New Angle Rot position', '__angle__', _, _, _, _, _, 'deg'],
-                          [['Set_AngleRotator'], ___, ___, ___, ___, ___, ___, ___]) #exceptions=Exceptions.OFF)
+                          [Set_AngleRotator, ___, ___, ___, ___, ___, ___, ___]) #exceptions=Exceptions.OFF)
 
         ottIma = OttImages(self.ott)
         image = ottIma.ott_view()
@@ -138,9 +138,7 @@ class Runner():
         control_gui.Set_Parabola = movepar
         control_gui.Set_RefMirror = moverm
         control_gui.Set_M4 = movem4
-        control_gui.Set_ParabolaSlider = movepslider
         control_gui.Set_ReferenceMirrorSlider = moverslider
-        control_gui.Set_AngleRotator = moveangle
 
         gui_image.timer_start(getstatus, 1)
 
@@ -152,21 +150,6 @@ class Runner():
         self.gui.Control = control_gui
         self.gui_control = control_gui
         self.gui_image = gui_image
-
-#         while 0:
-#             try:
-#                 name, event = gui_image.get(timeout=1)
-# 
-#             except Empty:
-#                 oi = OttImages(self.ott)
-#                 smap1, smask = oi.ott_smap()
-#                 setPlot(gui_image, image)
-#                 continue
-# 
-#             if name is None:
-#                 break
-#             if name in ['viridis', 'hot']:
-#                 cmap = name
 
     def runImage(self):
         self._setUp()
