@@ -58,7 +58,7 @@ class Runner():
             image = ottIma.ott_view()
             setPlot(gui, image)
 
-        def movepar(gui, *args):
+        def Set_Parabola(gui, *args):
             ''' Function to move the parabola'''
             vec = self.ott.parabola.getPosition()
             vec[2] = np.float(gui.parpist or vec[2])
@@ -67,7 +67,7 @@ class Runner():
             if self.ott:
                 self.ott.parabola.setPosition(vec)
 
-        def moverm(gui, *args):
+        def Set_RefMirror(gui, *args):
             ''' Function to move the reference mirror '''
             vec = self.ott.referenceMirror.getPosition()
             vec[2] = np.float(gui.rmpist or vec[2])
@@ -76,7 +76,7 @@ class Runner():
             if self.ott:
                 self.ott.referenceMirror.setPosition(vec)
 
-        def movem4(gui, *args):
+        def Set_M4(gui, *args):
             ''' Function to move the exapode '''
             vec = self.ott.m4.getPosition()
             vec[2] = np.float(gui.m4pist or vec[2])
@@ -85,7 +85,7 @@ class Runner():
             if self.ott:
                 self.ott.m4.setPosition(vec)
 
-        def moverslider(gui, *args):
+        def Set_ReferenceMirrorSlider(gui, *args):
             ''' Function to move the reference mirror slider '''
             pos = np.int(gui.rmslider) or self.ott.referenceMirrorSlider.getPosition()
             if self.ott:
@@ -115,15 +115,15 @@ class Runner():
                                                               'heart_full_30.png'), _], images_dir='m4/data')
 
         control_gui = Gui(['New Par position', '0', '0', '__parpist__', '__partip__', '__partilt__', '0', 'mm'],
-                          [['Set_Parabola'], ___, ___, ___, ___, ___, ___, ___],
+                          [Set_Parabola, ___, ___, ___, ___, ___, ___, ___],
                           ['New Rm position', '0', '0', '__rmpist__', '__rmtip__', '__rmtilt__', '0', 'mm'],
-                          [['Set_RefMirror'], ___, ___, ___, ___, ___, ___, ___],
+                          [Set_RefMirror, ___, ___, ___, ___, ___, ___, ___],
                           ['New M4 position', '0', '0', '__m4pist__', '__m4tip__', '__m4tilt__', '0', 'mm'],
-                          [['Set_M4'], ___, ___, ___, ___, ___, ___, ___],
+                          [Set_M4, ___, ___, ___, ___, ___, ___, ___],
                           ['New Par Slider position', '__parslider__', _, _, _, _, _, 'mm'],
                           [Set_ParabolaSlider, ___, ___, ___, ___, ___, ___, ___],
                           ['New Rm Slider position', '__rmslider__', _, _, _, _, _, 'mm'],
-                          [['Set_ReferenceMirrorSlider'], ___, ___, ___, ___, ___, ___, ___],
+                          [Set_ReferenceMirrorSlider, ___, ___, ___, ___, ___, ___, ___],
                           ['New Angle Rot position', '__angle__', _, _, _, _, _, 'deg'],
                           [Set_AngleRotator, ___, ___, ___, ___, ___, ___, ___]) #exceptions=Exceptions.OFF)
 
@@ -133,12 +133,6 @@ class Runner():
         gui_image.plot = image
         gui_image.plot.set_title('Un bel titolo')
         gui_image.plot.colorbar()
-
-
-        control_gui.Set_Parabola = movepar
-        control_gui.Set_RefMirror = moverm
-        control_gui.Set_M4 = movem4
-        control_gui.Set_ReferenceMirrorSlider = moverslider
 
         gui_image.timer_start(getstatus, 1)
 
