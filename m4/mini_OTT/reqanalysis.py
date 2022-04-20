@@ -1,6 +1,6 @@
-%%script for requirements verification data analysis
+##script for requirements verification data analysis
 
-%%OTT setup accuracy (RA-M4-0279, RA-M4-0288)
+##OTT setup accuracy (RA-M4-0279, RA-M4-0288)
 
 from M4.mOTT_analysis import timehistory as th
 import pandas as pd
@@ -13,10 +13,10 @@ import matplotlib.pyplot as plt
 
 class reqVerification():
     
-    def __init__(id='')
+    def __init__(id=''):
     
         if id=='':
-            print("possible reqs:"
+            print("possible reqs:")
             print("RA-M4-0324: SPL accuracy")
             print("RA-M4-0270: Inter-actuator stroke")
             print("RA-M4-0274: Slope accuracy")
@@ -51,54 +51,50 @@ class reqVerification():
         
 class removeDiffPist():
     
-    def __init__(filename='./test.fits')
-    hdul = fits.open(filename)
-    img = hdul[0].data
-    plt.imshow(img)
-    
-    sx = img.shape[0]
-    sy = img.shape[1]
-    cx = 406
-    cy = 406
-    rmin = 100
-    rmax = 200
-    ncircles = 11
-    nsamples = 1000
-    
-    #generate circles
-    angles =np.array([ np.arange(nsamples)/(nsamples-1)*2*np.pi])
-    rays = np.array([np.linspace(rmin, rmax, ncircles)])
-    th = rebin(angles, [ncircles, nsamples])
-    rr = rebin(np.transpose(rays),[ncircles, nsamples] )
-    xi = rr*np.cos(th) + cx
-    yi = rr*np.sin(th) + cy
-    x = np.arange(sx)
-    y = np.arange(sy)
-    xx, yy = np.meshgrid(x,y)
-    
-    #roi detection
-    from skimage import measure
-    mask = img !=0
-    roi = measure.label(mask)
-    m1 = roi ==1;
-    m2 = roi ==2;
-    m3 = roi ==3;
-    
-    #fit each submask with Thin Plate Spline 
-    
-    #using the fitted surface ????
-    
-    
-    zi = interpolate.griddata(np.array([xx.ravel(), yy.ravel()]).T, img.ravel(),(xi,yi), method='linear')
-    for ii in range(ncircles):
-        plt.plot(np.arange(nsamples), zi[ii,:])
+    def __init__(filename='./test.fits'):
+        hdul = fits.open(filename)
+        img = hdul[0].data
+        plt.imshow(img)
         
-    
-     
-    
+        sx = img.shape[0]
+        sy = img.shape[1]
+        cx = 406
+        cy = 406
+        rmin = 100
+        rmax = 200
+        ncircles = 11
+        nsamples = 1000
+        
+        #generate circles
+        angles =np.array([ np.arange(nsamples)/(nsamples-1)*2*np.pi])
+        rays = np.array([np.linspace(rmin, rmax, ncircles)])
+        th = rebin(angles, [ncircles, nsamples])
+        rr = rebin(np.transpose(rays),[ncircles, nsamples] )
+        xi = rr*np.cos(th) + cx
+        yi = rr*np.sin(th) + cy
+        x = np.arange(sx)
+        y = np.arange(sy)
+        xx, yy = np.meshgrid(x,y)
+        
+        #roi detection
+        from skimage import measure
+        mask = img !=0
+        roi = measure.label(mask)
+        m1 = roi ==1;
+        m2 = roi ==2;
+        m3 = roi ==3;
+        
+        #fit each submask with Thin Plate Spline 
+        
+        #using the fitted surface ????
+        
+        
+        zi = interpolate.griddata(np.array([xx.ravel(), yy.ravel()]).T, img.ravel(),(xi,yi), method='linear')
+        for ii in range(ncircles):
+            plt.plot(np.arange(nsamples), zi[ii,:])
+
     
 def scaleZernike(coeff,r0,r1):
-    
-    
-    
+    pass
+
     

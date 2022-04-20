@@ -6,6 +6,7 @@ from astropy.io import fits as pyfits
 from m4.ground import read_data
 from m4.ground import zernike
 from m4.ground.read_data import InterferometerConverter
+from matplotlib.pyplot import *
 ic = InterferometerConverter()
 a= '/mnt/data/M4/Data/M4Data/OPTData/'
 tn = '20210425_085242'   #fits
@@ -33,9 +34,9 @@ class TimeHist():
         
         return frame(id, self._list)
         
-    def averageFrames(start, stop):
-    
-        return averageFrames(start_stop, self._list)
+    def averageFrames(self, start, stop):
+    	
+        return averageFrames(start, stop, self._list)
 
     
 
