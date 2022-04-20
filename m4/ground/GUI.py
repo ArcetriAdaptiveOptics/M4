@@ -8,6 +8,7 @@ import time
 import numpy as np
 from m4.ott_sim.ott_images import OttImages
 from guietta import Gui, G, MA, _, ___, III, HB
+from m4.ground.package_data import data_root_dir
 #from guietta import Empty, Exceptions
 
 
@@ -112,7 +113,7 @@ class Runner():
                         ['Rm slider position:', 'rslider', ___,'mm'],
                         ['Ang rot position:', 'anglepos', ___, 'deg'],
                         [   _               ,    _      ,  HB('heart_empty_30.png',
-                                                              'heart_full_30.png'), _], images_dir='m4/data')
+                                                              'heart_full_30.png'), _], images_dir=data_root_dir())
 
         control_gui = Gui(['New Par position', '0', '0', '__parpist__', '__partip__', '__partilt__', '0', 'mm'],
                           [Set_Parabola, ___, ___, ___, ___, ___, ___, ___],
@@ -155,7 +156,7 @@ class Runner():
         self.gui.run()
 
 
-if __name__ == '__main__':
+def main():
     from m4.configuration import start
     conf = '/home/labot/Desktop/labotConfig.yaml' #modificare all'occorrenza
     ott, interf = start.create_ott(conf)
@@ -163,3 +164,5 @@ if __name__ == '__main__':
     runner = Runner(ott)
     sys.exit(runner.run())
 
+if __name__ == '__main__':
+    main()
