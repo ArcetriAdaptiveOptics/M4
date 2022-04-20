@@ -131,7 +131,7 @@ class Runner():
         image = ottIma.ott_view()
 
         gui_image.plot = image
-        gui_image.plot.set_title('Un bel titolo')
+        gui_image.plot.set_title('OTT geometry')
         gui_image.plot.colorbar()
 
         gui_image.timer_start(getstatus, 1)
@@ -157,7 +157,7 @@ class Runner():
 
 if __name__ == '__main__':
     from m4.configuration import start
-    conf = '/Users/rm/eclipse-workspace/M4/m4/configuration/myConfig.yaml' #modificare all'occorrenza
+    conf = '/home/labot/Desktop/labotConfig.yaml' #modificare all'occorrenza
     ott, interf = start.create_ott(conf)
 
     runner = Runner(ott)
