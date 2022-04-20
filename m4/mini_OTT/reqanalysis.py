@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 class reqVerification():
     
-    def __init__(id=''):
+    def __init__(self, id=''):
     
         if id=='':
             print("possible reqs:")
@@ -43,15 +43,15 @@ class reqVerification():
             return None
         
         
-    def _fillTempFromDB(fname='/home/labot/git/M4/m4/mOTT_analysis/RW_20210513113809_438286_5883_1.csv'):
+    def _fillTempFromDB(self, fname='/home/labot/git/M4/m4/mOTT_analysis/RW_20210513113809_438286_5883_1.csv'):
         return pandas.read_csv(fname, parse_dates=['Data-Ora'])
             
-    def computeVals():
+    def computeVals(self):
         pass
         
 class removeDiffPist():
     
-    def __init__(filename='./test.fits'):
+    def __init__(self, filename='./test.fits'):
         hdul = fits.open(filename)
         img = hdul[0].data
         plt.imshow(img)
