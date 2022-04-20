@@ -44,7 +44,7 @@ class reqVerification():
         
         
     def _fillTempFromDB(self, fname='/home/labot/git/M4/m4/mOTT_analysis/RW_20210513113809_438286_5883_1.csv'):
-        return pandas.read_csv(fname, parse_dates=['Data-Ora'])
+        return pd.read_csv(fname, parse_dates=['Data-Ora'])
             
     def computeVals(self):
         pass
