@@ -3,9 +3,10 @@
     - Scegliere un vettore di comandi con cui calibrare i gradi di libertà della parabola (PAR) e quello dello specchio di riferimento (RM).
  		 ```
 	 
- 		  command_amp_vector = np.array([par_piston, par_tip, par_tilt, rm_tip, rm_tilt]) espressi in [mm, arcsec, arcsec, arcsec, arcsec]
+ 		  command_amp_vector = np.array([par_piston, par_tip, par_tilt, rm_tip, rm_tilt])
  		  
 
+	espressi in [mm, arcsec, arcsec, arcsec, arcsec]  
  	NOTA: tenere presente che il metodo di calibrazione usato prevede che all'applicazione del comando par_tip corrisponda un'applicazione del comando rm_tip=-2.05*par_tip. Stessa relazione sussiste tra par_tilt ed rm_tilt.
     - Possibiltà di visualizzazione della matrice dei comandi di calibrazione prima dell'effetiva applicazione tramite il comando
  		  ```
