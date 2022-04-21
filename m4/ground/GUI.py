@@ -106,8 +106,8 @@ class Runner():
 
 
         gui_image = Gui([ MA('plot')            , ___    , ___, ___ ],
-                        ['Par position:'        ,'parpos', ___, 'mm'],
-                        ['Rm position:'        , 'rmpos', ___, 'mm'],
+                        ['Par position:'        ,'parpos', ___, '[-, -, mm, arcsec, arcsec, -]'],
+                        ['Rm position:'        , 'rmpos', ___, '[-, -, mm, arcsec, arcsec, -]'],
                         ['M4 position:'        , 'm4pos', ___, 'mm'],
                         ['Par slider position:', 'pslider', ___,'mm'],
                         ['Rm slider position:', 'rslider', ___,'mm'],
@@ -115,9 +115,9 @@ class Runner():
                         [   _               ,    _      ,  HB('heart_empty_30.png',
                                                               'heart_full_30.png'), _], images_dir=data_root_dir())
 
-        control_gui = Gui(['New Par position', '0', '0', '__parpist__', '__partip__', '__partilt__', '0', 'mm'],
+        control_gui = Gui(['New Par position', '0', '0', '__parpist__', '__partip__', '__partilt__', '0', '[-, -, mm, arcsec, arcsec, -]'],
                           [Set_Parabola, ___, ___, ___, ___, ___, ___, ___],
-                          ['New Rm position', '0', '0', '__rmpist__', '__rmtip__', '__rmtilt__', '0', 'mm'],
+                          ['New Rm position', '0', '0', '__rmpist__', '__rmtip__', '__rmtilt__', '0', '[-, -, mm, arcsec, arcsec, -]'],
                           [Set_RefMirror, ___, ___, ___, ___, ___, ___, ___],
                           ['New M4 position', '0', '0', '__m4pist__', '__m4tip__', '__m4tilt__', '0', 'mm'],
                           [Set_M4, ___, ___, ___, ___, ___, ___, ___],
@@ -134,17 +134,18 @@ class Runner():
         gui_image.plot = image
         gui_image.plot.set_title('OTT geometry')
         gui_image.plot.colorbar()
+        gui_image.plot.text(30, 50, 'ciao')
 
         gui_image.timer_start(getstatus, 1)
 
         self.gui = Gui(
              [ G('OTT') , G('Control') ]
              )
-
-        self.gui.OTT = gui_image
-        self.gui.Control = control_gui
         self.gui_control = control_gui
         self.gui_image = gui_image
+        self.gui.OTT = gui_image
+        self.gui.Control = control_gui
+
 
     def runImage(self):
         self._setUp()
