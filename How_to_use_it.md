@@ -3,7 +3,7 @@
     - Scegliere un vettore di comandi con cui calibrare i gradi di libertà della parabola (PAR) e quello dello specchio di riferimento (RM).
  		 ```
 	 
- 		  command_amp_vector = [par_piston, par_tip, par_tilt, rm_tip, rm_tilt] espressi in millimetri
+ 		  command_amp_vector = np.array([par_piston, par_tip, par_tilt, rm_tip, rm_tilt]) espressi in [mm, arcsec, arcsec, arcsec, arcsec]
  		  
 
  	NOTA: tenere presente che il metodo di calibrazione usato prevede che all'applicazione del comando par_tip corrisponda un'applicazione del comando rm_tip=-2.05*par_tip. Stessa relazione sussiste tra par_tilt ed rm_tilt.
@@ -102,7 +102,7 @@ In questo modo è possibile conoscere come muovere le viti dello spider per rial
   che contiene:  
 	Cube.fits che è il cubo delle immagini acquisite  
 	angle_list.txt che è lista degli angoli usati per la misura e
-	theta.fits, cioè la stessa lista di angoli in versione vettore
+	theta.fits, cioè la stessa lista di angoli in versione vettore  
   centro, axs e raggio corrispondono agli output del fitting dell'ellisse sui vettori di tip e tilt ottenuti con le misure effettuate
 - Per analizzare nuovamente una misura di cui si conosce il tracking number usare:
 	```
