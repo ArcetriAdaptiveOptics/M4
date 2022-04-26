@@ -22,4 +22,4 @@ class TestStart(unittest.TestCase):
 
     #@mock.patch('m4.devices.interferometer.I4d4020', autospec=True)
     def testCreationWhitFakePathInYaml(self):
-        ott, interf = create_ott(os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf2.yaml'))
+        ott, interf, dm = create_ott(os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf2.yaml'))

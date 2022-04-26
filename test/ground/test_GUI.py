@@ -21,5 +21,5 @@ class TestGui(unittest.TestCase):
         mock_conf.MIRROR_FOLDER = want_mirror_root_folder
 
         conf = os.path.join(testDataRootDir(), 'base', 'Configurations','testConf.yaml')
-        ott, interf = start.create_ott(conf)
+        ott, interf, dm = start.create_ott(conf)
         #GUI.main(ott, interf)

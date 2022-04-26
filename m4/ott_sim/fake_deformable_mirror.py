@@ -31,7 +31,7 @@ class FakeM4DM(BaseDeformableMirror):
                                                    'if_sect4_rot-bin2.fits'))
         self.ifidx = read_data.readFits_data(os.path.join(conf.MIRROR_FOLDER,
                                                            conf.mirror_conf,
-                                                    'if_idx4_rot-bin2.fits')) 
+                                                    'if_idx4_rot-bin2.fits'))
         self.vmat = read_data.readFits_data(os.path.join(conf.MIRROR_FOLDER,
                                                    conf.mirror_conf, 'ff_v_matrix.fits'))
 
