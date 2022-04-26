@@ -183,7 +183,7 @@ class IFFunctionsMaker():
         return new_matrix
 
 
-    def _saveInfo(self, folder, fits_or_h5):
+    def _saveInfoFile(self, folder, fits_or_h5):
         """ Save the fits info file containing the input data for
         the creation of iff
 
@@ -195,45 +195,45 @@ class IFFunctionsMaker():
             header = pyfits.Header()
             header['NPUSHPUL'] = self._nPushPull
             header['TT_CMDH'] = self._tt_cmdH
-            header['MODEVECT'] = self._modesVectorTag
             header['CMDMAT'] = self._cmdMatrixTag
             header['AMP'] = self._amplitudeTag
             pyfits.writeto(fits_file_name, self._indexingList, header)
             pyfits.append(fits_file_name, self._template)
+            pyfits.append(fits_file_name, self._actsVector)
         else:
             fits_file_name = os.path.join(folder, 'info.h5')
             hf = h5py.File(fits_file_name, 'w')
             hf.create_dataset('dataset_1', data=self._indexingList)
-            hf.attrs['MODEVECT'] = self._modesVectorTag
+            hf.attrs['ACTSVECT'] = self._actsVector
             hf.attrs['CMDMAT'] = self._cmdMatrixTag
             hf.attrs['AMP'] = self._amplitudeTag
             hf.attrs['NPUSHPUL'] = self._nPushPull
             hf.attrs['TT_CMDH'] = self._tt_cmdH
             hf.close()
 
-    def _saveInfoSeparately(self, folder):
-        """ Save the input data for the creation of iff
-
-        Args:
-            folder = path that indicates where to save
-        """
-        fits_file_name = os.path.join(folder, 'indexingList.fits')
-        pyfits.writeto(fits_file_name, self._indexingList)
-        fits_file_name = os.path.join(folder, 'template.fits')
-        pyfits.writeto(fits_file_name, self._template)
-        fits_file_name = os.path.join(folder, 'more_info.txt')
-        file = open(fits_file_name, 'w+')
-        file.write('tt_cmdH = %s' %(self._tt_cmdH))
-        file.close()
-        fits_file_name = os.path.join(folder, 'tag_info.txt')
-        file = open(fits_file_name, 'w+')
-        file.write('Modes_vector_tag = %s, Cmd_matrix_tag = %s, Amplitude_tag = %s' \
-                   %(self._modesVectorTag, self._cmdMatrixTag, self._amplitudeTag))
-        file.close()
-        fits_file_name = os.path.join(folder, 'n_push_pull.txt')
-        file = open(fits_file_name, 'w+')
-        file.write('N_push_pull = %e' %(self._nPushPull))
-        file.close()
+#     def _saveInfoSeparately(self, folder):
+#         """ Save the input data for the creation of iff
+# 
+#         Args:
+#             folder = path that indicates where to save
+#         """
+#         fits_file_name = os.path.join(folder, 'indexingList.fits')
+#         pyfits.writeto(fits_file_name, self._indexingList)
+#         fits_file_name = os.path.join(folder, 'template.fits')
+#         pyfits.writeto(fits_file_name, self._template)
+#         fits_file_name = os.path.join(folder, 'more_info.txt')
+#         file = open(fits_file_name, 'w+')
+#         file.write('tt_cmdH = %s' %(self._tt_cmdH))
+#         file.close()
+#         fits_file_name = os.path.join(folder, 'tag_info.txt')
+#         file = open(fits_file_name, 'w+')
+#         file.write('Modes_vector_tag = %s, Cmd_matrix_tag = %s, Amplitude_tag = %s' \
+#                    %(self._modesVectorTag, self._cmdMatrixTag, self._amplitudeTag))
+#         file.close()
+#         fits_file_name = os.path.join(folder, 'n_push_pull.txt')
+#         file = open(fits_file_name, 'w+')
+#         file.write('N_push_pull = %e' %(self._nPushPull))
+#         file.close()
 
     @staticmethod
     def loadInfo(tt, fits_or_h5=0):
@@ -263,18 +263,18 @@ class IFFunctionsMaker():
         """
         store_in_folder = IFFunctionsMaker._storageFolder()
         folder = os.path.join(store_in_folder, tt)
-        dm = 0
+        dm = DMtest()
         interf = 0
         theObject = IFFunctionsMaker(dm, interf)
         if fits_or_h5 == 0 :
             additional_info_fits_file_name = os.path.join(folder, 'info.fits')
             header = pyfits.getheader(additional_info_fits_file_name)
             hduList = pyfits.open(additional_info_fits_file_name)
-            theObject._modesVectorTag = header['MODEVECT']
             theObject._cmdMatrixTag = header['CMDMAT']
             theObject._amplitudeTag = header['AMP']
             theObject._indexingList = hduList[0].data
             theObject._template = hduList[1].data
+            theObject._actsVector = hduList[2].data
             theObject._tt_cmdH = header['TT_CMDH']
             try:
                 theObject._nPushPull = header['NPUSHPUL']
@@ -293,3 +293,12 @@ class IFFunctionsMaker():
             theObject._tt_cmdH = hf.attrs['TT_CMDH']
         theObject._h5Folder = folder
         return theObject
+
+class DMtest():
+    def __init__(self):
+        pass
+    def getNActs(self):
+        acts = 3
+        return acts
+    def setActsCommand(self, cmd):
+        pass

@@ -19,11 +19,15 @@ class TestInfluenceFunctionsMaker(unittest.TestCase):
         self.dm
         self.interf
 
+    @mock.patch('astropy.io.open', autospec=None)
+    @mock.patch('m4.utils.influence_functions_maker.IFFunctionsMaker._storageFolder', autospec=True)
+    @mock.patch('astropy.io.fits.writeto', autospec=None)
     @mock.patch('m4.type.modalAmplitude.ModalAmplitude._storageFolder', autospec=True)
     @mock.patch('m4.type.modalBase.ModalBase._storageFolder', autospec=True)
     @mock.patch('m4.ground.tracking_number_folder.os.makedirs', autospec=True)
     @mock.patch('m4.type.commandHistory.CmdHistory.saveInfo', autospec=True)
-    def testIFFsAcquisition(self, mock, mockcmd, mockFilepath1, mockFilepath2):
+    def testIFFsAcquisition(self, mock, mockcmd, mockFilepath1, mockFilepath2, mock_fits,
+                            mock_folder, mock_open):
         modalBaseTag = 'Hadamard3.fits'
         ampTag = 'ampTest3.fits'
         iff = IFFunctionsMaker(self.dm, self.interf)
@@ -37,6 +41,19 @@ class TestInfluenceFunctionsMaker(unittest.TestCase):
                                  shuffle=False, template=None)
         tt2 = iff.acq_IFFunctions(n_push_pull, ampTag, modalBaseTag,
                                  shuffle=True, template=np.array([1,-1,1]))
+
+        mock_folder.return_value = os.path.join(testDataRootDir(), 'base',
+                                                  'M4Data/OPTData/IFFunctions')
+        folder = os.path.join(testDataRootDir(), 'base','M4Data/OPTData/IFFunctions',
+                              tt2)
+        #iff._saveInfoFile(folder, 0)
+
+    @mock.patch('m4.utils.influence_functions_maker.IFFunctionsMaker._storageFolder', autospec=True)
+    def testReload(self, mock_folder):
+        tt = '20220309_142454'
+        mock_folder.return_value = os.path.join(testDataRootDir(), 'base',
+                                                  'M4Data/OPTData/IFFunctions')
+        IFFunctionsMaker.loadInfo(tt, 0)
 
     def _createDeformableMirror(self):
         dm = DMtest()
