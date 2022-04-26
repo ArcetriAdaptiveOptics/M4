@@ -12,7 +12,7 @@ class OpcUaM4Exapode(BaseM4Exapode):
 
         from m4.devices.opc_ua_controller import OpcUaController
         opcUa = OpcUaController()
-        from m4.devices.m4_controller import OpcUaM4
+        from m4.devices.m4_exapode import OpcUaM4Exapode
     '''
 
     def __init__(self, opcUa):

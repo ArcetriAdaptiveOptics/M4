@@ -12,7 +12,7 @@ class FakeM4Exapode(BaseM4Exapode):
 
     HOW TO USE IT::
 
-        from m4.ott_sim.fake_m4 import FakeM4
+        from m4.ott_sim.fake_m4_exapode import FakeM4Exapode
         dm = FakeM4()
         dm_pos = dm.getPosition()
         dm_pos = dm.setPosition()

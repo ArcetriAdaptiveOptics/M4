@@ -10,7 +10,7 @@ from m4.ott_sim.fake_reference_mirror_slider import FakeReferenceMirrorSlider
 from m4.ott_sim.fake_angle_rotator import FakeAngleRotator
 from m4.ott_sim.fake_parabola import FakeParabola
 from m4.ott_sim.fake_reference_mirror import FakeReferenceMirror
-from m4.ott_sim.fake_m4 import FakeM4
+from m4.ott_sim.fake_m4_exapode import FakeM4Exapode
 from m4.ott_sim.fake_temperature_sensors import FakeTemperatureSensors
 from m4.configuration.create_ott import OTT
 from numpy import testing
@@ -26,7 +26,7 @@ class TestOtt(unittest.TestCase):
         angle_rotator = FakeAngleRotator()
         parabola = FakeParabola()
         reference_mirror = FakeReferenceMirror()
-        m4 = FakeM4()
+        m4 = FakeM4Exapode()
         temperature_sensor = FakeTemperatureSensors()
         accelerometers = FakeAccelerometers()
         self.ott = OTT(
