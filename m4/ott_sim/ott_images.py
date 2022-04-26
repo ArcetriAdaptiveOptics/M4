@@ -28,7 +28,6 @@ class OttImages():
         from m4.ott_sim.ott_images import OttImages
         geo = OttImages(ott)
         imshow(geo.ott_view())
-        
     '''
 
     def __init__(self, ott):

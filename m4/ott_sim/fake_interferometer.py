@@ -23,6 +23,7 @@ class FakeInterferometer(BaseInterferometer):
         """The constructor """
         self._logger = logging.getLogger('FakeInterferometer')
         self._ott = None
+        self._dm = None
 
     def acquire_phasemap(self, n_frames=1, show=0):
         '''
@@ -39,6 +40,7 @@ class FakeInterferometer(BaseInterferometer):
                     interferometer image
         '''
         ottIma = OttImages(self._ott)
+        ottIma.m4ima = self._dm.m4ima
         opd, mask = ottIma.ott_smap(show=show)
         masked_ima = np.ma.masked_array(opd.T,
                                         mask=np.invert(mask.astype(bool)).T)
@@ -48,6 +50,11 @@ class FakeInterferometer(BaseInterferometer):
         ''' Function for setting optical tower data
         '''
         self._ott = ott
+
+    def set_dm(self, deformable_mirror):
+        ''' Function for setting deformable mirror data
+        '''
+        self._dm = deformable_mirror
 
     def save_phasemap(self, dove, name, image):
         """
