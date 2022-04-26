@@ -52,11 +52,6 @@ class OttImages():
 #         self.segmask1 = np.ma.make_mask(obj.readFits_object(
 #                                         os.path.join(conf.path_name.MIRROR_FOLDER,
 #                                         conf.mirror_conf, 'py-sect4-mask.fits')))
-#         self.ifmat = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
-#                                                     conf.mirror_conf,
-#                                                    'if_sect4_rot-bin2.fits'))
-#         self.vmat = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
-#                                                    conf.mirror_conf, 'ff_v_matrix.fits'))
         self.zmat = read_data.readFits_data(os.path.join(conf.OPTICAL_FOLDER,
                                                      conf.optical_conf,
                                                      'Zmat.fits'))
