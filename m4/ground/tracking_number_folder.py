@@ -35,10 +35,13 @@ def createFolderToStoreMeasurements(store_in_folder):
     tt = Timestamp.now()
     dove = os.path.join(store_in_folder, tt)
     if os.path.exists(dove):
-        raise OSError('Directory %s exists' % dove)
+        _error('Directory %s exists', dove)
     else:
         os.makedirs(dove)
     return dove, tt
+
+def _error(txt, data):
+    raise OSError(txt % data)
 
 def findTrackingNumberPath(tt):
     ''' Function to find the entire path from tracking number

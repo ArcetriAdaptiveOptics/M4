@@ -357,16 +357,16 @@ class OpticalCalibration():
             self._commandAmpVector = np.ones(self._commandAmpVector.size)
         self._logger.info('Creation of the cube relative to %s', self.tt)
         self._cube = None
-        fold = os.path.join(OpticalCalibration._storageFolder(), self.tt)
+        self._fold = os.path.join(OpticalCalibration._storageFolder(), self.tt)
         for i in range(self._commandAmpVector.shape[0]):
             for j in range(self._nPushPull):
                 k = 2 * i + 2 * self._commandAmpVector.shape[0] * j
                 name_pos = 'Frame_%04d.fits' % k
                 name_neg = 'Frame_%04d.fits' % (k + 1)
-                file = os.path.join(fold, name_pos)
+                file = os.path.join(self._fold, name_pos)
                 hduList = pyfits.open(file)
                 image_pos = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
-                file = os.path.join(fold, name_neg)
+                file = os.path.join(self._fold, name_neg)
                 hduList = pyfits.open(file)
                 image_neg = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
 
