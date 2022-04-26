@@ -207,7 +207,7 @@ class OttImages():
         m4smap = self.smap.copy()
         ww = np.dot(self.zmat, self.zmx_m4pos2z())
         for i in range(0, 5):
-            m4smap[self.parmask == True] = m4smap[self.parmask == True] + ww[:, i]* (self._ott.m4.getPositionInM())[i]
+            m4smap[self.parmask == True] = m4smap[self.parmask == True] + ww[:, i]* (self._ott.m4Exapode.getPositionInM())[i]
             #m4smap[ott.idx[idtot]] = m4smap[ott.idx[idtot]] + ww[i,idtot]* ott.m4[i]
 
         #m4img[ott.idx[idtot]] += m4smap[ott.idx[idtot]]

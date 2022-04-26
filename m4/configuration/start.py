@@ -14,7 +14,7 @@ from m4.ott_sim.fake_reference_mirror_slider import FakeReferenceMirrorSlider
 from m4.ott_sim.fake_angle_rotator import FakeAngleRotator
 from m4.ott_sim.fake_parabola import FakeParabola
 from m4.ott_sim.fake_reference_mirror import FakeReferenceMirror
-from m4.ott_sim.fake_m4 import FakeM4
+from m4.ott_sim.fake_m4_exapode import FakeM4Exapode
 from m4.ott_sim.fake_temperature_sensors import FakeTemperatureSensors
 from m4.ott_sim.fake_interferometer import FakeInterferometer
 from m4.ott_sim.fake_accelerometers import FakeAccelerometers
@@ -23,7 +23,7 @@ from m4.devices.reference_mirror_slider import OpcUaReferenceMirrorSlider
 from m4.devices.angle_rotator import OpcUaAngleRotator
 from m4.devices.parabola import OpcUaParabola
 from m4.devices.reference_mirror import OpcUaReferenceMirror
-from m4.devices.m4_controller import OpcUaM4
+from m4.devices.m4_exapode import OpcUaM4Exapode
 from m4.devices.temperature_sensors import OpcUaTemperatureSensors
 from m4.devices.accelerometers import ZmqAccelerometers
 from m4.devices.interferometer import I4d4020
@@ -55,7 +55,7 @@ def create_ott(config_file_name='/Users/rm/eclipse-workspace/M4/m4/configuration
         angle_rotator = FakeAngleRotator()
         parab = FakeParabola()
         reference_mirror = FakeReferenceMirror()
-        m4 = FakeM4()
+        m4 = FakeM4Exapode()
         temperature_sensor = FakeTemperatureSensors()
         accelerometers = FakeAccelerometers()
         interf = FakeInterferometer()
@@ -66,7 +66,7 @@ def create_ott(config_file_name='/Users/rm/eclipse-workspace/M4/m4/configuration
         angle_rotator = OpcUaAngleRotator(opcUa)
         parab = OpcUaParabola(opcUa)
         reference_mirror = OpcUaReferenceMirror(opcUa)
-        m4 = OpcUaM4(opcUa)
+        m4 = OpcUaM4Exapode(opcUa)
         temperature_sensor = OpcUaTemperatureSensors(opcUa)
         accelerometers = ZmqAccelerometers()
         interf = I4d4020()

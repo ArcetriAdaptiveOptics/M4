@@ -5,9 +5,9 @@ Authors
 
 import numpy as np
 import logging
-from m4.devices.base_m4 import BaseM4
+from m4.devices.base_m4_exapode import BaseM4Exapode
 
-class FakeM4(BaseM4):
+class FakeM4Exapode(BaseM4Exapode):
     ''' Class for M4 simulation
 
     HOW TO USE IT::

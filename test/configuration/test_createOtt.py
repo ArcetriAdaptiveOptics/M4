@@ -45,7 +45,7 @@ class TestOtt(unittest.TestCase):
         self.ott.angleRotator.setPosition(31.4)
         self.ott.parabola.setPosition(np.array([0, 0, -2, 3.3, -4, 0]))
         self.ott.referenceMirror.setPosition(np.array([0, 0, 0, 3.1, 4, 0]))
-        self.ott.m4.setPosition(np.array([0, 0, 0, 33.3, 44.4, 0]))
+        self.ott.m4Exapode.setPosition(np.array([0, 0, 0, 33.3, 44.4, 0]))
 
         self.assertAlmostEqual(100,
                                self.ott.parabolaSlider.getPosition())
@@ -57,7 +57,7 @@ class TestOtt(unittest.TestCase):
                                 np.array([0, 0, -2, 3.3, -4, 0]))
         testing.assert_allclose(self.ott.referenceMirror.getPosition(),
                                 np.array([0, 0, 0, 3.1, 4, 0]))
-        testing.assert_allclose(self.ott.m4.getPosition(),
+        testing.assert_allclose(self.ott.m4Exapode.getPosition(),
                                 np.array([0, 0, 0, 33.3, 44.4, 0]))
         testing.assert_allclose(self.ott.temperature.getTemperature(),
                                 np.zeros(OpcUaParameters.num_PT_sensor))

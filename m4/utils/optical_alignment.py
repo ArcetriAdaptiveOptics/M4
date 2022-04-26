@@ -82,7 +82,7 @@ class OpticalAlignment():
         """
         par_position = self._ott.parabola.getPosition()
         rm_position = self._ott.referenceMirror.getPosition()
-        m4_position = self._ott.m4.getPosition()
+        m4_position = self._ott.m4Exapode.getPosition()
         self._logger.info('Calculation of the alignment command using calibration measurements in tt = %s',
                           self.tt_cal)
         self._intMatModesVector = zernike_to_be_corrected

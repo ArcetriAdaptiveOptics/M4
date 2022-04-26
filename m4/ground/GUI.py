@@ -51,7 +51,7 @@ class Runner():
             if self.ott:
                 gui.parpos = self.ott.parabola.getPosition()
                 gui.rmpos = self.ott.referenceMirror.getPosition()
-                gui.m4pos = self.ott.m4.getPosition()
+                gui.m4pos = self.ott.m4Exapode.getPosition()
                 gui.pslider = self.ott.parabolaSlider.getPosition()
                 gui.anglepos = self.ott.angleRotator.getPosition()
                 gui.rslider = self.ott.referenceMirrorSlider.getPosition()
@@ -79,12 +79,12 @@ class Runner():
 
         def Set_M4(gui, *args):
             ''' Function to move the exapode '''
-            vec = self.ott.m4.getPosition()
+            vec = self.ott.m4Exapode.getPosition()
             vec[2] = np.float(gui.m4pist or vec[2])
             vec[3] = np.float(gui.m4tip or vec[3])
             vec[4] = np.float(gui.m4tilt or vec[4])
             if self.ott:
-                self.ott.m4.setPosition(vec)
+                self.ott.m4Exapode.setPosition(vec)
 
         def Set_ReferenceMirrorSlider(gui, *args):
             ''' Function to move the reference mirror slider '''
