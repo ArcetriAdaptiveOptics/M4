@@ -134,7 +134,7 @@ class Runner():
         gui_image.plot = image
         gui_image.plot.set_title('OTT geometry')
         gui_image.plot.colorbar()
-        gui_image.plot.text(30, 50, 'ciao')
+        #gui_image.plot.text(30, 50, 'ciao')
 
         gui_image.timer_start(getstatus, 1)
 
