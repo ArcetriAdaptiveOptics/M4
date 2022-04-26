@@ -21,6 +21,15 @@ import matplotlib.pyplot as plt
 from astropy.io import fits as pyfits
 
 class OttImages():
+    '''
+        Class for creating OTT geometry
+
+    HOW TO USE IT::
+        from m4.ott_sim.ott_images import OttImages
+        geo = OttImages(ott)
+        imshow(geo.ott_view())
+        
+    '''
 
     def __init__(self, ott):
         """The constructor """

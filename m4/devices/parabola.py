@@ -29,7 +29,7 @@ class OpcUaParabola(BaseParabola):
 
         Returns
         -------
-        current_pos: int [mm]
+        current_pos: int [-, -, mm, arcsec, arcsec, -]
             parabola position
         '''
         current_pos = self._readParPosition()
@@ -41,7 +41,7 @@ class OpcUaParabola(BaseParabola):
 
         Parameters
         ----------
-        absolute_position_in_mm: numpy array [mm]
+        absolute_position_in_mm: numpy array [-, -, mm, arcsec, arcsec, -]
             vector of six numbers containing dof values of parabola
 
         Returns
@@ -64,7 +64,7 @@ class OpcUaParabola(BaseParabola):
         '''
         Returns
         -------
-            current_pos: numpy array [mm]
+            current_pos: numpy array [-, -, mm, arcsec, arcsec, -]
                         absolute parabola position
         '''
         piston = self._opcUa.get_position(OpcUaParameters.PAR_PISTON)

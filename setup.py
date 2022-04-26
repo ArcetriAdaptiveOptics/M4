@@ -92,6 +92,15 @@ setup(name=NAME,
                         "pyyaml",
                         "serial"
                         ],
+      package_data={
+          'm4': ['data/*'],
+      },
+      include_package_data=True,
+            entry_points={
+          'gui_scripts': [
+              'ott_geometry=m4.ground.GUI:main',
+          ],
+      },
       test_suite='test',
       cmdclass={'upload': UploadCommand, },
       )

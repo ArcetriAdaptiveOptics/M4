@@ -29,7 +29,7 @@ class OpcUaReferenceMirror(BaseReferenceMirror):
 
         Returns
         -------
-            current_pos: int [mm]
+            current_pos: int [-, -, mm, arcsec, arcsec, -]
                             reference mirror position
         '''
         current_pos = self._readRMPosition()
@@ -41,12 +41,12 @@ class OpcUaReferenceMirror(BaseReferenceMirror):
 
         Parameters
         ----------
-        absolute_position_in_mm: numpy array [mm]
+        absolute_position_in_mm: numpy array [-, -, mm, arcsec, arcsec, -]
                         vector of six value
 
         Returns
         -------
-            current_pos: numpy array [mm]
+            current_pos: numpy array [-, -, mm, arcsec, arcsec, -]
                         absolute reference mirror position
         '''
         n_opc = np.array([OpcUaParameters.RM_PISTON,
@@ -64,7 +64,7 @@ class OpcUaReferenceMirror(BaseReferenceMirror):
         '''
         Returns
         -------
-            current_pos: numpy array [mm]
+            current_pos: numpy array [-, -, mm, arcsec, arcsec, -]
                         absolute reference mirror position
         '''
         piston = self._opcUa.get_position(OpcUaParameters.RM_PISTON)
