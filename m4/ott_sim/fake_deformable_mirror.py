@@ -36,10 +36,12 @@ class FakeM4DM(BaseDeformableMirror):
                                                    conf.mirror_conf, 'ff_v_matrix.fits'))
 
     def setActsCommand(self, command):
-        pass
+        self._actPos = command
+        image = self._mirrorCommand(self._actPos, delta=True)
+        return
 
     def getActsCommand(self):
-        pass
+        return self._actPos
 
     def getNActs(self):
         return M4Parameters.N_ACT_SEG
@@ -77,7 +79,7 @@ class FakeM4DM(BaseDeformableMirror):
         command = command*self.CapsensGain
         return command
 
-    def mirror_command(self, comm, delta=True):
+    def _mirrorCommand(self, comm, delta=True):
         '''
         Parameters
         ----------
