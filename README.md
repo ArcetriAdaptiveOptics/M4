@@ -25,6 +25,6 @@ Leggere How_to_use_it.txt per l'utilizzo di tutte le funzioni specifiche.
 
 ## COVERAGE
 [![Build Status](https://travis-ci.org/codecov/sourcegraph-codecov.svg?branch=master)](https://codecov.io/gh/ChiaraSelmi/M4/)
-[![Coverage Status](https://codecov.io/gh/codecov/sourcegraph-codecov/branch/master/graph/badge.svg?branch=master&kill_cache=1)](https://codecov.io/gh/ChiaraSelmi/M4/?branch=master)
+[![codecov](https://codecov.io/gh/ChiaraSelmi/M4/branch/master/graph/badge.svg?token=DjC9LhW9FP)](https://codecov.io/gh/ChiaraSelmi/M4)
 [![Documentation Status](https://readthedocs.org/projects/m4/badge/?version=latest)](https://m4.readthedocs.io/en/latest/?badge=latest)
 
