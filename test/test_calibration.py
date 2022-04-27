@@ -18,7 +18,9 @@ class TestCalc(unittest.TestCase):
     def tearDown(self):
         del(self.cal, self.ott)
 
-    def _createOttAndInterf(self):
+    @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
+    @mock.patch('numpy.load', autospec=True)
+    def _createOttAndInterf(self, mock_rd, mock_load):
         from m4.configuration.start import create_ott
         from m4.ott_sim.fake_parabola_slider import FakeParabolaSlider
         from m4.ott_sim.fake_interferometer import FakeInterferometer
