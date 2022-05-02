@@ -17,7 +17,7 @@ Per scaricare i cambiamenti presenti su github:
 ## Start up
 - Aprire python (ipython --pylab) ed eseguire:
   - from m4.configuration import start
-  - ott, interf = start.create_ott('/mnt/data/M4/Data/SYSCONFData/Config.yaml') NOTA: file di configurazione da modificare all'occorrenza
+  - ott, interf, dm = start.create_ott('/mnt/data/M4/Data/SYSCONFData/Config.yaml') NOTA: file di configurazione da modificare all'occorrenza
   - from m4 import main
   - main.start_log(logging_level) NOTA: ritorna il cammino del file di log
 
