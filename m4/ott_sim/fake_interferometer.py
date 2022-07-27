@@ -25,7 +25,7 @@ class FakeInterferometer(BaseInterferometer):
         self._ott = None
         self._dm = None
 
-    def acquire_phasemap(self, n_frames=1, show=0):
+    def acquire_phasemap(self,  indet=True, n_frames=1, show=0):
         '''
         Parameters
         ----------
@@ -44,6 +44,17 @@ class FakeInterferometer(BaseInterferometer):
         opd, mask = ottIma.ott_smap(show=show)
         masked_ima = np.ma.masked_array(opd.T,
                                         mask=np.invert(mask.astype(bool)).T)
+        '''
+        aggiungo indeterminazione di lambda
+        Luca
+        
+        '''
+        if indet==True:
+            lam=632.8e-9
+            kk=np.floor(np.random.random(1)*5-2) 
+            masked_ima = masked_ima + np.ones(masked_ima.shape)*lam*kk
+        
+        
         return masked_ima
 
     def set_ott(self, ott):

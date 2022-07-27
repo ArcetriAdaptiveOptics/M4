@@ -1,6 +1,7 @@
 '''
 Authors
   - C. Selmi: written in 2022
+  - L. Oggioni: added some functionalities
 '''
 
 import os
@@ -35,9 +36,9 @@ class FakeM4DM(BaseDeformableMirror):
         self.vmat = read_data.readFits_data(os.path.join(conf.MIRROR_FOLDER,
                                                    conf.mirror_conf, 'ff_v_matrix.fits'))
 
-    def setActsCommand(self, command):
+    def setActsCommand(self, command, delta=True):
         self._actPos = command
-        image = self._mirrorCommand(self._actPos, delta=True)
+        image = self._mirrorCommand(self._actPos, delta)
         return
 
     def getActsCommand(self):
@@ -45,6 +46,53 @@ class FakeM4DM(BaseDeformableMirror):
 
     def getNActs(self):
         return M4Parameters.N_ACT_SEG
+    
+    
+    def act_incr(self, inc, rel=False):
+    
+        ''' comando di posizione a tutti i pistoni 
+        
+        Parameters
+        ----------
+        inc: float
+            incremento in m
+        rel: logic
+            incremento relativo (True) o posizione assoluta (False)
+        
+        '''
+        
+        inc=inc*1e6
+        comm=np.ones(892)*inc
+        self.setActsCommand(comm,rel)
+        return
+        
+    def act_zero(self):
+        
+        ''' azzera la posizione dei pistoni   
+        '''      
+        comm=np.zeros(892)
+        rel=False
+        self.setActsCommand(comm,rel)
+        return
+        
+    def act_random(self, ampiezza,rel=False):
+        
+        ''' genera una distribuzione casuale di pistonate tra 0 e "ampiezza"  
+                 
+        Parameters
+        ----------
+        
+        ampiezza: float
+            massima ampiezza (m) generata dalla distribuzione casuale di pistoni 
+        
+        rel: logic
+            incremento relativo (True) o posizione assoluta (False)
+        
+        '''    
+        ampiezza=ampiezza*1e6
+        comm=np.random.rand(892)*ampiezza
+        self.setActsCommand(comm,rel)
+        return
 
     def _generateAndSaveCapsensGain(self, file_name):
         ''' Function to generate and save a random gain 
@@ -105,3 +153,4 @@ class FakeM4DM(BaseDeformableMirror):
         elif delta==False:
             self.m4ima.flat[self.ifidx] = np.matmul(np.transpose(self.ifmat), comm)
         return self.m4ima
+
