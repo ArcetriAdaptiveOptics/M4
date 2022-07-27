@@ -10,7 +10,7 @@ from numpy import imag
 from zmq.backend.cython.constants import ENOMEM
 from astropy.io import fits
 from m4.ground import read_data
-from pickle import FALSE
+
 
 
 conf='G:\Il mio Drive\Lavoro_brera\M4\LucaConfig.yaml'

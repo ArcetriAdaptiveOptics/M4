@@ -21,27 +21,6 @@ from m4.ground import read_data
 conf='G:\Il mio Drive\Lavoro_brera\M4\LucaConfig.yaml'
 ott, interf, dm = start.create_ott(conf)
 
-
-def main_test0():
-
-    
-    cartella_imm='2022519_0'
-    cartella_act='2022519PositionActuator'
-    
-    U=np.zeros([50,5])
-    ax=np.linspace(1,50,50)
-    
-    
-    k=0
-    for ii in range(0,1):
-        N=ii+1
-        Z=passetti_postporocess(cartella_imm,cartella_act,N)
-        plt.figure(1)
-        U[:,k]=unwrapp(Z, 632.8e-9, 30e-9)
-        plt.plot(ax,U[:,k],'-x')
-        plt.plot(ax,Z,'-x')
-        k=k+1  
-    return U
     
 
 def main_test():
@@ -73,6 +52,18 @@ def main_test():
 
 
 def main_passetti_and_Unwrap(Nstep,Nact):
+    
+    '''
+    simulo l'acquisizione di immagini con l'interferometro ed estrae la posizione di un determinato attuatore.
+    dopodichè applica l'algoritmo di unwrapping
+    
+    Parameters
+        ----------
+        Ntep: integer 
+            number of images
+        Nact: integer
+            actuator number
+    '''    
 
     D=20e-9;
     cartella_imm = passetti_con_conRumore(Nstep,D,freq=25,ind=True) 
