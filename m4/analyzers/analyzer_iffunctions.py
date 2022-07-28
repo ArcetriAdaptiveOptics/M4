@@ -168,7 +168,7 @@ class AnalyzerIFF():
             data_file_path = self._h5Folder #viene da loadInfoFromIFFsTtFolder
         else:
             data_file_path = data_file_path
-        
+
         where = self._indexReorganization()
         ampl_reorg = self._amplitudeReorganization(self._actsVector,
                                                    self._indexingList,
@@ -181,40 +181,35 @@ class AnalyzerIFF():
                 p = self._nPushPull * i + k
                 n = where[p]
                 mis_amp = k* self._indexingList.shape[1] + n
-                mis_push = (k * self._indexingList.shape[1]+ n) * 2*self._template.shape[0]
-                mis_pull = self._template.shape[0] + mis_push
-                mis_list = [mis_push, mis_pull]
+                mis = k * self._indexingList.shape[1] * self._template.shape[0] \
+                        + n * self._template.shape[0]
 
-                pp_images = []
-                for mis in mis_list:
-                    name = 'img_%04d.h5' %mis
-                    file_name = os.path.join(data_file_path, name)
-                    image0 = self._ic.from4D(file_name)
+                name = 'img_%04d' %mis
+                file_name = os.path.join(data_file_path, name)
+                image0 = self._imageReader(file_name)
 
 #                 image_sum = np.zeros((image_for_dim.shape[0],
 #                                       image_for_dim.shape[1]))
-                    image_list = [image0]
-                    for l in range(1, self._template.shape[0]):
-                        name = 'img_%04d.h5' %(mis+l)
-                        file_name = os.path.join(data_file_path, name)
-                        ima = self._ic.from4D(file_name)
-                        image_list.append(ima)
+                image_list = [image0]
+                for l in range(1, self._template.shape[0]):
+                    name = 'img_%04d' %(mis+l)
+                    file_name = os.path.join(data_file_path, name)
+                    ima = self._imageReader(file_name)
+                    image_list.append(ima)
 
-                    image = np.zeros((image0.shape[0], image0.shape[1]))
-                    for p in range(1, len(image_list)):
-                        #opd2add   = opdtemp[*,*,p]*form[p]+opdtemp[*,*,p-1]*form[p-1]
-                        #opd      += opd2add
-                        opd2add = image_list[p] * self._template[p] + image_list[p-1] * self._template[p-1]
-                        master_mask2add = np.ma.mask_or(image_list[p].mask, image_list[p-1].mask)
-                        if p==1:
-                            master_mask = master_mask2add
-                        else:
-                            master_mask = np.ma.mask_or(master_mask, master_mask2add)
-                        image += opd2add
-                    image = np.ma.masked_array(image, mask=master_mask)
+                image = np.zeros((image0.shape[0], image0.shape[1]))
+                for p in range(1, len(image_list)):
+                    #opd2add   = opdtemp[*,*,p]*form[p]+opdtemp[*,*,p-1]*form[p-1]
+                    #opd      += opd2add
+                    opd2add = image_list[p] * self._template[p] + image_list[p-1] * self._template[p-1]
+                    master_mask2add = np.ma.mask_or(image_list[p].mask, image_list[p-1].mask)
+                    if p==1:
+                        master_mask = master_mask2add
+                    else:
+                        master_mask = np.ma.mask_or(master_mask, master_mask2add)
+                    image += opd2add
+                image = np.ma.masked_array(image, mask=master_mask)
                     #image = image + ima * self._template[l] #sbagliato
-                    pp_images.append(image)
-                image = pp_images[0] + pp_images[1] #da rivedere molto
                 img_if = image / (2 * ampl_reorg[mis_amp] * (self._template.shape[0] - 1))
                 if tiptilt_detrend is None:
                     img_if = img_if
@@ -241,6 +236,12 @@ class AnalyzerIFF():
         self._cube = np.ma.dstack(cube_all_act)
         return self._cube
 
+    def _imageReader(self, filename):
+        if fold_name.simulated==1:
+            image = self._ic.fromFakeInterf(filename+'.fits')
+        else:
+            image = self._ic.from4D(filename+'.h5')
+        return image
 
     def _logCubeCreation(self, tiptilt_detrend=None, phase_ambiguity=None):
         """ Use logging function to keep a record of
