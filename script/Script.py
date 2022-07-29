@@ -17,12 +17,10 @@ from astropy.io import fits
 from m4.ground import read_data
 
 
-
 conf='G:\Il mio Drive\Lavoro_brera\M4\LucaConfig.yaml'
 ott, interf, dm = start.create_ott(conf)
 
     
-
 def main_test():
     
     '''
@@ -53,38 +51,49 @@ def main_test():
 
 def main_passetti_and_Unwrap(Nstep,Nact):
     
-    '''
-    simulo l'acquisizione di immagini con l'interferometro ed estrae la posizione di un determinato attuatore.
-    dopodichè applica l'algoritmo di unwrapping
-    
+    '''  
+    simulo l'acquisizione di immagini con 
+    l'interferometro ed estrae la posizione 
+    di un determinato attuatore. Poi unwrappo
+
+ 
     Parameters
         ----------
-        Ntep: integer 
+        Nstep: integer
             number of images
+            
         Nact: integer
             actuator number
+             
     '''    
+  
+    D=0;
+    cartella_imm = passetti_con_conRumore(Nstep,D,freq=25,ind=True)
+    cartella_act='2022519PositionActuator'
 
-    D=20e-9;
-    cartella_imm = passetti_con_conRumore(Nstep,D,freq=25,ind=True) 
-    cartella_act='2022519PositionActuator'       
-    
     Z, mask, mask2=passetti_postporocess(cartella_imm,cartella_act,Nact)
-    
+
     M=np.size(Z)
     x=np.linspace(1,M,M)
-    
+
     fig, (ax1, ax2) = plt.subplots(1, 2)
-    
+
     ax1.imshow(mask+mask2)
     ax1.set_title("position actuator "+str(Nact))
-        
-    U=unwrapp(Z, 632.8e-9, 30e-9)
+
+    U=unwrapp(Z, 632.8e-9, 150e-9)
     ax2.plot(x,U,'-x')
     ax2.plot(x,Z,'-x')
     plt.xlabel('step')
     plt.ylabel('position (m)')
     ax2.set_title('unwrap result')
+    
+    plt.savefig(cartella_imm+"/results.png")
+    
+    mat=np.array([Z,U])
+    mat=mat.transpose()
+    np.savetxt(cartella_imm+'/position_Actuator'+str(Nact)+'.txt',mat,header='original    unwrap')
+   
 
     
 def passetti(N=1,D=20e-9,ind=True):
@@ -207,11 +216,19 @@ def passetti_con_conRumore(N=1,D=20e-9,freq=25,ind=True):
     
     #definisco i parametri dei rumori sulla posizione della parabola
     
-    Ax=4e-2; Frx=14; start_x=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
-    Ay=3e-2; Fry=62; start_y=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
-    Az=2e-2; Frz=58; start_z=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
-    Atx=3e-3; Frtx=59; start_tx=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
-    Aty=6e-3; Frty=62; start_ty=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
+    # parametri ricavati da simulazioni ADS, europa no dampers
+    #x=4e-5*1e3; Frx=14; start_x=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
+    #y=3e-5*1e3; Fry=62; start_y=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
+    #z=2e-5*1e3; Frz=58; start_z=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
+    #tx=3e-6*1e3; Frtx=59; start_tx=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
+    #ty=6e-6*1e3; Frty=62; start_ty=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
+    
+    
+    Ax=2.1e-8*1e3; Frx=14; start_x=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
+    Ay=2.2e-8*1e3; Fry=62; start_y=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
+    Az=2.1e-8*1e3; Frz=158; start_z=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
+    Atx=2.2e-8*1e3; Frtx=10; start_tx=2*np.pi*np.random.rand(); # A in mm, Fr in Hz 
+    Aty=2.4e-8*1e3; Frty=90; start_ty=2*np.pi*np.random.rand(); # A in mm, Fr in Hz  
  
     plt.figure()
 
@@ -224,6 +241,16 @@ def passetti_con_conRumore(N=1,D=20e-9,freq=25,ind=True):
     plt.ylabel('noise')
     plt.legend((l1, l2, l3, l4, l5),('x(m)', 'y(m)', 'z(m)', 'tx(rad)', 'ty(rad)'))
     
+    plt.savefig(dir+"/noise.png")
+    
+    f = open(dir+"/log.txt", "a")
+    f.write("Simulation parameters\n")
+    f.write("\nAcquisition frequency:    "+str(freq)+"Hz")
+    f.write("\nDelta actuators position:    "+str(D)+"m")
+    f.write("\nNumber of acquisitions:    "+str(N))
+    f.write("\nAmplitues noise (x,y,z,tx,ty):    "+str(Ax)+"    "+str(Ay)+"    "+str(Az)+"    "+str(Atx)+"    "+str(Aty))
+    f.write("\nFrequencies noise (x,y,z,tx,ty):    "+str(Frx)+"    "+str(Fry)+"    "+str(Frz)+"    "+str(Frtx)+"    "+str(Frty))
+    f.close()
     
     for xx in range(0, N):
         print("step "+str(xx+1)+"/"+str(N))

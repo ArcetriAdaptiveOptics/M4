@@ -12,7 +12,6 @@ from astropy.io import fits
 from m4.ground import read_data
 
 
-
 conf='G:\Il mio Drive\Lavoro_brera\M4\LucaConfig.yaml'
 ott, interf, dm = start.create_ott(conf)
 
@@ -75,7 +74,6 @@ def DefineActuatorMask_interf_PointOfView():
         
 def Check_actposition(cartella,N,arg=1):
     
-        
     name=cartella
     dir0='G:/Il mio Drive/Lavoro_brera/M4/'
     if arg==1:
