@@ -15,6 +15,7 @@ from numpy import imag
 from zmq.backend.cython.constants import ENOMEM
 from astropy.io import fits
 from m4.ground import read_data
+from m4.configuration import config_folder_names as fold_name
 
 
 conf='G:\Il mio Drive\Lavoro_brera\M4\LucaConfig.yaml'
@@ -187,7 +188,8 @@ def passetti_con_conRumore(N=1,D=20e-9,freq=25,ind=True):
     
     date=datetime.datetime.now()
     name=str(date.year)+str(date.month)+str(date.day) 
-    dir0='G:/Il mio Drive/Lavoro_brera/M4/'
+    #dir0='G:/Il mio Drive/Lavoro_brera/M4/'
+    dir0 = fold_name.SIMUL_DATA_CALIB_DM_FOLDER
     dir=os.path.join(dir0,"noise_"+name+"_0")
     
     k=0

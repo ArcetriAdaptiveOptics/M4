@@ -239,3 +239,11 @@ class configuration_path():
 #             return self._conf['pointer_align_root_folder']
 #         else:
 #             return os.path.join(self.OPT_DATA_FOLDER, 'PointerAlign')
+
+    @property
+    def SIMUL_DATA_CALIB_DM_FOLDER(self):
+        if 'simul_data_calib_dm_folder' in self._conf.keys():
+            return self._conf['simul_data_calib_dm_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'SimDataCalibDM')
+
