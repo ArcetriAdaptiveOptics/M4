@@ -10,7 +10,8 @@ from numpy import imag
 from zmq.backend.cython.constants import ENOMEM
 from astropy.io import fits
 from m4.ground import read_data
-
+from m4.configuration import config_folder_names as fold_name
+from m4.ground import tracking_number_folder
 
 conf='G:\Il mio Drive\Lavoro_brera\M4\LucaConfig.yaml'
 ott, interf, dm = start.create_ott(conf)
@@ -28,18 +29,13 @@ def DefineActuatorMask_interf_PointOfView():
     CONTROLLARE CHE FUNZIONI SUGLI ATTUATORI AL BORDO!!! 
     '''
         
-    move2petalo(num=6,RM=0,plotta=False,indet=True)
+    move2petalo(num=6,RM=0)
     
     date=datetime.datetime.now()
     name=str(date.year)+str(date.month)+str(date.day) 
-    dir0='G:/Il mio Drive/Lavoro_brera/M4/'
-    dir=os.path.join(dir0, name+"PositionActuator")    
-
-    if os.path.isdir(dir)==True:
-        shutil.rmtree(dir)
- 
-    os.mkdir(dir)
-     
+    dir0 = fold_name.SIMUL_DATA_CALIB_DM_FOLDER+"\\PositionActuators"
+    dir , tt =tracking_number_folder.createFolderToStoreMeasurements(dir0)
+    
     act_pos_matrix=np.zeros([512*512,892])
     act_zonal=np.zeros([512*512,892])
     

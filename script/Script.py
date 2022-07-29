@@ -16,6 +16,7 @@ from zmq.backend.cython.constants import ENOMEM
 from astropy.io import fits
 from m4.ground import read_data
 from m4.configuration import config_folder_names as fold_name
+from m4.ground import tracking_number_folder
 
 
 conf='G:\Il mio Drive\Lavoro_brera\M4\LucaConfig.yaml'
@@ -69,8 +70,8 @@ def main_passetti_and_Unwrap(Nstep,Nact):
     '''    
   
     D=0;
-    cartella_imm = passetti_con_conRumore(Nstep,D,freq=25,ind=True)
-    cartella_act='2022519PositionActuator'
+    cartella_imm = passetti_con_Rumore(Nstep,D,freq=25,ind=True)
+    cartella_act='PositionActuators\\20220519_130221'
 
     Z, mask, mask2=passetti_postporocess(cartella_imm,cartella_act,Nact)
 
@@ -116,16 +117,9 @@ def passetti(N=1,D=20e-9,ind=True):
     
     move2petalo(num=6,RM=0)
     
-    date=datetime.datetime.now()
-    name=str(date.year)+str(date.month)+str(date.day) 
-    dir0='G:/Il mio Drive/Lavoro_brera/M4/'
-    dir=os.path.join(dir0, name+"_0")
+    dir0 = fold_name.SIMUL_DATA_CALIB_DM_FOLDER+"\\Passetti"
+    dir , tt =tracking_number_folder.createFolderToStoreMeasurements(dir0)
     
-    k=0
-    while os.path.isdir(dir)==True:
-        k=k+1
-        dir=os.path.join(dir0, name+"_"+str(k))
-    os.mkdir(dir)
     
         
     inc=D; rel=True; plot=True
@@ -133,22 +127,23 @@ def passetti(N=1,D=20e-9,ind=True):
     dm.act_incr(inc,rel) 
     ima=interf.acquire_phasemap()
     
-    hdu=fits.PrimaryHDU(ima.data)
-    hdu.writeto(os.path.join(dir, '0.fits'))
+    inc=D; rel=True; plot=False
+                
+    dm.act_incr(inc,rel) 
+    ima=interf.acquire_phasemap()
+    interf.save_phasemap(dir,'0000.fits',ima)
 
     np.save(os.path.join(dir, '0mask'),ima.mask)
-#    hdu=fits.PrimaryHDU(ima.mask)
-#    hdu.writeto(os.path.join(dir, '00mask.fits'))    
+
     
     for x in range(0, N):
         print("step "+str(x+1)+"/"+str(N))
         dm.act_incr(inc,rel) 
         ima=interf.acquire_phasemap()
-        imname=str(x+1)+".fits"
+        imname=f"{xx+1:04}"+".fits"
+        interf.save_phasemap(dir,imname,ima)
         
-        hdu=fits.PrimaryHDU(ima.data)
-        hdu.writeto(os.path.join(dir, imname))
-        
+    return dir    
 
         
 #    for x in range(1, 6):
@@ -163,7 +158,7 @@ def passetti(N=1,D=20e-9,ind=True):
 
 
     
-def passetti_con_conRumore(N=1,D=20e-9,freq=25,ind=True):
+def passetti_con_Rumore(N=1,D=20e-9,freq=25,ind=True):
     
     '''
     vado avanti a passetti di 20 nm su tutti gli attuatori
@@ -185,27 +180,16 @@ def passetti_con_conRumore(N=1,D=20e-9,freq=25,ind=True):
       
     
     move2petalo(num=6,RM=0)
-    
-    date=datetime.datetime.now()
-    name=str(date.year)+str(date.month)+str(date.day) 
-    #dir0='G:/Il mio Drive/Lavoro_brera/M4/'
-    dir0 = fold_name.SIMUL_DATA_CALIB_DM_FOLDER
-    dir=os.path.join(dir0,"noise_"+name+"_0")
-    
-    k=0
-    while os.path.isdir(dir)==True:
-        k=k+1
-        dir=os.path.join(dir0,"noise_"+name+"_"+str(k))
-    os.mkdir(dir)
+    dir0 = fold_name.SIMUL_DATA_CALIB_DM_FOLDER+"\\PassettiWithNoise"
+    dir , tt =tracking_number_folder.createFolderToStoreMeasurements(dir0)
     
         
     inc=D; rel=True; plot=False
                 
     dm.act_incr(inc,rel) 
     ima=interf.acquire_phasemap()
-       
-    hdu=fits.PrimaryHDU(ima.data)
-    hdu.writeto(os.path.join(dir, '0.fits'))
+    interf.save_phasemap(dir,'0000.fits',ima)
+
 
     np.save(os.path.join(dir, '0mask'),ima.mask)
 #    hdu=fits.PrimaryHDU(ima.mask)
@@ -267,11 +251,8 @@ def passetti_con_conRumore(N=1,D=20e-9,freq=25,ind=True):
         
         dm.act_incr(inc,rel) 
         ima=interf.acquire_phasemap()
-        imname=str(xx+1)+".fits"
-        
-        hdu=fits.PrimaryHDU(ima.data)
-        hdu.writeto(os.path.join(dir, imname))                
-
+        imname=f"{xx+1:04}"+".fits"
+        interf.save_phasemap(dir,imname,ima)
     return dir
         
 def passetti_postporocess(cartella_imm,cartella_act,N): 
@@ -284,13 +265,13 @@ def passetti_postporocess(cartella_imm,cartella_act,N):
     DIPENDE DA COME SONO STATE GENERATE
     '''
     
-    dir0='G:/Il mio Drive/Lavoro_brera/M4/'
+    dir0=fold_name.SIMUL_DATA_CALIB_DM_FOLDER
     dir1=os.path.join(dir0, cartella_act, 'PositionActuator_mask.fits' )   
     act_pos_matrix=read_data.readFits_data(dir1)
     mask=act_pos_matrix[:,N-1].reshape([512,512])
     
         
-    dir2=os.path.join(dir0, cartella_imm)   
+    dir2=cartella_imm   
     D= os.listdir(dir2)          
     mask2=np.load(os.path.join(dir2,'0mask.npy'))    
     
@@ -298,7 +279,7 @@ def passetti_postporocess(cartella_imm,cartella_act,N):
     z=np.zeros(int(D[-1][0:-5]))
     for x in range(0, int(D[-1][0:-5])):
         print("step "+str(x+1)+"/"+D[-1][0:-5])
-        dir3=os.path.join(dir2,str(x)+".fits")
+        dir3=os.path.join(dir2,f"{x+1:04}"+".fits")
         im=read_data.readFits_data(dir3)
         
         imm=np.ma.masked_where(mask==1, im)
