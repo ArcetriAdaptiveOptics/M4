@@ -30,7 +30,7 @@ from m4.devices.interferometer import I4d6110
 
 from m4.configuration.config_uploader import config_rewriter
 
-def create_ott(config_file_name='/Users/rm/eclipse-workspace/M4/m4/configuration/towerConfig.yaml'):
+def create_ott(config_file_name='/home/m4/git/M4/m4/configuration/towerConfig.yaml'):
     ''' Function for the ott creation
 
     Parameters
