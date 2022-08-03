@@ -51,6 +51,31 @@ def zernikeFit(img, zernike_index_vector):
     mat = _getZernike(xx[mm], yy[mm], zernike_index_vector)
     return coeff, mat
 
+def zernikeFitAuxmask(img, auxmask,zernike_index_vector):
+    '''
+    Parameters
+    ----------
+    img: numpy masked array
+        image for zernike fit
+    zernike_index_vector: numpy array
+        vector containing the index of Zernike modes to be fitted starting from 1
+
+    Returns
+    -------
+    coeff: numpy array [m]
+        vector of zernike coefficients
+    mat: numpy array
+    '''
+    img1 = img.data
+    mask = np.invert(img.mask).astype(int)
+    x, y, r, xx, yy = geo.qpupil(auxmask)
+    mm = (mask==1)
+    coeff = _surf_fit(xx[mm], yy[mm], img1[mm], zernike_index_vector)
+    mat = _getZernike(xx[mm], yy[mm], zernike_index_vector)
+    return coeff, mat
+
+
+
 def zernikeSurface(img, coef, mat):
     '''
     Parameters
