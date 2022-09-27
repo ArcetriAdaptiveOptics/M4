@@ -108,7 +108,7 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
     pyfits.writeto(os.path.join(dove, 'n_temp_vector_%d.fits' % tidy_or_shuffle), n_temp, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'ptv_%d.fits' % tidy_or_shuffle), ptv_medio, overwrite=True)
 
-    tt = data_file_path.split('/')[-2]
+    tt = data_file_path.split('\\')[-2]
     plt.clf()
     # WFE = 2*rms_medio
     plt.plot(n_temp, rms_medio * 1e9, '-o')

@@ -6,17 +6,11 @@ Authors
 from m4.configuration import start
 import numpy as np
 import os
-import shutil
-import datetime
-import time
-
 from matplotlib import pyplot as plt
-from numpy import imag
-from zmq.backend.cython.constants import ENOMEM
-from astropy.io import fits
 from m4.ground import read_data
 from m4.configuration import config_folder_names as fold_name
 from m4.ground import tracking_number_folder
+from m4 import noise
 
 
 conf='G:\Il mio Drive\Lavoro_brera\M4\LucaConfig.yaml'
@@ -49,7 +43,12 @@ def main_test():
     dm.act_zero(rel)
     immagine(3,True,ind)
 
-
+def test_noise():
+    
+    data_file_path = fold_name.SIMUL_DATA_CALIB_DM_FOLDER+"\\PassettiWithNoise\\20220801_110511"
+    numbers_array=np.array([2,3,5,7])
+    tidy_or_shuffle=0    
+    noise.noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle)
 
 def main_passetti_and_Unwrap(Nstep,Nact):
     
@@ -96,7 +95,47 @@ def main_passetti_and_Unwrap(Nstep,Nact):
     mat=mat.transpose()
     np.savetxt(cartella_imm+'/position_Actuator'+str(Nact)+'.txt',mat,header='original    unwrap')
    
+def main_Unwrap(Nact): 
+    '''  
+    Faccio l'unwrap delle immagini generate con "passetti" o "passettiwithnoise"
 
+ 
+    Parameters
+        ----------
+            
+        Nact: integer
+            actuator number
+             
+    '''    
+  
+    D=0;
+    dir0 = fold_name.SIMUL_DATA_CALIB_DM_FOLDER+"\\PassettiWithNoise"
+    cartella_imm=os.path.join(dir0,"20220801_110511")
+    cartella_act='PositionActuators\\20220519_130221'
+
+    Z, mask, mask2=passetti_postporocess(cartella_imm,cartella_act,Nact)
+
+    M=np.size(Z)
+    x=np.linspace(1,M,M)
+
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+
+    ax1.imshow(mask+mask2)
+    ax1.set_title("position actuator "+str(Nact))
+
+    U=unwrapp(Z, 632.8e-9, 150e-9)
+    ax2.plot(x,U,'-x')
+    ax2.plot(x,Z,'-x')
+    plt.xlabel('step')
+    plt.ylabel('position (m)')
+    ax2.set_title('unwrap result')
+    
+    plt.savefig(cartella_imm+"/results.png")
+    
+    mat=np.array([Z,U])
+    mat=mat.transpose()
+    np.savetxt(cartella_imm+'/position_Actuator'+str(Nact)+'.txt',mat,header='original    unwrap')
+   
     
 def passetti(N=1,D=20e-9,ind=True):
     
@@ -188,12 +227,11 @@ def passetti_con_Rumore(N=1,D=20e-9,freq=25,ind=True):
                 
     dm.act_incr(inc,rel) 
     ima=interf.acquire_phasemap()
-    interf.save_phasemap(dir,'0000.fits',ima)
+    interf.save_phasemap(dir,'img_0000.fits',ima)
 
 
     np.save(os.path.join(dir, '0mask'),ima.mask)
-#    hdu=fits.PrimaryHDU(ima.mask)
-#    hdu.writeto(os.path.join(dir, '00mask.fits'))    
+
     
     '''
     compiono a frequenza freq 
@@ -234,8 +272,8 @@ def passetti_con_Rumore(N=1,D=20e-9,freq=25,ind=True):
     f.write("\nAcquisition frequency:    "+str(freq)+"Hz")
     f.write("\nDelta actuators position:    "+str(D)+"m")
     f.write("\nNumber of acquisitions:    "+str(N))
-    f.write("\nAmplitues noise (x,y,z,tx,ty):    "+str(Ax)+"    "+str(Ay)+"    "+str(Az)+"    "+str(Atx)+"    "+str(Aty))
-    f.write("\nFrequencies noise (x,y,z,tx,ty):    "+str(Frx)+"    "+str(Fry)+"    "+str(Frz)+"    "+str(Frtx)+"    "+str(Frty))
+    f.write("\nAmplitues noise (mm,mrad) (x,y,z,tx,ty):    "+str(Ax)+"    "+str(Ay)+"    "+str(Az)+"    "+str(Atx)+"    "+str(Aty))
+    f.write("\nFrequencies noise (Hz) (x,y,z,tx,ty):    "+str(Frx)+"    "+str(Fry)+"    "+str(Frz)+"    "+str(Frtx)+"    "+str(Frty))
     f.close()
     
     for xx in range(0, N):
@@ -251,7 +289,7 @@ def passetti_con_Rumore(N=1,D=20e-9,freq=25,ind=True):
         
         dm.act_incr(inc,rel) 
         ima=interf.acquire_phasemap()
-        imname=f"{xx+1:04}"+".fits"
+        imname="img_"+f"{xx+1:04}"+".fits"
         interf.save_phasemap(dir,imname,ima)
     return dir
         
@@ -276,10 +314,10 @@ def passetti_postporocess(cartella_imm,cartella_act,N):
     mask2=np.load(os.path.join(dir2,'0mask.npy'))    
     
     
-    z=np.zeros(int(D[-1][0:-5]))
-    for x in range(0, int(D[-1][0:-5])):
-        print("step "+str(x+1)+"/"+D[-1][0:-5])
-        dir3=os.path.join(dir2,f"{x+1:04}"+".fits")
+    z=np.zeros(int(D[-1][4:-5]))
+    for x in range(0, int(D[-1][4:-5])):
+        print("step "+str(x+1)+"/"+str(int(D[-1][4:-5])))
+        dir3=os.path.join(dir2,"img_"+f"{x+1:04}"+".fits")
         im=read_data.readFits_data(dir3)
         
         imm=np.ma.masked_where(mask==1, im)
