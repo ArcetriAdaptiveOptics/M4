@@ -200,7 +200,7 @@ class OpticalCalibration():
             pass
         elif self._who == 'M4':
             vec_push_pull = np.array((1, -1))
-            m0 = self._ott.m4.getPosition()
+            m0 = self._ott.m4Exapode.getPosition()
             for k in range(self._nPushPull):
                 for i in range(len(command_list)):
                     j = (len(command_list)) * k * 2
@@ -211,7 +211,7 @@ class OpticalCalibration():
                         masked_ima = self._interf.acquire_phasemap(n_frames)
                         name = 'Frame_%04d.fits' %( 2*i + mis[v])
                         self._interf.save_phasemap(dove, name, masked_ima)
-            self._ott.m4.setPosition(m0)
+            self._ott.m4Exapode.setPosition(m0)
 
     def _logAndDefineDovIndexForCommandMatrixCreation(self, who):
         '''

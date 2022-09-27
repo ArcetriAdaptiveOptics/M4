@@ -3,16 +3,16 @@ Authors
   - C. Selmi: written in 2020
 '''
 import logging
-from m4.devices.base_m4 import BaseM4
+from m4.devices.base_m4_exapode import BaseM4Exapode
 
-class OpcUaM4(BaseM4):
+class OpcUaM4Exapode(BaseM4Exapode):
     ''' Class for M4 control via opc ua??
 
     HOW TO USE IT::
 
         from m4.devices.opc_ua_controller import OpcUaController
         opcUa = OpcUaController()
-        from m4.devices.m4_controller import OpcUaM4
+        from m4.devices.m4_exapode import OpcUaM4Exapode
     '''
 
     def __init__(self, opcUa):

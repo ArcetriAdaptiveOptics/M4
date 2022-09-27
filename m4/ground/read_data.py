@@ -135,6 +135,7 @@ class InterferometerConverter():
     @staticmethod
     def from4D(h5filename):
         """
+        Function for PhaseCam4020
         Parameters
         ----------
             h5filename: string
@@ -156,6 +157,7 @@ class InterferometerConverter():
     @staticmethod
     def fromNew4D(i4dfilename):
         """
+        Function for PhaseCam6110
         Parameters
         ----------
             h5filename: string
@@ -181,6 +183,7 @@ class InterferometerConverter():
         ----------
             file: string
                  path name for data
+
         Returns
         -------
                 ima: numpy masked array
@@ -193,7 +196,7 @@ class InterferometerConverter():
 
     @staticmethod
     def fromI4DToSimplerData(i4dname, folder, h5name):
-        ''' Function for converting files from 4d files to H5 files
+        ''' Function for converting files from 4d 6110 files to H5 files
         Parameters
         ----------
         i4dname: string

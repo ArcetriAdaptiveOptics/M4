@@ -87,7 +87,7 @@ def calibrate_PARAndRM(ott, interf, n_frames, command_amp_vector, nPushPull):
     Returns
     -------
             tt_tower: string
-                    calibration measurement
+                    tracking number of calibration measurements
     '''
     c_a = OttCalibAndAlign(ott, interf)
     print('PAR + RM calibration')

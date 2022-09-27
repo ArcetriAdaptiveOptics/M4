@@ -55,6 +55,8 @@ class Noise():
         '''
         an = AnalyzerIFF()
         list = glob.glob(os.path.join(data_file_path,'*.h5'))
+        if len(list)==0:
+            list = glob.glob(os.path.join(data_file_path,'*.fits'))
         n_tot = len(list)
         an._template = template
         if n_push_pull is None:
@@ -185,13 +187,15 @@ class Noise():
             frequency obtained by fft of tilt data
         '''
         list = glob.glob(os.path.join(data_file_path, '*.h5'))
+        if len(list)==0:
+            list = glob.glob(os.path.join(data_file_path,'*.fits'))
         coef_tilt_list = []
         coef_tip_list = []
         for i in range(len(list)):
-            name = 'img_%04d.h5' %i
+            name = 'img_%04d' %i
             print(name)
             file_name = os.path.join(data_file_path, name)
-            start_image = self._ic.from4D(file_name)
+            start_image = self._imageReader(file_name)
             coef, mat = zernike.zernikeFit(start_image, np.array([2, 3]))
             coef_tip_list.append(coef[0])
             coef_tilt_list.append(coef[1])
@@ -355,12 +359,12 @@ class Noise():
                 k = i * dist * 2
                 if h5_or_fits is None:
                     #k = i * dist * 2
-                    name = 'img_%04d.h5' %k
+                    name = 'img_%04d' %k
                     file_name = os.path.join(data_file_path, name)
-                    image_k = self._ic.from4D(file_name)
-                    name = 'img_%04d.h5' %(k+dist)
+                    image_k = self._imageReader(file_name)
+                    name = 'img_%04d' %(k+dist)
                     file_name = os.path.join(data_file_path, name)
-                    image_dist = self._ic.from4D(file_name)
+                    image_dist = self._imageReader(file_name)
                 else:
                     image_k = read_data.readFits_maskedImage(list[k])
                     image_dist = read_data.readFits_maskedImage(list[k+dist])
@@ -404,14 +408,16 @@ class Noise():
                 vector of the time at which the image were taken
         '''
         list = glob.glob(os.path.join(data_file_path, '*.h5'))
+        if len(list)==0:
+            list = glob.glob(os.path.join(data_file_path,'*.fits'))
         image_number = len(list)
         time = np.arange(image_number) * (1/27.58)
 
         mean_list = []
         for j in range(image_number):
-            name = 'img_%04d.h5' %j
+            name = 'img_%04d' %j
             file_name = os.path.join(data_file_path, name)
-            image = self._ic.from4D(file_name)
+            image = self._imageReader(file_name)
             zernike_coeff_array, mat = zernike.zernikeFit(image,
                                                               np.array([2, 3]))
             sur = zernike.zernikeSurface(image, zernike_coeff_array, mat)
@@ -419,7 +425,7 @@ class Noise():
             mean = image_ttr.mean()
             mean_list.append(mean)
 
-        spe, freq = self._fft(mean)
+        spe, freq = self._fft(np.array(mean_list))
         return np.array(mean_list), time, spe, freq
 
     def tiptilt_series(self, data_file_path):
@@ -439,6 +445,8 @@ class Noise():
                 vector of the time at which the image were taken
         '''
         list = glob.glob(os.path.join(data_file_path, '*.h5'))
+        if len(list)==0:
+            list = glob.glob(os.path.join(data_file_path,'*.fits'))
         image_number = len(list)
         time = np.arange(image_number) * (1/27.58)
 
@@ -446,12 +454,17 @@ class Noise():
         for j in range(image_number):
             name = 'img_%04d.h5' %j
             file_name = os.path.join(data_file_path, name)
-            image = self._ic.from4D(file_name)
+            image = self._imageReader(file_name)
             coeff, mat = zernike.zernikeFit(image,np.array([1,2, 3]))
 
             tt_list.append(coeff)
 
         tt = np.array(tt_list)
-
-
         return tt
+
+    def _imageReader(self, filename):
+        if fold_name.simulated==1:
+            image = self._ic.fromFakeInterf(filename +'.fits')
+        else:
+            image = self._ic.from4D(filename + '.h5')
+        return image

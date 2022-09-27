@@ -13,7 +13,7 @@ class OTT():
         self._angle_rotator = angle_rotator
         self._parabola = parabola
         self._reference_mirror = reference_mirror
-        self._m4 = m4
+        self._m4Exapode = m4
         self._pt = temperature_sensor
         self._acc = accelerometers
 
@@ -49,8 +49,8 @@ class OTT():
         return self._reference_mirror
 
     @property
-    def m4(self):
-        return self._m4
+    def m4Exapode(self):
+        return self._m4Exapode
 
 # Other
     @property

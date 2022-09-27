@@ -59,12 +59,12 @@ class TestInfluenceFunctionsMaker(unittest.TestCase):
         dm = DMtest()
         return dm
 
-    #@mock.patch('m4.ott_sim.fake_interferometer.FakeInterferometer.save_phasemap', autospec=True)
-    #@mock.patch('m4.ott_sim.fake_interferometer.FakeInterferometer.acquire_phasemap', autospec=True)
-    def _createInterferometer(self):
+    @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
+    @mock.patch('numpy.load', autospec=True)
+    def _createInterferometer(self, mock_rd, mock_load):
         from m4.configuration.start import create_ott
         from m4.ott_sim.fake_interferometer import FakeInterferometer
-        ott, interf = create_ott(os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf.yaml'))
+        ott, interf, dm = create_ott(os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf.yaml'))
         self.assertIsInstance(interf, FakeInterferometer)
         return interf
 

@@ -14,12 +14,16 @@ from test.test_helper import testDataRootDir
 
 class TestStart(unittest.TestCase):
 
-    def testCreationWithSimulatedDevices(self):
+    @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
+    @mock.patch('numpy.load', autospec=True)
+    def testCreationWithSimulatedDevices(self, mock_rd, mock_load):
         #aFakeConfig.simulated = 1
-        ott, interf = create_ott(os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf.yaml'))
+        ott, interf, dm = create_ott(os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf.yaml'))
         self.assertIsInstance(ott.parabolaSlider, FakeParabolaSlider)
         self.assertIsInstance(interf, FakeInterferometer)
 
     #@mock.patch('m4.devices.interferometer.I4d4020', autospec=True)
-    def testCreationWhitFakePathInYaml(self):
-        ott, interf = create_ott(os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf2.yaml'))
+    @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
+    @mock.patch('numpy.load', autospec=True)
+    def testCreationWhitFakePathInYaml(self, mock_rd, mock_load):
+        ott, interf, dm = create_ott(os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf2.yaml'))

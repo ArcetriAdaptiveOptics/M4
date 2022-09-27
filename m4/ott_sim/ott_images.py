@@ -28,7 +28,6 @@ class OttImages():
         from m4.ott_sim.ott_images import OttImages
         geo = OttImages(ott)
         imshow(geo.ott_view())
-        
     '''
 
     def __init__(self, ott):
@@ -52,11 +51,6 @@ class OttImages():
 #         self.segmask1 = np.ma.make_mask(obj.readFits_object(
 #                                         os.path.join(conf.path_name.MIRROR_FOLDER,
 #                                         conf.mirror_conf, 'py-sect4-mask.fits')))
-#         self.ifmat = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
-#                                                     conf.mirror_conf,
-#                                                    'if_sect4_rot-bin2.fits'))
-#         self.vmat = obj.readFits_object(os.path.join(conf.path_name.MIRROR_FOLDER,
-#                                                    conf.mirror_conf, 'ff_v_matrix.fits'))
         self.zmat = read_data.readFits_data(os.path.join(conf.OPTICAL_FOLDER,
                                                      conf.optical_conf,
                                                      'Zmat.fits'))
@@ -207,7 +201,7 @@ class OttImages():
         m4smap = self.smap.copy()
         ww = np.dot(self.zmat, self.zmx_m4pos2z())
         for i in range(0, 5):
-            m4smap[self.parmask == True] = m4smap[self.parmask == True] + ww[:, i]* (self._ott.m4.getPositionInM())[i]
+            m4smap[self.parmask == True] = m4smap[self.parmask == True] + ww[:, i]* (self._ott.m4Exapode.getPositionInM())[i]
             #m4smap[ott.idx[idtot]] = m4smap[ott.idx[idtot]] + ww[i,idtot]* ott.m4[i]
 
         #m4img[ott.idx[idtot]] += m4smap[ott.idx[idtot]]

@@ -6,7 +6,7 @@ import os
 import logging
 import numpy as np
 from astropy.io import fits as pyfits
-from m4.configuration.ott_parameters import OttParameters
+from m4.configuration.ott_parameters import OttParameters, M4Parameters
 from m4.utils.roi import ROI
 #from m4.configuration.create_ott import DMirror
 from m4.ground.timestamp import Timestamp
@@ -39,7 +39,7 @@ class Flattenig():
     def readVMatrix(self):
         """ Function that returns V matrix (892, 811) for the segment
         """
-        root = OttParameters.V_MATRIX_FOR_SEGMENT_ROOT_811
+        root = M4Parameters.V_MATRIX_FOR_SEGMENT_ROOT_811
         #root = Configuration.V_MATRIX_FOR_SEGMENT_ROOT_892
         hduList = pyfits.open(root)
         v_matrix = hduList[0].data
@@ -135,59 +135,3 @@ class Flattenig():
         theObject._flattening = np.ma.masked_array(hduList[1].data,
                                                    hduList[2].data.astype(bool))
         return theObject
-
-
-
-
-#### Usato solo qui quindi temporaneamente posizionato qui ###
-from m4.configuration import ott_parameters
-
-class DMirror():
-
-    def __init__(self):
-        """The constructor """
-        curr_conffolder = os.path.join(fold_name.CONFIGURATION_ROOT_FOLDER,
-                                       ott_parameters.tnconf_mirror)
-#         self.vmat = read_data.readFits_data(os.path.join(curr_conffolder, 'vmat.fits'))
-#         self.ff = read_data.readFits_data(os.path.join(curr_conffolder, 'ff_matrix.fits'))
-
-        self.m4od = OttParameters.m4od
-        self.m4optod = OttParameters.m4optod
-        self.m4id = OttParameters.m4id
-        self._activeSegment = 0
-
-    def mirror_command(self, command, seg=None):
-        command_input = np.copy(command)
-        pos = self._measurePosition()
-        if seg is None:
-            if command_input.shape[0] == OttParameters.N_ACTS_TOT:
-                command = command_input
-            elif command_input.shape[0] < OttParameters.N_ACTS_TOT:
-                cmd = np.zeros(OttParameters.N_ACTS_TOT)
-                for j in range(command_input.shape[0]):
-                    act = j + (OttParameters.N_ACT_SEG * self._activeSegment)
-                    cmd[act] = command_input[j]
-                command = cmd
-            delta_command = pos + command
-        else:
-            command_list = []
-            for i in range(seg.shape[0]):
-                cmd = np.zeros(OttParameters.N_ACTS_TOT)
-                for j in range(OttParameters.N_ACT_SEG):
-                    act = j + (OttParameters.N_ACT_SEG * seg[i])
-                    k = i * OttParameters.N_ACT_SEG
-                    cmd[act] = command_input[k]
-                    command = cmd
-                command_list.append(command)
-            command = np.zeros(OttParameters.N_ACTS_TOT)
-            for cmd in command_list:
-                command = command + cmd
-            delta_command = command
-        # forza = self._mirror._ff * delta_command
-        return delta_command
-
-    def _measurePosition(self):
-        # dall'opc ua va letta la posizione degli attuatori
-        pos = np.zeros(OttParameters.N_ACTS_TOT) + 7
-        return pos
-

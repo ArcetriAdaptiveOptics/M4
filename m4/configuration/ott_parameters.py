@@ -61,11 +61,9 @@ class OttParameters():
     PIXEL_SCALE = 360.5 #PIXEL/METRI
     RADIUS_FIDUCIAL_POINT = 0.3
 
+
     M4_MECHANICAL_PUPIL_XYRADIUS = np.array([458, 458, 458]) #np.array([512, 512, 512])
     M4_OPTICAL_DIAMETER = 858
-    N_SEG = 6
-    N_ACTS_TOT = 5352
-    N_ACT_SEG = 892
     M4_DOF = np.array([3, 4])
     REFERENCE_ANGLE_RAD = np.pi / 3
     REFERENCE_ANGLE_DEGREES = 60
@@ -73,15 +71,22 @@ class OttParameters():
     DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES = 512
     BIG_IMAGE_DIAMETER = 1236
 
+    #SPL
+    TN_FRINGES = '20181108_1'
+
+class M4Parameters():
+    ''' '''
+    N_SEG = 6
+    N_ACTS_TOT = 5352
+    N_ACT_SEG = 892
+
+
     V_MATRIX_FOR_SEGMENT_ROOT_811 = \
         '/Users/rm/Desktop/Arcetri/M4/ProvaCodice/IFFunctions/20170630_105105/modeMatrix.fits'
-    DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES = 512
 
     M4COORDINATE_ROOT_FOLDER = \
         '/Users/rm/Desktop/Arcetri/M4/ActuatorCoordinates.fits'
 
-    #SPL
-    TN_FRINGES = '20181108_1'
 
 class OpcUaParameters():
     ''' Numbers for opc ua parameters '''

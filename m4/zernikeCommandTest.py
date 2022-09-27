@@ -9,7 +9,7 @@ import logging
 from scipy import ndimage
 from astropy.io import fits as pyfits
 from m4.configuration import config_folder_names as fold_name
-from m4.configuration.ott_parameters import OttParameters
+from m4.configuration.ott_parameters import OttParameters, M4Parameters
 from m4.ground import zernike
 from m4.flattening import Flattenig
 from m4.analyzers.analyzer_iffunctions import AnalyzerIFF
@@ -202,7 +202,7 @@ class ZernikeCommand():
         final_total_mask = np.ones((self._bigDiameter, self._bigDiameter))
         imaList = []
         maskList = []
-        for i in range(OttParameters.N_SEG):
+        for i in range(M4Parameters.N_SEG):
             total_mode_image = np.zeros((self._bigDiameter, self._bigDiameter))
             total_image_masks = np.ones((self._bigDiameter, self._bigDiameter))
             seg_img = singleZernikeCube[:, :, i]
@@ -299,7 +299,7 @@ class ZernikeCommand():
         self._logger.info('Single cube creation: for mode %s', number_of_zernike_mode)
         fits_file_path = os.path.join(self._storageFolder(), self._tt)
         singleZernikeCube = None
-        for i in range(OttParameters.N_SEG):
+        for i in range(M4Parameters.N_SEG):
             pos_file_path = os.path.join(fits_file_path,
                                          'mode%04d_measure_segment%02d_pos.h5' %(number_of_zernike_mode, i))
             positive_image = self._ic.from4D(pos_file_path)
@@ -322,7 +322,7 @@ class ZernikeCommand():
         fits_file_path = os.path.join(self._storageFolder(), self._tt)
         singleZernikeCube = None
         #for i in range(2):
-        for i in range(OttParameters.N_SEG):
+        for i in range(M4Parameters.N_SEG):
             pos_file_path = os.path.join(fits_file_path,
                                          'mode%04d_measure_segment%02d_pos.fits' %(number_of_zernike_mode, i))
             positive_image = self._readImage(pos_file_path)
@@ -376,7 +376,7 @@ class ZernikeCommand():
         surface_map[center_big_image - raggio_zer:center_big_image + raggio_zer,
                     center_big_image - raggio_zer:center_big_image + raggio_zer] = surface_map_on_m4
 
-        for i in range(OttParameters.N_SEG):
+        for i in range(M4Parameters.N_SEG):
         #for i in range(2):
             self._logger.debug('Single segment command calculation: segment number %s', i)
             command_for_segment = self.zernikeCommandForSegment(surface_map, i, an_list[i])

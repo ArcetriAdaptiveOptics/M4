@@ -6,7 +6,7 @@ import six
 from abc import ABCMeta, abstractmethod
 
 @six.add_metaclass(ABCMeta)
-class BaseM4():
+class BaseM4Exapode():
     '''
     Abstract class for M4
     '''
