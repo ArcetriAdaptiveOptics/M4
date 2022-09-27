@@ -1,4 +1,7 @@
-
+'''
+Autore: Runa
+matrice interazione pad per correggere astigmatismo parabola
+'''
 import numpy as np
 from matplotlib import pyplot as plt
 from m4.ground import read_data
@@ -95,7 +98,7 @@ rmat = rotmat(120)
 cmat1 = np.matmul(cmat, rmat.T)
 
 # ccm = np.concatenate((cmat, mat1), 1)
-# 
+#  
 # invmat2 = np.linalg.pinv(ccm)
 # cmd2 = np.matmul(invmat2, pz0m)
 
