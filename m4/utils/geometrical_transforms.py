@@ -15,7 +15,7 @@ class GeomTransf():
 
         HOW TO USE IT::
 
-                from m4.geometrical_transforms import GeomTransf
+                from m4.utils.geometrical_transforms import GeomTransf
                 gt = GeomTransf()
                 nc, x0, x1 = gt.principal_main(im0, im1, point_to_use)
     '''

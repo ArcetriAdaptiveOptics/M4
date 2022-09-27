@@ -27,11 +27,11 @@ from m4.devices.reference_mirror import OpcUaReferenceMirror
 from m4.devices.m4_exapode import OpcUaM4Exapode
 from m4.devices.temperature_sensors import OpcUaTemperatureSensors
 from m4.devices.accelerometers import ZmqAccelerometers
-from m4.devices.interferometer import I4d4020
+from m4.devices.interferometer import I4d6110
 
 from m4.configuration.config_uploader import config_rewriter
 
-def create_ott(config_file_name='/Users/rm/eclipse-workspace/M4/m4/configuration/towerConfig.yaml'):
+def create_ott(config_file_name='/home/m4/git/M4/m4/configuration/towerConfig.yaml'):
     ''' Function for the ott creation
 
     Parameters
@@ -71,8 +71,9 @@ def create_ott(config_file_name='/Users/rm/eclipse-workspace/M4/m4/configuration
         m4 = OpcUaM4Exapode(opcUa)
         temperature_sensor = OpcUaTemperatureSensors(opcUa)
         accelerometers = ZmqAccelerometers()
-        interf = I4d4020()
+        interf = I4d6110()
         dm = None
+
 
     ott = OTT(parabola_slider, reference_mirror_slider, angle_rotator,
               parab, reference_mirror, m4, temperature_sensor, accelerometers)
