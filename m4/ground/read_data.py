@@ -61,11 +61,11 @@ def readFits_maskedImage(fits_file_path):
 
     Returns
     -------
-    object: numpy masked array
+    masked_array: numpy masked array
     '''
     hduList = pyfits.open(fits_file_path)
-    immagine = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
-    return immagine
+    masked_array = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
+    return masked_array
 
 def readFitsSlimImage(fits_file_path):
     '''
@@ -189,9 +189,7 @@ class InterferometerConverter():
                 ima: numpy masked array
                      masked array image
         """
-        hduList = pyfits.open(filename)
-        masked_ima = np.ma.masked_array(hduList[0].data,
-                                        hduList[1].data.astype(bool))
+        masked_ima = readFits_maskedImage(filename)
         return masked_ima
 
     @staticmethod

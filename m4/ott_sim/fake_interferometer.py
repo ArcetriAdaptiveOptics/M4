@@ -25,14 +25,17 @@ class FakeInterferometer(BaseInterferometer):
         self._ott = None
         self._dm = None
 
-    def acquire_phasemap(self,  indet=True, n_frames=1, show=0):
+    def acquire_phasemap(self, n_frames=1, indet=True):
         '''
         Parameters
         ----------
             nframes: int
                 number of frames
-            show: int
-                0 to not show the image
+
+        Other Parameters
+        ----------------
+            indet: boolean
+                True to consider lamba indeterminacy
 
         Returns
         -------
@@ -41,20 +44,18 @@ class FakeInterferometer(BaseInterferometer):
         '''
         ottIma = OttImages(self._ott)
         ottIma.m4ima = self._dm.m4ima
-        opd, mask = ottIma.ott_smap(show=show)
+        opd, mask = ottIma.ott_smap(show=0)
         masked_ima = np.ma.masked_array(opd.T,
                                         mask=np.invert(mask.astype(bool)).T)
         '''
         aggiungo indeterminazione di lambda
         Luca
-        
         '''
         if indet==True:
             lam=632.8e-9
             kk=np.floor(np.random.random(1)*5-2) 
             masked_ima = masked_ima + np.ones(masked_ima.shape)*lam*kk
-        
-        
+
         return masked_ima
 
     def set_ott(self, ott):
@@ -81,15 +82,3 @@ class FakeInterferometer(BaseInterferometer):
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, image.data)
         pyfits.append(fits_file_name, image.mask.astype(int))
-
-    def readImage4D(self, file_name):
-        '''
-        Parameters
-        ----------
-        file_name: string
-            fits file path name of image to read
-        '''
-        hduList = pyfits.open(file_name)
-        masked_ima = np.ma.masked_array(hduList[0].data,
-                                        hduList[1].data.astype(bool))
-        return masked_ima

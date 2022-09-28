@@ -1,10 +1,11 @@
 '''
 Authors
   - C. Selmi: written in 2020
+              modified in 2022
 
 HOW TO USE IT::
     from m4.configuration import start
-    ott, interf = start.create_ott(config_file_path)
+    ott, interf, dm = start.create_ott(config_file_path)
 '''
 from m4.configuration.create_ott import OTT
 from m4.configuration.config_reader import configuration_path
