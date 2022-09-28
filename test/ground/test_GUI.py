@@ -25,5 +25,5 @@ class TestGui(unittest.TestCase):
 
         conf = os.path.join(testDataRootDir(), 'base', 'Configurations','testConf.yaml')
         ott, interf, dm = start.create_ott(conf)
-        g = GUI.Runner(ott)
+        #g = GUI.Runner(ott)
         #.run()
