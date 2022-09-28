@@ -13,7 +13,7 @@ from test.test_helper import testDataRootDir
 
 class TestGui(unittest.TestCase):
 
-    #@unittest.skip('')
+    @unittest.skip('')
     @mock.patch('m4.ott_sim.ott_images.conf', autospect=True)
     @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
     @mock.patch('numpy.load', autospec=True)
