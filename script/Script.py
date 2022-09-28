@@ -40,7 +40,8 @@ def main_test():
     immagine(2,True,ind)
     
     rel=False
-    dm.act_zero(rel)
+    #dm.act_zero(rel)
+    dm.act_zero()
     immagine(3,True,ind)
 
 def test_noise():
@@ -152,34 +153,35 @@ def passetti(N=1,D=20e-9,ind=True):
             ampiezza passo sugli attuatori (nm)
         ind: logic
             ad or not indetermination on the measure
-    '''    
-    
+    '''
+
     move2petalo(num=6,RM=0)
-    
+
     dir0 = fold_name.SIMUL_DATA_CALIB_DM_FOLDER+"\\Passetti"
     dir , tt =tracking_number_folder.createFolderToStoreMeasurements(dir0)
-    
-    
-        
+
+
+
     inc=D; rel=True; plot=True
-        
+
     dm.act_incr(inc,rel) 
     ima=interf.acquire_phasemap()
-    
+
     inc=D; rel=True; plot=False
-                
+
     dm.act_incr(inc,rel) 
     ima=interf.acquire_phasemap()
     interf.save_phasemap(dir,'0000.fits',ima)
 
     np.save(os.path.join(dir, '0mask'),ima.mask)
 
-    
+
     for x in range(0, N):
         print("step "+str(x+1)+"/"+str(N))
         dm.act_incr(inc,rel) 
         ima=interf.acquire_phasemap()
-        imname=f"{xx+1:04}"+".fits"
+        #imname=f"{xx+1:04}"+".fits"
+        imname="{xx+1:04}"+".fits"
         interf.save_phasemap(dir,imname,ima)
         
     return dir    
@@ -196,15 +198,15 @@ def passetti(N=1,D=20e-9,ind=True):
 #        plt.colorbar()
 
 
-    
+
 def passetti_con_Rumore(N=1,D=20e-9,freq=25,ind=True):
-    
+
     '''
     vado avanti a passetti di 20 nm su tutti gli attuatori
     e salvo le immagini in una cartella definita da dir
     Ad ogni step aggiungo poi un rumore oscillante dovuto al 
     movimento dei vari componenti (per ora solo la parabola)
-    
+
     Parameters
         ----------
         N: integer 

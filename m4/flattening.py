@@ -19,7 +19,7 @@ class Flattenig():
     flattening command.
     """
 
-    def __init__(self, analyzerIFFunctions):
+    def __init__(self, analyzerIFFunctions, deformableMirror):
         """The constructor:
             analyzerIFFunctions = analyzer object to use
         """
@@ -27,7 +27,7 @@ class Flattenig():
         self._an = analyzerIFFunctions
         self._who = self._an._who
         self._roi = ROI()
-        self._mirror = DMirror()
+        self._mirror = deformableMirror
         self._command = None
         self._flatteningWf = None
 
