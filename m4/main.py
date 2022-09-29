@@ -61,7 +61,11 @@ def showCommandMatrixBeforeCalibration(command_amp_vector):
                                             np.append(OttParameters.PARABOLA_DOF,
                                                       OttParameters.RM_DOF))
     plt.clf()
+    y_old = np.arange(mat.shape[0])
+    y = ['par_piston', 'par_tip', 'par_tilt', 'rm_tip', 'rm_tilt']
     plt.imshow(mat, origin='lower')
+    plt.yticks(y_old, y, rotation=0)
+    plt.xlabel('Commands')
     plt.colorbar()
     return mat
 

@@ -236,7 +236,8 @@ class OttImages():
         pixscale = OttParameters.PIXEL_SCALE
         parxy = [self._ott.parabolaSlider.getPositionInM()*pixscale, 0]
         refmxy = [self._ott.referenceMirrorSlider.getPositionInM()*pixscale, 0]
-        ang = (-30-self._ott.angleRotator.getPosition())*np.pi/180
+        #ang = (-30-self._ott.angleRotator.getPosition())*np.pi/180
+        ang = (-self._ott.angleRotator.getPosition())*np.pi/180
         rmat = np.array([[np.cos(ang), np.sin(ang)], [-np.sin(ang), np.cos(ang)]])
         parxy = rmat.dot(parxy)
         refmxy = rmat.dot(refmxy)
