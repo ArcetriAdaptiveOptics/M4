@@ -53,9 +53,10 @@ def qpupil_ellipse(image):
     '''
     Function for...
     Created by Federico
+    NOTA: la funzione usa la direzione y per determinare la dimensione dei pixel
     '''
     aa = np.shape(image)
-    imagePixels = aa[0]
+    imagePixels = aa[0] # dir y
     ell = EllipseModel()
     cnt = _trova_punti_bordi_ima2(image, imagePixels)
     ell.estimate(cnt)
@@ -98,7 +99,7 @@ def _trova_punti_bordi_ima2(image, imagePixels):
         if q.size < 2:
             i = i+1
         else:
-            val.append(np.array([[i,q[0,0]], [i,q[0,q.size-1]]]))
+            val.append(np.array([[i, q[0,0]], [i,q[0,q.size-1]]]))
             i = i+1
     cut = np.concatenate(val)
     return cut

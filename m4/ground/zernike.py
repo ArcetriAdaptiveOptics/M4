@@ -45,7 +45,7 @@ def zernikeFit(img, zernike_index_vector):
     '''
     img1 = img.data
     mask = np.invert(img.mask).astype(int)
-    x, y, r, xx, yy = geo.qpupil_circle(mask)
+    x, y, r, xx, yy = geo.qpupil_circle(img)
     mm = (mask==1)
     coeff = _surf_fit(xx[mm], yy[mm], img1[mm], zernike_index_vector)
     mat = _getZernike(xx[mm], yy[mm], zernike_index_vector)
