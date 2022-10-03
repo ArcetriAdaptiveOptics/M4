@@ -403,8 +403,8 @@ def diffPiston(image):
     imas = image[:, 0:np.int(dimy/2)]
     imad = image[np.int(dimx/2):, :]
 
-    coefs, mat = zernike.zernikeFit(imas, np.arange(3)+1)
-    coefd, mat = zernike.zernikeFit(imad, np.arange(3)+1)
+    coefs, mat = zernike.zernikeFit(imas, np.arange(3)+1, False)
+    coefd, mat = zernike.zernikeFit(imad, np.arange(3)+1, False)
     diff_piston = coefs[0]-coefd[1]
     return diff_piston
 

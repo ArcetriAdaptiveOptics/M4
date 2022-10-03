@@ -28,7 +28,7 @@ import numpy as np
 from m4.ground import geo
 fac = np.math.factorial
 
-def zernikeFit(img, zernike_index_vector):
+def zernikeFit(img, zernike_index_vector, qpupil_circle=True):
     '''
     Parameters
     ----------
@@ -45,7 +45,10 @@ def zernikeFit(img, zernike_index_vector):
     '''
     img1 = img.data
     mask = np.invert(img.mask).astype(int)
-    x, y, r, xx, yy = geo.qpupil_circle(img)
+    if qpupil_circle==True:
+        x, y, r, xx, yy = geo.qpupil_circle(img)    
+    else:
+        x, y, r, xx, yy = geo.qpupil(mask)
     mm = (mask==1)
     coeff = _surf_fit(xx[mm], yy[mm], img1[mm], zernike_index_vector)
     mat = _getZernike(xx[mm], yy[mm], zernike_index_vector)

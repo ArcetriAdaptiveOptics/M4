@@ -15,18 +15,23 @@ from skimage.draw import circle
 
 
 
-def qpupil_circle(image):
+def qpupil_circle(image, pixel_dir=0):
     '''
     Function for...
     Created by Federico
+    NOTA: la funzione usa come standard la direzione y per determinare la dimensione dei pixel
+
+    pixel_dir: int
+        indicates which direction to use for counting the number of pixels in the image.
+        Y direction as standard
     '''
     aa = np.shape(image)
-    imagePixels = aa[0]
+    imagePixels = aa[pixel_dir] #standard dir y
     circ = CircleModel()
     cnt = _trova_punti_bordi_ima2(image, imagePixels)
     circ.estimate(cnt)
     xc, yc, radius = np.array(circ.params, dtype=int)
-    maskedd = np.zeros((imagePixels, imagePixels), dtype=np.uint8) 
+    maskedd = np.zeros((imagePixels, imagePixels), dtype=np.uint8)
     rr, cc = circle(xc, yc, int(radius))
     maskedd[rr, cc] = 1
 
@@ -49,14 +54,14 @@ def qpupil_circle(image):
 
     return xc, yc, radius, xx, yy
 
-def qpupil_ellipse(image):
+def qpupil_ellipse(image, pixel_dir=0):
     '''
     Function for...
     Created by Federico
-    NOTA: la funzione usa la direzione y per determinare la dimensione dei pixel
+    NOTA: la funzione usa come standard la direzione y per determinare la dimensione dei pixel
     '''
     aa = np.shape(image)
-    imagePixels = aa[0] # dir y
+    imagePixels = aa[pixel_dir] #standard dir y
     ell = EllipseModel()
     cnt = _trova_punti_bordi_ima2(image, imagePixels)
     ell.estimate(cnt)
