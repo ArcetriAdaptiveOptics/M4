@@ -204,7 +204,7 @@ def tiptilt_fit(ima):
     '''
     if ima is not None:
         coef, mat = zernike.zernikeFit(ima,
-                                    np.array([2, 3]))
+                                    np.array([2, 3]), False)
         surf = zernike.zernikeSurface(ima, coef, mat)
         new_image = ima - surf
         ima_ttr = np.ma.masked_array(new_image, mask=ima.mask)
