@@ -88,6 +88,7 @@ setup(name=NAME,
                         "zmq",
                         "sklearn",
                         "pyzabbix",
+                        "PySide2<5.15.0",
                         "guietta",
                         "pyyaml",
                         "serial"

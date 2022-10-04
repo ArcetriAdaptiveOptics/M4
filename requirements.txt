@@ -12,6 +12,7 @@ mock
 sklearn
 pyzabbix
 zmq
+PySide2<5.15.0
 guietta
 pyyaml
 serial
