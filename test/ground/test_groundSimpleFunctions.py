@@ -30,9 +30,6 @@ class Test(unittest.TestCase):
         geo.qpupil(masked_ima)
         geo.rotate(img, 30)
 
-    def testGUI(self):
-        pass
-
     @unittest.skip('Dove mettere il file')
     def testLogger(self):
         import tempfile

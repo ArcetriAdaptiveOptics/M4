@@ -1,13 +1,13 @@
 '''
 Authors
   - C. Selmi: written in 2019
+              rewritten in 2022
 '''
 
 import numpy as np
 import logging
-from skimage.draw import circle
 from skimage import measure
-from m4.configuration.ott_parameters import OttParameters
+from matplotlib import pyplot as plt
 
 
 class ROI():
@@ -23,8 +23,6 @@ class ROI():
     def __init__(self):
         """The constructor """
         self._logger = logging.getLogger('ROI:')
-        self._bigDiameter = OttParameters.BIG_IMAGE_DIAMETER
-        self._segmentImaDiameter = OttParameters.DIAMETER_IN_PIXEL_FOR_SEGMENT_IMAGES
 
 
     def roiGenerator(self, ima):
@@ -58,154 +56,61 @@ class ROI():
             roiList.append(final_roi)
         return roiList
 
-    def automatical_roi_selection(self, image, segment_or_central_view, ref_mirror_in_or_out):
+    def _plotTest(self, roiList):
+        plt.figure(figsize=(16, 10))
+        for i in range(0,4):
+            plt.subplot(2, 2, i+1)
+            plt.imshow(roiList[i])
+            plt.title('roiList[%d]' %i)
+
+
+    def automatical_roi_selection(self, image, segment_view, ref_mirror_in):
         '''
         Parameters
         ----------
         image: numpy masked array
-                image
-        segment_or_central_view: int
-                             0 for segment, 1 for central
-        ref_mirror_in_or_out: int
-                            0 for in, 1 for out
-
-        Returns
-        -------
-        roi_sx: mask
-                left segment
-        roi_central: mask
-            cntral segment
-        roi_dx: mask
-             right segment
-        roi_rm: mask
-            reference mirror mask inside central segment
+            image to be analyzed
+        segment_view = boolean
+            in the ott is in segment view configuration it is True,
+            else False
+        RM_in = boolean
+            if reference mirror is inside the image it is True,
+            else False
         '''
-        if segment_or_central_view == 0:
-            if ref_mirror_in_or_out == 0:
-                roiList = self.roiGenerator(image)
-                sx = np.zeros(np.array(roiList).shape[0])
-                reference_mirror = np.zeros(np.array(roiList).shape[0])
-                dx = np.zeros(np.array(roiList).shape[0])
-                for i in range(np.array(roiList).shape[0]):
-                    sx[i] = roiList[i][200, 100].astype(int)
-                    reference_mirror[i] = roiList[i][200, 200].astype(int)
-                    dx[i] = roiList[i][150, 450].astype(int)
-                s = np.where(sx==0)[0][0]
-                c = np.where(reference_mirror==0)[0][0]
-                d = np.where(dx==0)[0][0]
+        roiList = self.roiGenerator(image)
 
-                roi_sx = roiList[s]
-                roi_rm = roiList[c]
-                roi_dx = roiList[d]
-                return roi_sx, roi_rm, roi_dx
-            elif ref_mirror_in_or_out == 1:
-                roiList = self.roiGenerator(image)
-                sx = np.zeros(np.array(roiList).shape[0])
-                central = np.zeros(np.array(roiList).shape[0])
-                dx = np.zeros(np.array(roiList).shape[0])
-                for i in range(np.array(roiList).shape[0]):
-                    sx[i] = roiList[i][200, 100].astype(int)
-                    central[i] = roiList[i][300, 300].astype(int)
-                    dx[i] = roiList[i][200, 400].astype(int)
-                s = np.where(sx==0)[0][0]
-                c = np.where(central==0)[0][0]
-                d = np.where(dx==0)[0][0]
+        if segment_view is True:
+            if ref_mirror_in is True:
+                roi_dx = roiList[1]
+                roi_sx = roiList[0]
+                roi_c = roiList[2]
+                roi_rm = roiList[3]
+                return roi_dx, roi_sx, roi_c, roi_rm
+            elif ref_mirror_in is False:
+                roi_dx = roiList[2]
+                roi_sx = roiList[1]
+                roi_c = roiList[3]
+                roi_rm = roiList[0]
+                return roi_dx, roi_sx, roi_c, roi_rm
 
-                roi_sx = roiList[s]
-                roi_central = roiList[c]
-                roi_dx = roiList[d]
-                return roi_sx, roi_central, roi_dx
-
-        elif segment_or_central_view == 1:
-            if ref_mirror_in_or_out == 0:
-                roiList = self.roiGenerator(image)
-                shell_list = []
-                for i in range(7):
-                    shell = np.zeros(np.array(roiList).shape[0])
-                    shell_list.append(shell)
-                for i in range(np.array(roiList).shape[0]):
-                    shell_list[0][i] = roiList[i][350, 425].astype(int)
-                    shell_list[1][i] = roiList[i][175, 420].astype(int)
-                    shell_list[2][i] = roiList[i][55, 255].astype(int)
-                    shell_list[3][i] = roiList[i][165, 85].astype(int)
-                    shell_list[4][i] = roiList[i][350, 115].astype(int)
-                    shell_list[5][i] = roiList[i][460, 260].astype(int)
-                    shell_list[6][i] = roiList[i][290, 220].astype(int)
-                ss = []
-                for i in range(7):
-                    s = np.where(shell_list[i]==0)[0][0]
-                    shell = roiList[s]
-                    ss.append(shell)
-                shells = ss[:6]
-                rm = ss[6]
-                return shells, rm
-            elif ref_mirror_in_or_out == 1:
-                roiList = self.roiGenerator(image)
-                shell_list = []
-                for i in range(6):
-                    shell = np.zeros(np.array(roiList).shape[0])
-                    shell_list.append(shell)
-                for i in range(np.array(roiList).shape[0]):
-                    shell_list[0][i] = roiList[i][350, 425].astype(int)
-                    shell_list[1][i] = roiList[i][175, 420].astype(int)
-                    shell_list[2][i] = roiList[i][55, 255].astype(int)
-                    shell_list[3][i] = roiList[i][165, 85].astype(int)
-                    shell_list[4][i] = roiList[i][350, 115].astype(int)
-                    shell_list[5][i] = roiList[i][460, 260].astype(int)
-                ss = []
-                for i in range(6):
-                    s = np.where(shell_list[i]==0)[0][0]
-                    shell = roiList[s]
-                    ss.append(shell)
-                shells = ss
-                return shells
-
-    def create_circular_mask(self, center_y, center_x, radius, imagePixels=None):
-        '''
-        Parameters
-        ----------
-        center_y: int
-                y coordinate for circular mask
-        center_x: int
-                x coordinate for circular mask
-        radius: int
-                radius of circular mask
-
-        Other Parameters
-        ----------
-        imagePixels: int, optional
-                    radius of the image in which the mask is inserted
-
-        Returns
-        -------
-        mask: numpy array
-            ones circular mask
-        '''
-        if imagePixels is None:
-            imagePixels = 512
-        else:
-            imagePixels = imagePixels
-        mask = np.ones((imagePixels, imagePixels), dtype= bool)
-        rr, cc = circle(center_y, center_x, radius)
-        mask[rr,cc] = 0
-        return mask
-
-    def _circularMaskForSegmentCreator(self):
-        '''
-        Returns
-        -------
-        mask: numpy array
-        '''
-        center_y = self._bigDiameter / 2
-        center_x = self._bigDiameter / 2
-        radius = OttParameters.M4_OPTICAL_DIAMETER / 2
-        big_mask = self.create_circular_mask(center_y,
-                                         center_x, radius, self._bigDiameter)
-
-        seg_center_y = np.int(self._bigDiameter/2 + OttParameters.SEGMENT_DISTANCE_FROM_CENTRE)
-        seg_center_x = np.int(self._bigDiameter/2)
-        seg_radius = np.int(self._segmentImaDiameter / 2)
-        mask = big_mask[seg_center_y - seg_radius : seg_center_y + seg_radius,
-                        seg_center_x - seg_radius : seg_center_x + seg_radius]
-        return mask
+        elif segment_view is False:
+            if ref_mirror_in is True:
+                roi_seg0 = roiList[0]
+                roi_seg1 = roiList[1]
+                roi_seg2 = roiList[3]
+                roi_seg3 = roiList[6]
+                roi_seg4 = roiList[5]
+                roi_seg5 = roiList[2]
+                segRoiList = [roi_seg0, roi_seg1, roi_seg2, roi_seg3, roi_seg4, roi_seg5]
+                roi_rm = roiList[4]
+                return segRoiList, roi_rm
+            elif ref_mirror_in is False:
+                roi_seg0 = roiList[0]
+                roi_seg1 = roiList[1]
+                roi_seg2 = roiList[3]
+                roi_seg3 = roiList[5]
+                roi_seg4 = roiList[4]
+                roi_seg5 = roiList[2]
+                segRoiList = [roi_seg0, roi_seg1, roi_seg2, roi_seg3, roi_seg4, roi_seg5]
+                return segRoiList
         

@@ -51,6 +51,16 @@ class OttConfigurations():
         return
 
     def get_configuration(self):
+        '''
+        Returns
+        -------
+        segment_view = boolean
+            in the ott is in segment view configuration it is True,
+            else False
+        RM_in = boolean
+            if reference mirror is inside the image it is True,
+            else False
+        '''
         self._angle = self._ott.angleRotator.getPosition()
         self._rslide = self._ott.referenceMirrorSlider.getPosition()
         self._pslide = self._ott.parabolaSlider.getPosition()
