@@ -55,37 +55,6 @@ class ParabolIdent():
         coef2 = zernike._surf_fit(xx[mm], yy[mm], image.data[mm], np.arange(10)+1)
         return coef1, coef2
 
-    def parable(self, image):
-        '''
-        Parameters
-        ----------
-            image: numpy masked array
-                image to use
-
-        Returns
-        -------
-            circle: numpy array
-                    circumference of 1 to be plotted
-            centro: numpy array
-                    coordinates of the center
-            axs: numpy array
-                    major and minor axis coming from the fit of the ellipse
-            raggio: int
-                radius of the parabola circumference
-        '''
-        x, y = self.fiduciali(image)
-        centro, axs, raggio = self._fitEllipse(x, y)
-        #ellipse = self._drawEllipse(centro, axs, image)
-        circle = self._drawCircle(centro, raggio, image)
-        return circle, centro, axs, raggio
-
-    def _fiducialiAMano(self):
-        ''' Guardati da imshow di image
-        '''
-        x = np.array([512, 359, 512, 665])
-        y = np.array([359, 512, 665, 512])
-        return x, y
-
     def fiduciali(self, ima, n_clusters=4):
         ''' Calculates the coordinates of the fiducial points of the parabola and
         return it in a single vector of x and y
@@ -247,3 +216,34 @@ class ParabolIdent():
                                       mask=np.invert(hduList[0].data[1,:,:].astype(bool)))  
         #immagine = read_data.read_phasemap(file_path)
         return immagine
+
+    def _parable(self, image):
+        '''
+        Parameters
+        ----------
+            image: numpy masked array
+                image to use
+
+        Returns
+        -------
+            circle: numpy array
+                    circumference of 1 to be plotted
+            centro: numpy array
+                    coordinates of the center
+            axs: numpy array
+                    major and minor axis coming from the fit of the ellipse
+            raggio: int
+                radius of the parabola circumference
+        '''
+        x, y = self.fiduciali(image)
+        centro, axs, raggio = self._fitEllipse(x, y)
+        #ellipse = self._drawEllipse(centro, axs, image)
+        circle = self._drawCircle(centro, raggio, image)
+        return circle, centro, axs, raggio
+
+    def _fiducialiAMano(self):
+        ''' Guardati da imshow di image
+        '''
+        x = np.array([512, 359, 512, 665])
+        y = np.array([359, 512, 665, 512])
+        return x, y

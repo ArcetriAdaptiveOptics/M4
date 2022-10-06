@@ -10,7 +10,7 @@ class TipTiltDetrend():
 
     HOW TO USE IT::
 
-        from m4.utils.img_redux import TipTiltDetrend
+        from m4.utils.image_reducer import TipTiltDetrend
         TT = TipTiltDetrend()
     """
 
