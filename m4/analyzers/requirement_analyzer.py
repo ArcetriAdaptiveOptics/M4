@@ -204,7 +204,7 @@ def tiptilt_fit(ima):
     '''
     if ima is not None:
         coef, mat = zernike.zernikeFit(ima,
-                                    np.array([2, 3]), False)
+                                    np.array([2, 3]))
         surf = zernike.zernikeSurface(ima, coef, mat)
         new_image = ima - surf
         ima_ttr = np.ma.masked_array(new_image, mask=ima.mask)
@@ -403,8 +403,8 @@ def diffPiston(image):
     imas = image[:, 0:np.int(dimy/2)]
     imad = image[np.int(dimx/2):, :]
 
-    coefs, mat = zernike.zernikeFit(imas, np.arange(3)+1, False)
-    coefd, mat = zernike.zernikeFit(imad, np.arange(3)+1, False)
+    coefs, mat = zernike.zernikeFit(imas, np.arange(3)+1)
+    coefd, mat = zernike.zernikeFit(imad, np.arange(3)+1)
     diff_piston = coefs[0]-coefd[1]
     return diff_piston
 
