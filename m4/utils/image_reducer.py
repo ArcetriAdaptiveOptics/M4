@@ -44,3 +44,12 @@ class TipTiltDetrend():
         cc, mat = zernike.zernikeFit(central_image, np.arange(10) + 1)
         ima_ttr = zernike.zernikeSurface(central_image, coef, mat[:,1:3])
         return ima_ttr
+
+    def central_view_tiptilt_detrend(self, image, segmenet_ind):
+        '''
+        indice del segmento a cui togliere tip e tilt
+        calcolo tip e tilt sugli altri segmenti che vedo, 
+        media dei cinque,
+        immagine con seg giusto sottratto
+        '''
+        pass
