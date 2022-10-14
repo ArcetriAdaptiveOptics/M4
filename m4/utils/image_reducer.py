@@ -45,11 +45,36 @@ class TipTiltDetrend():
         ima_ttr = zernike.zernikeSurface(central_image, coef, mat[:,1:3])
         return ima_ttr
 
-    def central_view_tiptilt_detrend(self, image, segmenet_ind):
+    def central_view_tiptilt_detrend(self, image, segment_ind):
         '''
-        indice del segmento a cui togliere tip e tilt
-        calcolo tip e tilt sugli altri segmenti che vedo, 
-        media dei cinque,
-        immagine con seg giusto sottratto
+        Parameters
+        ----------
+            image: numpy masked array
+                    image to be analyzed
+            segment_ind: int
+                    segment number to be analyzed
+
+        Returns
+        -------
+                image_ttr: numpy array
+                         image without tip and tilt on segment ind
         '''
-        pass
+        segRoiList, roi_rm = self.roi.automatical_roi_selection(image, False, True)
+        final_roi = segRoiList[segment_ind]
+        final_image = np.ma.masked_array(image, mask=final_roi)
+        del(segRoiList[segment_ind])
+
+        tip_list = []
+        tilt_list = []
+        for roi in segRoiList:
+            ima = np.ma.masked_array(image, mask=roi)
+            cc, mat = zernike.zernikeFit(ima, np.arange(10) + 1)
+            tip_list.append(cc[0])
+            tilt_list.append(cc[1])
+        tip = np.mean(np.array(tip_list))
+        tilt = np.mean(np.array(tilt_list))
+        coef = np.array([tip, tilt])
+
+        cc, mat = zernike.zernikeFit(final_image, np.arange(10) + 1)
+        ima_ttr = zernike.zernikeSurface(final_image, coef, mat[:,1:3])
+        return ima_ttr
