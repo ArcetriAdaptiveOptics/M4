@@ -199,7 +199,7 @@ class GeomTransf():
 
 ###
     def _readMeasure(self):
-        ''' Legge le due immagini usate per prova
+        ''' Legge due immagini di prova
         '''
         tt1 = '20200511_134609'
         tt2 = '20200511_134613'
