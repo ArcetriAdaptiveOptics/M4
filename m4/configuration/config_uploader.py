@@ -18,7 +18,7 @@ class config_rewriter():
         config.simulated = self.cc.simulated
         config.BASE_PATH = self.cc.BASE_PATH
         config.CONFIGURATION_ROOT_FOLDER = self.cc.CONFIGURATION_ROOT_FOLDER
-        config.CALIBRATION_ROOT_FOLDER = self.cc.CALIBRATION_ROOT_FOLDER
+        config.ALL_CALIBRATION_DATA_ROOT_FOLDER = self.cc.ALL_CALIBRATION_DATA_ROOT_FOLDER
         config.OPT_DATA_FOLDER = self.cc.OPT_DATA_FOLDER
         config.OUT_FOLDER = self.cc.OUT_FOLDER
         config.MIRROR_FOLDER = self.cc.MIRROR_FOLDER
