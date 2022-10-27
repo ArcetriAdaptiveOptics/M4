@@ -5,7 +5,7 @@ astropy
 synphot
 pytest
 h5py
-scikit>=0.19
+scikit-image>=0.19
 IPython
 opcua
 mock
