@@ -11,8 +11,7 @@ from scipy import ndimage
 from skimage.measure import EllipseModel
 #from skimage.draw import ellipse
 from skimage.measure import CircleModel
-from skimage.draw import circle
-
+from skimage.draw import disk
 
 
 def qpupil_circle(image, pixel_dir=0):
@@ -32,7 +31,7 @@ def qpupil_circle(image, pixel_dir=0):
     circ.estimate(cnt)
     xc, yc, radius = np.array(circ.params, dtype=int)
     maskedd = np.zeros((imagePixels, imagePixels), dtype=np.uint8)
-    rr, cc = circle(xc, yc, int(radius))
+    rr, cc = disk((xc, yc), int(radius))
     maskedd[rr, cc] = 1
 
     idx = np.where(maskedd==1)
@@ -68,7 +67,7 @@ def qpupil_ellipse(image, pixel_dir=0):
     xc, yc, a, b, theta = np.array(ell.params, dtyp =int)
     maskedd = np.zeros((imagePixels, imagePixels), dtype=np.uint8)
     radius = max(a, b)
-    rr, cc = circle(xc, yc, int(radius))
+    rr, cc = disk((xc, yc), int(radius))
     maskedd[rr, cc] = 1
 
     idx = np.where(maskedd==1)

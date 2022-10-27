@@ -6,7 +6,7 @@ Authors
 import numpy as np
 #import cv2
 from numpy.linalg import eig, inv
-from skimage.draw import circle as draw_circle
+from skimage.draw import disk as draw_circle
 from skimage.draw import ellipse as draw_ellipse
 from skimage.measure import label
 from m4.ground import read_data
@@ -202,7 +202,7 @@ class ParabolIdent():
             circle = circle of one to display
         '''
         circle = np.zeros((image.shape[0], image.shape[1]))
-        rr, cc = draw_circle(centro[1], centro[0], raggio/self._rFiducialPoint)
+        rr, cc = draw_circle((centro[1], centro[0]), raggio/self._rFiducialPoint)
         circle[rr, cc] = 1
         return circle
 

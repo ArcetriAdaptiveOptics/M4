@@ -9,7 +9,7 @@ import glob
 from m4.ground import geo
 from m4.configuration.ott_parameters import OttParameters
 from astropy.io import fits as pyfits
-from skimage.draw import circle as draw_circle
+from skimage.draw import disk as draw_circle
 from m4.ground import zernike
 from scipy.ndimage.interpolation import shift
 from m4.ground import read_data
@@ -173,7 +173,7 @@ def _circleImage(image, x, y, raggio_px):
     th_validPoint = np.pi * raggio_px**2 * 30 / 100
     if image is not None:
         circle = np.ones((image.shape[0],image.shape[1])).astype(int)
-        rr, cc = draw_circle(x, y, raggio_px)
+        rr, cc = draw_circle((x, y), raggio_px)
         test_r = (len(list(filter (lambda x : x >= image.shape[0], rr))) > 0)
         test_r2 = (len(list(filter (lambda x : x <= 0, rr))) > 0)
         test_c = (len(list(filter (lambda x : x >= image.shape[0], cc))) > 0)

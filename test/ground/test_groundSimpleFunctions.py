@@ -5,7 +5,7 @@ Authors
 import unittest
 import os
 import numpy as np
-from skimage.draw import circle
+from skimage.draw import disk
 from m4.ground import geo
 from m4.ground import smooth_function
 from m4.ground import logger_set_up
@@ -57,7 +57,7 @@ class Test(unittest.TestCase):
     def testZernike(self):
         img = np.random.rand(500, 500)
         mask = np.ones((500, 500), dtype=bool)
-        rr, cc = circle(250, 250, 100)
+        rr, cc = disk((250, 250), 100)
         mask[rr, cc] = 0
         masked_ima = np.ma.masked_array(img, mask=mask)
 
