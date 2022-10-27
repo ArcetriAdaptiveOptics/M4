@@ -21,7 +21,7 @@ jobs:
         pip install codecov
         pip install pytest
         pip install pytest-cov
-        if ([ -f requirements.txt ]); then pip install -r requirements.txt; fi
+        if ([ -f requirements.txt ]); then pip install -R requirements.txt; fi
          xvfb-run pytest --cov=./ --cov-report=xml
          codecov
     - name: Upload coverage to Codecov
