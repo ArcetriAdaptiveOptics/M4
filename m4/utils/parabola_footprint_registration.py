@@ -16,6 +16,13 @@ from m4.configuration import config_folder_names as fold_name
 
 
 class ParabolaFootprintRegistration():
+    '''
+    HOW TO USE IT::
+
+            from m4.utils.parabola_footprint_registration import ParabolaFootprintRegistration
+            pfr = ParabolaFootprintRegistration()
+            cgh_on_ott, difference = pfr.main()
+    '''
 
     def __init__(self):
         """The constructor """
@@ -30,8 +37,8 @@ class ParabolaFootprintRegistration():
     @staticmethod
     def _storageFolder():
         """ Folder for data"""
-        #return fold_name.ALL_CALIBRATION_DATA_ROOT_FOLDER
-        return '/Volumes/My Passport/M4/Data/M4Data'
+        return fold_name.ALL_CALIBRATION_DATA_ROOT_FOLDER
+        #return '/Volumes/My Passport/M4/Data/M4Data'
 
     def main(self):
         cgh_image, ott_image = self._readTestImages()
