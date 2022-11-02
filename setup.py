@@ -91,7 +91,8 @@ setup(name=NAME,
                         "PySide2<5.15.0",
                         "guietta",
                         "pyyaml",
-                        "serial"
+                        "serial",
+                        "pandas"
                         ],
       package_data={
           'm4': ['data/*'],
