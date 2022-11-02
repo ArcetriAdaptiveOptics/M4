@@ -59,7 +59,8 @@ class OttParameters():
     RM_DOF_PISTON = np.array([2, 3, 4])
     RM_DOF = np.array([3, 4])
     PIXEL_SCALE = 360.5 #PIXEL/METRI
-    RADIUS_FIDUCIAL_POINT = 0.3
+    RADIUS_FIDUCIAL_POINT = 0.5
+    INNER_MARKERS_REJECTION_RADIUS = 100
 
 
     M4_MECHANICAL_PUPIL_XYRADIUS = np.array([458, 458, 458]) #np.array([512, 512, 512])

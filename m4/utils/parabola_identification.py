@@ -7,18 +7,19 @@ import numpy as np
 import pandas as pd
 from skimage.measure import label, regionprops_table
 from m4.ground import zernike
-
+from m4.ground import geo
 from numpy.linalg import eig, inv
 from skimage.draw import disk as draw_circle
 from m4.configuration.ott_parameters import OttParameters
 
-class ParabolaCirculaPupilFromZernike():
+class ParabolaCirculaPupil():
     ''' Class to be used to determine the position of the parable
 
     HOW TO USE IT::
 
-        from m4.utils.parabola_identification import ParabolaCirculaPupilFromZernike
-        pz = ParabolaCirculaPupilFromZernike()
+        from m4.utils.parabola_identification import ParabolaCirculaPupil
+        pz = ParabolaCirculaPupil()
+        circle_mask = pz.par_mask_on_ott(image)
     '''
 
     def __init__(self):
@@ -26,19 +27,16 @@ class ParabolaCirculaPupilFromZernike():
         self._rFiducialPoint = OttParameters.RADIUS_FIDUCIAL_POINT
         self._nmarkers = None
 
-    def zernike_on_parabola(self, image):
-        imaf = self.fiduciali(image)
+    def par_mask_on_ott(self, image):
+        image_masked_central_fid = geo.draw_mask(image, np.int(image.shape[0]/2), np.int(image.shape[1]/2),
+                                                OttParameters.INNER_MARKERS_REJECTION_RADIUS)
+        imaf = self.fiduciali(image_masked_central_fid)
         centro, axs, raggio = self._fitEllipse(imaf[0], imaf[1])
         pxs = raggio / OttParameters.RADIUS_FIDUCIAL_POINT
         par_radius = pxs * OttParameters.parab_radius
-        circle = self._drawCircle(centro, par_radius, image)
-        ima = np.ma.masked_array(image, mask=np.invert(circle.astype(bool)))
-        coef1, mat = zernike.zernikeFit(ima, np.arange(10)+1)
+        circle_mask = self._drawCircle(centro, par_radius, image)
+        return circle_mask
 
-        xx, yy = self.coord(image, centro, raggio)
-        mm = (circle==1)
-        coef2 = zernike._surf_fit(xx[mm], yy[mm], image.data[mm], np.arange(10)+1)
-        return coef1, coef2
 
     def fiduciali(self, image):
         image = image.mask
@@ -95,30 +93,6 @@ class ParabolaCirculaPupilFromZernike():
             raggio = axs.mean()
             return centro, axs, raggio
 
-    def coord(self, image, centro, raggio):
-        '''
-        Parameters
-        ----------
-            image: numpy masked array
-            centro: numpy array
-                     coordinates of the center
-            raggio: int
-                 radius of the parabola circumference
-
-        Returns
-        -------
-            xx: numpy array
-                coordinate x della parabola
-            yy: numpy array
-                coordinate y della parabola
-        '''
-        raggio = raggio / self._rFiducialPoint
-        size = np.array([image.shape[0], image.shape[1]])
-        ima_x = np.arange(size[0], dtype = float)
-        ima_y = np.arange(size[1], dtype = float)
-        xx = (np.tile(ima_x, (size[0], 1))-centro[0]) / raggio
-        yy = (np.tile(ima_y, (size[1], 1)).T-centro[1]) / raggio
-        return xx, yy
 
     def _drawCircle(self, centro, raggio, image):
         '''
@@ -131,7 +105,7 @@ class ParabolaCirculaPupilFromZernike():
             circle = circle of one to display
         '''
         circle = np.zeros((image.shape[0], image.shape[1]))
-        rr, cc = draw_circle((centro[1], centro[0]), raggio/self._rFiducialPoint)
+        rr, cc = draw_circle((centro[1], centro[0]), raggio)
         circle[rr, cc] = 1
         return circle
 

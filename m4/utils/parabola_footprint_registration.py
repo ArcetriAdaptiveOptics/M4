@@ -161,6 +161,10 @@ class ParabolaFootprintRegistration():
         mask = ~mask_not
         mask_float = np.array(mask, dtype='float')
         difference = (ott_image - 2*cgh_on_ott)*mask_float*632.8e-9
+        rms_diff = np.std(difference[mask])
+        rms_ott = np.std(ott_image[mask]*632.8e-9)
+        rms_cgh = np.std(cgh_image[mask]*632.8e-9)
+        print("Ott_image rms = %g, gch_image rms = %g, Difference rms = %g" %(rms_ott, rms_cgh, rms_diff))
         return cgh_on_ott, mask_float, difference
 
     def show_results(self, cgh_image, cgh_on_ott, ott_image,
@@ -187,6 +191,7 @@ class ParabolaFootprintRegistration():
         ott_path = os.path.join(self._storageFolder(), f2)
         cgh_image = np.loadtxt(cgh_path)
         ott_image = np.loadtxt(ott_path)
+
 
         cgh_flip = np.flip(np.flip(cgh_image, axis=0), axis=1)
         return cgh_flip, ott_image
