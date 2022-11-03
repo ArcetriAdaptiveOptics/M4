@@ -3,14 +3,14 @@ Authors
   - M. Xompero: written in 2022
 '''
 import os
-import numpy as np
-import scipy
+#import numpy as np
+#import scipy
 import scipy.linalg
 from matplotlib.pyplot import *
-import matplotlib as mpl
+#import matplotlib as mpl
 from astropy.io import fits
 import pandas as pd
-from skimage import draw
+#from skimage import draw
 from skimage.measure import label, regionprops, regionprops_table
 from m4.configuration import config_folder_names as fold_name
 
@@ -81,11 +81,11 @@ class ParabolaFootprintRegistration():
             print('\nARTE Module was installed. Using it.')
 
             sf = ShapeFitter(cgh_not_blobs)
-            sf.fit()
-            params_cgh = sf.params()
+            sf.fit_circle_correlation() #era sf.fit
+            params_cgh = sf.parameters()
             sf = ShapeFitter(ott_not_blobs)
-            sf.fit()
-            self._params_ott = sf.params()
+            sf.fit_circle_correlation() #era sf.fit
+            params_ott = sf.parameters()
         except ImportError:
             print('\nThere was no ARTE module installed. Used pre-computed values')
             params_cgh = np.array([1022.99196625, 1023.9987704,   571.2935786 ])
@@ -105,7 +105,7 @@ class ParabolaFootprintRegistration():
         new_y = (np.arange(npix)-params_cgh[1])/zoom+params_cgh[1]
         cgh_resampled = np.array(fit2d(new_x, new_y) > 0.5, dtype='float')
 
-        cgh_resampled_blobs = label(cgh_resampled == 0) 
+        cgh_resampled_blobs = label(cgh_resampled == 0)
         properties =['area','centroid',
                      'major_axis_length', 'minor_axis_length',
                      'eccentricity','bbox']
@@ -186,6 +186,8 @@ class ParabolaFootprintRegistration():
         '''
         f1 = 'CCD_PAR_test_21markers_5mm_grid.txt'
         f2 = 'CCD_OTT_21markers_5mm_grid.txt'
+
+        f1 = 'CCD_PAR_test_21markers_5mm_grid_shell_0deg.txt'
 
         cgh_path = os.path.join(self._storageFolder(), f1)
         ott_path = os.path.join(self._storageFolder(), f2)

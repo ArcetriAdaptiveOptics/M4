@@ -6,7 +6,7 @@ Authors
 import numpy as np
 import pandas as pd
 from skimage.measure import label, regionprops_table
-from m4.ground import zernike
+#from m4.ground import zernike
 from m4.ground import geo
 from numpy.linalg import eig, inv
 from skimage.draw import disk as draw_circle
