@@ -247,3 +247,9 @@ class configuration_path():
         else:
             return os.path.join(self.OPT_DATA_FOLDER, 'SimDataCalibDM')
 
+    @property
+    def PARABOLA_FOOTPRINT_REGISTRATION_FOLDER(self):
+        if 'parabola_footprint_registration' in self._conf.keys():
+            return self._conf['parabola_footprint_registration']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'ParabolaFootprintRegistration')

@@ -13,6 +13,7 @@ import pandas as pd
 #from skimage import draw
 from skimage.measure import label, regionprops, regionprops_table
 from m4.configuration import config_folder_names as fold_name
+from m4.ground import tracking_number_folder
 
 
 class ParabolaFootprintRegistration():
@@ -33,11 +34,15 @@ class ParabolaFootprintRegistration():
         self._grid_y = None
         self._params_cgh = None
         self._params_ott = None
+        #results
+        self._rms_ott = None
+        self._rms_cgh = None
+        self._rms_diff = None
 
     @staticmethod
     def _storageFolder():
         """ Folder for data"""
-        return fold_name.ALL_CALIBRATION_DATA_ROOT_FOLDER
+        return fold_name.PARABOLA_FOOTPRINT_REGISTRATION_FOLDER
         #return '/Volumes/My Passport/M4/Data/M4Data'
 
     def main(self):
@@ -48,6 +53,7 @@ class ParabolaFootprintRegistration():
                                                                    cgh_not_blobs, polycoeff)
         self.show_results(cgh_image, cgh_on_ott, ott_image,
                           mask_float, difference)
+        self._saveData(cgh_on_ott)
         return cgh_on_ott, difference
 
     def marker_finder(self, cgh_image, ott_image):
@@ -147,7 +153,7 @@ class ParabolaFootprintRegistration():
         from scipy.interpolate import LinearNDInterpolator
         from scipy.spatial import Delaunay
 
-        npix =  np.max(cgh_image.shape)
+        npix = np.max(cgh_image.shape)
         grid_x, grid_y = np.mgrid[0:npix:1, 0:npix:1]
         idw = cgh_not_blobs == 1
         coord_mat = self._expandbase(grid_x[idw], grid_y[idw])
@@ -161,10 +167,10 @@ class ParabolaFootprintRegistration():
         mask = ~mask_not
         mask_float = np.array(mask, dtype='float')
         difference = (ott_image - 2*cgh_on_ott)*mask_float*632.8e-9
-        rms_diff = np.std(difference[mask])
-        rms_ott = np.std(ott_image[mask]*632.8e-9)
-        rms_cgh = np.std(cgh_image[mask]*632.8e-9)
-        print("Ott_image rms = %g, gch_image rms = %g, Difference rms = %g" %(rms_ott, rms_cgh, rms_diff))
+        self._rms_diff = np.std(difference[mask])
+        self._rms_ott = np.std(ott_image[mask]*632.8e-9)
+        self._rms_cgh = np.std(cgh_image[mask]*632.8e-9)
+        print("Ott_image rms = %g, gch_image rms = %g, Difference rms = %g" %(self._rms_ott, self._rms_cgh, self._rms_diff))
         return cgh_on_ott, mask_float, difference
 
     def show_results(self, cgh_image, cgh_on_ott, ott_image,
@@ -187,7 +193,7 @@ class ParabolaFootprintRegistration():
         f1 = 'CCD_PAR_test_21markers_5mm_grid.txt'
         f2 = 'CCD_OTT_21markers_5mm_grid.txt'
 
-        f1 = 'CCD_PAR_test_21markers_5mm_grid_shell_0deg.txt'
+        #f1 = 'CCD_PAR_test_21markers_5mm_grid_shell_0deg.txt'
 
         cgh_path = os.path.join(self._storageFolder(), f1)
         ott_path = os.path.join(self._storageFolder(), f2)
@@ -199,28 +205,42 @@ class ParabolaFootprintRegistration():
         return cgh_flip, ott_image
 
     def plot_difference_and_marker_view(self, difference):
-        def crop_on_radius (params_ott,npix):
+        def crop_on_radius(npix):
             return ((self._grid_x-self._params_ott[0])**2+
                     (self._grid_y-self._params_ott[1])**2) < (self._params_ott[2]-npix)**2
-            
+
         figure(figsize=(10,10))
-        npix2crop=5
-        cropmask = crop_on_radius(self._params_ott,npix2crop)
+        npix2crop = 5
+        cropmask = crop_on_radius(npix2crop)
         cropmask_float = np.array(cropmask, dtype='float')
         difference_crop = difference * cropmask_float
         imshow(difference_crop)
-        title("difference: edge crop %d, std [nm]: %g" %  (npix2crop, np.std(difference_crop[cropmask])))
+        title("difference: edge crop %d, std [nm]: %g" %(npix2crop, np.std(difference_crop[cropmask])))
         colorbar()
 
         nrow = np.int32(np.ceil(self._nmarkers/3))
         fig,axs = subplots(nrow, 3, figsize=(15,5*nrow))
         ottbbox = np.array(
-            [self._ottf_df['bbox-0'][self._sel_ott],self._ottf_df['bbox-1'][self._sel_ott],
-             self._ottf_df['bbox-2'][self._sel_ott],self._ottf_df['bbox-3'][self._sel_ott]]
+            [self._ottf_df['bbox-0'][self._sel_ott],
+             self._ottf_df['bbox-1'][self._sel_ott],
+             self._ottf_df['bbox-2'][self._sel_ott],
+             self._ottf_df['bbox-3'][self._sel_ott]]
             )
         for ii in np.arange(self._nmarkers):
-            
             caxs = axs[int(ii/3), int(ii % 3)]
             caxs.imshow(difference_crop[
-                ottbbox[0,ii]-50:ottbbox[2,ii]+50, ottbbox[1,ii]-50:ottbbox[3,ii]+50
-    ])
+                ottbbox[0,ii]-50:ottbbox[2,ii]+50,
+                ottbbox[1,ii]-50:ottbbox[3,ii]+50
+                ])
+
+    def _saveData(self, cgh_on_ott):
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(self._storageFolder())
+
+        #info
+        fits_file_name = os.path.join(dove, 'final rms.txt')
+        file = open(fits_file_name, 'w+')
+        file.write(" Ott_image rms = %g\n gch_image rms = %g\n Difference rms = %g" %(self._rms_ott, self._rms_cgh, self._rms_diff))
+        file.close()
+        #data
+        fits_file_name = os.path.join(dove, 'cgh_on_ott.fits')
+        fits.writeto(fits_file_name, cgh_on_ott)
