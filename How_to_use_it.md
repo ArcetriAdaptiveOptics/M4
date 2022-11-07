@@ -125,7 +125,6 @@ di acquisizione
 ### Analisi ###
 Per ottenere la classe che permette di fare l'analisi dati della mini ott è necessario usare i comandi
 ```
-	
 	from m4.mini_ott.analysis import Analysis
 	an = Analysis(tt)
 ```
@@ -133,7 +132,6 @@ To be continued
 
 ### Spider Test ###
 ```
-	
 	from m4.mini_OTT.spider_test import SpiderTest()
     sp = SpiderTest()
 ```
@@ -141,7 +139,6 @@ To be continued
 ### Analisi dei requisiti ###
 Con i comandi
 ```
-	
 	from m4.main import requirements_checker as rc
 	rc.analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=None)
 ```
@@ -151,7 +148,6 @@ creata sottraendo tra loro i due cubi creati con la metà del numero di misure i
 precedentemente salvata nella cartella con le misure,  
 NOTA: l'immagine di offset viene creata con i seguenti comandi
 ```
-
 	from m4.analyzers import requirement_analyzer as ra
 	ra.imageOpticOffset(data_file_path, start, stop)
 ```
@@ -165,7 +161,6 @@ delle misure da analizzare). Le immagini robuste vengono analizzate e vengono au
 
 Nel caso in cui si voglia applicare l'analisi dei requisiti avando a disposizione una sola immagine utilizzare
 ```
-
 	from m4.analyzers import requirement_analyzer as ra
 	slope = ra.test242(image, pscale)
 	diff_piston = ra.diffPiston(image)
@@ -205,9 +200,8 @@ Di seguito alcune indicazione su dove trovare/come usare alcuni dispositivi coll
 
 ## Accelerometri ##
  __Acquisizione dati__
- ```
- 
- ott.accelerometrs.acquireData(recording_seconds)
+```
+ott.accelerometrs.acquireData(recording_seconds)
 ```
  Nota: se non specificato acquisisce per 5 secondi
  - L'acquisizione restituisce il tracking number della misura appena effettuata dove sono salvati:
@@ -216,7 +210,6 @@ Di seguito alcune indicazione su dove trovare/come usare alcuni dispositivi coll
  
  __Analisi dati__
  ```
- 
  from m4.analyzers.accelerometers_data_analyzer import AccelerometersDataAnalyzer
  an = AccelerometersDataAnalyzer(tt)
  ```
@@ -234,7 +227,6 @@ Il repositorio contenente il codice SPL si trova in ArcetriAdaptiveOptics al seg
 ### 4D PhaseCam 6110 ###
 In case you want to use the full functionality of the device use:
 ```
-
 from m4.devices.i4d import I4D
 from m4.configuration.ott_parameters import Interferometer
 interf = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
@@ -252,7 +244,6 @@ NOTA: in Arcetri i4d_IP = '193.206.155.193' e i4d_port = 8011
 
 For the simple case of capturing and saving an image use:
 ```
-
 from m4.devices.interferometer import I4d6110()
 i4d6110 = I4d6110()
 ```
@@ -260,11 +251,11 @@ i4d6110 = I4d6110()
 the "i4d6110" class contains the command for acquisition (i4d6110.acquire_phasemap()) and saving fits file (i4d6110.save_phasemap(location, file_name, masked_image)).
 
 ###### Read saved files
-- .h5 files:
+- .4D files:
 ```
 from m4.ground.read_data import InterferometerConverter
 ic = InterferometerConverter()
-image = ic.fromNew4D(i4dfilename)
+image = ic.fromPhaseCam6110(i4dfilename)
 ```
 - .fits files:
 ```
@@ -274,6 +265,11 @@ image = read_data.readFits_maskedImage(fits_file_path)
 # Gestione delle immagini #
 
 __Zernike__
+```
+from m4.ground import zernike
+coeff, mat = zernike.zernikeFit(img, zernike_index_vector)
+surf_image = zernike.zernikeSurface(img, coef, mat)
+```
 
 __ROI__
 
