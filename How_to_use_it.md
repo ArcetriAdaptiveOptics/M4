@@ -57,31 +57,7 @@
 3) __Calibrazione M4__
 
 4) __Allineamento M4__
-
-
- ## Accelerometri ##
- __Acquisizione dati__
- ```
  
- ott.accelerometrs.acquireData(recording_seconds)
-```
- Nota: se non specificato acquisisce per 5 secondi
- - L'acquisizione restituisce il tracking number della misura appena effettuata dove sono salvati:
- 	i dati, dt, plc_id, directions, time, plc_range, plc_totcounts, sensitivity
- 	
- 
- __Analisi dati__
- ```
- 
- from m4.analyzers.accelerometers_data_analyzer import AccelerometersDataAnalyzer
- an = AccelerometersDataAnalyzer(tt)
- ```
- - Dopodichè si hanno a disposizione diversi modi di accedere/vedere i dati
-  	- spe, freq = an.getSpecAndFreq() 
-  	- data = an.datah5
-  	- an.plot_power_spectrum()
-  	- an.readAndShow()  
-Nota: l'analisi non salva nulla
  
  ## Attività su mOTT ##
  
@@ -224,23 +200,39 @@ Le funzione per l'analisi del rumore si ottengono con il comando _from m4 import
 	Ad ogni immagine presente nella cartella viene sottratto tip e til e ne viene calcolata la media: del vettore ottenuto viene fatto
 	e visualizzato lo spettro.
 
- ## SPL ##
- Attraverso la funzione m4.SPL_controller si hanno a dispposizione le funzioni necessarie alla creazione degli oggetti di interessse (camera e filtro tunabile)
- e la funzione per l'acquisizione delle immagini con la camera e l'analisi per ottenere il valore di pistone.
+# Dispositivi #
+Di seguito alcune indicazione su dove trovare/come usare alcuni dispositivi collegati al progetto.
+
+## Accelerometri ##
+ __Acquisizione dati__
  ```
-	
-	from m4 import SPL_controller as s
-	camera = s.define_camera()
-	filter = s.define_filter()
-	tt, piston = s.SPL_measurement_and_analysis(camera, filter)
+ 
+ ott.accelerometrs.acquireData(recording_seconds)
 ```
-I dati acquisiti vengono salvati in BASE_PATH/Data/M4Data/OPTData/SPL/tt che contiene: le immagini acquisite con la camera alle diverse lunghezze d'onda
-selezionate al momento dell'acquisizione (imagenm), il vettore delle lunghezze d'onda usate (lambda_vector.fits), la matrice con le frangie calcolate
-(fringe.fits) e i vettori contenenti il risultato di pistone e pistone smooth (pistonresult.fits)
+ Nota: se non specificato acquisisce per 5 secondi
+ - L'acquisizione restituisce il tracking number della misura appena effettuata dove sono salvati:
+ 	i dati, dt, plc_id, directions, time, plc_range, plc_totcounts, sensitivity
+ 	
+ 
+ __Analisi dati__
+ ```
+ 
+ from m4.analyzers.accelerometers_data_analyzer import AccelerometersDataAnalyzer
+ an = AccelerometersDataAnalyzer(tt)
+ ```
+ - Dopodichè si hanno a disposizione diversi modi di accedere/vedere i dati
+  	- spe, freq = an.getSpecAndFreq() 
+  	- data = an.datah5
+  	- an.plot_power_spectrum()
+  	- an.readAndShow()  
+Nota: l'analisi non salva nulla
+
+## SPL ##
+Il repositorio contenente il codice SPL si trova in ArcetriAdaptiveOptics al seguente [link](https://github.com/ArcetriAdaptiveOptics/SPL).
 
 ## Interferometro ##
 ### 4D PhaseCam 6110 ###
-I comandi da utilizzare sono:
+In case you want to use the full functionality of the device use:
 ```
 
 from m4.devices.i4d import I4D
@@ -257,3 +249,34 @@ the "burst" instruction requires the full absolute destination path, including t
 the "convert" instruction requires the full absolute destination path, including the folder to be created and where to store the phasemaps
 
 NOTA: in Arcetri i4d_IP = '193.206.155.193' e i4d_port = 8011
+
+For the simple case of capturing and saving an image use:
+```
+
+from m4.devices.interferometer import I4d6110()
+i4d6110 = I4d6110()
+```
+
+the "i4d6110" class contains the command for acquisition (i4d6110.acquire_phasemap()) and saving fits file (i4d6110.save_phasemap(location, file_name, masked_image)).
+
+###### read saved files
+- .h5 files:
+```
+
+from m4.ground.read_data import InterferometerConverter
+ic = InterferometerConverter()
+image = ic.fromNew4D(i4dfilename)
+```
+- .fits files:
+```
+
+from m4.ground import read_data
+image = read_data.readFits_maskedImage(fits_file_path)
+
+# Gestione delle immagini #
+
+__Zernike__
+
+__ROI__
+
+__Maschere__

@@ -21,7 +21,7 @@ Per scaricare i cambiamenti presenti su github:
   - from m4 import main
   - main.start_log(logging_level) NOTA: ritorna il cammino del file di log
 
-Leggere How_to_use_it.txt per l'utilizzo di tutte le funzioni specifiche.
+Leggere How_to_use_it.md per l'utilizzo di tutte le funzioni specifiche.
 
 ## COVERAGE
 [![Build Status](https://travis-ci.org/codecov/sourcegraph-codecov.svg?branch=master)](https://codecov.io/gh/ChiaraSelmi/M4/)

@@ -28,6 +28,18 @@ class ParabolaCirculaPupil():
         self._nmarkers = None
 
     def par_mask_on_ott(self, image):
+        ''' NOTE: this function uses the parameter INNER_MARKERS_REJECTION_RADIUS
+            to hide the central markers
+
+        Parameters
+        ----------
+        image: numpy masked array
+
+        Returns
+        -------
+        circle_mask: numpy array
+            circolar mask representing the parabola
+        '''
         image_masked_central_fid = geo.draw_mask(image, np.int(image.shape[0]/2), np.int(image.shape[1]/2),
                                                 OttParameters.INNER_MARKERS_REJECTION_RADIUS)
         imaf = self.fiduciali(image_masked_central_fid)
@@ -39,6 +51,17 @@ class ParabolaCirculaPupil():
 
 
     def fiduciali(self, image):
+        ''' Function to obtain the position of parabola markers
+        Parameters
+        ----------
+        image: numpy masked array
+            image on which to search for markers
+
+        Returns
+        -------
+        imaf: numpy array [2, n_markers]
+            x and y coordinates for markers
+        '''
         image = image.mask
         image_not_blobs = label(image == 0)
         image_blobs = label(image != 0)
