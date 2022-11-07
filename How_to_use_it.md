@@ -259,20 +259,18 @@ i4d6110 = I4d6110()
 
 the "i4d6110" class contains the command for acquisition (i4d6110.acquire_phasemap()) and saving fits file (i4d6110.save_phasemap(location, file_name, masked_image)).
 
-###### read saved files
+###### Read saved files
 - .h5 files:
 ```
-
 from m4.ground.read_data import InterferometerConverter
 ic = InterferometerConverter()
 image = ic.fromNew4D(i4dfilename)
 ```
 - .fits files:
 ```
-
 from m4.ground import read_data
 image = read_data.readFits_maskedImage(fits_file_path)
-
+```
 # Gestione delle immagini #
 
 __Zernike__
