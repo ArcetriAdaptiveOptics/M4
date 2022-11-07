@@ -12,7 +12,7 @@ from m4.ground import read_data
 from m4.ground.read_data import InterferometerConverter
 from m4.utils.influence_functions_maker import IFFunctionsMaker
 from m4.utils.roi import ROI
-from m4.utils.img_redux import TipTiltDetrend
+from m4.utils.image_reducer import TipTiltDetrend
 from m4.configuration import config_folder_names as fold_name
 
 
@@ -240,7 +240,7 @@ class AnalyzerIFF():
         if fold_name.simulated==1:
             image = self._ic.fromFakeInterf(filename+'.fits')
         else:
-            image = self._ic.from4D(filename+'.h5')
+            image = self._ic.fromPhaseCam4020(filename+'.h5')
         return image
 
     def _logCubeCreation(self, tiptilt_detrend=None, phase_ambiguity=None):

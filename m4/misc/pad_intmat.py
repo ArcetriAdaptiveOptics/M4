@@ -15,7 +15,7 @@ base = '/mnt/data/M4/Data/M4Data/OPTData/PAR_Meas/20220802/'
 
 def parzmodes(fname):
 #    base = '/mnt/data/M4/Data/M4Data/OPTData/PAR_Meas/20220620/'
-    img=ic.fromNew4D(base+fname)
+    img = ic.fromPhaseCam6110(base+fname)
     #x0,y0,r,xx,yy = geo.qpupil(img.mask)
     mask = np.invert(img.mask).astype(int)
     cx,cy = [950,950]
@@ -101,9 +101,3 @@ cmat1 = np.matmul(cmat, rmat.T)
 #  
 # invmat2 = np.linalg.pinv(ccm)
 # cmd2 = np.matmul(invmat2, pz0m)
-
-
-
-
-
-

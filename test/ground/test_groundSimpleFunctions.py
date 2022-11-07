@@ -41,9 +41,9 @@ class Test(unittest.TestCase):
     def testReadData(self):
         ic = read_data.InterferometerConverter()
         file_path = os.path.join(testDataRootDir(), 'img_0046.h5')
-        ima = ic.from4D(file_path)
+        ima = ic.fromPhaseCam4020(file_path)
         file_path = os.path.join(testDataRootDir(), '0.4D')
-        ima2 = ic.fromNew4D(file_path)
+        ima2 = ic.fromPhaseCam6110(file_path)
 
     def testSmoothFunction(self):
         data = np.arange(100)

@@ -19,26 +19,26 @@ class TimeHist():
     Class to 
     HOW TO USE IT::
 
-        
+
     '''
 
     def __init__(self, tn):
         """The constructor """
         self.tracknum = tn
-         
+
         self._fold  = findTracknum(tn)
         self._path = a+ self._fold
         self._list = fileList(tn)
-        
+
     def frame(self, id):
-        
+
         return frame(id, self._list)
-        
+
     def averageFrames(self, start, stop):
     	
         return averageFrames(start, stop, self._list)
 
-    
+
 
     #@staticmethod
     #def _storageFolder():
@@ -94,11 +94,11 @@ def fileList(tn, fold=None):
         if fold == 'OPDImages':
             addfold = '/hdf5/'
             name = 'img*'
-            
+
     fold1 = fold+'/'+tn+addfold   #to be re-checked at OTT!! 
     lsdir = sorted(glob.glob(fold1+name), key=lambda x: int(os.path.basename(x).split('/')[-1].split('.')[0]))
     #lsdir = lsdir[0]
-     
+
     return lsdir
 
 def read_phasemap(filename, thefold = None):
@@ -113,17 +113,17 @@ def read_phasemap(filename, thefold = None):
         mask = np.zeros(img.shape, dtype=np.bool)
         mask[np.where(img == img.max())] = True
         img = np.ma.masked_array(img, mask=mask)
-       
-        
+
+
         hduList.close()
-        
+
     if thetype == '4D':
         print('4D')
-        img = ic.fromNew4D(filename)
+        img = ic.fromPhaseCam6110(filename)
 
     if thetype == 'h5':
-        img = ic.from4D(filename)
-    
+        img = ic.fromPhaseCam4020(filename)
+
     return img
 
 def averageFrames(first, last, fileList, thresh=None):

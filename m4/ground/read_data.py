@@ -27,7 +27,7 @@ def read_phasemap(file_path, ext=0):
     if ext == 0:
         image = readFits_maskedImage(file_path)
     else:
-        image = InterferometerConverter.from4D(file_path)
+        image = InterferometerConverter.fromPhaseCam6110(file_path)
 #         hf = h5py.File(file_path, 'r')
 #         hf.keys()
 #         data1 = hf.get('dataset_1')
@@ -133,7 +133,7 @@ class InterferometerConverter():
     """ Class to use to convert H5 files to masked array"""
 
     @staticmethod
-    def from4D(h5filename):
+    def fromPhaseCam4020(h5filename):
         """
         Function for PhaseCam4020
         Parameters
@@ -155,7 +155,7 @@ class InterferometerConverter():
         return ima
 
     @staticmethod
-    def fromNew4D(i4dfilename):
+    def fromPhaseCam6110(i4dfilename):
         """
         Function for PhaseCam6110
         Parameters

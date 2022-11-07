@@ -108,7 +108,7 @@ class I4d4020(BaseInterferometer):
         shutil.rmtree(fName + '/hdf5')
         shutil.rmtree(fName + '/raw')
 
-        return self._ic.from4D('/tmp/prova4d_m00.h5')
+        return self._ic.fromPhaseCam4020('/tmp/prova4d_m00.h5')
 
 
 class I4d6110(BaseInterferometer):

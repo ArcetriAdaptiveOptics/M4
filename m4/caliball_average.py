@@ -9,11 +9,11 @@ import logging
 import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
-from m4.utils.img_redux import TipTiltDetrend
+from m4.utils.image_reducer import TipTiltDetrend
 from m4.ground import zernike
 from m4.configuration import config_folder_names as fold_name
 from m4.ground.read_data import InterferometerConverter
-from m4.utils import tip_tilt_interf_fit
+from m4.misc import tip_tilt_interf_fit
 
 class Caliball():
     """
@@ -224,7 +224,7 @@ class Caliball():
         for i in range(len(list)-1):
             name = 'img_%04d.h5' %i
             file_name = os.path.join(fold, name)
-            ima = self._ic.from4D(file_name)
+            ima = self._ic.fromPhaseCam4020(file_name)
             if cube is None:
                 cube = ima
             else:

@@ -466,5 +466,5 @@ class Noise():
         if fold_name.simulated==1:
             image = self._ic.fromFakeInterf(filename +'.fits')
         else:
-            image = self._ic.from4D(filename + '.h5')
+            image = self._ic.fromPhaseCam4020(filename + '.h5')
         return image
