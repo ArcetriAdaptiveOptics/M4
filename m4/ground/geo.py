@@ -109,7 +109,7 @@ def _trova_punti_bordi_ima2(image, imagePixels):
     return cut
 
 
-## Funtions fro Runa ##
+## Funtions from Runa ##
 def draw_mask(img, cx, cy, r, out=0):
     """ Function to create circular mask
     Created by Runa

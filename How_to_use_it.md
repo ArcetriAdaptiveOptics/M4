@@ -2,20 +2,18 @@
  1) __Calibrazione della parabola con lo specchio di riferimento__
     - Scegliere un vettore di comandi con cui calibrare i gradi di libertà della parabola (PAR) e quello dello specchio di riferimento (RM).
  		 ```
-	 
  		  command_amp_vector = np.array([par_piston, par_tip, par_tilt, rm_tip, rm_tilt])
- 		  
+ 		  ```
 
 	espressi in [mm, arcsec, arcsec, arcsec, arcsec]  
  	NOTA: tenere presente che il metodo di calibrazione usato prevede che all'applicazione del comando par_tip corrisponda un'applicazione del comando rm_tip=-2.05*par_tip. Stessa relazione sussiste tra par_tilt ed rm_tilt.
     - Possibiltà di visualizzazione della matrice dei comandi di calibrazione prima dell'effetiva applicazione tramite il comando
  		  ```
- 		  
  		  main.showCommandMatrixBeforeCalibration(command_amp_vector)
+ 		  ```
  
     - Il comando per effettuare la calibrazione è
       ```
-      
       main.calibrate_PARAndRM(ott, interf, n_frames, command_amp_vector, nPushPull)
       ```
       dove:  
@@ -31,7 +29,6 @@
  2) __Allineamento della parabola e specchio di riferimento__
  	- Prima di allineare è possibile calcolare i comandi di allineamento di parabola e specchio di riferimento tramite il comando
  		```
- 		
  		main.showCommandForParAndRmBeforeAlignement(ott, interf, tt_cal, n_images, zernike_to_be_corrected, dof_command_id)
  		```
  		dove:  
@@ -44,7 +41,6 @@
  			e vanno in coppia con i dof [3,4], [1,2,3,4], [0,1,2,3,4]
     - Il comando per effettuare l'allineamento è
     ```
-    
     main.align_PARAndRM(ott, interf, tt_calib, n_images, zernike_to_be_corrected=None, dof_command_id=None)
     ```
     - La funzione stampa i comandi applicati a PAR e RM, gli zernike calcolati e restituisce il traching number della misura di allineamento appena eseguita
@@ -69,7 +65,6 @@ tilt = [tilt at angle0, tilt at angle1 ...]) vengono utilizzati per fittare l'el
 In questo modo è possibile conoscere come muovere le viti dello spider per riallineare la L3.
 - I comandi per eseguire la misura e l'analisi sono:
 	```
-	
 	from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
     ro = RotOptAlign(ott, interf)
     tt = ro.image_acquisition(start_point, end_point, n_points)
@@ -83,7 +78,6 @@ In questo modo è possibile conoscere come muovere le viti dello spider per rial
   centro, axs e raggio corrispondono agli output del fitting dell'ellisse sui vettori di tip e tilt ottenuti con le misure effettuate
 - Per analizzare nuovamente una misura di cui si conosce il tracking number usare:
 	```
-	
 	from m4.utils.rotation_and_optical_axis_alignment import RotOptAlign
 	ro = RotOptAlign.reloadROObject(tt)
 	centro, axs, raggio = ro.data_analyzer()
@@ -93,9 +87,8 @@ NOTA: per maggiori informazioni fare riferimento anche alla seguente [pagina wik
 ### Misure ###
 Per ottenere la classe che permette di fare le acquisizioni dati sulla mini ott è necessario usare i comandi
 ```
-	
-	from m4.mini_ott.measurements import Measurements
-	meas = Measurements(ott, interf)
+from m4.mini_ott.measurements import Measurements
+meas = Measurements(ott, interf)
 ```
 - meas.opticalMonitoring(n_images, delay): in ingresso alla funzione si stabilisce il numero di misure da mediare durante l' acquisire e il ritardo
 in secondi tra una acquisizione ed un altra. La funzione salva le immagini nella cartella OPD_SERIES e, per ogni acquisizione, viengono salvati i
@@ -125,22 +118,22 @@ di acquisizione
 ### Analisi ###
 Per ottenere la classe che permette di fare l'analisi dati della mini ott è necessario usare i comandi
 ```
-	from m4.mini_ott.analysis import Analysis
-	an = Analysis(tt)
+from m4.mini_ott.analysis import Analysis
+an = Analysis(tt)
 ```
 To be continued
 
 ### Spider Test ###
 ```
-	from m4.mini_OTT.spider_test import SpiderTest()
-    sp = SpiderTest()
+from m4.mini_OTT.spider_test import SpiderTest()
+sp = SpiderTest()
 ```
 
 ### Analisi dei requisiti ###
 Con i comandi
 ```
-	from m4.main import requirements_checker as rc
-	rc.analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=None)
+from m4.main import requirements_checker as rc
+rc.analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=None)
 ```
 dove zernike_vector_to_subtract è il vettore degli zernike che si vuole sottrarre all'immagine robusta, step è la distanza tra le patches (necessaria 
 per il calcolo del raggio di curvatura e dell'rms interactuator) e piston distingue il metodo di creazione dell'immagine robusta: se è None l'immagine viene
@@ -148,8 +141,8 @@ creata sottraendo tra loro i due cubi creati con la metà del numero di misure i
 precedentemente salvata nella cartella con le misure,  
 NOTA: l'immagine di offset viene creata con i seguenti comandi
 ```
-	from m4.analyzers import requirement_analyzer as ra
-	ra.imageOpticOffset(data_file_path, start, stop)
+from m4.analyzers import requirement_analyzer as ra
+ra.imageOpticOffset(data_file_path, start, stop)
 ```
 è possibile utilizzare una procedura standard che prevede la creazione di tre immagini robuste (create utilizzando 50, 100 e 300 file presenti nella cartella
 delle misure da analizzare). Le immagini robuste vengono analizzate e vengono automaticamente plottati e salvati i seguenti risultati:  
@@ -161,12 +154,12 @@ delle misure da analizzare). Le immagini robuste vengono analizzate e vengono au
 
 Nel caso in cui si voglia applicare l'analisi dei requisiti avando a disposizione una sola immagine utilizzare
 ```
-	from m4.analyzers import requirement_analyzer as ra
-	slope = ra.test242(image, pscale)
-	diff_piston = ra.diffPiston(image)
-	roc = ra.test283(image, pscale, step)
-	rms31 = ra.test243(image, 0.015, pscale, step, n_patches)
-	rms500 = ra.est243(image, 0.1, pscale, step, n_patches)
+from m4.analyzers import requirement_analyzer as ra
+slope = ra.test242(image, pscale)
+diff_piston = ra.diffPiston(image)
+roc = ra.test283(image, pscale, step)
+rms31 = ra.test243(image, 0.015, pscale, step, n_patches)
+rms500 = ra.est243(image, 0.1, pscale, step, n_patches)
 ```
 NOTA: per maggiori informazioni fare riferimento anche alla seguente [pagina wiki](https://redmine.ict.inaf.it/projects/adopt_oaa/wiki/MOTT-20210408)
 
@@ -262,15 +255,38 @@ image = ic.fromPhaseCam6110(i4dfilename)
 from m4.ground import read_data
 image = read_data.readFits_maskedImage(fits_file_path)
 ```
+
 # Gestione delle immagini #
 
 __Zernike__
 ```
 from m4.ground import zernike
 coeff, mat = zernike.zernikeFit(img, zernike_index_vector)
+or
+coeff, mat = zernikeFitAuxmask(img, auxmask, zernike_index_vector)
 surf_image = zernike.zernikeSurface(img, coef, mat)
 ```
 
 __ROI__
+```
+from m4.utils.roi import ROI
+roi = ROI()
+roi.automatical_roi_selection(image, segment_view, ref_mirror_in)
+```
+where segment_view and ref_mirror_in are boolean that decribes the input image.
+The function return:
+- roi_dx, roi_sx, roi_c, roi_rm in the case of segment_view=True and ref_mirror_in=True or False
+- segRoiList, roi_rm in the case of segment_view=False and ref_mirror_in=True of only segRoiList for segment_view=False and ref_mirror_in=False
 
-__Maschere__
+__Masks__
+- Mask the image with a circular mask:
+```
+from m4.ground import geo
+masked_image = draw_mask(start_image, centre_x, centre_y, radius)
+```
+- Extracting the parabola mask using markers:
+```
+from m4.utils.parabola_identification import ParabolaCirculaPupil
+pz = ParabolaCirculaPupil()
+circle_mask = pz.par_mask_on_ott(image)
+```

@@ -54,7 +54,7 @@ def zernikeFit(img, zernike_index_vector, qpupil=True):
     mat = _getZernike(xx[mm], yy[mm], zernike_index_vector)
     return coeff, mat
 
-def zernikeFitAuxmask(img, auxmask,zernike_index_vector):
+def zernikeFitAuxmask(img, auxmask, zernike_index_vector):
     '''
     Parameters
     ----------
