@@ -3,7 +3,7 @@
     - Scegliere un vettore di comandi con cui calibrare i gradi di libertà della parabola (PAR) e quello dello specchio di riferimento (RM).
  		 ```
  		  command_amp_vector = np.array([par_piston, par_tip, par_tilt, rm_tip, rm_tilt])
- 		  ```
+ 		 ```
 
 	espressi in [mm, arcsec, arcsec, arcsec, arcsec]  
  	NOTA: tenere presente che il metodo di calibrazione usato prevede che all'applicazione del comando par_tip corrisponda un'applicazione del comando rm_tip=-2.05*par_tip. Stessa relazione sussiste tra par_tilt ed rm_tilt.
@@ -132,11 +132,11 @@ sp = SpiderTest()
 ### Analisi dei requisiti ###
 Con i comandi
 ```
-from m4.main import requirements_checker as rc
+from m4 import requirements_checker as rc
 rc.analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=None)
 ```
 dove zernike_vector_to_subtract è il vettore degli zernike che si vuole sottrarre all'immagine robusta, step è la distanza tra le patches (necessaria 
-per il calcolo del raggio di curvatura e dell'rms interactuator) e piston distingue il metodo di creazione dell'immagine robusta: se è None l'immagine viene
+per il calcolo del raggio di curvatura e dell'rms interactuator) e offset distingue il metodo di creazione dell'immagine robusta: se è None l'immagine viene
 creata sottraendo tra loro i due cubi creati con la metà del numero di misure indicato, altrimenti al numero di misure indicato viene sottratta un'immagine di offset
 precedentemente salvata nella cartella con le misure,  
 NOTA: l'immagine di offset viene creata con i seguenti comandi
@@ -144,7 +144,7 @@ NOTA: l'immagine di offset viene creata con i seguenti comandi
 from m4.analyzers import requirement_analyzer as ra
 ra.imageOpticOffset(data_file_path, start, stop)
 ```
-è possibile utilizzare una procedura standard che prevede la creazione di tre immagini robuste (create utilizzando 50, 100 e 300 file presenti nella cartella
+Offset=None permette di utilizzate la procedura standard che prevede la creazione di tre immagini robuste (create utilizzando 50, 100 e 300 file presenti nella cartella
 delle misure da analizzare). Le immagini robuste vengono analizzate e vengono automaticamente plottati e salvati i seguenti risultati:  
 	- slop  
 	- differential piston  
@@ -152,6 +152,15 @@ delle misure da analizzare). Le immagini robuste vengono analizzate e vengono au
 	- rms at the interactuator scale 31 mm  
 	- rms at the interactuator scale 500 mm  
 
+Nel caso in cui si voglia applicare l'analisi dei requisiti ad una serie di immagini utilizzare la funzione
+```
+slop_list, diff_piston_list, roc_list, rms31, rms500 = rc.fromImagesToReq(image_list, pscale=None, step=None, n_patches=None)
+```
+dove n_patches indica il numero di patches per il secondo taglio (se non indicato viene eseguito un solo taglio al centro dell'immagine)
+Per visualizzare e salvare i valori ottenuti dell'analisi si può sfruttare la funzione rc.plotAndSaveForReqAnalysis(...): usare l'help
+della funzione per maggiori dettagli.
+
+...provare se la procedura sopra descritta funziona anche con una sola immagine (lista di un elemento). Altrimenti usare i comandi qui sotto...
 Nel caso in cui si voglia applicare l'analisi dei requisiti avando a disposizione una sola immagine utilizzare
 ```
 from m4.analyzers import requirement_analyzer as ra

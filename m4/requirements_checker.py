@@ -102,9 +102,9 @@ def fromImagesToReq(image_list, pscale=None, step=None, n_patches=None):
             value of image's pixel scale [px/m]
     step: int
         distance between patches
-    offset: if it is None data analysis is made by split n_images in two
-            else re-reads the offset image saved in the tt folder and subtracts it
-            to each image during cube creation
+    n_patches: int
+        number of patches for the second cut
+        (if it is None sw creates a single crop in the center of the image)
 
     Returns
     -------
