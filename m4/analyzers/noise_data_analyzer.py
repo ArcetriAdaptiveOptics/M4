@@ -10,6 +10,7 @@ import numpy as np
 from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
 from m4.configuration import config_folder_names as fold_name
+from m4.configuration.ott_parameters import Interferometer
 from m4.ground.read_data import InterferometerConverter
 from m4.analyzers.analyzer_iffunctions import AnalyzerIFF
 from m4.ground import zernike
@@ -411,7 +412,7 @@ class Noise():
         if len(list)==0:
             list = glob.glob(os.path.join(data_file_path,'*.fits'))
         image_number = len(list)
-        time = np.arange(image_number) * (1/27.58)
+        time = np.arange(image_number) * (1/Interferometer.BURST_FREQ)
 
         mean_list = []
         for j in range(image_number):

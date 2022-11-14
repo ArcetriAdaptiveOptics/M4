@@ -122,7 +122,7 @@ class I4d6110(BaseInterferometer):
         self._ic = InterferometerConverter()
         self._logger = logging.getLogger('4D')
 
-    def acquire_phasemap(self, nframes=1, show=0):
+    def acquire_phasemap(self, nframes=1, dalay=1):
         """
         Parameters
         ----------
@@ -138,19 +138,28 @@ class I4d6110(BaseInterferometer):
         """
         if nframes == 1:
             width, height, pixel_size_in_microns, data_array = self._i4d.takeSingleMeasurement()
+            masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array)
         else:
-            data_array = np.zeros(4000000)
-            #self._interf.takeAveragedMeasurement(nframes)
+            image_list = []
+            for i in range(nframes):
+                width, height, pixel_size_in_microns, data_array = self._i4d.takeSingleMeasurement()
+                masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array)
+                image_list.append(masked_ima)
+                time.sleep(dalay)
+            masked_ima = np.dstack(image_list)
+
+#         if show != 0:
+#             plt.clf()
+#             plt.imshow(masked_ima, origin='lower')
+#             plt.colorbar()
+        return masked_ima
+
+    def _fromDataArrayToMaskedArray(self, width, height, data_array):
         data = np.reshape(data_array, (width, height))
         idx, idy = np.where(np.isnan(data))
         mask = np.zeros((data.shape[0], data.shape[1]))
         mask[idx, idy] = 1
         masked_ima = np.ma.masked_array(data, mask=mask.astype(bool))
-
-        if show != 0:
-            plt.clf()
-            plt.imshow(masked_ima, origin='lower')
-            plt.colorbar()
         return masked_ima
 
     def save_phasemap(self, location, file_name, masked_image):
@@ -167,3 +176,26 @@ class I4d6110(BaseInterferometer):
         fits_file_name = os.path.join(location, file_name)
         pyfits.writeto(fits_file_name, masked_image.data)
         pyfits.append(fits_file_name, masked_image.mask.astype(int))
+
+    def burstFramesToSpecificDirectory(self, directory, numberOfFrames):
+        '''
+        Parameters
+        ----------
+        directory: string
+            directory where to save files
+        numberOfFrames: int
+            number of frames to acquire
+        '''
+        self._i4d.burstFramesToSpecificDirectory(directory, numberOfFrames)
+        return
+
+    def burstFramesToDisk(self, numberOfFrames):
+        '''
+        Parameters
+        ----------
+        numberOfFrames: int
+            number of frames to acquire
+
+        '''
+        self._i4d.burstFramesToDisk(numberOfFrames)
+        return
