@@ -234,23 +234,24 @@ from m4.configuration.ott_parameters import Interferometer
 interf = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
 ```
 
-the "interf" class contains all the commands documented by 4D. In particular:
+the "interf" class contains all the commands documented by 4D.
 
+NOTA: in Arcetri i4d_IP = '193.206.155.193' e i4d_port = 8011
+
+For the simple case of standard commands you can use the interf object created whit the tower's start up or:
+```
+from m4.devices.interferometer import I4d6110()
+interf = I4d6110()
+```
+
+the I4d6110 class contains the command:
+- interf.acquire_phasemap(nframes=1, dalay=1) for acquisition
+- interf.save_phasemap(location, file_name, masked_image) for saving fits file
 - interf.burstFramesToSpecificDirectory(directory, numberOfFrames)
 - interf.convertRawFramesInDirectoryToMeasurementsInDestinationDirectory(measurementsDirectory, rawFramesDirectory). 
 
 the "burst" instruction requires the full absolute destination path, including the folder to be created  
 the "convert" instruction requires the full absolute destination path, including the folder to be created and where to store the phasemaps
-
-NOTA: in Arcetri i4d_IP = '193.206.155.193' e i4d_port = 8011
-
-For the simple case of capturing and saving an image use:
-```
-from m4.devices.interferometer import I4d6110()
-i4d6110 = I4d6110()
-```
-
-the "i4d6110" class contains the command for acquisition (i4d6110.acquire_phasemap()) and saving fits file (i4d6110.save_phasemap(location, file_name, masked_image)).
 
 ###### Read saved files
 - .4D files:
