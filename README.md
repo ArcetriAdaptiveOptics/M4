@@ -17,11 +17,17 @@ Per scaricare i cambiamenti presenti su github:
 ## Start up
 - Aprire python (ipython --pylab) ed eseguire:
   - from m4.configuration import start
-  - ott, interf, dm = start.create_ott('/mnt/data/M4/Data/SYSCONFData/Config.yaml') NOTA: file di configurazione da modificare all'occorrenza
+  - ott, interf, dm = start.create_ott('/....../M4/Data/SYSCONFData/Config.yaml')
+
+    NOTA: file di configurazione da modificare all'occorrenza inserendo:
+    - base_path: '/....../M4/Data'
+    - simulated_ott: True or False
+    - simulated_interf: True or False
+    - simulated_dm: True or False
   - from m4 import main
   - main.start_log(logging_level) NOTA: ritorna il cammino del file di log
 
-Leggere How_to_use_it.md per l'utilizzo di tutte le funzioni specifiche.
+Leggere [How_to_use_it.md](https://github.com/ChiaraSelmi/M4/blob/master/How_to_use_it.md) per l'utilizzo di tutte le funzioni specifiche.
 
 ## COVERAGE
 [![Build Status](https://travis-ci.org/codecov/sourcegraph-codecov.svg?branch=master)](https://codecov.io/gh/ChiaraSelmi/M4/)
