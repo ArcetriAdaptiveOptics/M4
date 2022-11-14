@@ -10,6 +10,7 @@ import logging
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from m4.configuration import config_folder_names as fold_name
+from m4.configuration.ott_parameters import Interferometer
 from m4.ground import read_data
 from m4.ground import zernike
 
@@ -319,23 +320,23 @@ class Analysis():
         if last_name == 'hdf5':
             list_tot = glob.glob(os.path.join(data_file_path, '*.h5'))
             tt = data_file_path.split('/')[-2]
-            ext = 1
+            #ext = 1
         else:
             list_tot = glob.glob(os.path.join(data_file_path, '*.fits'))
             tt = data_file_path.split('/')[-1]
-            ext = 0
+            #ext = 0
 
         list_tot.sort()
         list = list_tot[start:stop]
 
         if last_name == 'hdf5':
-            time = np.arange(0, len(list)) * 1/27.58
+            time = np.arange(0, len(list)) * 1/Interferometer.BURST_FREQ
         else:
             time = 'calcolare dal tt'
 
         tip_tilt = []
         for name in list:
-            image = read_data.read_phasemap(name, ext)
+            image = read_data.read_phasemap(name)
             coef, mat = zernike.zernikeFit(image, np.array([1,2,3]))
             tip_tilt.append(coef)
 

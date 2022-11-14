@@ -1,1 +1,3 @@
-simulated: 1
+simulated_ott: True
+simulated_interf: True
+simulated_dm: True

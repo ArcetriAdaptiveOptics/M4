@@ -1,4 +1,6 @@
-simulated: 1
+simulated_ott: True
+simulated_interf: True
+simulated_dm: True
 base_path: 'prova'
 configuration_root_folder: 'prova'
 all_calibration_data_root_folder: 'prova'

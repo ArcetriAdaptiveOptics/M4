@@ -1,2 +1,4 @@
-base_path: '/Volumes/My Passport/M4/Data'
-simulated: 1
+base_path: '/Volumes/MyPassport/M4/Data'
+simulated_ott: True
+simulated_interf: True
+simulated_dm: True

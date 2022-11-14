@@ -6,7 +6,9 @@ Authors
 mirror_conf = '20170430'
 optical_conf = '20150730'
 
-simulated = None
+simulated_ott = None
+simulated_interf = None
+simulated_dm = None
 
 BASE_PATH = None
 CONFIGURATION_ROOT_FOLDER = None
@@ -40,4 +42,4 @@ PISTON_TEST_ROOT_FOLDER = None
 MAPPING_TEST_ROOT_FOLDER = None
 ACC_ROOT_FOLDER = None
 SIMUL_DATA_CALIB_DM_FOLDER = None
-PARABOLA_FOOTPRINT_REGISTRATION_FOLDER = None
+PARABOLA_CGH_FOLDER = None

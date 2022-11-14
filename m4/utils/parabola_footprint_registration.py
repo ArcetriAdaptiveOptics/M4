@@ -42,7 +42,7 @@ class ParabolaFootprintRegistration():
     @staticmethod
     def _storageFolder():
         """ Folder for data"""
-        return fold_name.PARABOLA_FOOTPRINT_REGISTRATION_FOLDER
+        return fold_name.PARABOLA_CGH_FOLDER
         #return '/Volumes/My Passport/M4/Data/M4Data'
 
     def main(self):

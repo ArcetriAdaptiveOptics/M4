@@ -122,7 +122,7 @@ class I4d6110(BaseInterferometer):
         self._ic = InterferometerConverter()
         self._logger = logging.getLogger('4D')
 
-    def acquire_phasemap(self, nframes=1, dalay=1):
+    def acquire_phasemap(self, nframes=1, delay=0):
         """
         Parameters
         ----------
@@ -145,7 +145,7 @@ class I4d6110(BaseInterferometer):
                 width, height, pixel_size_in_microns, data_array = self._i4d.takeSingleMeasurement()
                 masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array)
                 image_list.append(masked_ima)
-                time.sleep(dalay)
+                time.sleep(delay)
             masked_ima = np.dstack(image_list)
 
 #         if show != 0:

@@ -51,7 +51,7 @@ def create_ott(config_file_name='/home/m4/git/M4/m4/configuration/towerConfig.ya
     cr = config_rewriter(conf_obj)
     cr.upload()
 
-    if conf_obj.simulated == 1:
+    if conf_obj.simulated_ott is True:
         parabola_slider = FakeParabolaSlider()
         reference_mirror_slider = FakeReferenceMirrorSlider()
         angle_rotator = FakeAngleRotator()
@@ -60,8 +60,6 @@ def create_ott(config_file_name='/home/m4/git/M4/m4/configuration/towerConfig.ya
         m4 = FakeM4Exapode()
         temperature_sensor = FakeTemperatureSensors()
         accelerometers = FakeAccelerometers()
-        interf = FakeInterferometer()
-        dm = FakeM4DM()
     else:
         opcUa = OpcUaController()
         parabola_slider = OpcUaParabolaSlider(opcUa)
@@ -72,13 +70,21 @@ def create_ott(config_file_name='/home/m4/git/M4/m4/configuration/towerConfig.ya
         m4 = OpcUaM4Exapode(opcUa)
         temperature_sensor = OpcUaTemperatureSensors(opcUa)
         accelerometers = ZmqAccelerometers()
+
+    if conf_obj.simulated_interf is True:
+        interf = FakeInterferometer()
+    else:
         interf = I4d6110()
+
+    if conf_obj.simulated_dm is True:
+        dm = FakeM4DM()
+    else:
         dm = None
 
 
     ott = OTT(parabola_slider, reference_mirror_slider, angle_rotator,
               parab, reference_mirror, m4, temperature_sensor, accelerometers)
-    if conf_obj.simulated == 1:
+    if conf_obj.simulated_interf is True:
         interf.set_ott(ott)
         interf.set_dm(dm)
 

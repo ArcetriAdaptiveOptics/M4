@@ -114,7 +114,7 @@ class OpticalCalibration():
         from m4.utils.roi import ROI
         r = ROI()
         roi = r.roiGenerator(ima)
-        if  fold_name.simulated == 1:
+        if  fold_name.simulated_interf is True:
             mask_index = OtherParameters.MASK_INDEX_SIMULATORE
         else:
             mask_index = OtherParameters.MASK_INDEX_TOWER

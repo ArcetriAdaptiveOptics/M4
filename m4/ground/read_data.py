@@ -21,19 +21,16 @@ from m4.type.modalBase import ModalBase
 from m4.type.modesVector import ModesVector
 
 
-def read_phasemap(file_path, ext=0):
-    ''' deve leggere sia fits che h5
+def read_phasemap(file_path):
+    ''' per leggere i tre formati di dati interferometrici
     '''
-    if ext == 0:
+    ext = file_path.split('.')[-1]
+    if ext == 'fits':
         image = readFits_maskedImage(file_path)
-    else:
+    elif ext=='4D':
         image = InterferometerConverter.fromPhaseCam6110(file_path)
-#         hf = h5py.File(file_path, 'r')
-#         hf.keys()
-#         data1 = hf.get('dataset_1')
-#         data2 = hf.get('dataset_2')
-#         image = np.ma.masked_array(np.array(data1),
-#                                    np.array(data2.astype(bool)))
+    elif ext=='h5':
+        image = InterferometerConverter.fromPhaseCam4020(file_path)
     return image
 
 ### Generiche

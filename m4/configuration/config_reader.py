@@ -18,8 +18,16 @@ class configuration_path():
             self._conf = yaml.load(file, Loader=yaml.FullLoader)
 
     @property
-    def simulated(self):
-        return self._conf['simulated']
+    def simulated_ott(self):
+        return self._conf['simulated_ott']
+
+    @property
+    def simulated_interf(self):
+        return self._conf['simulated_interf']
+
+    @property
+    def simulated_dm(self):
+        return self._conf['simulated_dm']
 
 ### PATH_NAME ###
     @property
@@ -248,8 +256,8 @@ class configuration_path():
             return os.path.join(self.OPT_DATA_FOLDER, 'SimDataCalibDM')
 
     @property
-    def PARABOLA_FOOTPRINT_REGISTRATION_FOLDER(self):
-        if 'parabola_footprint_registration' in self._conf.keys():
-            return self._conf['parabola_footprint_registration']
+    def PARABOLA_CGH_FOLDER(self):
+        if 'parabola_cgh_measurements_folder' in self._conf.keys():
+            return self._conf['parabola_cgh_measurements_folder']
         else:
-            return os.path.join(self.OPT_DATA_FOLDER, 'ParabolaFootprintRegistration')
+            return os.path.join(self.OPT_DATA_FOLDER, 'ParabolaCGHMeasurements')

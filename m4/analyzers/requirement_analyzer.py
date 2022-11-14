@@ -430,11 +430,11 @@ def imageOpticOffset(data_file_path, start, stop):
     if last_name == 'hdf5':
         list = glob.glob(os.path.join(data_file_path, '*.h5'))
         tt = data_file_path.split('/')[-2]
-        ext = 1
+        #ext = 1
     else:
         list = glob.glob(os.path.join(data_file_path, '*.fits'))
         tt = data_file_path.split('/')[-1]
-        ext = 0
+        #ext = 0
 
     list.sort()
     list = list[start:stop]
@@ -444,7 +444,7 @@ def imageOpticOffset(data_file_path, start, stop):
     for name in list:
         #nn = name.split('/')[-1]
         #print(nn)
-        image = read_data.read_phasemap(name, ext)
+        image = read_data.read_phasemap(name)
         if cube is None:
             cube = image
         else:
@@ -484,11 +484,11 @@ def robustImageFromDataSet(n_images, data_file_path, zernike_vector_to_subtract,
     if last_name == 'hdf5':
         list_tot = glob.glob(os.path.join(data_file_path, '*.h5'))
         tt = data_file_path.split('/')[-2]
-        ext = 1
+        #ext = 1
     else:
         list_tot = glob.glob(os.path.join(data_file_path, '*.fits'))
         tt = data_file_path.split('/')[-1]
-        ext = 0
+        #ext = 0
 
     list_tot.sort()
     list = list_tot[0: n_images]
@@ -501,7 +501,7 @@ def robustImageFromDataSet(n_images, data_file_path, zernike_vector_to_subtract,
         print('Creating cube 1')
         for name in list1:
             #print(name)
-            image = read_data.read_phasemap(name, ext)
+            image = read_data.read_phasemap(name)
             if cube1 is None:
                 cube1 = image
             else:
@@ -511,7 +511,7 @@ def robustImageFromDataSet(n_images, data_file_path, zernike_vector_to_subtract,
         print('Creating cube 2')
         for name in list2:
             #print(name)
-            image = read_data.read_phasemap(name, ext)
+            image = read_data.read_phasemap(name)
             if cube2 is None:
                 cube2 = image
             else:
@@ -531,7 +531,7 @@ def robustImageFromDataSet(n_images, data_file_path, zernike_vector_to_subtract,
         print('Creating cube')
         for name in list:
             #print(name)
-            ima = read_data.read_phasemap(name, ext)
+            ima = read_data.read_phasemap(name)
             image = ima - image_optOffset
             if cube is None:
                 cube = image

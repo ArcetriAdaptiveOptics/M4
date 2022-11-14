@@ -15,7 +15,9 @@ class config_rewriter():
     def upload(self):
         ''' Function for set the global path
         '''
-        config.simulated = self.cc.simulated
+        config.simulated_ott = self.cc.simulated_ott
+        config.simulated_interf = self.cc.simulated_interf
+        config.simulated_dm = self.cc.simulated_dm
         config.BASE_PATH = self.cc.BASE_PATH
         config.CONFIGURATION_ROOT_FOLDER = self.cc.CONFIGURATION_ROOT_FOLDER
         config.ALL_CALIBRATION_DATA_ROOT_FOLDER = self.cc.ALL_CALIBRATION_DATA_ROOT_FOLDER
@@ -49,4 +51,4 @@ class config_rewriter():
         config.ACC_ROOT_FOLDER = self.cc.ACC_ROOT_FOLDER
         #config.POINTER_ALIGN_ROOT_FOLDER = self.cc.POINTER_ALIGN_ROOT_FOLDER
         config.SIMUL_DATA_CALIB_DM_FOLDER = self.cc.SIMUL_DATA_CALIB_DM_FOLDER
-        config.PARABOLA_FOOTPRINT_REGISTRATION_FOLDER = self.cc.PARABOLA_FOOTPRINT_REGISTRATION_FOLDER
+        config.PARABOLA_CGH_FOLDER = self.cc.PARABOLA_CGH_FOLDER

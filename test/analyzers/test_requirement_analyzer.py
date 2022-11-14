@@ -19,7 +19,7 @@ class TestRequirementAnalyzer(unittest.TestCase):
     def testReadImageAndAnalysis(self):
         image_location = os.path.join(testDataRootDir(),
                                       'ima_for_req.fits')
-        image = read_data.read_phasemap(image_location, ext=0)
+        image = read_data.read_phasemap(image_location)
 
         pscale = None
         step = 10000
