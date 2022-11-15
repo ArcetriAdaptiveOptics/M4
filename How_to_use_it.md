@@ -256,6 +256,19 @@ the "burst" instruction requires the full absolute destination path, including t
 the "convert" instruction requires the full absolute destination path, including the folder to be created and where to store the phasemaps
 
 ###### Read saved files
+Unica funzione per la lettura del file:
+```
+form m4.ground import read_data
+image = read_data.read_phasemap(image_file_path)
+```
+
+Per le emergenze:
+- .h5 files:
+```
+from m4.ground.read_data import InterferometerConverter
+ic = InterferometerConverter()
+image = ic.fromPhaseCam4020(i4dfilename)
+```
 - .4D files:
 ```
 from m4.ground.read_data import InterferometerConverter
