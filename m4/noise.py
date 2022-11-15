@@ -82,6 +82,10 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
                     template creation
         tidy_or_shuffle: int
                         0 for tidy, 1 for shuffle
+
+    Returns
+    ------
+    The output of this function is the plot of results and save this results
     '''
     print('Noise analysis using template')
     n = Noise()

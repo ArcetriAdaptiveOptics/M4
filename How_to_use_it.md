@@ -197,6 +197,8 @@ Le funzione per l'analisi del rumore si ottengono con il comando _from m4 import
 	Ad ogni immagine presente nella cartella viene sottratto tip e til e ne viene calcolata la media: del vettore ottenuto viene fatto
 	e visualizzato lo spettro.
 
+NOTA: dataFilePath comprede tutto il cammino fino alla cartella in cui sono presenti i file da analizzare (ad esempio '..../Noise/trackingNumber/hdf5')
+
 # Dispositivi #
 Di seguito alcune indicazione su dove trovare/come usare alcuni dispositivi collegati al progetto.
 

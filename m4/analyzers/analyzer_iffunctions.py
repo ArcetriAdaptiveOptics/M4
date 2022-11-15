@@ -143,6 +143,17 @@ class AnalyzerIFF():
         return vect
 
 
+    def _createOrdListFromFilePath(self, data_file_path):
+        import glob
+        list = glob.glob(os.path.join(data_file_path,'*.h5'))
+        if len(list)==0:
+            list = glob.glob(os.path.join(data_file_path,'*.fits'))
+            if len(list)==0:
+                list = glob.glob(os.path.join(data_file_path,'*.4D'))
+        list.sort()
+        #da controllare ordinamento nel caso di file .4D
+        return list
+
     def createCubeFromImageFolder(self, data_file_path=None, tiptilt_detrend=None,
                                   phase_ambiguity=None):
         '''
@@ -168,6 +179,7 @@ class AnalyzerIFF():
             data_file_path = self._h5Folder #viene da loadInfoFromIFFsTtFolder
         else:
             data_file_path = data_file_path
+        list = self._createOrdListFromFilePath(data_file_path)
 
         where = self._indexReorganization()
         ampl_reorg = self._amplitudeReorganization(self._actsVector,
@@ -184,16 +196,18 @@ class AnalyzerIFF():
                 mis = k * self._indexingList.shape[1] * self._template.shape[0] \
                         + n * self._template.shape[0]
 
-                name = 'img_%04d' %mis
-                file_name = os.path.join(data_file_path, name)
+                #name = 'img_%04d' %mis
+                #file_name = os.path.join(data_file_path, name)
+                file_name = list[mis]
                 image0 = self._imageReader(file_name)
 
 #                 image_sum = np.zeros((image_for_dim.shape[0],
 #                                       image_for_dim.shape[1]))
                 image_list = [image0]
                 for l in range(1, self._template.shape[0]):
-                    name = 'img_%04d' %(mis+l)
-                    file_name = os.path.join(data_file_path, name)
+                    #name = 'img_%04d' %(mis+l)
+                    #file_name = os.path.join(data_file_path, name)
+                    file_name = list[mis+l]
                     ima = self._imageReader(file_name)
                     image_list.append(ima)
 
