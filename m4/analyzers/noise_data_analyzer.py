@@ -189,16 +189,14 @@ class Noise():
         freq_tilt: numpy array
             frequency obtained by fft of tilt data
         '''
-        list = glob.glob(os.path.join(data_file_path, '*.h5'))
-        if len(list)==0:
-            list = glob.glob(os.path.join(data_file_path,'*.fits'))
+        list = self._createOrdListFromFilePath(data_file_path)
         coef_tilt_list = []
         coef_tip_list = []
         for i in range(len(list)):
             name = 'img_%04d' %i
             print(name)
-            file_name = os.path.join(data_file_path, name)
-            start_image = self._imageReader(file_name)
+            #file_name = os.path.join(data_file_path, name)
+            start_image = image = read_data.read_phasemap(list[i])
             coef, mat = zernike.zernikeFit(start_image, np.array([2, 3]))
             coef_tip_list.append(coef[0])
             coef_tilt_list.append(coef[1])
@@ -346,6 +344,7 @@ class Noise():
             listtot = glob.glob(os.path.join(data_file_path, '*.fits'))
             listtot.sort()
             list = listtot[0:-2]
+        #inserire lista per file .4D
         image_number = len(list)
         i_max = np.int((image_number - tau_vector[tau_vector.shape[0]-1]) /
                        (tau_vector[tau_vector.shape[0]-1] * 2))
@@ -362,12 +361,12 @@ class Noise():
                 k = i * dist * 2
                 if h5_or_fits is None:
                     #k = i * dist * 2
-                    name = 'img_%04d' %k
-                    file_name = os.path.join(data_file_path, name)
-                    image_k = self._imageReader(file_name)
-                    name = 'img_%04d' %(k+dist)
-                    file_name = os.path.join(data_file_path, name)
-                    image_dist = self._imageReader(file_name)
+                    #name = 'img_%04d' %k
+                    #file_name = os.path.join(data_file_path, name)
+                    image_k = image = read_data.read_phasemap(list[k])
+                    #name = 'img_%04d' %(k+dist)
+                    #file_name = os.path.join(data_file_path, name)
+                    image_dist = image = read_data.read_phasemap(list[k+dist])
                 else:
                     image_k = read_data.readFits_maskedImage(list[k])
                     image_dist = read_data.readFits_maskedImage(list[k+dist])
@@ -410,17 +409,15 @@ class Noise():
             time: numpy array
                 vector of the time at which the image were taken
         '''
-        list = glob.glob(os.path.join(data_file_path, '*.h5'))
-        if len(list)==0:
-            list = glob.glob(os.path.join(data_file_path,'*.fits'))
+        list = self._createOrdListFromFilePath(data_file_path)
         image_number = len(list)
         time = np.arange(image_number) * (1/Interferometer.BURST_FREQ)
 
         mean_list = []
         for j in range(image_number):
-            name = 'img_%04d' %j
-            file_name = os.path.join(data_file_path, name)
-            image = self._imageReader(file_name)
+            #name = 'img_%04d' %j
+            #file_name = os.path.join(data_file_path, name)
+            image = image = read_data.read_phasemap(list[j])
             zernike_coeff_array, mat = zernike.zernikeFit(image,
                                                               np.array([2, 3]))
             sur = zernike.zernikeSurface(image, zernike_coeff_array, mat)
@@ -447,17 +444,15 @@ class Noise():
             time: numpy array
                 vector of the time at which the image were taken
         '''
-        list = glob.glob(os.path.join(data_file_path, '*.h5'))
-        if len(list)==0:
-            list = glob.glob(os.path.join(data_file_path,'*.fits'))
+        list = self._createOrdListFromFilePath(data_file_path)
         image_number = len(list)
         time = np.arange(image_number) * (1/Interferometer.BURST_FREQ)
 
         tt_list = []
         for j in range(image_number):
-            name = 'img_%04d.h5' %j
-            file_name = os.path.join(data_file_path, name)
-            image = self._imageReader(file_name)
+            #name = 'img_%04d.h5' %j
+            #file_name = os.path.join(data_file_path, name)
+            image = image = read_data.read_phasemap(list[j])
             coeff, mat = zernike.zernikeFit(image,np.array([1,2, 3]))
 
             tt_list.append(coeff)
@@ -465,6 +460,12 @@ class Noise():
         tt = np.array(tt_list)
         return tt
 
-    def _imageReader(self, filename):
-        image = read_data.read_phasemap(filename)
-        return image
+    def _createOrdListFromFilePath(self, data_file_path):
+        list = glob.glob(os.path.join(data_file_path,'*.h5'))
+        if len(list)==0:
+            list = glob.glob(os.path.join(data_file_path,'*.fits'))
+            if len(list)==0:
+                list = glob.glob(os.path.join(data_file_path,'*.4D'))
+        list.sort()
+        #da controllare ordinamento nel caso di file .4D
+        return list
