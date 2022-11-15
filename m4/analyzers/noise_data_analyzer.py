@@ -58,6 +58,8 @@ class Noise():
         list = glob.glob(os.path.join(data_file_path,'*.h5'))
         if len(list)==0:
             list = glob.glob(os.path.join(data_file_path,'*.fits'))
+            if len(list)==0:
+                list = glob.glob(os.path.join(data_file_path,'*.4D'))
         n_tot = len(list)
         an._template = template
         if n_push_pull is None:
@@ -449,7 +451,7 @@ class Noise():
         if len(list)==0:
             list = glob.glob(os.path.join(data_file_path,'*.fits'))
         image_number = len(list)
-        time = np.arange(image_number) * (1/27.58)
+        time = np.arange(image_number) * (1/Interferometer.BURST_FREQ)
 
         tt_list = []
         for j in range(image_number):
@@ -464,8 +466,5 @@ class Noise():
         return tt
 
     def _imageReader(self, filename):
-        if fold_name.simulated==1:
-            image = self._ic.fromFakeInterf(filename +'.fits')
-        else:
-            image = self._ic.fromPhaseCam4020(filename + '.h5')
+        image = read_data.read_phasemap(filename)
         return image

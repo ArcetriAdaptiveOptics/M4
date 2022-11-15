@@ -217,7 +217,7 @@ class AnalyzerIFF():
                     r = ROI()
                     roi = r.roiGenerator(img_if)
                     tt = TipTiltDetrend()
-                    img_if = tt.tipTiltDetrend(img_if, roi, 3)
+                    img_if = tt.segment_view_tiptilt_detrend(img_if)
 
                 if_push_pull_kth = img_if
 
@@ -237,10 +237,7 @@ class AnalyzerIFF():
         return self._cube
 
     def _imageReader(self, filename):
-        if fold_name.simulated==1:
-            image = self._ic.fromFakeInterf(filename+'.fits')
-        else:
-            image = self._ic.fromPhaseCam4020(filename+'.h5')
+        image = read_data.read_phasemap(filename)
         return image
 
     def _logCubeCreation(self, tiptilt_detrend=None, phase_ambiguity=None):
