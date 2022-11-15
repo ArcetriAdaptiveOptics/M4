@@ -340,6 +340,7 @@ class Noise():
         '''
         if h5_or_fits is None:
             list = glob.glob(os.path.join(data_file_path, '*.h5'))
+            list.sort()
         else:
             listtot = glob.glob(os.path.join(data_file_path, '*.fits'))
             listtot.sort()
