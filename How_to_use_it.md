@@ -309,11 +309,32 @@ __Masks__
 - Mask the image with a circular mask:
 ```
 from m4.ground import geo
-masked_image = draw_mask(start_image, centre_x, centre_y, radius)
+mask = draw_mask(start_image, centre_x, centre_y, radius)
 ```
 - Extracting the parabola mask using markers:
 ```
-from m4.utils.parabola_identification import ParabolaCirculaPupil
-pz = ParabolaCirculaPupil()
-circle_mask = pz.par_mask_on_ott(image)
+from m4.utils.parabola_identification import ParabolaActivities
+pa = ParabolaActivities()
+circle_mask = pa.par_mask_on_ott(image)
 ```
+
+# Parabola measurements
+```
+from m4.utils.parabola_identification import ParabolaActivities
+pa = ParabolaActivities()
+```
+Per l'estrazione della maschera della parabola utilizzare:
+circle_mask = pa.par_mask_on_ott(image)
+
+Per l'acquisizione delle misure con CGH usare:
+```
+tt, cube = pa.parab_cgh_measure(interf, n_frames, delay)
+```
+che restituisce il tracking number delle misure salvate e il cubo di misure appena effettuate
+
+Per il controllo della posizione dei markers:
+```
+pa.check_concentricity(image)
+```
+maschera a un numero definito di pixel in modo da trovare solo i fiduciali d'interesse.
+Stampa poi centro assi (perchè usa il FitEllipse) e raggio dato dalla media dei due assi.

@@ -128,7 +128,7 @@ def draw_mask(img, cx, cy, r, out=0):
     Returns
     -------
     img1: numpy array
-        start image whit circular mask
+        start image mask whit circular new mask
     """
     ss = np.shape(img)
     x = np.arange(ss[0])
@@ -145,7 +145,7 @@ def draw_mask(img, cx, cy, r, out=0):
         rr = x*x+y*y
         r1 = r**2
     pp = np.where(rr < r1)
-    img1 = img.copy()
+    img1 = img.mask.copy()
     if out == 1:
         img1[pp] = 0
     else:
