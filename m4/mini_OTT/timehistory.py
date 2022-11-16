@@ -95,8 +95,10 @@ def fileList(tn, fold=None):
             addfold = '/hdf5/'
             name = 'img*'
 
-    fold1 = fold+'/'+tn+addfold   #to be re-checked at OTT!! 
-    lsdir = sorted(glob.glob(fold1+name), key=lambda x: int(os.path.basename(x).split('/')[-1].split('.')[0]))
+    fold1 =a+'/'+ fold+'/'+tn+addfold   #to be re-checked at OTT!! 
+   # lsdir = sorted(glob.glob(fold1+name), key=lambda x: int(os.path.basename(x).split('/')[-1].split('.')[0]))
+    lsdir = sorted(glob.glob(fold1+name), key=lambda x: (os.path.basename(x).split('/')[-1].split('.')[0]))
+
     #lsdir = lsdir[0]
 
     return lsdir

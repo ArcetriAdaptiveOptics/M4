@@ -227,7 +227,7 @@ class OpticalAlignment():
                             (zernike modes 2,3,4,7,8)
                 final_coef_selected = zernike selected using intMatModesVector (zernike2control)
         """
-        if  fold_name.simulated == 1:
+        if  fold_name.simulated_interf is True:
             mask_index = OtherParameters.MASK_INDEX_SIMULATORE
         else:
             mask_index = OtherParameters.MASK_INDEX_TOWER

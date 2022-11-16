@@ -140,5 +140,5 @@ class OpcUaParameters():
  
 class OtherParameters():
     ''' '''
-    MASK_INDEX_SIMULATORE = 4
+    MASK_INDEX_SIMULATORE = 3
     MASK_INDEX_TOWER = 0

@@ -145,7 +145,7 @@ def draw_mask(img, cx, cy, r, out=0):
         rr = x*x+y*y
         r1 = r**2
     pp = np.where(rr < r1)
-    img1 = img.mask.copy()
+    img1 = img.copy()
     if out == 1:
         img1[pp] = 0
     else:
