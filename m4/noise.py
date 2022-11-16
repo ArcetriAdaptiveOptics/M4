@@ -22,6 +22,7 @@ import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from m4.configuration import config_folder_names as config
+from m4.configuration.ott_parameters import Interferometer
 from m4.analyzers.noise_data_analyzer import Noise
 
 
@@ -180,7 +181,7 @@ def spectrumFromData(data_file_path):
     plt.savefig(name)
 
 
-def convection_noise(data_file_path, tau_vector):
+def convection_noise(data_file_path, tau_vector, fits_analysis=False):
     '''
     Parameters
     ----------
@@ -191,10 +192,11 @@ def convection_noise(data_file_path, tau_vector):
 
     Other Parameters
     ----------------
-        h5_or_fits: if it is none the h5 data analysis is performed
+        fits_analysis: Boolean
+            if False the h5 or 4D data analysis is performed
     '''
-    last_name = data_file_path.split('/')[-1]
-    if last_name == 'hdf5':
+    #last_name = data_file_path.split('/')[-1]
+    if fits_analysis is False:
         h5_or_fits = None
     else:
         h5_or_fits = 7
@@ -215,7 +217,7 @@ def convection_noise(data_file_path, tau_vector):
 
     rms_nm = rms * 1e9
     if h5_or_fits is None:
-        x = tau_vector * (1 / 27.58)
+        x = tau_vector * (1 / Interferometer.BURST_FREQ)
         param = [5, 0.5, 32]
         try:
 

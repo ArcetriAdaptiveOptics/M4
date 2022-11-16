@@ -328,7 +328,8 @@ class Noise():
 
         Other Parameters
         ----------------
-        h5_or_fits: if it is none the h5 data analysis is performed
+        h5_or_fits: if it is none the .h5 or .4D data analysis is performed
+        else the fits analysis is performed
 
         Returns
         -------
@@ -340,12 +341,13 @@ class Noise():
         '''
         if h5_or_fits is None:
             list = glob.glob(os.path.join(data_file_path, '*.h5'))
+            if len(list)==0:
+                list = glob.glob(os.path.join(data_file_path,'*.4D'))
             list.sort()
         else:
             listtot = glob.glob(os.path.join(data_file_path, '*.fits'))
             listtot.sort()
             list = listtot[0:-2]
-        #inserire lista per file .4D
         image_number = len(list)
         i_max = np.int((image_number - tau_vector[tau_vector.shape[0]-1]) /
                        (tau_vector[tau_vector.shape[0]-1] * 2))

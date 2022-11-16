@@ -187,12 +187,14 @@ Le funzione per l'analisi del rumore si ottengono con il comando _from m4 import
 - noise.spectrumFromData(dataFilePath)
 	La funzione calcola tip e tilt per ogni immagine presente nella cartella dataFilePath. Dei due vettori viene quindi calcolata
 	la trasformata di fourier reale e vengono visualizzati e salvati i plot.
-- noise.convection_noise(dataFilePath, tauVector)
+- noise.convection_noise(dataFilePath, tauVector, fits_analysis=False)
 	Questa funzione analizza i dati tramite funzione di struttura. Il vettore tau_vector determina la distanza tra le 
 	immagini da utilizzare in modo accoppiato e 2*tau_vector l'intervallo tra le misure. Per ogni elemento del vettore tau
 	vengono calcolati rms medio e somma quadratica media di tip e tilt: questi vengono salvati e visualizzati in un plot assieme
 	al fit calcolato sul vettore di rms.
 	Qualche esempio [qui](https://redmine.ict.inaf.it/projects/adopt_oaa/wiki/MOTT-20210401)
+	Nel caso di fits_analysis diverso da false la funzione può essere usata per analizzare dati fits provenienti dall'acquisizione di
+	monitoraggio stabilità (mOTT.measurements.opticalMonitoring)
 - noise.piston_noise(dataFilePath)
 	Ad ogni immagine presente nella cartella viene sottratto tip e til e ne viene calcolata la media: del vettore ottenuto viene fatto
 	e visualizzato lo spettro.
