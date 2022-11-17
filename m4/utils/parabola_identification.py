@@ -49,9 +49,8 @@ class ParabolaActivities():
         circle_mask: numpy ndarray
             circolar mask representing the parabola (zeros for masked point)
         '''
-        new_image_mask = geo.draw_mask(image, np.int(image.shape[0]/2), np.int(image.shape[1]/2),
+        image_masked_central_fid = geo.draw_mask(image, np.int(image.shape[0]/2), np.int(image.shape[1]/2),
                                        OttParameters.INNER_MARKERS_REJECTION_RADIUS)
-        image_masked_central_fid = np.ma.masked_array(image, new_image_mask)
         imaf = self.fiduciali(image_masked_central_fid)
         centro, axs, raggio = self._fitEllipse(imaf[0], imaf[1])
         pxs = raggio / OttParameters.RADIUS_FIDUCIAL_POINT
@@ -197,10 +196,10 @@ class ParabolaActivities():
                                                        'n_pixel2',
                                                        'n_pixel3'])
         for i in range(min_inner_markers_rejection_radius.shape[0]):
-            mask1 = geo.draw_mask(image, np.int(image.shape[0]/2),
+            mask1 = self._draw_mask(image, np.int(image.shape[0]/2),
                                                 np.int(image.shape[1]/2),
                                                 min_inner_markers_rejection_radius[i])
-            mask2 = geo.draw_mask(image, np.int(image.shape[0]/2),
+            mask2 = self._draw_mask(image, np.int(image.shape[0]/2),
                                                 np.int(image.shape[1]/2),
                                                 max_inner_markers_rejection_radius[i])
             new_image_mask = np.ma.mask_or(mask1, np.invert(mask2))
@@ -209,3 +208,47 @@ class ParabolaActivities():
             imaf = self.fiduciali(image_masked_central_fid)
             centro, axs, raggio = self._fitEllipse(imaf[0], imaf[1])
             print(centro, axs, raggio)
+
+    ## Funtions from Runa modified##
+    def _draw_mask(self, img, cx, cy, r, out=0):
+        """ Function to create circular mask
+        Created by Runa
+
+        Parameters
+        ----------
+        img: numpy array
+            image to mask
+        cx: int [pixel]
+            center x of the mask
+        cy: int [pixel]
+            center y of the mask
+        r: int [pixel]
+            radius of the mask
+
+        Returns
+        -------
+        img1: numpy array
+            start image mask whit circular new mask
+        """
+        ss = np.shape(img)
+        x = np.arange(ss[0])
+        x = np.transpose(np.tile(x, [ss[1], 1]))
+        y = np.arange(ss[1])
+        y = np.tile(y, [ss[0], 1])
+        x = x - cx
+        y = y - cy
+        nr = np.size(r)
+        if nr == 2:
+            rr = x*x/r[0]**2+y*y/r[1]**2
+            r1 = 1
+        else:
+            rr = x*x+y*y
+            r1 = r**2
+        pp = np.where(rr < r1)
+        img1 = img.mask.copy()
+        if out == 1:
+            img1[pp] = 0
+        else:
+            img1[pp] = 1
+        #plt.imshow(img1)
+        return img1

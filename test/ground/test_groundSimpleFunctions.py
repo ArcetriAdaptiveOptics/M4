@@ -24,7 +24,6 @@ class Test(unittest.TestCase):
         tt = '2021...'
         tracking_number_folder.findTrackingNumberPath(tt)
 
-    @unittest.skip('Dove mettere un file masked array')
     def testGeometry(self):
         img = np.random.rand(500, 500)
         masked_ima = geo.draw_mask(img, 250, 250, 50)

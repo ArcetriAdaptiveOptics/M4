@@ -1,3 +1,24 @@
+# GUI #
+Aprire un terminale apposito e usare i comandi:
+```
+from m4.ground import GUI
+g = GUI.Runner(ott)
+g.run()
+```
+oppure modificare il file GUI a mano inserendo il path del file di configurazione così da poter usare il
+coomando 'python GUI.py' nella cartella dove è presente il file.
+
+# OTT standard configurtions #
+```
+oc = main.getOttConfigurator(ott)
+oc.move_to_segment_view(number_of_segment, RM_in)
+or
+oc.move_to_central_view(RM_in)
+```
+dove RM_in è un booleano che indica se lo specchio di riferimento deve essere posiizonato al centro oppure no.
+E' inoltre disponibile il comando oc.get_configuration() che restituisce i booleani indicanti la posizine corrente
+della torre (segment_view e rm_in True or False)
+
 ## Calibrazione ed allineamento OTT ##
  1) __Calibrazione della parabola con lo specchio di riferimento__
     - Scegliere un vettore di comandi con cui calibrare i gradi di libertà della parabola (PAR) e quello dello specchio di riferimento (RM).

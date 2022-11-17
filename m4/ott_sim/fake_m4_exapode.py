@@ -40,7 +40,7 @@ class FakeM4Exapode(BaseM4Exapode):
         absolute_position_in_mm: numpy arrauy [mm]
             absolute position of m4 dof to set in millimeters
         '''
-        self._pos = absolute_position_in_mm
+        self._pos = np.array(absolute_position_in_mm)
         return self.getPosition()
 
     def getPositionInM(self):
@@ -59,5 +59,5 @@ class FakeM4Exapode(BaseM4Exapode):
         absolute_position_in_m: numpy arrauy [m]
             absolute position of m4 dof to set in meters
         '''
-        self._pos = absolute_position_in_m * 1e3
+        self._pos = np.array(absolute_position_in_m) * 1e3
         return self.getPositionInM()

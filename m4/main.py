@@ -180,6 +180,12 @@ def align_M4():
     ''' to be implemented '''
     pass
 
+def getOttConfigurator(ott):
+    ''' Get the Class to menage ott configurations
+    '''
+    from m4.ground.ott_configurations import OttConfigurations
+    oc = OttConfigurations(ott)
+    return oc
 
 
 ### ROTATION FOR ALIGNMENT (ASSE OTTICO E ASSE MECCANICO)
