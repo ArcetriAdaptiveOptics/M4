@@ -36,7 +36,7 @@ class OttCalibAndAlign():
         self._tt = None
         self._roi = ROI()
 
-    def par_and_rm_calibrator(self, n_frames, command_amp_vector, n_push_pull):
+    def par_and_rm_calibrator(self, command_amp_vector, n_push_pull, n_frames, delay):
         '''Calibration of the optical tower
 
         Parameters
@@ -48,6 +48,8 @@ class OttCalibAndAlign():
                     number of push pull for each degree of freedom
         n_frames: int
                 number of frame for 4D measurement
+        delay: int [s]
+            delay between images
 
         Returns
         -------
@@ -56,22 +58,25 @@ class OttCalibAndAlign():
         '''
         self._tt = self._cal.measureAndAnalysisCalibrationMatrix('PAR + RM',
                                                                  command_amp_vector,
-                                                                 n_push_pull, n_frames)
+                                                                 n_push_pull, n_frames,
+                                                                 delay)
         return self._tt
 
-    def par_and_rm_aligner(self, move, tt_cal, n_images,
+    def par_and_rm_aligner(self, move, tt_cal, n_images, delay,
                       zernike_to_be_corrected=None, dof_command_id=None):
         """
         Parameters
         ----------
-            n_images: int
-                number of interferometers frames
             move: boolean
                 True to move the tower
                 other to show commands
             tt: string, None
                 tracking number of measurement of which you want to use the
                 interaction matrix and reconstructor
+            n_images: int
+                number of interferometers frames
+            delay: int [s]
+                delay between images
 
         Other Parameters
         ----------
@@ -89,7 +94,7 @@ class OttCalibAndAlign():
                     vector of command to apply to RM dof
         """
         aliner = OpticalAlignment(tt_cal, self._ott, self._interf)
-        par_cmd, rm_cmd, dove = aliner.opt_aligner(n_images,
+        par_cmd, rm_cmd, dove = aliner.opt_aligner(n_images, delay,
                                                    zernike_to_be_corrected,
                                                    dof_command_id)
         if move is True:
@@ -97,7 +102,7 @@ class OttCalibAndAlign():
             self._ott.parabola.setPosition(pos_par + par_cmd)
             pos_rm = self._ott.referenceMirror.getPosition()
             self._ott.referenceMirror.setPosition(pos_rm + rm_cmd)
-        image = self._interf.acquire_phasemap(n_images)
+        image = self._interf.acquire_phasemap(n_images, delay)
         name = 'FinalImage.fits'
         all_final_coef, final_coef_selected = aliner.getZernikeWhitAlignerObjectOptions(image)
         #self._alignmentLog(aliner, all_final_coef, dof_command_id, move)

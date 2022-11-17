@@ -32,7 +32,7 @@ class TestCalc(unittest.TestCase):
         interf.acquire_phasemap = self._skipAcq
         return ott, interf
 
-    def _skipAcq(self, aa):
+    def _skipAcq(self, aa, bb):
         pass
 
     def _skipSave(self, a, b, c):
@@ -48,13 +48,12 @@ class TestCalc(unittest.TestCase):
         who = optical_calibration.WHO_PAR_AND_RM
         command_amp_vector = np.ones(5)
         n_push_pull = 1
-        n_frames = 1
 
         mock_tt.return_value = '20220217_151631'
         mockFilepath1.return_value = os.path.join(testDataRootDir(), 'base',
                                                   'M4Data/OPTData/Calibration')
         self.cal.measureAndAnalysisCalibrationMatrix(who, command_amp_vector,
-                                                     n_push_pull, n_frames)
+                                                     n_push_pull, n_frames=None, delay=None)
 
     @mock.patch('m4.utils.optical_calibration.OpticalCalibration._storageFolder', autospec=True)
     def testReload(self, mockFilepath1):

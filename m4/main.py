@@ -69,7 +69,7 @@ def showCommandMatrixBeforeCalibration(command_amp_vector):
     plt.colorbar()
     return mat
 
-def calibrate_PARAndRM(ott, interf, n_frames, command_amp_vector, nPushPull):
+def calibrate_PARAndRM(ott, interf, command_amp_vector, nPushPull, n_frames=None, delay=None):
     '''
     Function to be used to calibrate parabola and reference mirror dof
 
@@ -88,17 +88,29 @@ def calibrate_PARAndRM(ott, interf, n_frames, command_amp_vector, nPushPull):
     n_push_pull: int
                 number of push pull for each degree of freedom
 
+    Other Parameters
+    ----------------
+    nframes: int
+        number of frames
+    delay: int [s]
+        delay between images
+
     Returns
     -------
             tt_tower: string
                     tracking number of calibration measurements
     '''
+    command_amp_vector = np.array(command_amp_vector)
+    if n_frames is None:
+        n_frames =  1
+    if delay is None:
+        delay = 0
     c_a = OttCalibAndAlign(ott, interf)
     print('PAR + RM calibration')
-    tt_tower = c_a.par_and_rm_calibrator(n_frames, command_amp_vector, nPushPull)
+    tt_tower = c_a.par_and_rm_calibrator(command_amp_vector, nPushPull, n_frames, delay)
     return tt_tower
 
-def showCommandForParAndRmBeforeAlignement(ott, interf, tt_cal, n_images,
+def showCommandForParAndRmBeforeAlignement(ott, interf, tt_cal, n_images, delay,
                                            zernike_to_be_corrected=None, dof_command_id=None):
     '''
     Parameters
@@ -125,7 +137,7 @@ def showCommandForParAndRmBeforeAlignement(ott, interf, tt_cal, n_images,
     print('Calculation of the alignment command for %s' %tt_cal)
     intMat, rec, cmat = al.selectModesInIntMatAndRecConstruction(zernike_to_be_corrected, dof_command_id)
 
-    image = interf.acquire_phasemap(n_images)
+    image = interf.acquire_phasemap(n_images, delay)
     al._intMatModesVector = zernike_to_be_corrected
     total_zernike_vector, zernike_vector_selected = al.getZernikeWhitAlignerObjectOptions(image)
     print('zernike:')
@@ -137,8 +149,9 @@ def showCommandForParAndRmBeforeAlignement(ott, interf, tt_cal, n_images,
     print(par_command)
     print(rm_command)
 
-def align_PARAndRM(ott, interf, tt_calib, n_images,
-                   zernike_to_be_corrected=None, dof_command_id=None):
+def align_PARAndRM(ott, interf, tt_calib,
+                   zernike_to_be_corrected=None, dof_command_id=None,
+                   n_frames=None, delay=None):
     '''
     Parameters
     ----------
@@ -148,8 +161,6 @@ def align_PARAndRM(ott, interf, tt_calib, n_images,
         interferometer
     tt_tower: string
             calibration measurement to use for alignment
-    n_images: int
-            number of interferometers frames
 
     Other Parameters
     ----------
@@ -158,13 +169,23 @@ def align_PARAndRM(ott, interf, tt_calib, n_images,
                     for tip, tilt, fuoco, coma, coma
     dof_command_id: numpy array
             array containing the number of degrees of freedom to be commanded
+    n_frames: int
+            number of interferometers frames
+    delay: int [s]
+                delay between images
     '''
+    if n_frames is None:
+        n_frames =  1
+    if delay is None:
+        delay = 0
+
     move = True
     print('Ott alignemnt')
     c_a = OttCalibAndAlign(ott, interf)
-    par_cmd, rm_cmd, dove = c_a.par_and_rm_aligner(move, tt_calib, n_images,
-                                              zernike_to_be_corrected,
-                                              dof_command_id)
+    par_cmd, rm_cmd, dove = c_a.par_and_rm_aligner(move, tt_calib,
+                                                   n_frames, delay,
+                                                   zernike_to_be_corrected,
+                                                   dof_command_id)
     tt_align = dove.split('/')[-1]
     print('comandi separati')
     print(par_cmd)
@@ -181,7 +202,7 @@ def align_M4():
     pass
 
 def getOttConfigurator(ott):
-    ''' Get the Class to menage ott configurations
+    ''' Get the Class to manage ott configurations
     '''
     from m4.ground.ott_configurations import OttConfigurations
     oc = OttConfigurations(ott)

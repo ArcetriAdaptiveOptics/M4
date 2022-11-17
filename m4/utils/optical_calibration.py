@@ -27,7 +27,7 @@ class OpticalCalibration():
         from m4.utils.optical_calibration import OpticalCalibration
         cal = OpticalCalibration(ott, interf)
         cal.measureAndAnalysisCalibrationMatrix(who, command_amp_vector,
-                                            n_push_pull, n_frames)
+                                            n_push_pull, n_frames, delay)
 
     """
 
@@ -56,7 +56,7 @@ class OpticalCalibration():
         return fold_name.CALIBRATION_ROOT_FOLDER
 
     def measureAndAnalysisCalibrationMatrix(self, who, command_amp_vector,
-                                            n_push_pull, n_frames):
+                                            n_push_pull, n_frames, delay):
         '''
         Parameters
         ----------
@@ -91,7 +91,7 @@ class OpticalCalibration():
         dofIndex_vector = self._logAndDefineDovIndexForCommandMatrixCreation(who)
         self._commandMatrix, self._commandList = self.createCmatAndCmdList(command_amp_vector,
                                                                             dofIndex_vector)
-        self._measureAndStore(self._commandList, dove, n_frames)
+        self._measureAndStore(self._commandList, dove, n_frames, delay)
         #analysis
         self._createCube(False) # cubo non normalizzato
         cube = self.getCube()
@@ -142,7 +142,7 @@ class OpticalCalibration():
     def getWho(self):
         return self._who
 
-    def _measureAndStore(self, command_list, dove, n_frames):
+    def _measureAndStore(self, command_list, dove, n_frames, delay):
         if self._who == 'PAR + RM':
             vec_push_pull = np.array((1, -1))
             # mis = (len(command_list)-2) * n_push_pull * vec_push_pull.size
@@ -158,7 +158,7 @@ class OpticalCalibration():
                             par1 = pcmd * vec_push_pull[v]
                             print(par1)
                             self._ott.parabola.setPosition(par0 + par1)
-                            masked_ima = self._interf.acquire_phasemap(n_frames)
+                            masked_ima = self._interf.acquire_phasemap(n_frames, delay)
                             name = 'Frame_%04d.fits' % (2 * i + mis[v])
                             print(name)
                             self._interf.save_phasemap(dove, name, masked_ima)
@@ -177,7 +177,7 @@ class OpticalCalibration():
                             if np.count_nonzero(rm1) != 0:
                                 self._ott.referenceMirror.setPosition(rm0 + rm1)
                             print(par1, rm1)
-                            masked_ima = self._interf.acquire_phasemap(n_frames)
+                            masked_ima = self._interf.acquire_phasemap(n_frames, delay)
                             name = 'Frame_%04d.fits' % (2 * i + mis[v])
                             print(name)
                             self._interf.save_phasemap(dove, name, masked_ima)
@@ -189,7 +189,7 @@ class OpticalCalibration():
                             rm1 = rcmd * vec_push_pull[v]
                             self._ott.referenceMirror.setPosition(rm0 + rm1)
                             print(rm1)
-                            masked_ima = self._interf.acquire_phasemap(n_frames)
+                            masked_ima = self._interf.acquire_phasemap(n_frames, delay)
                             name = 'Frame_%04d.fits' % (2 * i + mis[v])
                             print(name)
                             self._interf.save_phasemap(dove, name, masked_ima)
@@ -208,7 +208,7 @@ class OpticalCalibration():
                     for v in range(vec_push_pull.size):
                         m4_cmd = command_list[i] * vec_push_pull[v]
                         self._ott.me.setPosition(m0 + m4_cmd)
-                        masked_ima = self._interf.acquire_phasemap(n_frames)
+                        masked_ima = self._interf.acquire_phasemap(n_frames, delay)
                         name = 'Frame_%04d.fits' %( 2*i + mis[v])
                         self._interf.save_phasemap(dove, name, masked_ima)
             self._ott.m4Exapode.setPosition(m0)

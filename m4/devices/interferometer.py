@@ -128,8 +128,8 @@ class I4d6110(BaseInterferometer):
         ----------
             nframes: int
                 number of frames
-            show: int
-                0 to not show the image
+            delay: int [s]
+                delay between images
 
         Returns
         -------
@@ -146,7 +146,8 @@ class I4d6110(BaseInterferometer):
                 masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array)
                 image_list.append(masked_ima)
                 time.sleep(delay)
-            masked_ima = np.dstack(image_list)
+            images = np.dstack(image_list)
+            masked_ima = np.mean(images, 2)
 
 #         if show != 0:
 #             plt.clf()

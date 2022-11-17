@@ -30,18 +30,19 @@ della torre (segment_view e rm_in True or False)
  	NOTA: tenere presente che il metodo di calibrazione usato prevede che all'applicazione del comando par_tip corrisponda un'applicazione del comando rm_tip=-2.05*par_tip. Stessa relazione sussiste tra par_tilt ed rm_tilt.
     - Possibiltà di visualizzazione della matrice dei comandi di calibrazione prima dell'effetiva applicazione tramite il comando
  		  ```
- 		  main.showCommandMatrixBeforeCalibration(command_amp_vector)
+ 		  tt_calib = main.showCommandMatrixBeforeCalibration(command_amp_vector)
  		  ```
  
     - Il comando per effettuare la calibrazione è
       ```
-      main.calibrate_PARAndRM(ott, interf, n_frames, command_amp_vector, nPushPull)
+      main.calibrate_PARAndRM(ott, interf, command_amp_vector, nPushPull, n_frames=None, delay=None)
       ```
       dove:  
-      ott e interf sono gli oggetti precedentemente creati nello start up  
-      n_frame corrisponde al numero di frame da acquisire con l'interferometro per ogni misura da effettuare  
+      ott e interf sono gli oggetti precedentemente creati nello start up    
       command_amp_vector è il vettore da utilizzare per la calibrazione  
-      nPushPull corrisponde al numero di volte che verrà effettuata la misura per ognuno dei 5 comandi applicati
+      nPushPull corrisponde al numero di volte che verrà effettuata la misura per ognuno dei 5 comandi applicati  
+      n_frame corrisponde al numero di frame da acquisire con l'interferometro per ogni misura da effettuare  
+      delay indica i secondi di attesa tra una misura ed l'altra
     - La funzione di calibrazione ritorna il tracking number (tt_cal) della misura effettuata. Questo contiene:  
       CalibrationInfo.fits dove sono scritti insieme tutti i dati utilizzati per la calibrazione  
       Gli stessi dati separati in più file (CMat.fits, CommandAmplitude.fits, InteractionMatrix.fits, Mask.fits)  
@@ -62,7 +63,7 @@ della torre (segment_view e rm_in True or False)
  			e vanno in coppia con i dof [3,4], [1,2,3,4], [0,1,2,3,4]
     - Il comando per effettuare l'allineamento è
     ```
-    main.align_PARAndRM(ott, interf, tt_calib, n_images, zernike_to_be_corrected=None, dof_command_id=None)
+    tt_align = main.align_PARAndRM(ott, interf, tt_calib, zernike_to_be_corrected=None, dof_command_id=None, n_frames=None, delay=None)
     ```
     - La funzione stampa i comandi applicati a PAR e RM, gli zernike calcolati e restituisce il traching number della misura di allineamento appena eseguita
 	   	che contiene:  
