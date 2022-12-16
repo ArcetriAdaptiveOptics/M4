@@ -9,6 +9,7 @@ Function to start the log::
 '''
 
     #per l'applicazione
+#print("sono sempre io")
 def set_up_logger(file_path, logging_level):
     """ Set up logger for the application
 

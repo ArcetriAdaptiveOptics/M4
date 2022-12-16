@@ -21,7 +21,7 @@ from m4.configuration import config_folder_names as config
 from m4.ott_calibrator_and_aligner import OttCalibAndAlign
 from m4.ground import logger_set_up as lsu
 from m4.configuration.ott_parameters import OttParameters
-
+#print("sono io")
 
 def start_log(logging_level=20):
     """

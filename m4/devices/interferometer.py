@@ -146,8 +146,8 @@ class I4d6110(BaseInterferometer):
                 masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array)
                 image_list.append(masked_ima)
                 time.sleep(delay)
-            images = np.dstack(image_list)
-            masked_ima = np.mean(images, 2)
+            images = np.ma.dstack(image_list)
+            masked_ima = np.ma.mean(images, 2)
 
 #         if show != 0:
 #             plt.clf()
