@@ -138,12 +138,12 @@ class I4d6110(BaseInterferometer):
         """
         if nframes == 1:
             width, height, pixel_size_in_microns, data_array = self._i4d.takeSingleMeasurement()
-            masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array)
+            masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array*632.8e-9)
         else:
             image_list = []
             for i in range(nframes):
                 width, height, pixel_size_in_microns, data_array = self._i4d.takeSingleMeasurement()
-                masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array)
+                masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array*632.8e-9)
                 image_list.append(masked_ima)
                 time.sleep(delay)
             images = np.ma.dstack(image_list)

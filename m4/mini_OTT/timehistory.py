@@ -9,6 +9,7 @@ from m4.ground.read_data import InterferometerConverter
 from matplotlib.pyplot import *
 ic = InterferometerConverter()
 a= '/mnt/data/M4/Data/M4Data/OPTData/'
+a='/mnt/m4storage/Data/M4Data/OPTData/'
 tn = '20210425_085242'   #fits
 tn  ='20210429_224400_noise'
 
@@ -112,9 +113,10 @@ def read_phasemap(filename, thefold = None):
     if thetype == 'fits':
         hduList = pyfits.open(filename)
         img = hduList[0].data
-        mask = np.zeros(img.shape, dtype=np.bool)
-        mask[np.where(img == img.max())] = True
-        img = np.ma.masked_array(img, mask=mask)
+        mask = hduList[1].data
+        #mask = np.zeros(img.shape, dtype=np.bool)
+        #mask[np.where(img == img.max())] = True
+        img = np.ma.masked_array(img, mask)
 
 
         hduList.close()

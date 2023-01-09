@@ -2,9 +2,28 @@ from m4.ground import read_data
 from m4.ground import zernike as zern
 from m4.ground import geo as geo
 from astropy.io import fits
+from m4.misc import pad_intmat as padim
+
 ic=read_data.InterferometerConverter()
-base = '/mnt/m4storage/Data/M4Data/OPTData/PARTest/20220802/'
+base = '/mnt/m4storage/Data/M4Data/OPTData/PARTest/'
 #base = '/mnt/data/M4/Data/M4Data/OPTData/PARTest/20220802/'
+
+#restoring the pad intmat
+im = padim.invmat
+
+def getparzern(tn):
+    fold = tn[0:8]
+    img = read_data.read_phasemap(base+fold+'/'+tn+'.fits')
+    zlist = [1,2,3,4,5,6,7,8,9,10,11]
+    #ccx, zmatx = zern.zernikeFit(img2, zlist)
+    ccx, zmatx = zern.zernikeFit(img, zlist)
+    print(ccx)
+    ast = ccx[4:6]
+    return ast
+
+
+
+
 
 def rms(val):
     t=mean(val**2)
