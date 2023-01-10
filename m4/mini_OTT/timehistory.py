@@ -18,7 +18,7 @@ class TimeHist():
     '''
     Class to 
     HOW TO USE IT::
-
+f=
 
     '''
 
