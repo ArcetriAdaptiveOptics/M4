@@ -6,9 +6,16 @@ Authors
 mirror_conf = '20170430'
 optical_conf = '20150730'
 
-simulated_ott = None
 simulated_interf = None
 simulated_dm = None
+simulated_accelerometers = None
+simulated_angleRotator = None
+simulated_m4Exapode = None
+simulated_parSlider = None
+simulated_par = None
+simulated_rmSlider = None
+simulated_rm = None
+simulated_tempSensors = None
 
 BASE_PATH = None
 CONFIGURATION_ROOT_FOLDER = None

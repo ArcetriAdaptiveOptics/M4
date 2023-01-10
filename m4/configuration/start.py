@@ -51,25 +51,46 @@ def create_ott(config_file_name='/home/m4/git/M4/m4/configuration/towerConfig.ya
     cr = config_rewriter(conf_obj)
     cr.upload()
 
-    if conf_obj.simulated_ott is True:
-        parabola_slider = FakeParabolaSlider()
-        reference_mirror_slider = FakeReferenceMirrorSlider()
-        angle_rotator = FakeAngleRotator()
-        parab = FakeParabola()
-        reference_mirror = FakeReferenceMirror()
-        m4 = FakeM4Exapode()
-        temperature_sensor = FakeTemperatureSensors()
+    if conf_obj.simulated_accelerometers is True:
         accelerometers = FakeAccelerometers()
+    else:
+        accelerometers = ZmqAccelerometers()
+    if conf_obj.simulated_angleRotator is True:
+        angle_rotator = FakeAngleRotator()
+    else:
+        opcUa = OpcUaController()
+        angle_rotator = OpcUaAngleRotator(opcUa)
+    if conf_obj.simulated_m4Exapode is True:
+        m4 = FakeM4Exapode()
+    else:
+        opcUa = OpcUaController()
+        m4 = OpcUaM4Exapode(opcUa)
+    if conf_obj.simulated_parSlider is True:
+        parabola_slider = FakeParabolaSlider()
     else:
         opcUa = OpcUaController()
         parabola_slider = OpcUaParabolaSlider(opcUa)
-        reference_mirror_slider = OpcUaReferenceMirrorSlider(opcUa)
-        angle_rotator = OpcUaAngleRotator(opcUa)
+    if conf_obj.simulated_par is True:
+        parab = FakeParabola()
+    else:
+        opcUa = OpcUaController()
         parab = OpcUaParabola(opcUa)
+    if conf_obj.simulated_rmSlider is True:
+        reference_mirror_slider = FakeReferenceMirrorSlider()
+    else:
+        opcUa = OpcUaController()
+        reference_mirror_slider = OpcUaReferenceMirrorSlider(opcUa)
+    if conf_obj.simulated_rm is True:
+        reference_mirror = FakeReferenceMirror()
+    else:
+        opcUa = OpcUaController()
         reference_mirror = OpcUaReferenceMirror(opcUa)
-        m4 = OpcUaM4Exapode(opcUa)
+    if conf_obj.simulated_tempSensors is True: 
+        temperature_sensor = FakeTemperatureSensors()
+    else:
+        opcUa = OpcUaController()
         temperature_sensor = OpcUaTemperatureSensors(opcUa)
-        accelerometers = ZmqAccelerometers()
+
 
     if conf_obj.simulated_interf is True:
         interf = FakeInterferometer()
