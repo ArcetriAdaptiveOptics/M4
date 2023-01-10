@@ -1,10 +1,17 @@
+'''
+Authors
+  - R. Briguglio: written in 2022
+'''
+
+import numpy as np
+from matplotlib import pyplot as plt
 from m4.ground import read_data
 from m4.ground import zernike as zern
 from m4.ground import geo as geo
 from astropy.io import fits
 from m4.misc import pad_intmat as padim
 
-ic=read_data.InterferometerConverter()
+ic = read_data.InterferometerConverter()
 base = '/mnt/m4storage/Data/M4Data/OPTData/PARTest/'
 #base = '/mnt/data/M4/Data/M4Data/OPTData/PARTest/20220802/'
 
@@ -26,18 +33,18 @@ def getparzern(tn):
 
 
 def rms(val):
-    t=mean(val**2)
-    return sqrt(t)
+    t = np.mean(val**2)
+    return np.sqrt(t)
 
 def savenp(fname):
     basein = '/mnt/m4storage/Data/M4Data/OPTData/PARTest/20220802/'
     baseout ='/home/m4/Desktop/data4ADS/PARTest/20220802/'
-    img=ic.fromPhaseCam6110(base+fname)
-    np.save(baseout+fname,img.data)
+    img = ic.fromPhaseCam6110(base+fname)
+    np.save(baseout+fname, img.data)
 
 def parzmodes(fname):
     base = '/mnt/m4storage/Data/M4Data/OPTData/PARTest/20220802/'
-    img=ic.fromPhaseCam6110(base+fname)
+    img = ic.fromPhaseCam6110(base+fname)
     #x0,y0,r,xx,yy = geo.qpupil(img.mask)
     mask = np.invert(img.mask).astype(int)
     #cx,cy = [950,950]
@@ -46,10 +53,10 @@ def parzmodes(fname):
     zlist = [1,2,3,4,5,6,7,8,9,10,11]
     #ccx, zmatx = zern.zernikeFit(img2, zlist)
     ccx, zmatx = zern.zernikeFit(img, zlist)
-    clf(); imshow(img); colorbar(); title(fname)
+    plt.clf(); plt.imshow(img); plt.colorbar(); plt.title(fname)
     ast = ccx[4:6]
-    tref=ccx[8:10]
-    cc = array((ast, tref))
+    tref = ccx[8:10]
+    cc = np.array((ast, tref))
     return cc
 
 def rotmat(beta):
@@ -94,6 +101,7 @@ img2flat4 = ['20220804_153800.4D','20220804_153900.4D', '20220804_154000.4D', '2
 
 img2flat4bis = ['20220804_155900.4D','20220804_160000.4D','20220804_160100.4D','20220804_160200.4D','20220804_160300.4D']  # no cmd applied, for repatab./stability vs imgflat4
 
+img2flat5 = ['20221216_104500-16ave.4D','20221216_104000-16ave.4D' ]  # corresponda to p00bis
 #************  PAD IFF MEASUREMENTS
 
 p00 = ['20220802_144100.4D','20220802_144200.4D','20220802_144300.4D','20220802_144400.4D','20220802_144500.4D']  #ref for pad2
@@ -129,24 +137,24 @@ for ii in range(5):
     pz80[:,ii] = parzmodes(p80[ii]).flatten()
     pz90[:,ii] = parzmodes(p90[ii]).flatten()
 
-pz0m = mean(pz00, 1)
-pz1m = mean(pz10, 1)
-pz5m = mean(pz50, 1)
-pz0bism = mean(pz0bis,1)
-pz6m = mean(pz60, 1)
-pz7m = mean(pz70, 1)
-pz8m = mean(pz80, 1)
-pz9m = mean(pz90, 1)
+pz0m = np.mean(pz00, 1)
+pz1m = np.mean(pz10, 1)
+pz5m = np.mean(pz50, 1)
+pz0bism = np.mean(pz0bis,1)
+pz6m = np.mean(pz60, 1)
+pz7m = np.mean(pz70, 1)
+pz8m = np.mean(pz80, 1)
+pz9m = np.mean(pz90, 1)
 
 #*** Testing the meas REPEATABILITY
-pz0s = std(pz00, 1)
-pz1s = std(pz10, 1)
-pz5s = std(pz50, 1)
-pz0biss = std(pz0bis,1)
-pz6s = std(pz60, 1)
-pz7s = std(pz70, 1)
-pz8s = std(pz80, 1)
-pz9s = std(pz90, 1)
+pz0s = np.std(pz00, 1)
+pz1s = np.std(pz10, 1)
+pz5s = np.std(pz50, 1)
+pz0biss = np.std(pz0bis,1)
+pz6s = np.std(pz60, 1)
+pz7s = np.std(pz70, 1)
+pz8s = np.std(pz80, 1)
+pz9s = np.std(pz90, 1)
 
 
 z1m = pz1m - pz0m
@@ -157,7 +165,7 @@ z8m = pz8m -pz0bism
 z9m = pz9m -pz0bism
 
 #**** this is the intmat
-cmat = np.zeros((6,4))
+cmat = np.zeros((6, 4))
 cmat[0,:] = z1m
 cmat[1,:] = z5m
 cmat[2,:] = z6m
@@ -168,54 +176,55 @@ cmat = cmat.T
 
 
 #****** computing the ZERNIKE to flatten
-z2flat = np.zeros((4,nimg))
+nimg = len(img2flat5)
+z2flat = np.zeros((4, nimg))
 nimg = len(img2flat)
 for ii in range(nimg):
     z2flat[:,ii] = parzmodes(img2flat[ii]).flatten()
-pz2flat = mean(z2flat, 1)
+pz2flat = np.mean(z2flat, 1)
 
 nimg = len(img2flat2)
-z2flat2 = np.zeros((4,nimg))
+z2flat2 = np.zeros((4, nimg))
 for ii in range(nimg):
     z2flat2[:,ii] = parzmodes(img2flat2[ii]).flatten()
-pz2flat2 = mean(z2flat2, 1)
+pz2flat2 = np.mean(z2flat2, 1)
 
 nimg = len(img2flat3)
-z2flat3 = np.zeros((4,nimg))
+z2flat3 = np.zeros((4, nimg))
 for ii in range(nimg):
     z2flat3[:,ii] = parzmodes(img2flat3[ii]).flatten()
-pz2flat3 = mean(z2flat3, 1)
+pz2flat3 = np.mean(z2flat3, 1)
 
 nimg = len(img2flat4)
-z2flat4 = np.zeros((4,nimg))
+z2flat4 = np.zeros((4, nimg))
 for ii in range(nimg):
     z2flat4[:,ii] = parzmodes(img2flat4[ii]).flatten()
-pz2flat4 = mean(z2flat4, 1)
+pz2flat4 = np.mean(z2flat4, 1)
 
 nimg = len(img2flat4bis)
-z2flat4bis = np.zeros((4,nimg))
+z2flat4bis = np.zeros((4, nimg))
 for ii in range(nimg):
     z2flat4bis[:,ii] = parzmodes(img2flat4bis[ii]).flatten()
-pz2flat4bis = mean(z2flat4bis, 1)
+pz2flat4bis = np.mean(z2flat4bis, 1)
 
-nimg = len(img2flat5)
-z2flat5 = np.zeros((4,nimg))
+
+z2flat5 = np.zeros((4, nimg))
 for ii in range(nimg):
     z2flat5[:,ii] = parzmodes(img2flat5[ii]).flatten()
-pz2flat5 = mean(z2flat5, 1)
+pz2flat5 = np.mean(z2flat5, 1)
 
 
 
 #here the flattening command is computed
 invmat = np.linalg.pinv(cmat)
-cmd0 = -matmul(invmat, pz2flat)
-cmd1 = -matmul(invmat, pz2flat2)
-cmd2 = -matmul(invmat, pz2flat3)
-cmd3 = -matmul(invmat, pz2flat4)
-cmd5 = -matmul(invmat, pz2flat5)
+cmd0 = -np.matmul(invmat, pz2flat)
+cmd1 = -np.matmul(invmat, pz2flat2)
+cmd2 = -np.matmul(invmat, pz2flat3)
+cmd3 = -np.matmul(invmat, pz2flat4)
+cmd5 = -np.matmul(invmat, pz2flat5)
 
 #******* evaluating the expected residual
-pz2flat -matmul(cmat, cmd0)
+pz2flat -np.matmul(cmat, cmd0)
 
 
 #********* saving the data for Matteo

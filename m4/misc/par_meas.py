@@ -1,3 +1,8 @@
+'''
+Authors
+  - ?. ?: written in 2022
+'''
+
 from m4.configuration import start
 from m4.ground import zernike as zern
 from m4.ground import geo as geo
@@ -23,9 +28,9 @@ def acq_par(nframes=16, delay=1):
         os.mkdir(myfold)
     tn = ts.now()+'.fits'
     img = interf.acquire_phasemap(nframes, delay)
-    interf.save_phasemap(myfold,tn,img)  
+    interf.save_phasemap(myfold, tn, img)
     print(myfold)
-    print(tn)    
+    print(tn)
 
     return img,  tn
 
@@ -35,15 +40,15 @@ def get_zern(im):
     zlist = [1,2,3,4,5,6,7,8,9,10,11]
     cc, zmat = zern.zernikeFit(im, zlist)
 
-    #print(cc[4:6])   
+    #print(cc[4:6])
 
     return cc
 
 def removeZernike(ima, modes=np.array([1,2,3,4])):
-    coeff, mat = zernike.zernikeFit(ima, modes)
-    surf = zernike.zernikeSurface(ima, coeff, mat)
+    coeff, mat = zern.zernikeFit(ima, modes)
+    surf = zern.zernikeSurface(ima, coeff, mat)
     new_ima = ima-surf
-    
+
     return new_ima, coeff
 
 def get_average(fold):

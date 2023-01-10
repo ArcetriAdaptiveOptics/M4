@@ -1,3 +1,8 @@
+'''
+Authors
+  - R. Briguglio: written in 2022
+'''
+
 from m4.ground import read_data
 import numpy as np
 from m4.ground import zernike as zern
