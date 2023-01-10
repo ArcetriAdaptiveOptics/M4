@@ -17,7 +17,7 @@ class TestAccelerometersDataAnalyzer(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch('m4.type.accelerometers_data.fold_name', autospect=True)
+    @mock.patch('m4.type.accelerometers_data.fold_name', unsafe=True)
     def testReadingAndAnalysis(self, mock_fold_name):
         want_acc_root_folder = os.path.join(
             testDataRootDir(), 'base', 'M4Data',

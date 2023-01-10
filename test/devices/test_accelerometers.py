@@ -15,7 +15,7 @@ class TestZmqAccelerometers(unittest.TestCase):
     def setUp(self):
         self.acc = ZmqAccelerometers()
 
-    @mock.patch('m4.devices.accelerometers.fold_name', autospect=True)
+    @mock.patch('m4.devices.accelerometers.fold_name', unsafe=True)
     @mock.patch('m4.devices.accelerometers.OpcUaParameters', autospect=True)
     @mock.patch('zmq.Context', autospect=True)
     def testForDataAcquisition(self, mock_final_fold_name, mock_start_fold_name, zmq_mock):
