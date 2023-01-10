@@ -17,7 +17,7 @@ class TestZmqAccelerometers(unittest.TestCase):
 
     @mock.patch('m4.devices.accelerometers.fold_name', unsafe=True)
     @mock.patch('m4.devices.accelerometers.OpcUaParameters', unsafe=True)
-    @mock.patch('zmq.Context', autospect=True)
+    @mock.patch('zmq.Context', unsafe=True)
     def testForDataAcquisition(self, mock_final_fold_name, mock_start_fold_name, zmq_mock):
         want_acc_root_folder = os.path.join(
             testDataRootDir(), 'base', 'M4Data',
