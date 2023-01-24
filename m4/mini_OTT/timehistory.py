@@ -1,15 +1,19 @@
 import os
 import glob
 import numpy as np
+import scipy
+import scipy.stats as stats
 import jdcal
 from astropy.io import fits as pyfits
 from m4.ground import read_data
 from m4.ground import zernike
 from m4.ground.read_data import InterferometerConverter
+from m4.configuration.start_onlydata import foldname
 from matplotlib.pyplot import *
 ic = InterferometerConverter()
-a= '/mnt/data/M4/Data/M4Data/OPTData/'
-a='/mnt/m4storage/Data/M4Data/OPTData/'
+basepath = foldname.BASE_PATH
+ # '/mnt/data/M4/Data/M4Data/OPTData/'
+#a='/mnt/m4storage/Data/M4Data/OPTData/'
 tn = '20210425_085242'   #fits
 tn  ='20210429_224400_noise'
 
@@ -61,9 +65,9 @@ def findTracknum(tn):
     '''
 
     #a= '/mnt/data/M4/Data/M4Data/OPTData/'
-    lsdir = os.listdir(a)
+    lsdir = os.listdir(basepath)
     for i in lsdir:
-        b = a+i
+        b = basepath+i
         z = os.listdir(b)
         check = False
         for j in z:
@@ -96,7 +100,7 @@ def fileList(tn, fold=None):
             addfold = '/hdf5/'
             name = 'img*'
 
-    fold1 =a+'/'+ fold+'/'+tn+addfold   #to be re-checked at OTT!! 
+    fold1 =basepath+'/'+ fold+'/'+tn+addfold   #to be re-checked at OTT!! 
    # lsdir = sorted(glob.glob(fold1+name), key=lambda x: int(os.path.basename(x).split('/')[-1].split('.')[0]))
     lsdir = sorted(glob.glob(fold1+name), key=lambda x: (os.path.basename(x).split('/')[-1].split('.')[0]))
 
@@ -299,6 +303,59 @@ def runningMean(vec, npoints):
     return np.convolve(vec, np.ones(npoints), 'valid') / npoints       
         
         
-        
+def strfunct(vect, gapvect):
+    '''
+    vect shall be npoints x m
+    the strfunct is calculate m times over the npoints time series
+    returns stf(n_timeseries x ngaps)
+    '''
+    nn      = np.shape(vect)
+    maxgap  = np.max(gapvect)
+    ngap    = len(gapvect)
+    n2ave   = int(nn/(maxgap))-1 # or -maxgap??
+    jump    = maxgap
+    st      = np.zeros(ngap)
+    for j in range(ngap):
+        tx = []
+        for k in range(n2ave):
+            print('Using positions:')
+            print(k*jump,k*jump+gapvect[j])
+            tx.append( (vect[k*jump]-vect[k*jump+gapvect[j]])**2)
+        st[j]=np.mean(np.sqrt(tx))
+    return st
+
+
+def comp_psd(img,  nbins=None):
+    sx = (np.shape(img))[0]
+    
+    if nbins is None:
+        nbins = sx//2
+    img = img-np.mean(img)
+    mask = np.invert(img.mask)
+    img[mask ==0]=0
+    tf2d = scipy.fft.fft2(img,norm='ortho')
+    tf2d[0,0]=0
+    tf2d_power_spectrum = np.abs(tf2d)**2
+
+    kfreq = np.fft.fftfreq(sx) * sx                #freq spaziale in pixel
+    kfreq2D = np.meshgrid(kfreq, kfreq)            #griglia di frequenze xx e yy
+    knrm = np.sqrt(kfreq2D[0]**2 + kfreq2D[1]**2)  #griglia di frequenze distanza
+
+    knrm = knrm.flatten()
+    fourier_amplitudes = tf2d_power_spectrum.flatten()
+    kbins = np.arange(0., nbins+1, 1.)
+    kvals = 0.5 * (kbins[1:] + kbins[:-1])
+    Abins, x_edges, y_edges = stats.binned_statistic(knrm, fourier_amplitudes,
+                                         statistic = "sum",
+                                         bins = kbins)
+
+    assert(Abins[0] == 0)
+    #ediff = (np.sum(img[mask]i**2) - np.sum(Abins))/np.sum(img[mask]**2)
+    ediff = (np.sum(img**2) - np.sum(Abins))/np.sum(img**2)
+
+    print("Energy difference %e" % ediff)
+    print("RMS [nm] %5.2f" % (np.std(img)*1e9))
+    Abins = Abins / np.sum(Abins) *(np.sum(img**2))
+    return (kvals, Abins)
 
 
