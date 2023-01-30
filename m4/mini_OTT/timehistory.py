@@ -1,19 +1,15 @@
 import os
 import glob
 import numpy as np
-import scipy
-import scipy.stats as stats
 import jdcal
 from astropy.io import fits as pyfits
 from m4.ground import read_data
 from m4.ground import zernike
 from m4.ground.read_data import InterferometerConverter
-from m4.configuration.start_onlydata import foldname
 from matplotlib.pyplot import *
 ic = InterferometerConverter()
-basepath = foldname.BASE_PATH
- # '/mnt/data/M4/Data/M4Data/OPTData/'
-#a='/mnt/m4storage/Data/M4Data/OPTData/'
+a= '/mnt/data/M4/Data/M4Data/OPTData/'
+a='/mnt/m4storage/Data/M4Data/OPTData/'
 tn = '20210425_085242'   #fits
 tn  ='20210429_224400_noise'
 
@@ -65,9 +61,9 @@ def findTracknum(tn):
     '''
 
     #a= '/mnt/data/M4/Data/M4Data/OPTData/'
-    lsdir = os.listdir(basepath)
+    lsdir = os.listdir(a)
     for i in lsdir:
-        b = basepath+i
+        b = a+i
         z = os.listdir(b)
         check = False
         for j in z:
@@ -76,7 +72,12 @@ def findTracknum(tn):
                 result = i
                 return result
 
-def fileList(tn, fold=None):
+def _sortFunc4D(elem):
+    iid = os.path.basename(elem)[:-3]
+    iis=('%5.5i' % int(iid))
+    return iis 
+
+def fileList(tn, fold=None, name=None):
     '''
     Parameters
     ----------
@@ -89,24 +90,37 @@ def fileList(tn, fold=None):
     fold1: the path where the file is found
     '''
     if fold is not None:
-        name = '*.4D'
-        addfold ='/hdf5/'
+        if name is None:
+            raise
+        tn=''
+        addfold='/'
+        #name = '*.4D'
+        #addfold ='/hdf5/'
+        fold1 = fold+'/'+tn+addfold
     else:
         
         fold = findTracknum(tn)
         addfold = '/'
-        name = '20*'
-        if fold == 'OPDImages':
+        dirs = os.listdir(a+'/'+ fold+'/'+tn)
+        if dirs[0] == 'hdf5': 
             addfold = '/hdf5/'
-            name = 'img*'
+            name = 'img*.h5'
+        elif dirs[0][-3:] == '.4D':
+            name = '*.4D'
+        else:
+            name = '20*.fits'
+        fold1 =a+'/'+ fold+'/'+tn+addfold   #to be re-checked at OTT!! 
+            
 
-    fold1 =basepath+'/'+ fold+'/'+tn+addfold   #to be re-checked at OTT!! 
-   # lsdir = sorted(glob.glob(fold1+name), key=lambda x: int(os.path.basename(x).split('/')[-1].split('.')[0]))
-    lsdir = sorted(glob.glob(fold1+name), key=lambda x: (os.path.basename(x).split('/')[-1].split('.')[0]))
 
-    #lsdir = lsdir[0]
-
-    return lsdir
+    print(fold1+name)
+    lsdirs = glob.glob(fold1+name)
+    if name == "*.4D":
+        lsdirs.sort(key=_sortFunc4D)
+        lsdirs.sort(key=_sortFunc4D)
+    else:
+        lsdirs.sort()
+    return lsdirs
 
 def read_phasemap(filename, thefold = None):
 
@@ -126,7 +140,6 @@ def read_phasemap(filename, thefold = None):
         hduList.close()
 
     if thetype == '4D':
-        print('4D')
         img = ic.fromPhaseCam6110(filename)
 
     if thetype == 'h5':
@@ -134,7 +147,7 @@ def read_phasemap(filename, thefold = None):
 
     return img
 
-def averageFrames(first, last, fileList, thresh=None):
+def averageFrames(first, last, fileList, thresh=None, fsel=None):
     '''
     Parameters
     ----------
@@ -146,7 +159,11 @@ def averageFrames(first, last, fileList, thresh=None):
     lsdir: the list of image files
     fold1: the path where the file is found
     '''
-    imcube = cubeFromList(fileList[first:last+1])
+    if fsel is None:
+        fsel = np.arange(first, last+1)
+    
+    #imcube = cubeFromList(fileList[x for x in flist])
+    imcube = cubeFromList([fileList[x] for x in fsel])
     if thresh is None:
         aveimg = np.ma.mean(imcube, axis=0)
         
@@ -194,7 +211,7 @@ def zernikePlot(mylist, modes=np.array(range(1,11))):
 def runningDiff(tn, gap=2):
     llist =fileList(tn)
     nfile = len(llist)
-    npoints = nfile/gap-2
+    npoints = int(nfile/gap)-2
     slist=[]
     for i in range(0,npoints):
         #print(i*gap)
@@ -327,7 +344,7 @@ def strfunct(vect, gapvect):
 
 def comp_psd(img,  nbins=None):
     sx = (np.shape(img))[0]
-    
+
     if nbins is None:
         nbins = sx//2
     img = img-np.mean(img)
@@ -347,9 +364,9 @@ def comp_psd(img,  nbins=None):
     kvals = 0.5 * (kbins[1:] + kbins[:-1])
     Abins, x_edges, y_edges = stats.binned_statistic(knrm, fourier_amplitudes,
                                          statistic = "sum",
-                                         bins = kbins)
+                                         bins = nbins)
 
-    assert(Abins[0] == 0)
+    #assert(Abins[0] == 0)
     #ediff = (np.sum(img[mask]i**2) - np.sum(Abins))/np.sum(img[mask]**2)
     ediff = (np.sum(img**2) - np.sum(Abins))/np.sum(img**2)
 
@@ -357,5 +374,7 @@ def comp_psd(img,  nbins=None):
     print("RMS [nm] %5.2f" % (np.std(img)*1e9))
     Abins = Abins / np.sum(Abins) *(np.sum(img**2))
     return (kvals, Abins)
+
+        
 
 

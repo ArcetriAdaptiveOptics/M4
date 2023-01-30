@@ -13,6 +13,12 @@ from m4.ground import read_data
 import numpy as np
 import os
 #ic=read_data.InterferometerConverter()
+#from m4.devices.i4d import I4D
+#from m4.configuration.ott_parameters import Interferometer
+#i4d = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
+
+
+
 
 conf='/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
 ott, interf, dm = start.create_ott(conf)
@@ -72,3 +78,18 @@ def get_average(fold):
     print('Average Astigmatism =  %.3e ±  %.3e, %.3e ± %.3e  m' %(ave[4], sstd[4], ave[5], sstd[5]))
     print('Average Coma =  %.3e ± %.3e, %.3e ± %.3e m' %(ave[6],sstd[6], ave[7], sstd[7]))
     return coeff, time
+
+
+def capture(nfr):
+    dd = 'D:/M4/Capture/'
+    tn = ts.now()
+    print(tn)
+    interf.burstFramesToSpecificDirectory(dd+tn+'/', nfr)
+    return tn
+    
+
+def produce(tn):
+    d0='D:/M4/Capture/'
+    d1 ='D:/M4/Produced/'
+    interf.convertRawFrames(d1+tn,d0+tn)
+

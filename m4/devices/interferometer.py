@@ -200,3 +200,15 @@ class I4d6110(BaseInterferometer):
         '''
         self._i4d.burstFramesToDisk(numberOfFrames)
         return
+
+    def convertRawFrames(self,measurementsDirectory, rawFramesDirectory):
+        '''
+        Parameters
+        ----------
+        tn: int
+            number of frames to acquire
+
+        '''
+        
+        self._i4d.convertRawFramesInDirectoryToMeasurementsInDestinationDirectory(measurementsDirectory, rawFramesDirectory)
+        return

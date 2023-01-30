@@ -31,7 +31,7 @@ def _path_noise_results(data_file_path, h5_or_fits=None):
     results_path = os.path.join(config.OUT_FOLDER, 'Noise')
     x = data_file_path.split("/")
     if h5_or_fits is None:
-        dove = os.path.join(results_path, x[len(x) - 2])
+        dove = os.path.join(results_path, x[len(x) - 1]) # da controllare il path
     else:
         dove = os.path.join(results_path, x[len(x) - 1])
     if os.path.exists(dove):
@@ -164,7 +164,7 @@ def spectrumFromData(data_file_path):
     dove = _path_noise_results(data_file_path)
 
     spe_tip, freq_tip, spe_tilt, freq_tilt = n.spectrumAllData(data_file_path)
-
+    plt.figure()
     plt.clf()
     plt.plot(freq_tip, np.absolute(spe_tip), 'o'); plt.xlabel('Freq[HZ]')
     plt.ylabel('|FFT(sig)|'); plt.title('tip_spectrum')
@@ -227,6 +227,7 @@ def convection_noise(data_file_path, tau_vector, fits_analysis=False):
             pp = np.array([0, 0, rms[-1] * 1e9])
             decorr_time = -1
             fit = rms_nm.copy() * 0
+        plt.figure()
         plt.clf()
         plt.plot(x, rms * 1e9, '-o', label='meas')
         plt.xlabel('time [s]')
@@ -240,6 +241,7 @@ def convection_noise(data_file_path, tau_vector, fits_analysis=False):
         plt.legend()
         tt = dove.split('/')[-1]
         plt.title('%s' % tt)
+        plt.show()
         name = os.path.join(dove, 'rms_tau.png')
         if os.path.isfile(name):
             os.remove(name)
@@ -248,6 +250,7 @@ def convection_noise(data_file_path, tau_vector, fits_analysis=False):
     else:
         time_diff = _time_for_plot(data_file_path)
         x = tau_vector * time_diff
+        plt.figure()
         plt.clf()
         plt.plot(x, rms * 1e9, '-o', label='time_diff = %d' % time_diff)
         plt.xlabel('time [s]')
@@ -256,6 +259,7 @@ def convection_noise(data_file_path, tau_vector, fits_analysis=False):
         plt.legend()
         tt = dove.split('/')[-1]
         plt.title('%s' % tt)
+        plt.show()
         name = os.path.join(dove, 'rms_tau.png')
         if os.path.isfile(name):
             os.remove(name)

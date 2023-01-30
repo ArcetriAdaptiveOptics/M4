@@ -29,7 +29,7 @@ class Interferometer():
     WEDGE = 0.5
     WAVEL = 632.8e-9
     QUANTIZATION = 1
-    BURST_FREQ = 28.57 #PhaseCam4020
+    BURST_FREQ = 20.0 #28.57 #PhaseCam4020
 
 class OttParameters():
     ''' Optical tower parameters
