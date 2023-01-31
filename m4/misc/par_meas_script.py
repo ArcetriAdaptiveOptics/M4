@@ -19,14 +19,14 @@ meas = Measurements(ott,interf)
 
 #acquisition of time series
 NMEAS = 200
-DELAY = 5 
+DELAY = 5
 tn = meas.opticalMonitoring(NMEAS,DELAY)
 
 tnc = '20230113_102942'
 zern2corrf = np.array([0,1,2]) #TipTilt focus
 dofidf = np.array([0,1,2])# parpist, ParTip, ParTilt
 
-tna = main.align_PARAndRM(ott, interf, tnc, zern2corr, dofid, n_frames=4)
+tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf, dofidf, n_frames=4)
 
 
 #acquisition of single (averaged) frame
