@@ -9,8 +9,13 @@ from m4 import main
 from m4.mini_OTT.measurements import Measurements
 ts = timestamp.Timestamp()
 
-meas = Measurements(ott,interf)
-tn = meas.opticalMonitoring(NMEAS,DELAY)
+ott = 'Please define me'
+interf = 'Please define me'
+NMEAS = '?'
+DELAY = '?'
+
+meas = Measurements(ott, interf)
+tn = meas.opticalMonitoring(NMEAS, DELAY)
 
 conf='/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
 ott, interf, dm = start.create_ott(conf)
@@ -29,6 +34,11 @@ img,tn= pp.acq_par(16,1);print(tn);cc = pp.get_zern(img);print('Astigm');print(c
 
 
 #calibrating the alignment intmat
+par_piston = '?'
+par_tip = '?'
+par_tilt = '?'
+rm_tip = '?'
+rm_tilt = '?'
 command_amp_vector = np.array([par_piston, par_tip, par_tilt, rm_tip, rm_tilt])
 main.showCommandMatrixBeforeCalibration(command_amp_vector)
 

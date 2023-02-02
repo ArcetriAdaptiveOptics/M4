@@ -321,32 +321,38 @@ class Noise():
     # plot(n_temp, rms, '-o'); plt.xlabel('n_temp'); plt.ylabel('rms_medio')
 
     ### FUNZIONE DI STRUTTURA ###
-    def comp_spatial_stf(self, lista, tau_vector, pixsc=1e-3, downsample=None):
+    def comp_spatial_stf(self, image_ma, pixsc=1e-3, nbins = None):
         #lista = self._createOrdListFromFilePath(data_file_path)
-        image = read_data.read_phasemap(lista)
-        img = image.data
-        mask = (image.mask == 0)
-        sx = image.shape[0]
-        sy = image.shape[1]
-        xsf, ysf = np.meshgrid(np.arange(sx), np.arange(sy))
-        xsf_t = xx.T
-        ysf_t = yy.T
-        dxsf = np.zeros((sx, sy))
-        dysf = np.zeros((sx, sy))
-        for ii in np.arange(sy):
-            dxsf[:,ii] = xsf_t[:,ii]-roll(xsf[:,ii],ii)
-            dysf[:,ii] = ysf_t[:,ii]-roll(ysf[:,ii],ii)
 
-        dr = np.sqrt(dxsf**2+dysf**2)
-        uniq_dr=np.unique(dr)
-        print("Evaluating stf on %i samples" % len(uniq_dr))
+        
+        img = image_ma.data
+        mask = (image_ma.mask == 0)
+        sy = img.shape[0]
+        sx = img.shape[1]
 
-        stf = uniq_dr * 0.
-        dval = img[mask] - img.T[
-        for udr in uniq_dr:
-            sdr=print(sum(dr == udr))
-           # stf[i] = np.sqrt(dval[dr == udr])
-   
+        if nbins is None:
+            nbins = int(sy/10)
+
+        sy, sx = img.shape
+        xx,yy = np.meshgrid(np.arange(sx)-sx/2, np.arange(sy)-sy/2)
+        rr=np.sqrt(xx**2+yy**2)
+        data2hist = (img[mask]-img[int(sx/2),int(sy/2)])**2
+        r2hist= rr[mask]
+        hist, bin_edges = np.histogram(r2hist, bins=nbins)
+
+        idd = np.digitize(r2hist, bin_edges)
+        idd_uniq  = np.unique(idd)
+        stf = hist * 0.0
+
+        for ii in np.arange(len(stf)):
+            data2mean = data2hist[idd == ii]
+            if len(data2mean)==0:
+                stf[ii] = 0
+            else:
+                stf[ii] = np.mean(data2hist[idd == ii])
+
+        return (bin_edges[1:]-(bin_edges[1]-bin_edges[0]))*pixsc, stf
+
 
 
     def analysis_whit_structure_function(self, data_file_path, tau_vector, h5_or_fits=None, tn=None):
