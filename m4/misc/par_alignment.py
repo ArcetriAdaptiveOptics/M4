@@ -18,7 +18,7 @@ zern2corrf = np.array([0,1,2]) #TipTilt focus
 dofidf = np.array([0,1,2])# parpist, ParTip, ParTilt
 par0=ott.parabola.getPosition()
 
-tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf dofidf,n_frames=4)
+tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf, dofidf,n_frames=4)
 
 meas = Measurements(ott, interf)
 delay=60

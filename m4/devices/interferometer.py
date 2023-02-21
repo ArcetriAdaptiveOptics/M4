@@ -9,6 +9,7 @@ import shutil
 import numpy as np
 from matplotlib import pyplot as plt
 from astropy.io import fits as pyfits
+from m4.ground import timestamp
 from m4.configuration import config_folder_names as fold_name
 from m4.configuration.ott_parameters import Interferometer
 from m4.ground.read_data import InterferometerConverter
@@ -121,6 +122,7 @@ class I4d6110(BaseInterferometer):
         self._i4d = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
         self._ic = InterferometerConverter()
         self._logger = logging.getLogger('4D')
+        self._ts = timestamp.Timestamp()
 
     def acquire_phasemap(self, nframes=1, delay=0):
         """
@@ -178,6 +180,19 @@ class I4d6110(BaseInterferometer):
         pyfits.writeto(fits_file_name, masked_image.data)
         pyfits.append(fits_file_name, masked_image.mask.astype(int))
 
+    def burstAndConvertionFron4DPCTom4OTTpc(self, n_frames):
+        fold_capture = 'D:/M4/Capture' #directory where to save files
+        tn = self._ts.now()
+        print(tn)
+        self.burstFramesToSpecificDirectory(os.path.join(fold_capture, tn+'/'), n_frames)
+        
+        # convert the frames 
+        fold_produced ='D:/M4/Produced'
+        self.convertRawFrames(os.path.join(fold_produced, tn), os.path.join(fold_capture, tn))
+        
+        shutil.move(os.path.join('/home/m4/4d/M4/Produced', tn), fold_name.OPD_IMAGES_ROOT_FOLDER)
+        
+## basic function from i4d ##
     def burstFramesToSpecificDirectory(self, directory, numberOfFrames):
         '''
         Parameters
