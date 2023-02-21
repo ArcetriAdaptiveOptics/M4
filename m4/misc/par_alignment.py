@@ -3,24 +3,28 @@ from m4.configuration import start
 from m4.ground import zernike as zern
 from m4.misc import par_meas as pp
 from m4.ground import timestamp
-
+import time
 from m4 import main
-
 from m4.mini_OTT.measurements import Measurements
-ts = timestamp.Timestamp()
-
-ott = 'Please define me'
-interf = 'Please define me'
-NMEAS = '?'
-DELAY = '?'
-
-meas = Measurements(ott, interf)
-tn = meas.opticalMonitoring(NMEAS, DELAY)
 
 conf='/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
 ott, interf, dm = start.create_ott(conf)
 
-#meas = Measurements(ott,interf)
+ts = timestamp.Timestamp()
+
+tnc = '20230113_102942'
+
+zern2corrf = np.array([0,1,2]) #TipTilt focus
+dofidf = np.array([0,1,2])# parpist, ParTip, ParTilt
+par0=ott.parabola.getPosition()
+
+tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf dofidf,n_frames=4)
+
+meas = Measurements(ott, interf)
+delay=60
+nmeas = 1000
+tn = meas.opticalMonitoring(nmeas, 60)
+
 
 
 #to acquire a PAR image and compute zern
@@ -54,7 +58,8 @@ dofidf = np.array([0,1,2])# parpist, ParTip, ParTilt
 
 main.showCommandForParAndRmBeforeAlignement(ott, interf, tnc, 2, zern2corr, dofid)
 
-tna = main.align_PARAndRM(ott, interf, tnc, zern2corr, dofid, n_frames=4)
+tnc = '20230113_102942'
+tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf dofidf,n_frames=4)
 
 #test of shaking the PAR
 dp = np.array([0,0,1,0,0,0])

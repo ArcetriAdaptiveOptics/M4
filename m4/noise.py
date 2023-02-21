@@ -181,7 +181,7 @@ def spectrumFromData(data_file_path):
     plt.savefig(name)
 
 
-def convection_noise(data_file_path, tau_vector, fits_analysis=False):
+def convection_noise(data_file_path, tau_vector, fits_analysis=False, nzern=None):
     '''
     Parameters
     ----------
@@ -207,7 +207,7 @@ def convection_noise(data_file_path, tau_vector, fits_analysis=False):
 
     rms, quad, n_meas = n.analysis_whit_structure_function(data_file_path,
                                                            tau_vector,
-                                                           h5_or_fits)
+                                                           h5_or_fits, nzern=nzern)
     pyfits.writeto(os.path.join(dove, 'rms_vector_conv.fits'), rms,
                    overwrite=True)
     pyfits.writeto(os.path.join(dove, 'tiptilt_vector_conv.fits'), quad,
