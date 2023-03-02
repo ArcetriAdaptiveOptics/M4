@@ -180,7 +180,15 @@ class I4d6110(BaseInterferometer):
         pyfits.writeto(fits_file_name, masked_image.data)
         pyfits.append(fits_file_name, masked_image.mask.astype(int))
 
-    def burstAndConvertionFron4DPCTom4OTTpc(self, n_frames):
+    def burstAndConvertFrom4DPCTom4OTTpc(self, n_frames):
+        '''
+        Attention: check if 4d is mounted
+
+        Parameters
+        ----------
+        n_frames: int
+             number of frames for burst
+        '''
         fold_capture = 'D:/M4/Capture' #directory where to save files
         tn = self._ts.now()
         print(tn)
