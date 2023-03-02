@@ -30,6 +30,9 @@ class Interferometer():
     WAVEL = 632.8e-9
     QUANTIZATION = 1
     BURST_FREQ = 20.0 #28.57 #PhaseCam4020
+    CAPTURE_FOLDER_NAME_4D_PC = 'D:/M4/Capture'
+    PRODUCE_FOLDER_NAME_4D_PC = 'D:/M4/Produced'
+    PRODUCE_FOLDER_NAME_M4OTT_PC = '/home/m4/4d/M4/Produced'
 
 class OttParameters():
     ''' Optical tower parameters

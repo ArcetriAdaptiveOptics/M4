@@ -180,58 +180,61 @@ class I4d6110(BaseInterferometer):
         pyfits.writeto(fits_file_name, masked_image.data)
         pyfits.append(fits_file_name, masked_image.mask.astype(int))
 
-    def burstAndConvertFrom4DPCTom4OTTpc(self, n_frames):
-        '''
-        Attention: check if 4d is mounted
+    # def burstAndConvertFrom4DPCTom4OTTpc(self, n_frames):
+    #     '''
+    #     Attention: check if 4d is mounted
+    #
+    #     Parameters
+    #     ----------
+    #     n_frames: int
+    #          number of frames for burst
+    #     '''
+    #     fold_capture = 'D:/M4/Capture' #directory where to save files
+    #     tn = self._ts.now()
+    #     print(tn)
+    #     self.burstFramesToSpecificDirectory(os.path.join(fold_capture, tn+'/'), n_frames)
+    #
+    #     # convert the frames 
+    #     fold_produced ='D:/M4/Produced'
+    #     self.convertRawFrames(os.path.join(fold_produced, tn), os.path.join(fold_capture, tn))
+    #
+    #     shutil.move(os.path.join('/home/m4/4d/M4/Produced', tn), fold_name.OPD_IMAGES_ROOT_FOLDER)
 
-        Parameters
-        ----------
-        n_frames: int
-             number of frames for burst
-        '''
-        fold_capture = 'D:/M4/Capture' #directory where to save files
-        tn = self._ts.now()
-        print(tn)
-        self.burstFramesToSpecificDirectory(os.path.join(fold_capture, tn+'/'), n_frames)
-        
-        # convert the frames 
-        fold_produced ='D:/M4/Produced'
-        self.convertRawFrames(os.path.join(fold_produced, tn), os.path.join(fold_capture, tn))
-        
-        shutil.move(os.path.join('/home/m4/4d/M4/Produced', tn), fold_name.OPD_IMAGES_ROOT_FOLDER)
-        
-## basic function from i4d ##
-    def burstFramesToSpecificDirectory(self, directory, numberOfFrames):
-        '''
-        Parameters
-        ----------
-        directory: string
-            directory where to save files
-        numberOfFrames: int
-            number of frames to acquire
-        '''
-        self._i4d.burstFramesToSpecificDirectory(directory, numberOfFrames)
-        return
-
-    def burstFramesToDisk(self, numberOfFrames):
+    def capture(self, numberOfFrames, folder_name=None):
         '''
         Parameters
         ----------
         numberOfFrames: int
             number of frames to acquire
 
+        Other parameters
+        ---------------
+        folder_name: string
+            if None a tacking number is generate
+        
+        Returns
+        -------
+        folder_name: string
+            name of folder measurements
         '''
-        self._i4d.burstFramesToDisk(numberOfFrames)
-        return
-
-    def convertRawFrames(self,measurementsDirectory, rawFramesDirectory):
+        if folder_name is None:
+            folder_name = self._ts.now()
+        print(folder_name)
+        
+        self._i4d.burstFramesToSpecificDirectory(os.path.join(Interferometer.CAPTURE_FOLDER_NAME_4D_PC,
+                                                              folder_name), numberOfFrames)
+        return folder_name
+    
+    def produce(self, folder_name):
         '''
         Parameters
         ----------
-        tn: int
-            number of frames to acquire
-
+        folder_name: string
+            name of folder measurements to convert
         '''
+        self._i4d.convertRawFramesInDirectoryToMeasurementsInDestinationDirectory(
+            os.path.join(Interferometer.PRODUCE_FOLDER_NAME_4D_PC, folder_name),
+            os.path.join(Interferometer.CAPTURE_FOLDER_NAME_4D_PC, folder_name))
         
-        self._i4d.convertRawFramesInDirectoryToMeasurementsInDestinationDirectory(measurementsDirectory, rawFramesDirectory)
-        return
+        shutil.move(os.path.join(Interferometer.PRODUCE_FOLDER_NAME_M4OTT_PC, folder_name),
+                    fold_name.OPD_IMAGES_ROOT_FOLDER)
