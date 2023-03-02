@@ -59,7 +59,7 @@ dofidf = np.array([0,1,2])# parpist, ParTip, ParTilt
 main.showCommandForParAndRmBeforeAlignement(ott, interf, tnc, 2, zern2corr, dofid)
 
 tnc = '20230113_102942'
-tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf dofidf,n_frames=4)
+tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf, dofidf, n_frames=4)
 
 #test of shaking the PAR
 dp = np.array([0,0,1,0,0,0])
