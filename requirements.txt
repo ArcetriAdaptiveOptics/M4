@@ -9,7 +9,7 @@ scikit-image>=0.19
 IPython
 opcua
 mock
-sklearn
+scikit-learn
 pyzabbix
 zmq
 PySide2<5.15.0
