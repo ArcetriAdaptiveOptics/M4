@@ -89,7 +89,7 @@ setup(name=NAME,
                         "opcua",
                         "mock",
                         "zmq",
-                        "scikit-learn"
+                        "scikit-learn",
                         "pyzabbix",
                         "PySide2<5.15.0",
                         "guietta",
