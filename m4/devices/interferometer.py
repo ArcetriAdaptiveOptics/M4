@@ -192,11 +192,11 @@ class I4d6110(BaseInterferometer):
     #     fold_capture = 'D:/M4/Capture' #directory where to save files
     #     tn = self._ts.now()
     #     print(tn)
-    #     self.burstFramesToSpecificDirectory(os.path.join(fold_capture, tn+'/'), n_frames)
+    #     self._i4d.burstFramesToSpecificDirectory(os.path.join(fold_capture, tn+'/'), n_frames)
     #
     #     # convert the frames 
     #     fold_produced ='D:/M4/Produced'
-    #     self.convertRawFrames(os.path.join(fold_produced, tn), os.path.join(fold_capture, tn))
+    #     self._i4d.convertRawFramesInDirectoryToMeasurementsInDestinationDirectory(os.path.join(fold_produced, tn), os.path.join(fold_capture, tn))
     #
     #     shutil.move(os.path.join('/home/m4/4d/M4/Produced', tn), fold_name.OPD_IMAGES_ROOT_FOLDER)
 

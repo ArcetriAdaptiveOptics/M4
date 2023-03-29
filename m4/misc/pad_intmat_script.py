@@ -176,7 +176,7 @@ cmat = cmat.T
 
 
 #****** computing the ZERNIKE to flatten
-nimg = len(img2flat5)
+nimg = len(img2flat)
 z2flat = np.zeros((4, nimg))
 nimg = len(img2flat)
 for ii in range(nimg):
@@ -207,7 +207,7 @@ for ii in range(nimg):
     z2flat4bis[:,ii] = parzmodes(img2flat4bis[ii]).flatten()
 pz2flat4bis = np.mean(z2flat4bis, 1)
 
-
+nimg = len(img2flat5)
 z2flat5 = np.zeros((4, nimg))
 for ii in range(nimg):
     z2flat5[:,ii] = parzmodes(img2flat5[ii]).flatten()

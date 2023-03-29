@@ -147,7 +147,7 @@ class configuration_path():
         if 'calibration_root_folder' in self._conf.keys():
             return self._conf['calibration_root_folder']
         else:
-            return os.path.join(self.OPT_DATA_FOLDER, 'AligmentCalibration')
+            return os.path.join(self.OPT_DATA_FOLDER, 'AlignmentCalibration')
 
     @property
     def ALIGNMENT_ROOT_FOLDER(self):
