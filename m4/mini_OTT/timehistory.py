@@ -4,6 +4,9 @@ import numpy as np
 import jdcal
 from astropy.io import fits as pyfits
 from m4.ground import read_data
+from m4.configuration import start_onlydata
+start_onlydata.create_conf_paths(os.environ['PYOTTCONF'])
+from m4.configuration import config_folder_names as foldname
 from m4.ground import zernike
 from m4.ground.read_data import InterferometerConverter
 from matplotlib.pyplot import *
@@ -11,10 +14,11 @@ import psutil
 import scipy.fft
 import scipy.stats as stats
 ic = InterferometerConverter()
-#a= '/mnt/data/M4/Data/M4Data/OPTData/'
-a='/mnt/m4storage/Data/M4Data/OPTData/'
-tn = '20210425_085242'   #fits
-tn  ='20210429_224400_noise'
+#a= foldname.BASE_PATH+'M4Data/OPTData/'  #'/mnt/data/M4/Data/M4Data/OPTData/'
+a = foldname.OPT_DATA_FOLDER + '/'
+#a='/mnt/m4storage/Data/M4Data/OPTData/'
+#tn = '20210425_085242'   #fits
+#tn  ='20210429_224400_noise'
 
 
 
