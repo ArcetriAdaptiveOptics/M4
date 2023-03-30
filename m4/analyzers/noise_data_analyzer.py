@@ -334,9 +334,16 @@ class Noise():
             nbins = int(sy/10)
 
         sy, sx = img.shape
-        xx,yy = np.meshgrid(np.arange(sx)-sx/2, np.arange(sy)-sy/2)
+
+        vec=img[0:int(sx/2)+1,int(sy/2)]
+        for posiz in np.arange(int(sx/2), 0,-1):
+            val = vec[posiz]
+            if ~np.isnan(val):
+                #print(posiz, val)
+                break
+        xx,yy = np.meshgrid(np.arange(sx)-posiz, np.arange(sy)-sy/2)
         rr=np.sqrt(xx**2+yy**2)
-        data2hist = (img[mask]-img[int(sx/2),int(sy/2)])**2
+        data2hist = (img[mask]-val)**2
         r2hist= rr[mask]
         hist, bin_edges = np.histogram(r2hist, bins=nbins)
 
@@ -355,7 +362,7 @@ class Noise():
 
 
 
-    def analysis_whit_structure_function(self, data_file_path, tau_vector, h5_or_fits=None, tn=None):
+    def analysis_whit_structure_function(self, data_file_path, tau_vector, h5_or_fits=None, tn=None, nzern=None):
         '''
         .. 4000 = total number of image in hdf5
 
@@ -392,7 +399,11 @@ class Noise():
 
 
         lista = self._createOrdListFromFilePath(data_file_path)
-        
+        if nzern is None:
+            zv= np.arange(3)+1
+        else:
+            zv=np.arange(nzern)+1
+
         image_number = len(lista)
         i_max = np.int((image_number - tau_vector[tau_vector.shape[0]-1]) /
                        (tau_vector[tau_vector.shape[0]-1] * 2))
@@ -421,7 +432,7 @@ class Noise():
                     image_dist = read_data.readFits_maskedImage(lista[k+dist])
 
                 image_diff = image_k - image_dist
-                zernike_coeff_array, mat = zernike.zernikeFit(image_diff, np.array([2, 3]))
+                zernike_coeff_array, mat = zernike.zernikeFit(image_diff, zv)
                 sur = zernike.zernikeSurface(image_diff, zernike_coeff_array, mat)
                 image_ttr = image_diff - sur
                 quad = np.sqrt(zernike_coeff_array[0]**2 + zernike_coeff_array[1]**2)

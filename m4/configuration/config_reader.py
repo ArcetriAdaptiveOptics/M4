@@ -147,7 +147,7 @@ class configuration_path():
         if 'calibration_root_folder' in self._conf.keys():
             return self._conf['calibration_root_folder']
         else:
-            return os.path.join(self.OPT_DATA_FOLDER, 'Calibration')
+            return os.path.join(self.OPT_DATA_FOLDER, 'AlignmentCalibration')
 
     @property
     def ALIGNMENT_ROOT_FOLDER(self):
@@ -238,7 +238,7 @@ class configuration_path():
         if 'opd_series_root_folder' in self._conf.keys():
             return self._conf['opd_series_root_folder']
         else:
-            return os.path.join(self.OPT_DATA_FOLDER, 'OPD_series')
+            return os.path.join(self.OPT_DATA_FOLDER, 'OPDSeries')
 
     @property
     def REPEATABILITY_ROOT_FOLDER(self):

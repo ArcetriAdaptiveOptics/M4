@@ -1,4 +1,4 @@
-base_path: '/Volumes/MyPassport/M4/Data'
+base_path: '/Users/cselmi/Desktop/Arcetri/M4/Data'
 simulated_interf: True
 simulated_dm: True
 simulated_accelerometers: True

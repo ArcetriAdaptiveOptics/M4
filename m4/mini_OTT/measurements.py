@@ -15,6 +15,7 @@ import numpy as np
 import logging
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
+from m4 import main
 from m4.configuration.ott_parameters import OpcUaParameters
 from m4.devices.opc_ua_controller import OpcUaController
 from m4.configuration import config_folder_names as fold_name
@@ -42,7 +43,15 @@ class Measurements():
         self._ottca = OttCalibAndAlign(ott, interf)
         self._opc = OpcUaController()
 
-    def opticalMonitoring(self, n_images, delay):
+    def ParAlign(self,n_frames=5):
+        
+        tnc = '20230113_102942'
+        zern2corrf = np.array([0,1,2]) #TipTilt focus
+        dofidf = np.array([0,1,2])# parpist, ParTip, ParTilt
+        tna = main.align_PARAndRM(self._ott, self._interf, tnc, zern2corrf, dofidf,n_frames)
+
+
+    def opticalMonitoring(self, n_images, delay, start_delay = 0):
         '''
         #monitora
 
@@ -52,7 +61,9 @@ class Measurements():
             number of images to acquire
         delay: int [s]
             waiting time (in seconds) between two image acquisitions
-
+        start_delay: int[s]
+            waiting time before starting the measure (in seconds) 
+                    
         Returns
         ------
         tt: string
@@ -61,6 +72,9 @@ class Measurements():
         store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
         dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
 
+        print('waiting {:n} s...'.format(start_delay))
+        time.sleep(start_delay)
+        print('start measuring')
         zer_list = []
         temp_list = []
         t0 = time.time()

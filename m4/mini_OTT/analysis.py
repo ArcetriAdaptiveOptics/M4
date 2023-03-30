@@ -27,6 +27,12 @@ class Analysis():
         self._logger = logging.getLogger('mOTT_ANALYIS:')
         self.tt = tt
 
+    @staticmethod
+    def _storageFolder():
+        """ Return the path where to save measurement data"""
+        return fold_name.OUT_FOLDER()
+# Results = self._storageFolder()
+
     def _readRepData(self):
         '''
         Function to read repeatability file fits in tt folder

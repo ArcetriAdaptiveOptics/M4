@@ -21,9 +21,9 @@ class Runner():
 
         conf = 'myConfGlobalPath.yaml'
         from m4.configuration import start
-        ott, interf = start.create_ott(conf)
-        from m4.ground import GUI
-        g = GUI.Runner(ott)
+        ott, interf, dm = start.create_ott(conf)
+        from m4.gui import geometry_GUI
+        g = geometry_GUI.Runner(ott)
         g.run()
     '''
 
@@ -160,7 +160,7 @@ class Runner():
 def main():
     from m4.configuration import start
     conf = '/home/labot/Desktop/labotConfig.yaml' #modificare all'occorrenza
-    ott, interf = start.create_ott(conf)
+    ott, interf, dm = start.create_ott(conf)
 
     runner = Runner(ott)
     sys.exit(runner.run())

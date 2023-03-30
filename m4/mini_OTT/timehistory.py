@@ -7,8 +7,11 @@ from m4.ground import read_data
 from m4.ground import zernike
 from m4.ground.read_data import InterferometerConverter
 from matplotlib.pyplot import *
+import psutil
+import scipy.fft
+import scipy.stats as stats
 ic = InterferometerConverter()
-a= '/mnt/data/M4/Data/M4Data/OPTData/'
+#a= '/mnt/data/M4/Data/M4Data/OPTData/'
 a='/mnt/m4storage/Data/M4Data/OPTData/'
 tn = '20210425_085242'   #fits
 tn  ='20210429_224400_noise'
@@ -129,15 +132,13 @@ def read_phasemap(filename, thefold = None):
 
     thetype = filename.split('.')[1]
     if thetype == 'fits':
-        hduList = pyfits.open(filename)
-        img = hduList[0].data
-        mask = hduList[1].data
+        with pyfits.open(filename) as hduList:
+            img = hduList[0].data
+            mask = hduList[1].data
         #mask = np.zeros(img.shape, dtype=np.bool)
         #mask[np.where(img == img.max())] = True
         img = np.ma.masked_array(img, mask)
-
-
-        hduList.close()
+        #hduList.close()
 
     if thetype == '4D':
         img = ic.fromPhaseCam6110(filename)
@@ -271,6 +272,7 @@ def cubeFromList(fileList):
         image_list.append(ima)
 
     image_list = np.ma.masked_array(image_list)
+    #print(psutil.Process().open_files())
     return image_list
 
 
@@ -341,8 +343,47 @@ def strfunct(vect, gapvect):
         st[j]=np.mean(np.sqrt(tx))
     return st
 
+# def strfun_fl(fl, gapvect, ZernModes=None):
+#     '''
+#     the strfunct is calculate m times over the npoints time series
+#     returns stf(n_timeseries x ngaps)
+#     '''
+#     d=len(fl)
+#     
+#     cube = []
+#     for i in fl:
+#         ima = read_phasemap(i)
+#         cube.append(ima)
+# 
+#     cu1 = np.ma.masked_array(cube)
+#     
+#     cu2=[]
+#     if ZernModes is None:
+#         cu2=cu1
+#     else:
+#         for jj in range(d):
+#             cu2.append(removeZernike(cu1[jj,:,:],ZernModes))
+#     
+#     disp('imagecube created and zernike removed')
+#     
+#     nn      = len(cu2)
+#     maxgap  = np.max(gapvect)
+#     ngap    = len(gapvect)
+#     n2ave   = int(nn/(maxgap))-1 # or -maxgap??
+#     jump    = maxgap
+#     st      = np.zeros(ngap)
+#     for j in range(ngap):
+#         tx = []
+#         for k in range(n2ave):
+#             print('Using positions:')
+#             print(k*jump,k*jump+gapvect[j])
+#             tx.append(cu2[k*jump,:,:]-cu2[k*jump+gapvect[j],:,:])
+#         st[j]=np.mean(np.mean(np.mean(tx,1),1))
+#     return st
 
-def comp_psd(img,  nbins=None):
+
+
+def comp_psd(img,  nbins=None, verbose=None):
     sx = (np.shape(img))[0]
 
     if nbins is None:
@@ -370,8 +411,11 @@ def comp_psd(img,  nbins=None):
     #ediff = (np.sum(img[mask]i**2) - np.sum(Abins))/np.sum(img[mask]**2)
     ediff = (np.sum(img**2) - np.sum(Abins))/np.sum(img**2)
 
-    print("Energy difference %e" % ediff)
-    print("RMS [nm] %5.2f" % (np.std(img)*1e9))
+    if verbose is None:
+        pass
+    else:
+        print("Energy difference %e" % ediff)
+        print("RMS [nm] %5.2f" % (np.std(img)*1e9))
     Abins = Abins / np.sum(Abins) *(np.sum(img**2))
     return (kvals, Abins)
 
