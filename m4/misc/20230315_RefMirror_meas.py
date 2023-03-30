@@ -5,18 +5,6 @@ import os
 from astropy.io import fits as pyfits
 from m4.ground.timestamp import Timestamp
 
-interf = plico_interferometer.interferometer('192.168.22.79', 7300)
-
-
-Bpath="/mnt/m4storage/Data/M4Data/OPTData/RefMirror/"
-tn = Timestamp.now()
-
-fold=os.path.join(Bpath,tn)
-os.mkdir(fold)
-
-
-acquire(64,fold,x,y,ref)
-
 
 #functions
 def saveima(name, masked_image):
@@ -43,3 +31,18 @@ def acquire(N,bpath,x,y,ref=None):
  '/home/m4/anaconda3/lib/python3.8/site-packages/IPython/extensions',
  '/home/m4/towerbridge/lib/python3.8/site-packages/',
  '/home/m4/git/M4']
+
+#code
+interf = plico_interferometer.interferometer('192.168.22.79', 7300)
+
+
+Bpath="/mnt/m4storage/Data/M4Data/OPTData/RefMirror/"
+tn = Timestamp.now()
+
+fold=os.path.join(Bpath,tn)
+os.mkdir(fold)
+
+x = '?'
+y = '?'
+ref = None
+acquire(64,fold,x,y,ref)

@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from m4.configuration import start
 from m4.mini_OTT import timehistory as th
-from m4.ground import zernike as zern
+from m4.ground import zernike
 from m4.misc import par_meas as pp
 from m4.ground import timestamp
 import time

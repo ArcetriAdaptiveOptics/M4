@@ -81,6 +81,6 @@ plt.title('PAR gradient_rebinned, 2pix \n'+tn[0]+' RMS={:.2e}'.format(np.std(dd_
 plt.clim(-8e-9,8e-9)
 plt.show();
 
-fits_file_name = os.path.join(dove, name)
-            pyfits.writeto(fits_file_name, masked_ima.data)
-            pyfits.append(fits_file_name, masked_ima.mask.astype(int))
+# fits_file_name = os.path.join(dove, name)
+# pyfits.writeto(fits_file_name, masked_ima.data)
+# pyfits.append(fits_file_name, masked_ima.mask.astype(int))

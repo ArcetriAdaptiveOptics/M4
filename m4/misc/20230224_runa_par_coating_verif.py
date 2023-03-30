@@ -30,7 +30,7 @@ tn1 = '20221219'
 name1 = ['20221219_101200.4D','20221219_101300.4D']
 
 img0 = read_frame4d(tn0,name0[0])
-img0 = removeZernike(img0,[1,2,3,4,5,6,7,8])
+img0 = th.removeZernike(img0,[1,2,3,4,5,6,7,8])
 clf();imshow(img0);colorbar();title('PAR before coating')
 img0.std()
 
@@ -44,7 +44,7 @@ inrad = 500
 m2 = geo.draw_mask(m1, cir[0],cir[1],inrad,out=1)
 
 img1 = np.ma.masked_array(img1, np.invert(m2))
-img1 = removeZernike(img1,[1,2,3,4,5,6,7,8])
+img1 = th.removeZernike(img1,[1,2,3,4,5,6,7,8])
 clf()
 imshow(img1)
 img1.std()

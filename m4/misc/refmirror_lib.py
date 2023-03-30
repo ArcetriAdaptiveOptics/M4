@@ -39,7 +39,7 @@ maskthresh=0.9
 def rebin(img0,factor=8):
     img = img0.data
     mask = img0.mask
-    ss = npnp..shape(img)
+    ss = np.shape(img)
     aa = (int(ss[0]/factor)*factor, int(ss[1]/factor)*factor)
     imgcrop = img[0:aa[0],0:aa[1]]
     maskcrop = mask[0:aa[0],0:aa[1]]
@@ -261,12 +261,12 @@ def coalign(img1, img2, dmmask, zlist2fit=[1,2,3,4], zlist2adjust=[1,2,3,4]):
 
 def img2fullimg(img, fullmask, pixpos):
    # imgf = fullmask.copy()*0.
-    ss = shape(fullmask)
-    data = np.zeros(shape(fullmask))
-    mask = np.ones(shape(fullmask))
+    ss = np.shape(fullmask)
+    data = np.zeros(np.shape(fullmask))
+    mask = np.ones(np.shape(fullmask))
 
     imgf = np.ma.masked_array(data,mask)
-    imgsize=shape(img)
+    imgsize=np.shape(img)
     imgf[pixpos[0]:pixpos[0]+imgsize[0],pixpos[1]:pixpos[1]+imgsize[1]] = img    
     return imgf
 

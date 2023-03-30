@@ -10,6 +10,7 @@ from m4.ground import geo
 from m4.mini_OTT import timehistory as th
 from m4.misc import refmirror_lib as rmlib
 import os
+from matplotlib import pyplot as plt
 
 base = '/mnt/m4storage/Data/M4Data/OPTData/RefMirror/'
 tn = '20230329_091725'
@@ -58,7 +59,7 @@ for ii in range(len(imgvec)):
 ##### STITCH
 #ppos=np.array([[2,0],[3,0],[0,0],[1,0],[4,0],[5,0]])
 #ippos = ppos*step
-ppos = flip(ppos,1)
+ppos = np.flip(ppos,1)
 aa = np.array([10, 8]) - ppos
 ppos = aa*step
 
@@ -72,7 +73,7 @@ fullframe = rmlib.stitch_process2(iv, fullmask,zlist2fit=[1,2,3],zlist2adjust=[1
 
 
 pippo = th.removeZernike(fullframe,[1,2,3])
-fig=figure(figsize=(10,10)); imshow(pippo,cmap='jet',vmin=-10e-8, vmax=10e-8); colorbar(); title('RMS = %.3e nm' %(std(pippo)))
+fig=plt.figure(figsize=(10,10)); plt.imshow(pippo,cmap='jet',vmin=-10e-8, vmax=10e-8); plt.colorbar(); plt.title('RMS = %.3e nm' %(np.std(pippo)))
 
 
 

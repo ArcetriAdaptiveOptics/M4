@@ -10,6 +10,7 @@ from m4.ground import geo
 from m4.mini_OTT import timehistory as th
 from m4.misc import refmirror_lib as rmlib
 import os
+from matplotlib import pyplot as plt
 '''
 analysis template
 the tracknum contains an entire, complete and consistent dataset.
@@ -67,12 +68,12 @@ for ii in range(len(imgvec)):
 
 #### subiap img check
 seq = [2,3,0,1,4,5]
-figure(figsize=(20,20))
+plt.figure(figsize=(20,20))
 vlim = .3e-7
 for ii in range(len(seq)):
-    subplot(2,3,ii+1)
-    imshow(imgvec[seq[ii]],vmin=-vlim, vmax=vlim,cmap='jet')
-    colorbar()
+    plt.subplot(2,3,ii+1)
+    plt.imshow(imgvec[seq[ii]],vmin=-vlim, vmax=vlim,cmap='jet')
+    plt.colorbar()
     plt.title(ii)
 
 
@@ -93,7 +94,7 @@ fullframe = rmlib.stitch_process2(iv, fullmask,zlist2fit=[1,2,3],zlist2adjust=[1
 
 
 pippo = th.removeZernike(fullframe,[1,2,3])
-fig=figure(figsize=(5,10)); imshow(pippo,cmap='jet',vmin=-10e-8, vmax=10e-8); colorbar(); title('RMS = %.3e nm' %(std(pippo)))
+fig=plt.figure(figsize=(5,10)); plt.imshow(pippo,cmap='jet',vmin=-10e-8, vmax=10e-8); plt.colorbar(); plt.title('RMS = %.3e nm' %(np.std(pippo)))
 
 
 

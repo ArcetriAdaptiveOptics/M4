@@ -19,7 +19,7 @@ for i in tn:
     cx, mat=th.zernike.zernikeFit(img,[1,2,3,4,5,6,7,8,9,10,11])
     cc.append(cx)
 
-wf = mean(cc,0)*2
+wf = np.mean(cc,0)*2
 
 
 tn0 = '20230201_183722'

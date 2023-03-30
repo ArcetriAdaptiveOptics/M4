@@ -11,6 +11,130 @@ from m4.ground import zernike
 from matplotlib import pyplot as plt
 import os
 
+
+### functions
+def gimmethelist(tn, fold):
+    flist = os.listdir(base+tn+'/'+fold+'/')
+    nf = len(flist)
+    f2 = []
+    for i in flist:
+        f2.append(base+tn+'/'+fold+'/'+i)
+    return f2
+
+def readframe(name):
+    img= th.read_phasemap(name)
+    return img
+
+def movie(tn,fold,time=0.5):
+    imglist = os.listdir(base+tn+'/'+fold)
+    nf = len(imglist)
+    plt.figure()
+    for i in range(nf):
+        fname = base+tn+'/'+fold+'/'+imglist[i]
+        img = th.read_phasemap(fname)  
+        plt.clf()
+        plt.imshow(img)
+        plt.axis('off')
+        #plt.colorbar()
+        plt.pause(time)
+        plt.show()
+
+def aveframe(tn,fold, thr = 0.9):
+    imglist = os.listdir(base+tn+'/'+fold)
+
+    nf = len(imglist)
+    cou = 0
+    for i in range(nf):
+        fname = base+tn+'/'+fold+'/'+imglist[i]
+        img = th.read_phasemap(fname)
+        ss = np.shape(img) 
+        if i == 0:
+            imgmaster = np.ma.masked_array(np.zeros(ss),np.ma.make_mask_none(ss)) 
+        cir = geo.qpupil(img.mask)
+        npp = np.pi*cir[2]**2
+        npv = np.size(img.mask)-np.sum(img.mask.astype(int))
+        isgood = npv > npp*thr
+        if isgood == True:
+            print(i)
+            cou = cou+1
+            imgmaster = np.ma.masked_array(img.data+imgmaster.data, np.ma.mask_or(imgmaster.mask, img.mask))
+    imgmaster = np.ma.masked_array(imgmaster.data/cou,imgmaster.mask)
+    return imgmaster
+    
+
+def aveframe2(tn,fold, idgood=np.array([])):
+    
+    imglist = os.listdir(base+tn+'/'+fold)
+    nf = len(imglist)
+    if idgood.any()==False:
+        idgood=np.full((nf, 1), True)
+
+    
+    cou = 0
+    imgcube=[]
+    for i in np.arange(nf):
+        if idgood[i]==True:
+            fname = base+tn+'/'+fold+'/'+imglist[i]
+            img = th.read_phasemap(fname)
+            imgcube.append(img)
+    imgAve=np.ma.mean(imgcube, axis=0)
+    return imgAve
+
+
+def fit_circle_2d(x, y, w=[]):
+    
+    A = np.array([x, y, np.ones(len(x))]).T
+    b = x**2 + y**2
+    
+    # Modify A,b for weighted least squares
+    if len(w) == len(x):
+        W = np.diag(w)
+        A = np.dot(W,A)
+        b = np.dot(W,b)
+    
+    # Solve by method of least squares
+    c = np.linalg.lstsq(A,b,rcond=None)[0]
+    
+    # Get circle parameters from solution c
+    xc = c[0]/2
+    yc = c[1]/2
+    r = np.sqrt(c[2] + xc**2 + yc**2)
+    return xc, yc, r
+
+def std_check(flist, thr):
+    nf = len(flist)
+    st = []
+    for i in flist:
+        img=th.read_phasemap(i)
+        img = th.removeZernike(img,[1,2,3])
+        st.append(img.std())
+    c= min(st)
+    idgood = np.where(st < c*thr)
+    return idgood, st
+
+
+'''
+analysis template
+the tracknum contains an entire, complete and consistent dataset.
+the dataset is organized as:
+tn/000-000-ref0  tn/000-000-ref1
+tn/000-000  tn/000-001  tn/000-002
+tn/001-000  tn/001-001  tn/001-002
+
+the following inputs shall be passed: pixelscale; coordinates of the center of frames
+
+algorithm:
+tn is passed
+folders are identified
+ref images are prepared - ref mask are identified
+patch masks are extracted and cropped to ref mask
+global mask is created from patch masks
+patch images are extracted, filtered and averaged
+global image is created
+
+'''     
+
+#code
 base = '/mnt/m4storage/Data/M4Data/OPTData/RefMirror/'
 tn   = '20230329_091725'
 fdlist = os.listdir(base+tn)
@@ -158,126 +282,3 @@ coeff, mat = zernike.zernikeFit(av, [1,2,3,4,5,6,7,8])
 print(coeff)
 av_zern=th.removeZernike(av,[1,2,3,4])
 plt.figure(); plt.imshow(av_zern); plt.colorbar(); plt.show()
-
-### functions
-def gimmethelist(tn, fold):
-    flist = os.listdir(base+tn+'/'+fold+'/')
-    nf = len(flist)
-    f2 = []
-    for i in flist:
-        f2.append(base+tn+'/'+fold+'/'+i)
-    return f2
-
-def readframe(name):
-    img= th.read_phasemap(name)
-    return img
-
-def movie(tn,fold,time=0.5):
-    imglist = os.listdir(base+tn+'/'+fold)
-    nf = len(imglist)
-    plt.figure()
-    for i in range(nf):
-        fname = base+tn+'/'+fold+'/'+imglist[i]
-        img = th.read_phasemap(fname)  
-        plt.clf()
-        plt.imshow(img)
-        plt.axis('off')
-        #plt.colorbar()
-        plt.pause(time)
-        plt.show()
-
-def aveframe(tn,fold, thr = 0.9):
-    imglist = os.listdir(base+tn+'/'+fold)
-
-    nf = len(imglist)
-    cou = 0
-    for i in range(nf):
-        fname = base+tn+'/'+fold+'/'+imglist[i]
-        img = th.read_phasemap(fname)
-        ss = np.shape(img) 
-        if i == 0:
-            imgmaster = np.ma.masked_array(np.zeros(ss),np.ma.make_mask_none(ss)) 
-        cir = geo.qpupil(img.mask)
-        npp = np.pi*cir[2]**2
-        npv = np.size(img.mask)-np.sum(img.mask.astype(int))
-        isgood = npv > npp*thr
-        if isgood == True:
-            print(i)
-            cou = cou+1
-            imgmaster = np.ma.masked_array(img.data+imgmaster.data, np.ma.mask_or(imgmaster.mask, img.mask))
-    imgmaster = np.ma.masked_array(imgmaster.data/cou,imgmaster.mask)
-    return imgmaster
-    
-
-def aveframe2(tn,fold, idgood=np.array([])):
-    
-    imglist = os.listdir(base+tn+'/'+fold)
-    nf = len(imglist)
-    if idgood.any()==False:
-        idgood=np.full((nf, 1), True)
-
-    
-    cou = 0
-    imgcube=[]
-    for i in np.arange(nf):
-        if idgood[i]==True:
-            fname = base+tn+'/'+fold+'/'+imglist[i]
-            img = th.read_phasemap(fname)
-            imgcube.append(img)
-    imgAve=np.ma.mean(imgcube, axis=0)
-    return imgAve
-
-
-def fit_circle_2d(x, y, w=[]):
-    
-    A = np.array([x, y, np.ones(len(x))]).T
-    b = x**2 + y**2
-    
-    # Modify A,b for weighted least squares
-    if len(w) == len(x):
-        W = diag(w)
-        A = dot(W,A)
-        b = dot(W,b)
-    
-    # Solve by method of least squares
-    c = np.linalg.lstsq(A,b,rcond=None)[0]
-    
-    # Get circle parameters from solution c
-    xc = c[0]/2
-    yc = c[1]/2
-    r = np.sqrt(c[2] + xc**2 + yc**2)
-    return xc, yc, r
-
-def std_check(flist, thr):
-    nf = len(flist)
-    st = []
-    for i in flist:
-        img=th.read_phasemap(i)
-        img = th.removeZernike(img,[1,2,3])
-        st.append(img.std())
-    c= min(st)
-    idgood = np.where(st < c*thr)
-    return idgood, st
-
-
-'''
-analysis template
-the tracknum contains an entire, complete and consistent dataset.
-the dataset is organized as:
-tn/000-000-ref0  tn/000-000-ref1
-tn/000-000  tn/000-001  tn/000-002
-tn/001-000  tn/001-001  tn/001-002
-
-the following inputs shall be passed: pixelscale; coordinates of the center of frames
-
-algorithm:
-tn is passed
-folders are identified
-ref images are prepared - ref mask are identified
-patch masks are extracted and cropped to ref mask
-global mask is created from patch masks
-patch images are extracted, filtered and averaged
-global image is created
-
-'''        
-
