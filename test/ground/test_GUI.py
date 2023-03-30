@@ -6,7 +6,7 @@ import os
 import numpy as np
 import unittest
 import mock
-from m4.ground import GUI
+from m4.gui import geometry_GUI
 from m4.configuration import start
 from test.test_helper import testDataRootDir
 
@@ -17,7 +17,7 @@ class TestGui(unittest.TestCase):
     @mock.patch('m4.ott_sim.ott_images.conf', unsafe=True)
     @mock.patch('m4.ground.read_data.readFits_data', unsafe=True)
     @mock.patch('numpy.load', unsafe=True)
-    def testMainGui(self, mock_conf, mock_rd, mock_load):
+    def testGeometryGui(self, mock_conf, mock_rd, mock_load):
         want_mirror_root_folder = os.path.join(
             testDataRootDir(), 'base', 'ottSim',
             'MIRROR_System')
