@@ -127,6 +127,8 @@ tn.append('20230321_225557') # 500 misure, 10s delay, fans ON pos??
 tn.append('20230322_072934') # 500 misure, 10s delay, fans ON pos??
 tn.append('20230322_133607') # 100 misure, 2s delay, fans ON pos?? 
 
+tn=[]
+tn.append('20230328_110151')
 
 ## run vari a confronto, copio quì sotto quello che mi interessa confrontare
 tn=[] 
@@ -142,7 +144,7 @@ plt.close('all')
 idx=[0, 99]
 
 qm=[]
-zernCoef=np.zeros([tlen,2]);
+zernCoef=np.zeros([tlen,4]);
 for j in range(tlen):
 
     np.disp(j)
@@ -153,7 +155,7 @@ for j in range(tlen):
     q0=th.averageFrames(idx[0],idx[1],fl)
     q0.mask=ma
     plt.figure(j)
-    coeff, mat = zernike.zernikeFit(q0, [5,6])
+    coeff, mat = zernike.zernikeFit(q0, [5,6,7,8])
     zernCoef[j,:]=coeff
     tmp=th.removeZernike(q0,[1,2,3,4,7,8])
     qm.append(tmp)

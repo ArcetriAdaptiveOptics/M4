@@ -4,7 +4,9 @@ import os
 from astropy.io import fits as pyfits
 from m4.ground import zernike as zern
 from m4.mini_OTT import timehistory as th
-from m4.ground import geo
+from m4.ground import geo, rebinner
+
+
 
 '''
 analysis template
@@ -32,6 +34,22 @@ tn = '20230315_155719'
 
 stthresh = 2
 maskthresh=0.9
+
+
+def rebin(img0,factor=8):
+    img = img0.data
+    mask = img0.mask
+    ss = npnp..shape(img)
+    aa = (int(ss[0]/factor)*factor, int(ss[1]/factor)*factor)
+    imgcrop = img[0:aa[0],0:aa[1]]
+    maskcrop = mask[0:aa[0],0:aa[1]]
+    ss1 = (int(aa[0]/factor), int(aa[1]/factor))
+    img1 =  rebinner.rebin2DArray(imgcrop,ss1,sample=False)
+    mask1 = rebinner.rebin2DArray(maskcrop,ss1,sample=False) 
+    img = np.ma.masked_array(img1,mask1)
+    return img
+
+    
 
 def fold2pos(tn):
     foldlist = sorted(os.listdir(base+tn))
@@ -80,11 +98,12 @@ def gimmethelist(tn, fold):
     return f2
 
 
-def getcube(flist):
+def getcube(flist, rebfactor):
     nf = len(flist)
     imgcube = []
     for i in flist:
         img = th.read_phasemap(i)
+        img = rebin(img,rebfactor)
         imgcube.append(img)
     return imgcube
     
@@ -121,9 +140,9 @@ def mask_check(thecube, thr):
     #idgood = np.where(st < vv*thr)
     return idgood
 
-def patchdata(tn,fold, thrsurf=2, thrpix=0.8):   
+def patchdata(tn,fold, thrsurf=2, thrpix=0.8, rebinfactor=8):   
     fl = gimmethelist(tn, fold)
-    cc = getcube(fl)
+    cc = getcube(fl,rebinfactor)
     cc = mask_check(cc, thrpix)
     print(len(cc))
     cc = std_check(cc, thrsurf)
@@ -133,14 +152,14 @@ def patchdata(tn,fold, thrsurf=2, thrpix=0.8):
 
 
 
-def tndata(tn, thrsurf=2, thrpix=0.8):
+def tndata(tn, thrsurf=2, thrpix=0.8, rebinfactor=8):
     ppos,plist = fold2pos(tn)
     nf = len(plist)
     patch = []
     maskvec = []
     for i in plist:
         print(i)
-        pp = patchdata(tn, i, thrsurf, thrpix)
+        pp = patchdata(tn, i, thrsurf, thrpix, rebinfactor=8)
         mp = np.invert(pp.mask).astype(int)
         patch.append(pp)
         maskvec.append(mp)

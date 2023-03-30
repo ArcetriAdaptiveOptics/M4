@@ -27,7 +27,7 @@ tn.append('20230224_121353') # fanGig v1 45°, fanSmall E v2 0-5?
 
 # new pad
 tn=[]
-tn.append() # fanGig v , fanSmall E v 
+tn.append('') # fanGig v , fanSmall E v 
 tn.append()
 tn.append()
 tn.append()

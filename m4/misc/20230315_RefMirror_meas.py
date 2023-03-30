@@ -14,6 +14,11 @@ tn = Timestamp.now()
 fold=os.path.join(Bpath,tn)
 os.mkdir(fold)
 
+
+acquire(64,fold,x,y,ref)
+
+
+#functions
 def saveima(name, masked_image):
     pyfits.writeto(name, masked_image.data)
     pyfits.append(name, masked_image.mask.astype(int))
@@ -30,3 +35,11 @@ def acquire(N,bpath,x,y,ref=None):
         saveima(os.path.join(base,'{:04d}'.format(jj))+'.fits',ima)
         
     
+['',
+ '/home/m4/anaconda3/lib/python38.zip',
+ '/home/m4/anaconda3/lib/python3.8',
+ '/home/m4/anaconda3/lib/python3.8/lib-dynload',
+ '/home/m4/anaconda3/lib/python3.8/site-packages',
+ '/home/m4/anaconda3/lib/python3.8/site-packages/IPython/extensions',
+ '/home/m4/towerbridge/lib/python3.8/site-packages/',
+ '/home/m4/git/M4']

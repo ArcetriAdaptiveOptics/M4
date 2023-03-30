@@ -59,12 +59,10 @@ idgood = np.where(st < c*3)
 idgood = st < c*3
 reflist=list(compress(reflist, idgood))
 
-
-##
-
-av=aveframe2(tn, fold, idgood)
+av=aveframe2(tn, reffold)
 plt.figure(); plt.imshow(av);  colorbar(); plt.show();    
         
+
 
     
 ##

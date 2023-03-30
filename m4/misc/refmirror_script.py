@@ -13,12 +13,12 @@ import os
 
 base = '/mnt/m4storage/Data/M4Data/OPTData/RefMirror/'
 tn = '20230329_091725'
-tn = '20230328_163013'
+#tn = '20230328_163013'
 step = 0.06  #[m]
+
 
 ######  GET REF DATA ########  Check rmlib.py for cavity definition
 pixscale = rmlib.getrefdata(tn)
-
 
 ###### GET DATA FROM MEASUREMENT #####
 ppos, fl = rmlib.fold2pos(tn)
@@ -72,7 +72,7 @@ fullframe = rmlib.stitch_process2(iv, fullmask,zlist2fit=[1,2,3],zlist2adjust=[1
 
 
 pippo = th.removeZernike(fullframe,[1,2,3])
-fig=figure(figsize=(5,10)); imshow(pippo,cmap='jet',vmin=-10e-8, vmax=10e-8); colorbar(); title('RMS = %.3e nm' %(std(pippo)))
+fig=figure(figsize=(10,10)); imshow(pippo,cmap='jet',vmin=-10e-8, vmax=10e-8); colorbar(); title('RMS = %.3e nm' %(std(pippo)))
 
 
 
