@@ -18,7 +18,7 @@ class TestFakeAccelerometers(unittest.TestCase):
     def tearDown(self):
         os.unlink(self._fname)
 
-    @mock.patch('m4.ott_sim.fake_accelerometers.fold_name', autospect=True)
+    @mock.patch('m4.ott_sim.fake_accelerometers.fold_name', unsafe=True)
     def testDataAcquisition(self, mock_fold_name):
         want_acc_root_folder = os.path.join(
             testDataRootDir(), 'base', 'M4Data',
