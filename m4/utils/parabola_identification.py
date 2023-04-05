@@ -85,6 +85,47 @@ class ParabolaActivities():
         print(nmarkers)
         return imaf
 
+
+    def rawMarkersPos(self, image):
+        ''' Function to obtain the position of parabola markers
+        Parameters
+        ----------
+        image: numpy masked array
+            image on which to search for markers
+
+        Returns
+        -------
+        imaf: numpy array [2, n_markers]
+            x and y coordinates for markers
+        '''
+        image = image.mask
+        image_not_blobs = label(image == 0)
+        image_blobs = label(image != 0)
+        properties =['area','centroid',
+                     'major_axis_length', 'minor_axis_length',
+                     'eccentricity','bbox']
+        image_df = pd.DataFrame(regionprops_table(image_blobs, properties = properties))
+        #sel_image = (image_df['area'] < 1000) &  (image_df['area'] > np.median(image_df['area'])/2)
+        #imaf = np.array([image_df['centroid-0'][sel_image],image_df['centroid-1'][sel_image]])
+        #nmarkers = np.max(imaf.shape)
+        #self._nmarkers = nmarkers
+        #print(nmarkers)
+        return image_df 
+
+    def filterMarkersPos(self,image_df, mindim, maxdim):
+        '''Function to filter markers coordinates according to size (pix, diameter)
+            
+        '''
+        areamin = mindim#(mindim/2)**2*3.14
+        areamax = maxdim #(maxdim/2)**2*3.14
+        sel_image = (image_df['area'] < maxdim) &  (image_df['area'] > mindim)
+        imaf = np.array([image_df['centroid-0'][sel_image],image_df['centroid-1'][sel_image]])
+        nmarkers = np.max(imaf.shape)
+        self._nmarkers = nmarkers
+        print(nmarkers)
+        return imaf
+
+
     def _fitEllipse(self, x, y):
             '''
             args:

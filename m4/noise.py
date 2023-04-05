@@ -239,7 +239,7 @@ def convection_noise(data_file_path, tau_vector, fits_analysis=False, nzern=None
 #         plt.plot(decorr_time, _funFit(decorr_time,*pp), 'og',
 #                  label='Dec time = %d [s]' %np.round(decorr_time))
         plt.legend()
-        tt = dove.split('/')[-1]
+        tt = data_file_path.split('/')[-2]
         plt.title('%s' % tt)
         plt.show()
         name = os.path.join(dove, 'rms_tau.png')

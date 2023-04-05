@@ -21,16 +21,7 @@ def acquire(N,bpath,x,y,ref=None):
         print(jj)
         ima = interf.wavefront()
         saveima(os.path.join(base,'{:04d}'.format(jj))+'.fits',ima)
-        
-    
-['',
- '/home/m4/anaconda3/lib/python38.zip',
- '/home/m4/anaconda3/lib/python3.8',
- '/home/m4/anaconda3/lib/python3.8/lib-dynload',
- '/home/m4/anaconda3/lib/python3.8/site-packages',
- '/home/m4/anaconda3/lib/python3.8/site-packages/IPython/extensions',
- '/home/m4/towerbridge/lib/python3.8/site-packages/',
- '/home/m4/git/M4']
+
 
 #code
 interf = plico_interferometer.interferometer('192.168.22.79', 7300)

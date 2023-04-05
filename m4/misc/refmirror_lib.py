@@ -255,7 +255,7 @@ def coalign(img1, img2, dmmask, zlist2fit=[1,2,3,4], zlist2adjust=[1,2,3,4]):
     tip2add = zernike_surf(zlist2adjust, -1*dmmask+1,dcc2adjust)*mask2
     img222 = img2 - tip2add
     img3 = merge(img1, img222)
-    img3 = th.removeZernike(img3,[1,2,3])
+    img3 = th.removeZernike(img3,zlist2adjust)
     return img3
 
 
