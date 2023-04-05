@@ -363,7 +363,7 @@ class PistMeas():
             addfold ='/hdf5/'
         else:
             
-            fold = findTracknum(tn)
+            fold = th.findTracknum(tn)
             addfold = '/'
             name = '20*'
             if fold == 'OPDImages':

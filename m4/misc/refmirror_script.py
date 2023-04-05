@@ -45,12 +45,12 @@ for ii in range(len(imgvec)):
 
 
 #### subiap img check
-figure(figsize=(20,20))
+plt.figure(figsize=(20,20))
 vlim = 1e-7
 for ii in range(len(imgvec)):
-    subplot(3,7,ii+1)
-    imshow(imgvec[ii],cmap='jet')#vmin=-vlim, vmax=vlim)
-    colorbar()
+    plt.subplot(3,7,ii+1)
+    plt.imshow(imgvec[ii],cmap='jet')#vmin=-vlim, vmax=vlim)
+    plt.colorbar()
     plt.title(ii)
 
 
