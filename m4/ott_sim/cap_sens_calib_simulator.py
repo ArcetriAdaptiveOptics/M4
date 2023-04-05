@@ -15,7 +15,7 @@ from m4 import noise
 
 class CapSensCalibSimulator():
     '''
-    HOW TO USE IT::
+        HOW TO USE IT::
 
         from m4.ott_sim.cap_sens_calib_simulator import CapSensCalibSimulator
         conf = '---/MyConf.yaml'
