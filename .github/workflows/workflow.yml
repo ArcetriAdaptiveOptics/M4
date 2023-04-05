@@ -8,13 +8,13 @@ jobs:
         os: [ubuntu-latest] #, macos-latest]
     env:
       OS: ${{ matrix.os }}
-      PYTHON: '3.7.5'
+      PYTHON: '3.7'
     steps:
     - uses: actions/checkout@master
     - name: Setup Python
       uses: actions/setup-python@master
       with:
-        python-version: 3.7.5
+        python-version: 3.7
     - name: Generate coverage report
       run: |
         sudo apt-get install -y xvfb libdbus-1-3 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
