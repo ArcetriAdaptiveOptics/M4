@@ -6,7 +6,7 @@ import os
 import numpy as np
 import unittest
 import mock
-from m4.gui import geometry_GUI
+#from m4.gui import geometry_GUI
 from m4.configuration import start
 from test.test_helper import testDataRootDir
 
