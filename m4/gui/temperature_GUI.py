@@ -39,13 +39,13 @@ class Runner():
             gui.heart_empty_30.beat()
             
         
-        gui_image = Gui([ PGI('heart_full_30'), ___    , ___, ___ ],
+        gui_image = Gui([ ['heart_empty_30.png'], ___    , ___, ___ ],
                         [   _ ,  HB('heart_empty_30.png', 'heart_full_30.png'), _, _], images_dir=data_root_dir())
-        #gui_image.plot.set_title('Temperatures')
+
         
-        self.gui = Gui([ G('OTT_temperatures')])
+        self.gui = Gui([ G('OTT_temperature')])
         self.gui.OTT_temperature = gui_image
-        self.gui.heart_full_30 = np.arange(100).reshape((10,10))
+
         
     def run(self):
         ''' Run the GUI '''
