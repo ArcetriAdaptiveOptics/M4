@@ -9,6 +9,7 @@ import shutil
 import numpy as np
 from matplotlib import pyplot as plt
 from astropy.io import fits as pyfits
+from m4.ground import timestamp
 from m4.configuration import config_folder_names as fold_name
 from m4.configuration.ott_parameters import Interferometer
 from m4.ground.read_data import InterferometerConverter
@@ -121,6 +122,7 @@ class I4d6110(BaseInterferometer):
         self._i4d = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
         self._ic = InterferometerConverter()
         self._logger = logging.getLogger('4D')
+        self._ts = timestamp.Timestamp()
 
     def acquire_phasemap(self, nframes=1, delay=0):
         """
@@ -128,8 +130,8 @@ class I4d6110(BaseInterferometer):
         ----------
             nframes: int
                 number of frames
-            show: int
-                0 to not show the image
+            delay: int [s]
+                delay between images
 
         Returns
         -------
@@ -138,15 +140,16 @@ class I4d6110(BaseInterferometer):
         """
         if nframes == 1:
             width, height, pixel_size_in_microns, data_array = self._i4d.takeSingleMeasurement()
-            masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array)
+            masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array*632.8e-9)
         else:
             image_list = []
             for i in range(nframes):
                 width, height, pixel_size_in_microns, data_array = self._i4d.takeSingleMeasurement()
-                masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array)
+                masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array*632.8e-9)
                 image_list.append(masked_ima)
                 time.sleep(delay)
-            masked_ima = np.dstack(image_list)
+            images = np.ma.dstack(image_list)
+            masked_ima = np.ma.mean(images, 2)
 
 #         if show != 0:
 #             plt.clf()
@@ -177,25 +180,61 @@ class I4d6110(BaseInterferometer):
         pyfits.writeto(fits_file_name, masked_image.data)
         pyfits.append(fits_file_name, masked_image.mask.astype(int))
 
-    def burstFramesToSpecificDirectory(self, directory, numberOfFrames):
+    # def burstAndConvertFrom4DPCTom4OTTpc(self, n_frames):
+    #     '''
+    #     Attention: check if 4d is mounted
+    #
+    #     Parameters
+    #     ----------
+    #     n_frames: int
+    #          number of frames for burst
+    #     '''
+    #     fold_capture = 'D:/M4/Capture' #directory where to save files
+    #     tn = self._ts.now()
+    #     print(tn)
+    #     self._i4d.burstFramesToSpecificDirectory(os.path.join(fold_capture, tn+'/'), n_frames)
+    #
+    #     # convert the frames 
+    #     fold_produced ='D:/M4/Produced'
+    #     self._i4d.convertRawFramesInDirectoryToMeasurementsInDestinationDirectory(os.path.join(fold_produced, tn), os.path.join(fold_capture, tn))
+    #
+    #     shutil.move(os.path.join('/home/m4/4d/M4/Produced', tn), fold_name.OPD_IMAGES_ROOT_FOLDER)
+
+    def capture(self, numberOfFrames, folder_name=None):
         '''
         Parameters
         ----------
-        directory: string
-            directory where to save files
         numberOfFrames: int
             number of frames to acquire
-        '''
-        self._i4d.burstFramesToSpecificDirectory(directory, numberOfFrames)
-        return
 
-    def burstFramesToDisk(self, numberOfFrames):
+        Other parameters
+        ---------------
+        folder_name: string
+            if None a tacking number is generate
+        
+        Returns
+        -------
+        folder_name: string
+            name of folder measurements
+        '''
+        if folder_name is None:
+            folder_name = self._ts.now()
+        print(folder_name)
+        
+        self._i4d.burstFramesToSpecificDirectory(os.path.join(Interferometer.CAPTURE_FOLDER_NAME_4D_PC,
+                                                              folder_name), numberOfFrames)
+        return folder_name
+    
+    def produce(self, folder_name):
         '''
         Parameters
         ----------
-        numberOfFrames: int
-            number of frames to acquire
-
+        folder_name: string
+            name of folder measurements to convert
         '''
-        self._i4d.burstFramesToDisk(numberOfFrames)
-        return
+        self._i4d.convertRawFramesInDirectoryToMeasurementsInDestinationDirectory(
+            os.path.join(Interferometer.PRODUCE_FOLDER_NAME_4D_PC, folder_name),
+            os.path.join(Interferometer.CAPTURE_FOLDER_NAME_4D_PC, folder_name))
+        
+        shutil.move(os.path.join(Interferometer.PRODUCE_FOLDER_NAME_M4OTT_PC, folder_name),
+                    fold_name.OPD_IMAGES_ROOT_FOLDER)

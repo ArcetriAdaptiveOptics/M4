@@ -60,6 +60,8 @@ def zernikeFitAuxmask(img, auxmask, zernike_index_vector):
     ----------
     img: numpy masked array
         image for zernike fit
+    auxmask: numpy array
+        zero for masked point
     zernike_index_vector: numpy array
         vector containing the index of Zernike modes to be fitted starting from 1
 

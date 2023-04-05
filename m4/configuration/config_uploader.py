@@ -15,9 +15,17 @@ class config_rewriter():
     def upload(self):
         ''' Function for set the global path
         '''
-        config.simulated_ott = self.cc.simulated_ott
         config.simulated_interf = self.cc.simulated_interf
         config.simulated_dm = self.cc.simulated_dm
+        config.simulated_accelerometers = self.cc.simulated_accelerometers
+        config.simulated_angleRotator = self.cc.simulated_angleRotator
+        config.simulated_m4Exapode = self.cc.simulated_m4Exapode
+        config.simulated_parSlider = self.cc.simulated_parSlider
+        config.simulated_par = self.cc.simulated_par
+        config.simulated_rmSlider = self.cc.simulated_rmSlider
+        config.simulated_rm = self.cc.simulated_rm
+        config.simulated_tempSensors = self.cc.simulated_tempSensors
+
         config.BASE_PATH = self.cc.BASE_PATH
         config.CONFIGURATION_ROOT_FOLDER = self.cc.CONFIGURATION_ROOT_FOLDER
         config.ALL_CALIBRATION_DATA_ROOT_FOLDER = self.cc.ALL_CALIBRATION_DATA_ROOT_FOLDER

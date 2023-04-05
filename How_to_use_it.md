@@ -1,3 +1,24 @@
+# GUI #
+Aprire un terminale apposito e usare i comandi:
+```
+from m4.ground import GUI
+g = GUI.Runner(ott)
+g.run()
+```
+oppure modificare il file GUI a mano inserendo il path del file di configurazione così da poter usare il
+coomando 'python GUI.py' nella cartella dove è presente il file.
+
+# OTT standard configurtions #
+```
+oc = main.getOttConfigurator(ott)
+oc.move_to_segment_view(number_of_segment, RM_in)
+or
+oc.move_to_central_view(RM_in)
+```
+dove RM_in è un booleano che indica se lo specchio di riferimento deve essere posiizonato al centro oppure no.
+E' inoltre disponibile il comando oc.get_configuration() che restituisce i booleani indicanti la posizine corrente
+della torre (segment_view e rm_in True or False)
+
 ## Calibrazione ed allineamento OTT ##
  1) __Calibrazione della parabola con lo specchio di riferimento__
     - Scegliere un vettore di comandi con cui calibrare i gradi di libertà della parabola (PAR) e quello dello specchio di riferimento (RM).
@@ -9,18 +30,19 @@
  	NOTA: tenere presente che il metodo di calibrazione usato prevede che all'applicazione del comando par_tip corrisponda un'applicazione del comando rm_tip=-2.05*par_tip. Stessa relazione sussiste tra par_tilt ed rm_tilt.
     - Possibiltà di visualizzazione della matrice dei comandi di calibrazione prima dell'effetiva applicazione tramite il comando
  		  ```
- 		  main.showCommandMatrixBeforeCalibration(command_amp_vector)
+ 		  tt_calib = main.showCommandMatrixBeforeCalibration(command_amp_vector)
  		  ```
  
     - Il comando per effettuare la calibrazione è
       ```
-      main.calibrate_PARAndRM(ott, interf, n_frames, command_amp_vector, nPushPull)
+      main.calibrate_PARAndRM(ott, interf, command_amp_vector, nPushPull, n_frames=None, delay=None)
       ```
       dove:  
-      ott e interf sono gli oggetti precedentemente creati nello start up  
-      n_frame corrisponde al numero di frame da acquisire con l'interferometro per ogni misura da effettuare  
+      ott e interf sono gli oggetti precedentemente creati nello start up    
       command_amp_vector è il vettore da utilizzare per la calibrazione  
-      nPushPull corrisponde al numero di volte che verrà effettuata la misura per ognuno dei 5 comandi applicati
+      nPushPull corrisponde al numero di volte che verrà effettuata la misura per ognuno dei 5 comandi applicati  
+      n_frame corrisponde al numero di frame da acquisire con l'interferometro per ogni misura da effettuare  
+      delay indica i secondi di attesa tra una misura ed l'altra
     - La funzione di calibrazione ritorna il tracking number (tt_cal) della misura effettuata. Questo contiene:  
       CalibrationInfo.fits dove sono scritti insieme tutti i dati utilizzati per la calibrazione  
       Gli stessi dati separati in più file (CMat.fits, CommandAmplitude.fits, InteractionMatrix.fits, Mask.fits)  
@@ -41,7 +63,7 @@
  			e vanno in coppia con i dof [3,4], [1,2,3,4], [0,1,2,3,4]
     - Il comando per effettuare l'allineamento è
     ```
-    main.align_PARAndRM(ott, interf, tt_calib, n_images, zernike_to_be_corrected=None, dof_command_id=None)
+    tt_align = main.align_PARAndRM(ott, interf, tt_calib, zernike_to_be_corrected=None, dof_command_id=None, n_frames=None, delay=None)
     ```
     - La funzione stampa i comandi applicati a PAR e RM, gli zernike calcolati e restituisce il traching number della misura di allineamento appena eseguita
 	   	che contiene:  
@@ -187,12 +209,14 @@ Le funzione per l'analisi del rumore si ottengono con il comando _from m4 import
 - noise.spectrumFromData(dataFilePath)
 	La funzione calcola tip e tilt per ogni immagine presente nella cartella dataFilePath. Dei due vettori viene quindi calcolata
 	la trasformata di fourier reale e vengono visualizzati e salvati i plot.
-- noise.convection_noise(dataFilePath, tauVector)
+- noise.convection_noise(dataFilePath, tauVector, fits_analysis=False)
 	Questa funzione analizza i dati tramite funzione di struttura. Il vettore tau_vector determina la distanza tra le 
 	immagini da utilizzare in modo accoppiato e 2*tau_vector l'intervallo tra le misure. Per ogni elemento del vettore tau
 	vengono calcolati rms medio e somma quadratica media di tip e tilt: questi vengono salvati e visualizzati in un plot assieme
 	al fit calcolato sul vettore di rms.
 	Qualche esempio [qui](https://redmine.ict.inaf.it/projects/adopt_oaa/wiki/MOTT-20210401)
+	Nel caso di fits_analysis diverso da false la funzione può essere usata per analizzare dati fits provenienti dall'acquisizione di
+	monitoraggio stabilità (mOTT.measurements.opticalMonitoring)
 - noise.piston_noise(dataFilePath)
 	Ad ogni immagine presente nella cartella viene sottratto tip e til e ne viene calcolata la media: del vettore ottenuto viene fatto
 	e visualizzato lo spettro.
@@ -256,6 +280,19 @@ the "burst" instruction requires the full absolute destination path, including t
 the "convert" instruction requires the full absolute destination path, including the folder to be created and where to store the phasemaps
 
 ###### Read saved files
+Unica funzione per la lettura del file:
+```
+form m4.ground import read_data
+image = read_data.read_phasemap(image_file_path)
+```
+
+Per le emergenze:
+- .h5 files:
+```
+from m4.ground.read_data import InterferometerConverter
+ic = InterferometerConverter()
+image = ic.fromPhaseCam4020(i4dfilename)
+```
 - .4D files:
 ```
 from m4.ground.read_data import InterferometerConverter
@@ -294,11 +331,32 @@ __Masks__
 - Mask the image with a circular mask:
 ```
 from m4.ground import geo
-masked_image = draw_mask(start_image, centre_x, centre_y, radius)
+mask = draw_mask(start_image, centre_x, centre_y, radius)
 ```
 - Extracting the parabola mask using markers:
 ```
-from m4.utils.parabola_identification import ParabolaCirculaPupil
-pz = ParabolaCirculaPupil()
-circle_mask = pz.par_mask_on_ott(image)
+from m4.utils.parabola_identification import ParabolaActivities
+pa = ParabolaActivities()
+circle_mask = pa.par_mask_on_ott(image)
 ```
+
+# Parabola measurements
+```
+from m4.utils.parabola_identification import ParabolaActivities
+pa = ParabolaActivities()
+```
+Per l'estrazione della maschera della parabola utilizzare:
+circle_mask = pa.par_mask_on_ott(image)
+
+Per l'acquisizione delle misure con CGH usare:
+```
+tt, cube = pa.parab_cgh_measure(interf, n_frames, delay)
+```
+che restituisce il tracking number delle misure salvate e il cubo di misure appena effettuate
+
+Per il controllo della posizione dei markers:
+```
+pa.check_concentricity(image)
+```
+maschera a un numero definito di pixel in modo da trovare solo i fiduciali d'interesse.
+Stampa poi centro assi (perchè usa il FitEllipse) e raggio dato dalla media dei due assi.

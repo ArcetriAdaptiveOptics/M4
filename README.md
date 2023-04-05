@@ -21,9 +21,16 @@ Per scaricare i cambiamenti presenti su github:
 
     NOTA: file di configurazione da modificare all'occorrenza inserendo:
     - base_path: '/....../M4/Data'
-    - simulated_ott: True or False
     - simulated_interf: True or False
     - simulated_dm: True or False
+    - simulated_accelerometers: True or False
+    - simulated_angleRotator: True or False
+    - simulated_m4Exapode: True or False
+    - simulated_parSlider: True or False
+    - simulated_par: True or False
+    - simulated_rmSlider: True or False
+    - simulated_rm: True or False
+    - simulated_tempSensors: True or False
   - from m4 import main
   - main.start_log(logging_level) NOTA: ritorna il cammino del file di log
 

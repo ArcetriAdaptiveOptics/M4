@@ -1,3 +1,10 @@
-simulated_ott: True
 simulated_interf: True
 simulated_dm: True
+simulated_accelerometers: True
+simulated_angleRotator: True
+simulated_m4Exapode: True
+simulated_parSlider: True
+simulated_par: True
+simulated_rmSlider: True
+simulated_rm: True
+simulated_tempSensors: True

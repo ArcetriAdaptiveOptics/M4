@@ -165,11 +165,13 @@ class InterferometerConverter():
                 ima: numpy masked array
                      masked array image
         """
-        file = h5py.File(i4dfilename, 'r')
-        data = file.get('/Measurement/SurfaceInWaves/Data')
-        meas = data[()]
-        mask = np.invert(np.isfinite(meas))
+        with h5py.File(i4dfilename, 'r') as ff:
+            data = ff.get('/Measurement/SurfaceInWaves/Data')
+            meas = data[()]
+            mask = np.invert(np.isfinite(meas))
+
         image = np.ma.masked_array(meas * 632.8e-9, mask=mask)
+        
         return image
 
     @staticmethod

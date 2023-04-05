@@ -45,7 +45,7 @@ class FakeReferenceMirror(BaseReferenceMirror):
         current_pos: numpy array [mm]
             absolute reference mirror position in millimeters
         '''
-        self._pos = absolute_position_in_mm
+        self._pos = np.array(absolute_position_in_mm)
         return self.getPosition()
 
     def getPositionInM(self):
@@ -68,5 +68,5 @@ class FakeReferenceMirror(BaseReferenceMirror):
         current_pos: numpy array [m]
             absolute reference mirror position in meters
         '''
-        self._pos = absolute_position_in_m * 1e3
+        self._pos = np.array(absolute_position_in_m) * 1e3
         return self.getPositionInM()

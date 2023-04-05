@@ -41,6 +41,13 @@ class OttConfigurations():
         return
 
     def move_to_central_view(self, RM_in):
+        '''move the ott configuration in the central view
+
+        Parameters
+        ----------
+            RM: boolean
+                Reference mirror in (True) or not (False)
+        '''
         self._ott.parabolaSlider.setPosition(0)
         if RM_in==True:
             self._ott.referenceMirrorSlider.setPosition(0)

@@ -20,7 +20,7 @@ tnconf = ''
 class Interferometer():
     ''' Interferometer parameters
     '''
-    i4d_IP = '193.206.155.193'
+    i4d_IP =  '192.168.22.78' #'193.206.155.193'
     i4d_port = 8011
     N_PIXEL = np.array([512, 512]) #2048
     BIN_PIX = 1
@@ -29,7 +29,10 @@ class Interferometer():
     WEDGE = 0.5
     WAVEL = 632.8e-9
     QUANTIZATION = 1
-    BURST_FREQ = 28.57 #PhaseCam4020
+    BURST_FREQ = 20.0 #28.57 #PhaseCam4020
+    CAPTURE_FOLDER_NAME_4D_PC = 'D:/M4/Capture'
+    PRODUCE_FOLDER_NAME_4D_PC = 'D:/M4/Produced'
+    PRODUCE_FOLDER_NAME_M4OTT_PC = '/home/m4/4d/M4/Produced'
 
 class OttParameters():
     ''' Optical tower parameters
@@ -140,5 +143,5 @@ class OpcUaParameters():
  
 class OtherParameters():
     ''' '''
-    MASK_INDEX_SIMULATORE = 4
+    MASK_INDEX_SIMULATORE = 3
     MASK_INDEX_TOWER = 0

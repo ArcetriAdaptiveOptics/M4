@@ -25,7 +25,7 @@ class OpticalAlignment():
 
         from m4.utils.optical_alignment import OpticalAlignment
         al = OpticalAlignment(tt, ott, interf)
-        par_command, rm_command, dove = al.opt_aligner(n_images, zernike_to_be_corrected, dof_command_id)
+        par_command, rm_command, dove = al.opt_aligner(n_images, delay, zernike_to_be_corrected, dof_command_id)
     """
 
     def __init__(self, tt_cal, ott, interf):
@@ -55,12 +55,14 @@ class OpticalAlignment():
         return fold_name.ALIGNMENT_ROOT_FOLDER
 
 
-    def opt_aligner(self, n_images, zernike_to_be_corrected=None, dof_command_id=None):
+    def opt_aligner(self, n_images, delay, zernike_to_be_corrected=None, dof_command_id=None):
         """
         Parameters
         ----------
         n_images: int
             number of interferometers frames
+        delay: int [s]
+            delay between images
 
         Other Parameters
         ----------
@@ -89,7 +91,7 @@ class OpticalAlignment():
         self._commandId = dof_command_id
         self._intMat, self._rec, self._cmat = self.selectModesInIntMatAndRecConstruction(zernike_to_be_corrected, dof_command_id)
 
-        img = self._interf.acquire_phasemap(n_images)
+        img = self._interf.acquire_phasemap(n_images, delay)
         name = 'StartImage.fits'
         self.tt_al = Timestamp.now()
         dove = os.path.join(self._storageFolder(), self.tt_cal + '--' + self.tt_al)
@@ -227,7 +229,7 @@ class OpticalAlignment():
                             (zernike modes 2,3,4,7,8)
                 final_coef_selected = zernike selected using intMatModesVector (zernike2control)
         """
-        if  fold_name.simulated == 1:
+        if  fold_name.simulated_interf is True:
             mask_index = OtherParameters.MASK_INDEX_SIMULATORE
         else:
             mask_index = OtherParameters.MASK_INDEX_TOWER

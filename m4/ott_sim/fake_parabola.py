@@ -45,7 +45,7 @@ class FakeParabola(BaseParabola):
         current_pos: numpy array [mm]
             absolute parabola position in millimeters
         '''
-        self._pos = absolute_position_in_mm
+        self._pos = np.array(absolute_position_in_mm)
         return self.getPosition()
 
     def getPositionInM(self):
@@ -69,5 +69,5 @@ class FakeParabola(BaseParabola):
         current_pos: numpy array [m]
             absolute parabola position in meters
         '''
-        self._pos = absolute_position_in_m * 1e3
+        self._pos = np.array(absolute_position_in_m) * 1e3
         return self.getPositionInM()

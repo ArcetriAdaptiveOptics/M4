@@ -18,16 +18,43 @@ class configuration_path():
             self._conf = yaml.load(file, Loader=yaml.FullLoader)
 
     @property
-    def simulated_ott(self):
-        return self._conf['simulated_ott']
-
-    @property
     def simulated_interf(self):
         return self._conf['simulated_interf']
 
     @property
     def simulated_dm(self):
         return self._conf['simulated_dm']
+
+    @property
+    def simulated_accelerometers(self):
+        return self._conf['simulated_accelerometers']
+
+    @property
+    def simulated_angleRotator(self):
+        return self._conf['simulated_angleRotator']
+
+    @property
+    def simulated_m4Exapode(self):
+        return self._conf['simulated_m4Exapode']
+    @property
+    def simulated_parSlider(self):
+        return self._conf['simulated_parSlider']
+
+    @property
+    def simulated_par(self):
+        return self._conf['simulated_par']
+
+    @property
+    def simulated_rmSlider(self):
+        return self._conf['simulated_rmSlider']
+
+    @property
+    def simulated_rm(self):
+        return self._conf['simulated_rm']
+
+    @property
+    def simulated_tempSensors(self):
+        return self._conf['simulated_tempSensors']
 
 ### PATH_NAME ###
     @property
@@ -120,7 +147,7 @@ class configuration_path():
         if 'calibration_root_folder' in self._conf.keys():
             return self._conf['calibration_root_folder']
         else:
-            return os.path.join(self.OPT_DATA_FOLDER, 'Calibration')
+            return os.path.join(self.OPT_DATA_FOLDER, 'AlignmentCalibration')
 
     @property
     def ALIGNMENT_ROOT_FOLDER(self):
@@ -211,7 +238,7 @@ class configuration_path():
         if 'opd_series_root_folder' in self._conf.keys():
             return self._conf['opd_series_root_folder']
         else:
-            return os.path.join(self.OPT_DATA_FOLDER, 'OPD_series')
+            return os.path.join(self.OPT_DATA_FOLDER, 'OPDSeries')
 
     @property
     def REPEATABILITY_ROOT_FOLDER(self):

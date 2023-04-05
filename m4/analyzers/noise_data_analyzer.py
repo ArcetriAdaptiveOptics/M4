@@ -15,6 +15,8 @@ from m4.ground.read_data import InterferometerConverter
 from m4.analyzers.analyzer_iffunctions import AnalyzerIFF
 from m4.ground import zernike
 from m4.ground import read_data
+from m4.mini_OTT import timehistory as th
+
 
 
 class Noise():
@@ -55,12 +57,15 @@ class Noise():
             an = analyzer object
         '''
         an = AnalyzerIFF()
-        list = glob.glob(os.path.join(data_file_path,'*.h5'))
-        if len(list)==0:
-            list = glob.glob(os.path.join(data_file_path,'*.fits'))
-            if len(list)==0:
-                list = glob.glob(os.path.join(data_file_path,'*.4D'))
-        n_tot = len(list)
+        #lista = glob.glob(os.path.join(data_file_path,'*.h5'))
+        #if len(lista)==0:
+        #    lista = glob.glob(os.path.join(data_file_path,'*.fits'))
+        #    if len(lista)==0:
+        #        lista = glob.glob(os.path.join(data_file_path,'*.4D'))
+        lista = self._createOrdListFromFilePath(data_file_path)
+        n_tot = len(lista)
+        
+
         an._template = template
         if n_push_pull is None:
             an._nPushPull = 6
@@ -189,14 +194,15 @@ class Noise():
         freq_tilt: numpy array
             frequency obtained by fft of tilt data
         '''
-        list = self._createOrdListFromFilePath(data_file_path)
+        lista = self._createOrdListFromFilePath(data_file_path)
+
         coef_tilt_list = []
         coef_tip_list = []
-        for i in range(len(list)):
+        for i in range(len(lista)):
             name = 'img_%04d' %i
             print(name)
             #file_name = os.path.join(data_file_path, name)
-            start_image = image = read_data.read_phasemap(list[i])
+            start_image = image = read_data.read_phasemap(lista[i])
             coef, mat = zernike.zernikeFit(start_image, np.array([2, 3]))
             coef_tip_list.append(coef[0])
             coef_tilt_list.append(coef[1])
@@ -274,8 +280,8 @@ class Noise():
         '''
         Parameters
         ----------
-            tt_list: list
-                    list of tracking number to analyze
+            tt_list: lista
+                    lista of tracking number to analyze
 
         Returns
         -------
@@ -309,13 +315,54 @@ class Noise():
         return rms_medio, quad, n_temp, ptv_medio
     ### tt_list ###
     # measurementFolder ='/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Noise'
-    # list= os.listdir(measurementFolder); list.sort()
-    # tt_list = list[1:len(list)-2]
+    # lista= os.listdir(measurementFolder); lista.sort()
+    # tt_list = lista[1:len(lista)-2]
     ### PLOT ###
     # plot(n_temp, rms, '-o'); plt.xlabel('n_temp'); plt.ylabel('rms_medio')
 
     ### FUNZIONE DI STRUTTURA ###
-    def analysis_whit_structure_function(self, data_file_path, tau_vector, h5_or_fits=None):
+    def comp_spatial_stf(self, image_ma, pixsc=1e-3, nbins = None):
+        #lista = self._createOrdListFromFilePath(data_file_path)
+
+        
+        img = image_ma.data
+        mask = (image_ma.mask == 0)
+        sy = img.shape[0]
+        sx = img.shape[1]
+
+        if nbins is None:
+            nbins = int(sy/10)
+
+        sy, sx = img.shape
+
+        vec=img[0:int(sx/2)+1,int(sy/2)]
+        for posiz in np.arange(int(sx/2), 0,-1):
+            val = vec[posiz]
+            if ~np.isnan(val):
+                #print(posiz, val)
+                break
+        xx,yy = np.meshgrid(np.arange(sx)-posiz, np.arange(sy)-sy/2)
+        rr=np.sqrt(xx**2+yy**2)
+        data2hist = (img[mask]-val)**2
+        r2hist= rr[mask]
+        hist, bin_edges = np.histogram(r2hist, bins=nbins)
+
+        idd = np.digitize(r2hist, bin_edges)
+        idd_uniq  = np.unique(idd)
+        stf = hist * 0.0
+
+        for ii in np.arange(len(stf)):
+            data2mean = data2hist[idd == ii]
+            if len(data2mean)==0:
+                stf[ii] = 0
+            else:
+                stf[ii] = np.mean(data2hist[idd == ii])
+
+        return (bin_edges[1:]-(bin_edges[1]-bin_edges[0]))*pixsc, stf
+
+
+
+    def analysis_whit_structure_function(self, data_file_path, tau_vector, h5_or_fits=None, tn=None, nzern=None):
         '''
         .. 4000 = total number of image in hdf5
 
@@ -328,7 +375,8 @@ class Noise():
 
         Other Parameters
         ----------------
-        h5_or_fits: if it is none the h5 data analysis is performed
+        h5_or_fits: if it is none the .h5 or .4D data analysis is performed
+        else the fits analysis is performed
 
         Returns
         -------
@@ -338,18 +386,30 @@ class Noise():
                      squaring sum of tip and tilt calculated on the difference
                     of the images
         '''
-        if h5_or_fits is None:
-            list = glob.glob(os.path.join(data_file_path, '*.h5'))
+        #if h5_or_fits is None:
+        #    lista = glob.glob(os.path.join(data_file_path, '*.h5'))
+        #    if len(lista)==0:
+        #        lista = glob.glob(os.path.join(data_file_path,'*.4D'))
+        #    lista.sort()
+        #else:
+        #    listtot = glob.glob(os.path.join(data_file_path, '*.fits'))
+        #    listtot.sort()
+        #    lista = listtot[0:-2]
+        #print(lista)
+
+
+        lista = self._createOrdListFromFilePath(data_file_path)
+        if nzern is None:
+            zv= np.arange(3)+1
         else:
-            listtot = glob.glob(os.path.join(data_file_path, '*.fits'))
-            listtot.sort()
-            list = listtot[0:-2]
-        #inserire lista per file .4D
-        image_number = len(list)
+            zv=np.arange(nzern)+1
+
+        image_number = len(lista)
         i_max = np.int((image_number - tau_vector[tau_vector.shape[0]-1]) /
                        (tau_vector[tau_vector.shape[0]-1] * 2))
         if i_max <= 10:
-            raise OSError('tau = %s too large. i_max = %d' %(tau_vector[tau_vector.shape[0]-1], i_max))
+            print("Warning low sampling...")
+        #    raise OSError('tau = %s too large. i_max = %d' %(tau_vector[tau_vector.shape[0]-1], i_max))
         rms_medio_list = []
         quad_med_list = []
         for j in range(tau_vector.shape[0]):
@@ -363,16 +423,16 @@ class Noise():
                     #k = i * dist * 2
                     #name = 'img_%04d' %k
                     #file_name = os.path.join(data_file_path, name)
-                    image_k = image = read_data.read_phasemap(list[k])
+                    image_k = image = read_data.read_phasemap(lista[k])
                     #name = 'img_%04d' %(k+dist)
                     #file_name = os.path.join(data_file_path, name)
-                    image_dist = image = read_data.read_phasemap(list[k+dist])
+                    image_dist = image = read_data.read_phasemap(lista[k+dist])
                 else:
-                    image_k = read_data.readFits_maskedImage(list[k])
-                    image_dist = read_data.readFits_maskedImage(list[k+dist])
+                    image_k = read_data.readFits_maskedImage(lista[k])
+                    image_dist = read_data.readFits_maskedImage(lista[k+dist])
 
                 image_diff = image_k - image_dist
-                zernike_coeff_array, mat = zernike.zernikeFit(image_diff, np.array([2, 3]))
+                zernike_coeff_array, mat = zernike.zernikeFit(image_diff, zv)
                 sur = zernike.zernikeSurface(image_diff, zernike_coeff_array, mat)
                 image_ttr = image_diff - sur
                 quad = np.sqrt(zernike_coeff_array[0]**2 + zernike_coeff_array[1]**2)
@@ -409,15 +469,16 @@ class Noise():
             time: numpy array
                 vector of the time at which the image were taken
         '''
-        list = self._createOrdListFromFilePath(data_file_path)
-        image_number = len(list)
+        lista = self._createOrdListFromFilePath(data_file_path)
+
+        image_number = len(lista)
         time = np.arange(image_number) * (1/Interferometer.BURST_FREQ)
 
         mean_list = []
         for j in range(image_number):
             #name = 'img_%04d' %j
             #file_name = os.path.join(data_file_path, name)
-            image = image = read_data.read_phasemap(list[j])
+            image = image = read_data.read_phasemap(lista[j])
             zernike_coeff_array, mat = zernike.zernikeFit(image,
                                                               np.array([2, 3]))
             sur = zernike.zernikeSurface(image, zernike_coeff_array, mat)
@@ -444,15 +505,15 @@ class Noise():
             time: numpy array
                 vector of the time at which the image were taken
         '''
-        list = self._createOrdListFromFilePath(data_file_path)
-        image_number = len(list)
+        lista = self._createOrdListFromFilePath(data_file_path)
+        image_number = len(lista)
         time = np.arange(image_number) * (1/Interferometer.BURST_FREQ)
 
         tt_list = []
         for j in range(image_number):
             #name = 'img_%04d.h5' %j
             #file_name = os.path.join(data_file_path, name)
-            image = image = read_data.read_phasemap(list[j])
+            image = image = read_data.read_phasemap(lista[j])
             coeff, mat = zernike.zernikeFit(image,np.array([1,2, 3]))
 
             tt_list.append(coeff)
@@ -460,12 +521,18 @@ class Noise():
         tt = np.array(tt_list)
         return tt
 
-    def _createOrdListFromFilePath(self, data_file_path):
-        list = glob.glob(os.path.join(data_file_path,'*.h5'))
-        if len(list)==0:
-            list = glob.glob(os.path.join(data_file_path,'*.fits'))
-            if len(list)==0:
-                list = glob.glob(os.path.join(data_file_path,'*.4D'))
-        list.sort()
+    def _createOrdListFromFilePath(self, data_file_path ):
+
+#        lista = glob.glob(os.path.join(data_file_path,'*.h5'))
+#        if len(lista)==0:
+#            lista = glob.glob(os.path.join(data_file_path,'*.fits'))
+#            if len(lista)==0:
+#                lista = glob.glob(os.path.join(data_file_path,'*.4D'))
+#        lista.sort()
         #da controllare ordinamento nel caso di file .4D
-        return list
+        lista = th.fileList(None, fold=data_file_path,name ='*.h5')
+        if len(lista)==0:
+            lista = th.fileList(None, fold=data_file_path,name ='*.4D')
+            if len(lista)==0:
+                lista = th.fileList(None, fold=data_file_path,name ='20*.fits')
+        return lista
