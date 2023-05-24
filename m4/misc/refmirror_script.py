@@ -24,7 +24,7 @@ pixscale = rmlib.getrefdata(tn)
 ppos, fl = rmlib.fold2pos(tn)
 imgvec0, maskvec0,ppos = rmlib.tndata(tn,thrsurf=2, thrpix=0.95,rebinfactor=2)
 
-###### ERODE MASK AND REMOVE PTT
+###### ERODE MASK AND REMOVE PTT  (problemi nell'erosione, maskera ovale)
 imgvec, maskvec = rmlib.erodemask(maskvec0,imgvec0,dpix=2)
 
 imgvec2 = []
@@ -76,9 +76,28 @@ pippo = th.removeZernike(fullframe,zlist)
 fig=plt.figure(figsize=(10,10)); plt.imshow(pippo,cmap='jet'); plt.colorbar(); plt.title('RMS = %.3e m' %(np.std(pippo)))
 
 
+#------ analysis of in-out with ref and center
+tn = '20230418_121136'
+imgv, maskv, refv, maskrefv =  rmlib.tndataall(tn, thrsurf=2, thrpix=0.8, rebinfactor=8)
+zr = []
+zm = []
+for i in imgv:
+    cc, m= zern.zernikeFit(i, [1,2,3,4,5,6,7,8,9,10,11])
+    zm.append(cc)
+for i in refv:
+    cc, m= zern.zernikeFit(i, [1,2,3,4,5,6,7,8,9,10,11])
+    zr.append(cc)
+zr = np.array(zr)
+zm = np.array(zm)
+plot(zm[:,3], 'o')
+plot(zr[:,3],'x')
+refflat_power=11.3e-9
+refmirr = np.array([ -2.11e-09,   1.123e-06,   4.110e-07,   1.12989e-08,   5.45e-10,  -1.25282e-09,  -1.15052e-10,  -1.64e-09 , -1.120e-10,   3.484e-10 , -5.058e-09])
+cc = []
+for i in range(len(refmirr)):
+    cc.append( np.mean(zm[:,i])-np.mean(zr[:,i])+refmirr[i])
 
-
-
+print(cc)
 
 
 

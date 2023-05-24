@@ -136,11 +136,19 @@ def read_phasemap(filename, thefold = None):
 
     thetype = filename.split('.')[1]
     if thetype == 'fits':
+        hduList = pyfits.open(filename)
+        img = hduList[0].data
+        mask = hduList[1].data.astype(bool)
+
+        '''
         with pyfits.open(filename) as hduList:
+        
             img = hduList[0].data
             mask = hduList[1].data
+        '''
         #mask = np.zeros(img.shape, dtype=np.bool)
         #mask[np.where(img == img.max())] = True
+        
         img = np.ma.masked_array(img, mask)
         #hduList.close()
 

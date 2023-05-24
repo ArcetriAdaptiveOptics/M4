@@ -166,6 +166,53 @@ def tndata(tn, thrsurf=2, thrpix=0.8, rebinfactor=8):
     return patch, maskvec, ppos
 
 
+def tndataref(tn, thrsurf=2, thrpix=0.8, rebinfactor=8):
+    plist = reffold(tn)
+    nf = len(plist)
+    patch = []
+    maskvec = []
+    for i in plist:
+        print(i)
+        pp = patchdata(tn, i, thrsurf, thrpix, rebinfactor=8)
+        mp = np.invert(pp.mask).astype(int)
+        patch.append(pp)
+        maskvec.append(mp)
+    return patch, maskvec
+
+def tndataall(tn, thrsurf=2, thrpix=0.8, rebinfactor=8):  
+    foldlist = os.listdir(base+tn)
+    foldlist = np.sort(foldlist)
+    reflist = []
+    imglist = []
+    for i in foldlist:
+        ch = i.split('_')
+        ch = ch[-1]    
+        if ch[0:2] == 're':
+            reflist.append(i)
+        if ch[0:2] == 'im':
+            imglist.append(i)
+    refpatch = []
+    refmaskvec = []
+    for i in reflist:
+        print(i)
+        pp = patchdata(tn, i, thrsurf, thrpix, rebinfactor=8)
+        mp = np.invert(pp.mask).astype(int)
+        refpatch.append(pp)
+        refmaskvec.append(mp)        
+    imgpatch = []
+    imgmaskvec = []
+    for i in imglist:
+        print(i)
+        pp = patchdata(tn, i, thrsurf, thrpix, rebinfactor=8)
+        mp = np.invert(pp.mask).astype(int)
+        imgpatch.append(pp)
+        imgmaskvec.append(mp)
+    #imgpatch = np.ma.masked_array(imgpatch)
+    #refpatch = np.ma.masked_array(refpatch)
+
+    return imgpatch, imgmaskvec, refpatch, refmaskvec
+
+
 
 def erodemask(maskvec,imgvec,dpix=1):
     for ii in range(len(imgvec)):

@@ -10,9 +10,12 @@ import numpy as np
 from m4.ground import zernike
 from matplotlib import pyplot as plt
 import os
+from m4 import noise
 
 base = '/mnt/m4storage/Data/M4Data/OPTData/RefMirror/'
-tn   = '20230331_124514'
+#tn   = '20230331_124514'
+#tn   = '20230418_100251'
+tn = '20230418_113032'
 avefold=os.path.join(base,tn+'_Averages')
 if not os.path.exists(avefold):
     os.mkdir(avefold)
@@ -203,3 +206,13 @@ def save_phasemap(location, file_name, masked_image):
 
 
 
+##
+listfolder=os.listdir(base+tn)
+listfolder.sort()
+
+tau_vector = np.arange(1,5,1)
+path_series = '/mnt/m4storage/Data/M4Data/OPTData/RefMirror/'
+
+dfpath=os.path.join(path_series,tn,listfolder[1])
+
+noise.convection_noise(dfpath, tau_vector)

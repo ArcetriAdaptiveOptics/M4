@@ -9,7 +9,10 @@ from m4.mini_OTT import timehistory as th
 import numpy as np
 import os
 
-
+#'20230405_noise-config.4Dini
+#'20230404_1680x1680-out1400-k3x3-config.4Dini
+confnoise='D:/config/20230405_noise-config.4Dini'
+confpar='D:/config/20230404_1680x1680-out1400-k3x3-config.4Dini'
 
 #finding the dataset...
 img2flat5 = ['20221216_104500-16ave.4D','20221216_104000-16ave.4D' ]  # corresponda to p00bis

@@ -20,6 +20,10 @@ conf='/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
 ott, interf, dm = start.create_ott(conf)
 meas = Measurements(ott,interf)
 phcamfocus = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
+confnoise='D:/config/20230405_noise-config.4Dini'
+confpar='D:/config/20230404_1680x1680-out1400-k3x3-config.4Dini'
+confpar = 'D:/config/20230418_1680x1680-out1400-k3x3-config.4Dini'
+phcamfocus.loadConfiguration(confpar)
 
 #acquisition of time series
 NMEAS = 200
@@ -31,6 +35,9 @@ zern2corrf = np.array([0,1,2]) #TipTilt focus
 dofidf = np.array([0,1,2])# parpist, ParTip, ParTilt
 
 tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf, dofidf, n_frames=4)
+
+#measuring the Z4/z11 intmat
+p0 = ott.parabola.getPosition()
 
 
 #acquisition of single (averaged) frame
