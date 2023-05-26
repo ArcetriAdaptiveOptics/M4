@@ -5,6 +5,8 @@ name: Python package
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - 'm4/misc/**'
   pull_request:
     branches: [ master ]
 jobs:
