@@ -59,3 +59,14 @@ class OpcUaParabolaSlider(BaseParabolaSlider):
         if slide <= OpcUaParameters.min_slide or slide >= OpcUaParameters.max_slide:
             raise ValueError(
                 'The required parabola slider position is incorrect: %g' % slide)
+
+    #per OttImages.ottview
+    def getPositionInM(self):
+        '''
+        Returns
+        -------
+        current_pos: int [m]
+            parabola slider position in meters
+        '''
+        pos = self.getPosition()
+        return pos*1e-3

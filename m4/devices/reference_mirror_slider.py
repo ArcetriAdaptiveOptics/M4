@@ -58,3 +58,14 @@ class OpcUaReferenceMirrorSlider(BaseReferenceMirrorSlider):
         ''' Function for input parameter control'''
         if r_slide <= OpcUaParameters.min_r_slide or r_slide >= OpcUaParameters.max_r_slide:
             raise OSError(' The required reference flat position is incorrect: %d' % r_slide)
+    
+    #per OttImages.ottview
+    def getPositionInM(self):
+        '''
+        Returns
+        -------
+        current_pos: int [m]
+            reference mirror slider position in meters
+        '''
+        pos = self.getPosition()
+        return pos*1e-3
