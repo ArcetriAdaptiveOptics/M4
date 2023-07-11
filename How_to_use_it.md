@@ -11,6 +11,14 @@ g.run()
 oppure modificare il file GUI a mano inserendo il path del file di configurazione così da poter usare il
 coomando 'python geometry_GUI.py' nella cartella dove è presente il file.
 
+### temperature_GUI
+Aprire un terminale apposito e usare i comandi:
+```
+from m4.gui import temperature_GUI
+g = temperature_GUI.Runner(ott)
+g.run()
+```
+
 # OTT standard configurtions #
 ```
 oc = main.getOttConfigurator(ott)
