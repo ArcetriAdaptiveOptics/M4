@@ -1,12 +1,15 @@
 # GUI #
+Ci sono diversi tipi di GUI contenuti nella cartella m4.gui
+
+### geometry_GUI
 Aprire un terminale apposito e usare i comandi:
 ```
-from m4.ground import GUI
-g = GUI.Runner(ott)
+from m4.gui import geometry_GUI
+g = geometry_GUI.Runner(ott)
 g.run()
 ```
 oppure modificare il file GUI a mano inserendo il path del file di configurazione così da poter usare il
-coomando 'python GUI.py' nella cartella dove è presente il file.
+coomando 'python geometry_GUI.py' nella cartella dove è presente il file.
 
 # OTT standard configurtions #
 ```
