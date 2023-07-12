@@ -24,12 +24,13 @@ def filterFrames(tn,rad1=0.1,rad2=0.02,thr=1.2):
     plt.plot(st)
     p = where(st < np.min(st)*thr)[0]
     print('N. elements found:')
-    print(len(p)+'/'+print(len(fl))
+    print(len(p)+'/'+print(len(fl)))
+
     f = []
     for i in p:
         f.append(fl[i])
     ccube = th.cubeFromList(f)
-    aveimg = np.ma.mean(ccube,0)
+    aveimg = np.ma.mean(ccube, 0)
     return aveimg
 
 
