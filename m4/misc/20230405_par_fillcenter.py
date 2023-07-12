@@ -11,7 +11,7 @@ def filterFrames(tn,rad1=0.1,rad2=0.02,thr=1.2):
     ps = (cir[2]*2/maskdiam)  #pix/m
     inmrad1 = ps*rad1
     inmrad2 = ps*rad2
-    mm = geo.draw_mask(np.zeros(shape(img1)),cir[0],cir[1],inmrad1)
+    mm = geo.draw_mask(np.zeros(np.shape(img1)),cir[0],cir[1],inmrad1)
     mm = geo.draw_mask(mm,cir[0],cir[1],inmrad2, out=1)
     mmask = -1*mm+1
     st=[]
@@ -22,7 +22,7 @@ def filterFrames(tn,rad1=0.1,rad2=0.02,thr=1.2):
         st.append(img.std())    
     st = np.array(st)
     plt.plot(st)
-    p = where(st < np.min(st)*thr)[0]
+    p = np.where(st < np.min(st)*thr)[0]
     print('N. elements found:')
     print(len(p)+'/'+print(len(fl)))
 
