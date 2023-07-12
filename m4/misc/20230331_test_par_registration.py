@@ -84,37 +84,39 @@ p1 = coord2ima(p1)
 dd = p1-p0
 rr = np.sqrt(dd[0,:]**2+dd[1,:]**2)
 
-imshow(img)
-scatter(p0[0,:],p0[1,:],c=rr, s=100); plt.axis('equal')
+plt.imshow(img)
+plt.scatter(p0[0,:],p0[1,:],c=rr, s=100); plt.axis('equal')
 for i in range(nmark):
-    text(p0[0,i],p0[1,i],i)
+    plt.text(p0[0,i],p0[1,i],i)
 
 
-figure(2)
+plt.figure(2)
 
-scatter(p0[0,:],-p0[1,:],c=rr, s=100); plt.axis('equal')
+plt.scatter(p0[0,:],-p0[1,:],c=rr, s=100); plt.axis('equal')
 for i in range(nmark):
-    text(p0[0,i]+10,-p0[1,i],i)
+    plt.text(p0[0,i]+10,-p0[1,i],i)
 for i in range(nmark):
     rrs = ';'+str(int(rr[i]))+'px'
-    text(p0[0,i]+70,-p0[1,i],rrs)
+    plt.text(p0[0,i]+70,-p0[1,i],rrs)
 
 #check distortion
-c0, axs0, r0 = fitEllipse(p0[0,circ0],p0[1,circ0]); c0 = np.real(c0)
-c1, axs1, r1 = fitEllipse(p0[0,circ1],p0[1,circ1]); c1 = np.real(c1)
-c2, axs2, r2 = fitEllipse(p0[0,circ2],p0[1,circ2]); c2 = np.real(c2)
-c3, axs3, r3 = fitEllipse(p0[0,circ3],p0[1,circ3]); c3 = np.real(c3)
+from m4.utils.parabola_identification import ParabolaActivities
+pa = ParabolaActivities() #è la funzione giusta?
+c0, axs0, r0 = pa.fitEllipse(p0[0,circ0],p0[1,circ0]); c0 = np.real(c0)
+c1, axs1, r1 = pa.fitEllipse(p0[0,circ1],p0[1,circ1]); c1 = np.real(c1)
+c2, axs2, r2 = pa.fitEllipse(p0[0,circ2],p0[1,circ2]); c2 = np.real(c2)
+c3, axs3, r3 = pa.fitEllipse(p0[0,circ3],p0[1,circ3]); c3 = np.real(c3)
 pradii = np.array([r0, r1, r2, r3])
 ps = pradii/radii
 plt.plot(radii,ps, 'x')
-plt.plot(radii,pradii, 'x');xlabel('Markers mech radius [m]'); ylabel('Optical radius [pix]')
+plt.plot(radii,pradii, 'x');plt.xlabel('Markers mech radius [m]'); plt.ylabel('Optical radius [pix]')
 z=np.polyfit(radii,pradii,2)#x, y
 xx = np.linspace(radii[0],radii[-1],100)
 yy = z[0]*xx**2+z[1]*xx+z[2]
 plt.plot(xx, yy)
 radiin = radii/radii[-1]
 pradiin = pradii/pradii[-1]
-plt.plot(radiin,pradiin, 'x');xlabel('Markers mech radius [m]'); ylabel('Optical radius [pix]')
+plt.plot(radiin,pradiin, 'x');plt.xlabel('Markers mech radius [m]'); plt.ylabel('Optical radius [pix]')
 z=np.polyfit(radiin,pradiin,2)#x, y
 xx = np.linspace(radiin[0],radiin[-1],100)
 yy = z[0]*xx**2+z[1]*xx+z[2]
@@ -148,7 +150,7 @@ for i in range(len(tnlist0)):
         img = th.frame(j,fl)
         imaf = pa.rawMarkersPos(img)
         c0 = pa.filterMarkersPos(imaf, 100,500)
-        if shape(c0)[1] == 25:
+        if np.shape(c0)[1] == 25:
             pos1[:,:,j,i]=c0
 
 
@@ -165,14 +167,14 @@ for i in range(25):
 plt.plot(dpos.flatten())
 dd = dpos[:,:,0,0]
 rr = np.sqrt(dd[0,:]**2+dd[1,:]**2)
-scatter(pos[0,:,0,0],pos[1,:,0,0],  c=rr, marker='o', s=200)
+plt.scatter(pos[0,:,0,0],pos[1,:,0,0],  c=rr, marker='o', s=200)
 
-scatter(pos[0,:,0,0],pos[1,:,0,0],  c=dpos[0,:,0,0], marker='o', s=200)
-scatter(pos[0,:,0,0],pos[1,:,0,0],  c=dpos[1,:,0,0], marker='o', s=200)
+plt.scatter(pos[0,:,0,0],pos[1,:,0,0],  c=dpos[0,:,0,0], marker='o', s=200)
+plt.scatter(pos[0,:,0,0],pos[1,:,0,0],  c=dpos[1,:,0,0], marker='o', s=200)
 
 fl = th.fileList(tnlist[0])
 img=th.frame(0, fl)
-imshow(img)
+plt.imshow(img)
 plt.plot(pos[0,:,0,0],pos[1,:,0,0],'x')
 
 fig,ax = plt.subplots(1)
@@ -191,7 +193,7 @@ def fitEllipse(x,y):
     C = np.zeros([6, 6])
     C[0, 2] = C[2, 0] = 2
     C[1, 1] = -1
-    E, V =  eig(np.dot(inv(S), C))
+    E, V =  np.eig(np.dot(np.inv(S), C))
     #         import pdb
     #         pdb.set_trace()
     n = np.argmax(np.abs(E))

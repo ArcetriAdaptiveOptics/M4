@@ -10,6 +10,7 @@ import numpy as np
 from m4.ground import zernike
 from matplotlib import pyplot as plt
 import os
+import time
 from m4 import noise
 
 base = '/mnt/m4storage/Data/M4Data/OPTData/RefMirror/'

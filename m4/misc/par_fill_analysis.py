@@ -1,9 +1,10 @@
-
+import numpy as np
 from m4.mini_OTT import timehistory as th
 from m4.misc import par_filterCenter as pf
 from m4.ground import zernike as zern
 from importlib import reload
 from m4.ground import geo
+from matplotlib import pyplot as plt
 
 
 
@@ -17,9 +18,9 @@ aveimg, plist = pf.filterFrames(tn,rad1=0.1,rad2=0.02,thr=1.2)
 dd = pf.diffAnalysis(tn,plist,bbreak=2,zlist=zlist)
 cc, mat = zern.zernikeFit(dd,np.arange(11)+1)
 
-figure()
-imshow(dd, cmap='jet'); colorbar();
-title(tn + ' RMS = %.3e m' %(dd.std()))
+plt.figure()
+plt.imshow(dd, cmap='jet'); plt.colorbar();
+plt.title(tn + ' RMS = %.3e m' %(dd.std()))
 
 #in dd interessante provare a levare solo ptt
 
@@ -45,8 +46,8 @@ zlist = [1,2,3,4,7,8,11]
 
 par, plist = pf.filterFrames(tn,rad1=0.1,rad2=0.02,thr=thr)
 parz = th.removeZernike(par,zlist)
-figure()
-clf(); imshow(parz,cmap='jet'); colorbar()
+plt.figure()
+plt.clf(); plt.imshow(parz,cmap='jet'); plt.colorbar()
 titolo = tn + ' RMS = %.3e m ' %(parz.std())
 title(titolo)
 
@@ -78,25 +79,25 @@ zlist = [1,2,3,4,7,8,11]
 zlist = np.arange(11)+1
 
 par2x2z = th.removeZernike(par2x2,zlist)
-figure(3)
-clf(); imshow(par2x2z,cmap='jet'); colorbar()
+plt.figure(3)
+plt.clf(); imshow(par2x2z,cmap='jet'); plt.colorbar()
 titolo = tn2x2 + ' RMS = %.3e m ' %(par2x2z.std())
-title(titolo)
+plt.title(titolo)
 
 par3x3z = th.removeZernike(par3x3,zlist)
-figure(4)
-clf(); imshow(par3x3z,cmap='jet'); colorbar()
+plt.figure(4)
+plt.clf(); imshow(par3x3z,cmap='jet'); plt.colorbar()
 titolo = tn3x3 + ' RMS = %.3e m ' %(par3x3z.std())
-title(titolo)
+plt.title(titolo)
 
 
 dd = par2x2z - par3x3z
 rms_dd = dd.std()
 print('\n \u0394RMS = %.3e m' %(rms_dd))
 
-figure(5)
-clf(); imshow(dd,cmap='jet',vmin=-2e-8,vmax=2e-8);colorbar()
-title('\u0394 Average, RMS = %.3e m' %(rms_dd))
+plt.figure(5)
+plt.clf(); imshow(dd,cmap='jet',vmin=-2e-8,vmax=2e-8);plt.colorbar()
+plt.title('\u0394 Average, RMS = %.3e m' %(rms_dd))
 
 
 #####################################
@@ -129,12 +130,12 @@ dd = par_after - par_before
 
 
 
-figure(figsize=(18,5))
+plt.figure(figsize=(18,5))
 lim = 20e-9
-subplot(1,3,1); subplot(1,3,1); imshow(par_before,cmap='jet'); colorbar();title('Par_before \n RMS = %.3e m' %(par_before.std()))
-subplot(1,3,2); imshow(par_after,cmap='jet'); colorbar();title('Par_after  \n RMS = %.3e m' %(par_after.std()))
-subplot(1,3,3); imshow(dd,vmin=-lim,vmax=lim,cmap='jet'); colorbar(); title('\u0394Par RMS = %.3e m ' %(dd.std()))
-suptitle('PAR lifting tes')
+plt.subplot(1,3,1); plt.subplot(1,3,1); plt.imshow(par_before,cmap='jet'); plt.colorbar();title('Par_before \n RMS = %.3e m' %(par_before.std()))
+plt.subplot(1,3,2); plt.imshow(par_after,cmap='jet'); colorbar(); plt.title('Par_after  \n RMS = %.3e m' %(par_after.std()))
+plt.subplot(1,3,3); plt.imshow(dd,vmin=-lim,vmax=lim,cmap='jet'); plt.colorbar(); title('\u0394Par RMS = %.3e m ' %(dd.std()))
+plt.suptitle('PAR lifting tes')
 
 
 
