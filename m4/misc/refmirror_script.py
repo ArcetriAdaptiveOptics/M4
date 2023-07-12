@@ -89,8 +89,8 @@ for i in refv:
     zr.append(cc)
 zr = np.array(zr)
 zm = np.array(zm)
-plot(zm[:,3], 'o')
-plot(zr[:,3],'x')
+plt.plot(zm[:,3], 'o')
+plt.plot(zr[:,3],'x')
 refflat_power=11.3e-9
 refmirr = np.array([ -2.11e-09,   1.123e-06,   4.110e-07,   1.12989e-08,   5.45e-10,  -1.25282e-09,  -1.15052e-10,  -1.64e-09 , -1.120e-10,   3.484e-10 , -5.058e-09])
 cc = []

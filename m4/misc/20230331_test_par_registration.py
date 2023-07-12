@@ -1,8 +1,16 @@
+import numpy as np
 from m4.mini_OTT import timehistory as th
 from m4.utils.parabola_identification import ParabolaActivities
 from matplotlib.patches import Circle
+from matplotlib import pyplot as plt
 
 '''
+OTT
+TN
+20230707_142156
+
+
+CGH
 2000x2000, offs 28,0
 TN          	DIM MARKERS [MM]	N_MEAS
 20230328_175944	20	                20
@@ -98,22 +106,22 @@ c2, axs2, r2 = fitEllipse(p0[0,circ2],p0[1,circ2]); c2 = np.real(c2)
 c3, axs3, r3 = fitEllipse(p0[0,circ3],p0[1,circ3]); c3 = np.real(c3)
 pradii = np.array([r0, r1, r2, r3])
 ps = pradii/radii
-plot(radii,ps, 'x')
-plot(radii,pradii, 'x');xlabel('Markers mech radius [m]'); ylabel('Optical radius [pix]')
+plt.plot(radii,ps, 'x')
+plt.plot(radii,pradii, 'x');xlabel('Markers mech radius [m]'); ylabel('Optical radius [pix]')
 z=np.polyfit(radii,pradii,2)#x, y
 xx = np.linspace(radii[0],radii[-1],100)
 yy = z[0]*xx**2+z[1]*xx+z[2]
-plot(xx, yy)
+plt.plot(xx, yy)
 radiin = radii/radii[-1]
 pradiin = pradii/pradii[-1]
-plot(radiin,pradiin, 'x');xlabel('Markers mech radius [m]'); ylabel('Optical radius [pix]')
+plt.plot(radiin,pradiin, 'x');xlabel('Markers mech radius [m]'); ylabel('Optical radius [pix]')
 z=np.polyfit(radiin,pradiin,2)#x, y
 xx = np.linspace(radiin[0],radiin[-1],100)
 yy = z[0]*xx**2+z[1]*xx+z[2]
-plot(xx, yy)
+plt.plot(xx, yy)
 z1 = np.array([0.115, 0.879, 0]) # dati da Zemax
 yy1 = z1[0]*xx**2+z1[1]*xx+z1[2]
-plot(xx, yy1)
+plt.plot(xx, yy1)
 
 
 
@@ -145,8 +153,8 @@ for i in range(len(tnlist0)):
 
 
 i=0; j=0
-plot(pos[0,:,i,0],pos[1,:,i,0],'x'); plt.axis('equal')
-plot(pos1[0,:,i,0]+180-28,pos1[1,:,i,0]+180,'ro')
+plt.plot(pos[0,:,i,0],pos[1,:,i,0],'x'); plt.axis('equal')
+plt.plot(pos1[0,:,i,0]+180-28,pos1[1,:,i,0]+180,'ro')
 
 dpos = np.zeros([2,25,20,2])
 for i in range(25):
@@ -154,7 +162,7 @@ for i in range(25):
         for k in range(2):
             dpos[:,i,j,k] = pos[:,i,j,k]-pos1[:,i,j,k]-[180-28,180]
 
-plot(dpos.flatten())
+plt.plot(dpos.flatten())
 dd = dpos[:,:,0,0]
 rr = np.sqrt(dd[0,:]**2+dd[1,:]**2)
 scatter(pos[0,:,0,0],pos[1,:,0,0],  c=rr, marker='o', s=200)
@@ -165,7 +173,7 @@ scatter(pos[0,:,0,0],pos[1,:,0,0],  c=dpos[1,:,0,0], marker='o', s=200)
 fl = th.fileList(tnlist[0])
 img=th.frame(0, fl)
 imshow(img)
-plot(pos[0,:,0,0],pos[1,:,0,0],'x')
+plt.plot(pos[0,:,0,0],pos[1,:,0,0],'x')
 
 fig,ax = plt.subplots(1)
 ax.set_aspect('equal')

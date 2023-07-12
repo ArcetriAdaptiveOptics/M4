@@ -1,5 +1,7 @@
+import numpy as np
 from m4.mini_OTT import timehistory as th
 from m4.ground import geo
+from matplotlib import pyplot as plt
 
 def filterFrames(tn,rad1=0.1,rad2=0.02,thr=1.2):
     fl = th.fileList(tn)
@@ -14,12 +16,12 @@ def filterFrames(tn,rad1=0.1,rad2=0.02,thr=1.2):
     mmask = -1*mm+1
     st=[]
     for i in range(100):
-        img=th.frame(i,fl)
+        img = th.frame(i,fl)
         img = np.ma.masked_array(img, mmask)
-        img=th.removeZernike(img, [1,2,3])
+        img = th.removeZernike(img, [1,2,3])
         st.append(img.std())    
     st = np.array(st)
-    plot(st)
+    plt.plot(st)
     p = where(st < np.min(st)*thr)[0]
     print('N. elements found:')
     print(len(p)+'/'+print(len(fl))

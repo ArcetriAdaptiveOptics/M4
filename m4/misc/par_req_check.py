@@ -1,4 +1,4 @@
-
+import numpy as np
 from m4.mini_OTT import timehistory as th
 from m4.misc import par_filterCenter as pf
 from m4.ground import zernike as zern
