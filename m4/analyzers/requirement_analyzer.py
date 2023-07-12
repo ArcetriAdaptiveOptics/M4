@@ -14,6 +14,7 @@ from m4.ground import zernike
 from scipy.ndimage.interpolation import shift
 from m4.ground import read_data
 from m4.configuration import config_folder_names as config
+from matplotlib import pyplot as plt
 
 def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None):
     '''
@@ -73,7 +74,7 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
             ima = _circleImage(image, x[p], y[p], raggio_px)
             if ima is not None:
                 #list_ima.append(ima)
-                alpha, beta = curv_fit(ima, 2*radius_m)
+                alpha, beta = curv_fit_v2(ima, 1/ps)
                 raggi_km = roc(alpha, beta)
                 #raggio = roc(2*radius_m, alpha, beta)
                 #print(raggio)
@@ -210,14 +211,59 @@ def tiptilt_fit(ima):
         ima_ttr = np.ma.masked_array(new_image, mask=ima.mask)
         return ima_ttr
 
-def curv_fit(image, test_diameter):
+# def curv_fit(image, test_diameter):
+#     '''
+#     Parameters
+#     ----------
+#         image: masked array
+#             image for the analysis
+#         test_diameter: int
+#             diameter for xy coordinates
+#
+#     Returns
+#     -------
+#         alpha: float
+#             analytical coefficient of scalloping
+#         beta: float
+#             analytical coefficient of scalloping
+#     '''
+#     size = np.array([image.shape[0], image.shape[1]])
+#     ima_x = np.arange(size[0], dtype = float)
+#     ima_y = np.arange(size[1], dtype = float)
+#     xx = np.tile(ima_x, (size[0], 1))
+#     yy = np.tile(ima_y, (size[1], 1)).T
+#
+#     idx = np.where(image.mask==0)
+# #    xx = xx*(test_diameter/2)
+# #    yy = yy*(test_diameter/2)
+#
+#     xx = xx*(test_diameter)/size[0]
+#     yy = yy*(test_diameter)/size[1]
+#
+#     nn = image.compressed().shape[0]
+#     zmat = np.zeros((nn, 6))
+#     zmat[:,0] = xx[idx]**2
+#     zmat[:,1] = yy[idx]**2
+#     zmat[:,2] = xx[idx]*yy[idx]
+#     zmat[:,3] = xx[idx]
+#     zmat[:,4] = yy[idx]
+#     zmat[:,5] = np.ones(nn)
+#
+#     inv = np.linalg.pinv(zmat)
+#     coeff = np.dot(inv, image.compressed())
+#
+#     alpha = 0.5*( coeff[0]+ coeff[1]+ np.sqrt((coeff[0]-coeff[1])**2 + coeff[2]**2) )
+#     beta  = 0.5*( coeff[0]+ coeff[1]- np.sqrt((coeff[0]-coeff[1])**2 + coeff[2]**2) )
+#     return alpha, beta
+
+def curv_fit_v2(image, platescale_px_mm):
     '''
     Parameters
     ----------
         image: masked array
             image for the analysis
-        test_diameter: int
-            diameter for xy coordinates
+        platescale_px_mm: double
+            platescale in pixel / mm
 
     Returns
     -------
@@ -233,8 +279,8 @@ def curv_fit(image, test_diameter):
     yy = np.tile(ima_y, (size[1], 1)).T
 
     idx = np.where(image.mask==0)
-    xx = xx*(test_diameter/2)
-    yy = yy*(test_diameter/2)
+    xx = xx/platescale_px_mm
+    yy = yy/platescale_px_mm
 
     nn = image.compressed().shape[0]
     zmat = np.zeros((nn, 6))
@@ -248,6 +294,7 @@ def curv_fit(image, test_diameter):
     inv = np.linalg.pinv(zmat)
     coeff = np.dot(inv, image.compressed())
 
+    #compute the curvatures (1/R) and return them in km
     alpha = 0.5*( coeff[0]+ coeff[1]+ np.sqrt((coeff[0]-coeff[1])**2 + coeff[2]**2) )
     beta  = 0.5*( coeff[0]+ coeff[1]- np.sqrt((coeff[0]-coeff[1])**2 + coeff[2]**2) )
     return alpha, beta
@@ -268,7 +315,7 @@ def roc(alpha, beta):
         raggio: float
             radius of curvature
     '''
-    vect = np.array(1/alpha, 1/beta)
+    vect = np.array([1/(2*alpha), 1/(2*beta)])
     raggi_km = np.abs(vect)/1000
 #     wfe = test_diameter**2 /(8*np.sqrt(3)) * np.sqrt(2*(alpha-beta)**2 - (alpha+beta)**2)
 #     rho = test_diameter/2
@@ -573,6 +620,6 @@ def _readTestData(path):
 
 ### Per l'immagine 591X591
 # vv = np.ma.masked_array(np.zeros((1,image.shape[0])), mask=np.ones((1,image.shape[0])).astype(bool))
-# vv2 =np.ma.masked_array(np.zeros((image.shape[0]+1,1)), mask=np.ones((image.shape[0]+1, 1)).astype(bool)) 
+# vv2 =np.ma.masked_array(np.zeros((image.shape[0]+1,1)), mask=np.ones((image.shape[0]+1, 1)).astype(bool))
 # pp = np.ma.append(image, vv, axis=0)
 # new = np.ma.append(pp, vv2, axis=1)
