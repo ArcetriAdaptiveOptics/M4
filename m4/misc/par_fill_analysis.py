@@ -49,7 +49,7 @@ parz = th.removeZernike(par,zlist)
 plt.figure()
 plt.clf(); plt.imshow(parz,cmap='jet'); plt.colorbar()
 titolo = tn + ' RMS = %.3e m ' %(parz.std())
-title(titolo)
+plt.title(titolo)
 
 #############################
 
@@ -80,13 +80,13 @@ zlist = np.arange(11)+1
 
 par2x2z = th.removeZernike(par2x2,zlist)
 plt.figure(3)
-plt.clf(); imshow(par2x2z,cmap='jet'); plt.colorbar()
+plt.clf(); plt.imshow(par2x2z,cmap='jet'); plt.colorbar()
 titolo = tn2x2 + ' RMS = %.3e m ' %(par2x2z.std())
 plt.title(titolo)
 
 par3x3z = th.removeZernike(par3x3,zlist)
 plt.figure(4)
-plt.clf(); imshow(par3x3z,cmap='jet'); plt.colorbar()
+plt.clf(); plt.imshow(par3x3z,cmap='jet'); plt.colorbar()
 titolo = tn3x3 + ' RMS = %.3e m ' %(par3x3z.std())
 plt.title(titolo)
 
@@ -96,7 +96,7 @@ rms_dd = dd.std()
 print('\n \u0394RMS = %.3e m' %(rms_dd))
 
 plt.figure(5)
-plt.clf(); imshow(dd,cmap='jet',vmin=-2e-8,vmax=2e-8);plt.colorbar()
+plt.clf(); plt.imshow(dd,cmap='jet',vmin=-2e-8,vmax=2e-8);plt.colorbar()
 plt.title('\u0394 Average, RMS = %.3e m' %(rms_dd))
 
 
@@ -132,9 +132,9 @@ dd = par_after - par_before
 
 plt.figure(figsize=(18,5))
 lim = 20e-9
-plt.subplot(1,3,1); plt.subplot(1,3,1); plt.imshow(par_before,cmap='jet'); plt.colorbar();title('Par_before \n RMS = %.3e m' %(par_before.std()))
-plt.subplot(1,3,2); plt.imshow(par_after,cmap='jet'); colorbar(); plt.title('Par_after  \n RMS = %.3e m' %(par_after.std()))
-plt.subplot(1,3,3); plt.imshow(dd,vmin=-lim,vmax=lim,cmap='jet'); plt.colorbar(); title('\u0394Par RMS = %.3e m ' %(dd.std()))
+plt.subplot(1,3,1); plt.subplot(1,3,1); plt.imshow(par_before,cmap='jet'); plt.colorbar();plt.title('Par_before \n RMS = %.3e m' %(par_before.std()))
+plt.subplot(1,3,2); plt.imshow(par_after,cmap='jet'); plt.colorbar(); plt.title('Par_after  \n RMS = %.3e m' %(par_after.std()))
+plt.subplot(1,3,3); plt.imshow(dd,vmin=-lim,vmax=lim,cmap='jet'); plt.colorbar(); plt.title('\u0394Par RMS = %.3e m ' %(dd.std()))
 plt.suptitle('PAR lifting tes')
 
 

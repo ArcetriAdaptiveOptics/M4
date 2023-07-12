@@ -2,6 +2,7 @@ import sys
 sys.path.append('/home/m4/towerbridge/lib/python3.8/site-packages/')
 import plico_interferometer
 import os
+import time
 from astropy.io import fits as pyfits
 from m4.ground.timestamp import Timestamp
 
