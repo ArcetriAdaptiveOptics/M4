@@ -2,9 +2,8 @@
 Authors
   - C. Selmi: written in 2023
 '''
-import numpy as np
 from m4.ground.package_data import data_root_dir
-from guietta import Gui, G, MA, _, ___, III, HB, PGI
+from guietta import Gui, G, _, HB
 import sys
 
 class Runner():
