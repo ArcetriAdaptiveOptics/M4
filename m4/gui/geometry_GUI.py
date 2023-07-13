@@ -159,7 +159,7 @@ class Runner():
 
 def main():
     from m4.configuration import start
-    conf = '/home/labot/Desktop/labotConfig.yaml' #modificare all'occorrenza
+    conf = '/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
     ott, interf, dm = start.create_ott(conf)
 
     runner = Runner(ott)

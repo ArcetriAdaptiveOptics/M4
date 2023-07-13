@@ -5,6 +5,7 @@ Authors
 import numpy as np
 from m4.ground.package_data import data_root_dir
 from guietta import Gui, G, MA, _, ___, III, HB, PGI
+import sys
 
 class Runner():
     '''
@@ -93,3 +94,16 @@ class Runner():
         ''' Run the GUI '''
         self._setUp()
         self.gui.run()
+
+
+def main():
+    from m4.configuration import start
+    conf = '/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
+    ott, interf, dm = start.create_ott(conf)
+
+    runner = Runner(ott)
+    sys.exit(runner.run())
+
+if __name__ == '__main__':
+    main()
+
