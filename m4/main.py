@@ -151,7 +151,7 @@ def showCommandForParAndRmBeforeAlignement(ott, interf, tt_cal, n_images, delay,
 
 def align_PARAndRM(ott, interf, tt_calib,
                    zernike_to_be_corrected=None, dof_command_id=None,
-                   n_frames=None, delay=None):
+                   n_frames=None, delay=None, doit = False):
     '''
     Parameters
     ----------
@@ -179,7 +179,7 @@ def align_PARAndRM(ott, interf, tt_calib,
     if delay is None:
         delay = 0
 
-    move = True
+    move = doit
     print('Ott alignemnt')
     c_a = OttCalibAndAlign(ott, interf)
     par_cmd, rm_cmd, dove = c_a.par_and_rm_aligner(move, tt_calib,

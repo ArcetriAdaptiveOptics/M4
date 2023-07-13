@@ -105,22 +105,22 @@ class OttCalibAndAlign():
         image = self._interf.acquire_phasemap(n_images, delay)
         name = 'FinalImage.fits'
         all_final_coef, final_coef_selected = aliner.getZernikeWhitAlignerObjectOptions(image)
-        #self._alignmentLog(aliner, all_final_coef, dof_command_id, move)
+        self._alignmentLog(aliner, all_final_coef, dof_command_id, zernike_to_be_corrected, move)#mod
         self._logger.info('Zernike calculate on image after alignment =  %s', str(all_final_coef))
         self._logger.info('Dof command id used = %s', str(dof_command_id))
         self._interf.save_phasemap(dove, name, image)
         return par_cmd, rm_cmd, dove
 
-#     def _alignmentLog(self, aligner, total_coef, dof_command_id, move):
-#         fits_file_name = os.path.join(aligner._storageFolder(), 'AlignmentLog.txt')
-#         file = open(fits_file_name, 'a+')
-#         for i in range(total_coef.size):
-#             file.write('%9.3e ' % total_coef[i])
-#         file.write('\n')
-#         if move == 0:
-#             dof_command_id = -1
-#         file.write('%s \n ************\n' % dof_command_id)
-#         file.close()
+    def _alignmentLog(self, aligner, total_coef, dof_command_id, zernike_to_be_corrected, move):
+        fits_file_name = os.path.join(aligner._storageFolder(), 'AlignmentLog.txt')
+        file = open(fits_file_name, 'a+')
+        for i in range(total_coef.size):
+            file.write('%7.3e ' % total_coef[i])  #was 9.3
+        file.write('\n')
+        if move == 0:
+            dof_command_id = -1
+        file.write('DoF & Zern2Corr.          %s %s \n ************\n' % (dof_command_id, zernike_to_be_corrected))
+        file.close()
 
 
 ### M4 calibrator and aligner in cartellaBella.m4.toImplement.ott_calibrator_and_aligner ###

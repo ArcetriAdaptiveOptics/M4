@@ -102,7 +102,7 @@ class OpticalAlignment():
             cmd, self._zernikeVectorSelected, total_zernike_vector = self._commandGenerator(img)
             self.par_command, self.rm_command = self._reorgCmdForParAndRm(cmd, dof_command_id)
             self._saveData(dove, par_position, rm_position)
-            #self._alignmentLog(total_zernike_vector, self.tt_al)
+            self._alignmentLog(total_zernike_vector, self.tt_al)
             self._loggerRuna.info('Calibration tt used = %s', self.tt_cal)
             self._loggerRuna.info('Zernike calculate on image before alignment =  %s', str(total_zernike_vector))
             self._loggerRuna.info('Tracking number for alignment measurements = %s',  self.tt_al)
@@ -115,19 +115,23 @@ class OpticalAlignment():
             #self._saveZernikeVector(dove, zernike_vector_selected)
             #return m4_command, dove
 
-#     def _alignmentLog(self, start_total_coef, tt):
-#         fits_file_name = os.path.join(self._storageFolder(), 'AlignmentLog.txt')
-#         file = open(fits_file_name, 'a+')
-#         file.write('%s ' %self.tt_al)
-#         for i in range(start_total_coef.size):
-#             file.write('%9.3e ' %start_total_coef[i])
-#         file.write('\n')
-#         file.write('%s ' %tt)
-#                 #         for i in range(total_coef.size):
-#                 #             file.write('%9.3e ' %total_coef[i])
-#                 #         file.write('\n')
-#                 #         file.write('%s \n ************\n' %commandId)
-#         file.close()
+    def _alignmentLog(self, start_total_coef, tt):
+        ''' The Log prints the Calibration tracknum and the initial Zernike coeff [m]
+            Prints also the alignment tracknum (i.e. the folder to be saved).
+            Both is TRUE or FALSE are passed
+        '''
+        fits_file_name = os.path.join(self._storageFolder(), 'AlignmentLog.txt')
+        file = open(fits_file_name, 'a+')
+        file.write('Calib. Trackn & IniZern:  %s ' %self.tt_cal)
+        for i in range(start_total_coef.size):
+            file.write('%7.3e ' %start_total_coef[i])  #was 9.3
+        file.write('\n')
+        file.write('Result Trackn & EndZern:  %s ' %tt)
+                #         for i in range(total_coef.size):
+                #             file.write('%9.3e ' %total_coef[i])
+                #         file.write('\n')
+                #         file.write('%s \n ************\n' %commandId)
+        file.close()
 
     def selectModesInIntMatAndRecConstruction(self, zernike2control=None,
                                                commandId=None):
