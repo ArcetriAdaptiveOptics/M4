@@ -178,7 +178,7 @@ class I4d6110(BaseInterferometer):
         """
         fits_file_name = os.path.join(location, file_name)
         pyfits.writeto(fits_file_name, masked_image.data)
-        pyfits.append(fits_file_name, masked_image.mask.astype(int))
+        pyfits.append(fits_file_name, masked_image.mask.astype(uint8))  #was int, then uint16
 
     # def burstAndConvertFrom4DPCTom4OTTpc(self, n_frames):
     #     '''
