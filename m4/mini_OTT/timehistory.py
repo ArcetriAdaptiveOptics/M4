@@ -19,33 +19,44 @@ a = foldname.OPT_DATA_FOLDER + '/'
 #a='/mnt/m4storage/Data/M4Data/OPTData/'
 #tn = '20210425_085242'   #fits
 #tn  ='20210429_224400_noise'
+from m4.ground.read_4DConfSettingFile import ConfSettingReader
 
 
 
-class TimeHist():
-    '''
-    Class to 
-    HOW TO USE IT::
-f=
-
-    '''
-
-    def __init__(self, tn):
-        """The constructor """
-        self.tracknum = tn
-
-        self._fold  = findTracknum(tn)
-        self._path = a+ self._fold
-        self._list = fileList(tn)
-
-    def frame(self, id):
-
-        return frame(id, self._list)
-
-    def averageFrames(self, start, stop):
-    	
-        return averageFrames(start, stop, self._list)
-
+# class TimeHist():
+#     '''
+#     Class to 
+#     HOW TO USE IT::
+# f=
+#
+#     '''
+    #
+    # def __init__(self, tn):
+    #     """The constructor """
+    #     self.tracknum = tn
+    #
+    #     self._fold  = findTracknum(tn)
+    #     self._path = a+ self._fold
+    #     self._list = fileList(tn)
+    #     try:
+    #         self._confReader = ConfSettingReader(self.getConf4DSettingsPath)
+    #     finally:
+    #         pass
+    #
+    # def frame(self, id):
+    #
+    #     return frame(id, self._list)
+    #
+    # def averageFrames(self, start, stop):
+    #
+    #     return averageFrames(start, stop, self._list)
+    #
+    # def getConf4DSettingsPath(self):
+    #     fold = findTracknum(tn)
+    #     addfold = '/'
+    #     dirs = os.listdir(a+'/'+ fold+'/'+tn)
+    #     file_path = os.path.join(dirs, '4DSettings.ini')
+    #     return file_path
 
 
     #@staticmethod
@@ -128,6 +139,29 @@ def fileList(tn, fold=None, name=None):
     else:
         lsdirs.sort()
     return lsdirs
+
+def getConf4DSettingsPath(tn):
+    fold = findTracknum(tn)
+    addfold = '/'
+    dirs = a+'/'+ fold+'/'+tn
+    file_path = dirs + '/4DSettings.ini'
+    return file_path
+
+def getCameraSettings(tn):
+    file_path = getConf4DSettingsPath(tn)
+    setting_reader = ConfSettingReader(file_path)
+    width_pixel = setting_reader.getImageWidhtInPixels()
+    height_pixel = setting_reader.getImageHeightInPixels()
+    offset_x = setting_reader.getOffsetX()
+    offset_y = setting_reader.getOffsetY()
+    return [width_pixel, height_pixel, offset_x, offset_y]
+
+def getFrameRate(tn):
+    file_path = getConf4DSettingsPath(tn)
+    setting_reader = ConfSettingReader(file_path)
+    frame_rate = setting_reader.getFrameRate()
+    return frame_rate
+    
 
 def read_phasemap(filename, thefold = None):
 
@@ -286,6 +320,19 @@ def cubeFromList(fileList):
     image_list = np.ma.masked_array(image_list)
     #print(psutil.Process().open_files())
     return image_list
+
+def frame2ottFrame(img, croppar):
+    nfullpix = np.array([2000,2000])
+    fullimg = np.zeros(nfullpix)
+    fullmask = np.ones(nfullpix)
+    offx = croppar[0]
+    offy = croppar[1]
+    sx   = np.shape(img)[0] #croppar[2] 
+    sy   = np.shape(img)[1] #croppar[3]
+    fullimg[offx:offx+sx,offy:offy+sy]=img.data
+    fullmask[offx:offx+sx,offy:offy+sy]=img.mask
+    fullimg = np.ma.masked_array(fullimg, fullmask)
+    return fullimg
 
 
 def timevec(tn):
