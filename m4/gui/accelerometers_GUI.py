@@ -51,11 +51,11 @@ class Runner():
                 prova = ax.plot(freq1, np.abs(spe1[i, :]), '-')
                 ax.legend(prova, label_list[i], loc=0)
                 #gui.proxy('label%d'%i).set('%s' % label_list[i])
-                ax.figure.canvas.draw()
             ax.set_xlim([0, 100])
             #gui.plot.set_clim(vmin=0, vmax=100)
             ax.set_xlabel('Freq[Hz]')
             ax.set_ylabel('Amplitude Spectrum |m/s2|')
+            ax.figure.canvas.draw()
             #gui.heart_empty_30.beat()
 
         def Start_Acquisition(gui, *args):
@@ -90,3 +90,14 @@ class Runner():
         ''' Run the GUI '''
         self._setUp()
         self.gui.run()
+
+def main():
+    from m4.configuration import start
+    conf = '/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
+    ott, interf, dm = start.create_ott(conf)
+
+    runner = Runner(ott)
+    sys.exit(runner.run())
+
+if __name__ == '__main__':
+    main()
