@@ -17,4 +17,4 @@ guietta
 pyyaml
 serial
 pandas
-playsound
+playsound==1.2.2
