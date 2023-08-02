@@ -33,7 +33,7 @@ class Interferometer():
     CAPTURE_FOLDER_NAME_4D_PC = 'D:/M4/Capture'
     PRODUCE_FOLDER_NAME_4D_PC = 'D:/M4/Produced'
     PRODUCE_FOLDER_NAME_M4OTT_PC = '/home/m4/4d/M4/Produced'
-    SETTINGS_CONF_FILE_M4OTT_PC = '/home/m4/4d/M4/InterfSettings/4DSettings.ini'
+    SETTINGS_CONF_FILE_M4OTT_PC = '/home/m4/4dConfig/AppSettings.ini'
 
 class OttParameters():
     ''' Optical tower parameters

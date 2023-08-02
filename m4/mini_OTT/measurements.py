@@ -23,7 +23,9 @@ from m4.ott_calibrator_and_aligner import OttCalibAndAlign
 from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.ground.timestamp import Timestamp
-
+from m4.configuration.ott_parameters import Interferometer
+import shutil
+import playsound
 
 class Measurements():
     '''
@@ -69,9 +71,12 @@ class Measurements():
         tt: string
             tracking number of measurements
         '''
+        playsound.playsound('/mnt/m4storage/Data/Audio/monitoring-started.mp3')
         store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
         dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
-
+        print(tt)
+        shutil.copy(Interferometer.SETTINGS_CONF_FILE_M4OTT_PC, dove)
+        shutil.move(dove+'/AppSettings.ini',dove+'/4DSettings.ini')
         print('waiting {:n} s...'.format(start_delay))
         time.sleep(start_delay)
         print('start measuring')
@@ -86,7 +91,7 @@ class Measurements():
             name = Timestamp.now() + '.fits'
             fits_file_name = os.path.join(dove, name)
             pyfits.writeto(fits_file_name, masked_ima.data)
-            pyfits.append(fits_file_name, masked_ima.mask.astype(int))
+            pyfits.append(fits_file_name, masked_ima.mask.astype(np.uint8))
 
             coef, mat = zernike.zernikeFit(masked_ima, np.arange(10) + 1)
             vect = np.append(dt, coef)
