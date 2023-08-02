@@ -1,5 +1,6 @@
 
 import numpy as np
+from matplotlib import pyplot as plt
 from importlib import reload
 #import sys
 from astropy.io import fits as pyfits
@@ -59,7 +60,7 @@ fullframe = rmlib.stitch_process2(iv, fullmask,zlist2fit=[1,2,3],zlist2adjust=[1
 
 
 pippo = th.removeZernike(fullframe,[1,2,3])
-clf(); imshow(pippo,vmin=-3e-7, vmax=3e-7); colorbar()
+plt.clf(); plt.imshow(pippo,vmin=-3e-7, vmax=3e-7); plt.colorbar()
 
 
 fl = rmlib.gimmethelist(tn, fold)
@@ -67,7 +68,7 @@ cc = rmlib.getcube(fl)
 cc1 = rmlib.mask_check(cc, 0.8)
 cc2 = rmlib.std_check(cc1, 2)
 
-img = folddata(tn,fold, thrsurf=2, thrpix=0.8)
+#img = folddata(tn, fold, thrsurf=2, thrpix=0.8)
 
 
 

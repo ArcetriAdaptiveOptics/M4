@@ -11,6 +11,7 @@ from m4.configuration import start
 from m4.devices.i4d import I4D
 from m4.configuration.ott_parameters import Interferometer
 from m4 import noise
+import time
 conf='/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
 ott, interf, dm = start.create_ott(conf)
 meas = Measurements(ott,interf)
@@ -70,6 +71,8 @@ cc, m=zern.zernikeFit(img, [1,2,3,4,5,6,7,8,9,10])
 print(cc[6:8])
 
 #   - Time Series
+NMEAS = 1
+DELAY = 1
 tn = meas.opticalMonitoring(NMEAS,DELAY)
 fl = th.fileList(tn)
 imgave = th.averageFrames(0,100, fl)

@@ -28,7 +28,7 @@ ppos = ppos[aa]
 foldref = '0001_0000_ref0'
 refimg = rmlib.patchdata(tn,foldref, thrsurf=2, thrpix=0.8, rebinfactor=8)
 refimg = th.removeZernike(refimg,[1,2,3])
-imshow(refimg,cmap='jet')
+plt.imshow(refimg,cmap='jet')
 
 imgvec0, maskvec0,ppos = rmlib.tndata(tn,thrsurf=2, thrpix=0.95)
 ppos = ppos[aa]
@@ -60,12 +60,12 @@ for ii in range(len(imgvec)):
 
 
 #### subiap img check
-figure(figsize=(20,20))
+plt.figure(figsize=(20,20))
 vlim = 1e-7
 for ii in range(len(imgvec)):
-    subplot(3,7,ii+1)
-    imshow(imgvec[ii],cmap='jet')#vmin=-vlim, vmax=vlim)
-    colorbar()
+    plt.subplot(3,7,ii+1)
+    plt.imshow(imgvec[ii],cmap='jet')#vmin=-vlim, vmax=vlim)
+    plt.colorbar()
     plt.title(ii)
 
 
