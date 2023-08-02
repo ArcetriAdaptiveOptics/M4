@@ -21,6 +21,8 @@ import glob
 import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
+from m4.configuration import start_onlydata
+start_onlydata.create_conf_paths(os.environ['PYOTTCONF'])
 from m4.configuration import config_folder_names as config
 from m4.configuration.ott_parameters import Interferometer
 from m4.analyzers.noise_data_analyzer import Noise

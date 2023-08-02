@@ -14,6 +14,7 @@ from m4.configuration import config_folder_names as fold_name
 from m4.configuration.ott_parameters import Interferometer
 from m4.ground.read_data import InterferometerConverter
 from m4.devices.base_interferometer import BaseInterferometer
+import playsound
 
 class I4d4020(BaseInterferometer):
     ''' Class for i4d interferometer
@@ -223,6 +224,7 @@ class I4d6110(BaseInterferometer):
         
         self._i4d.burstFramesToSpecificDirectory(os.path.join(Interferometer.CAPTURE_FOLDER_NAME_4D_PC,
                                                               folder_name), numberOfFrames)
+        playsound.playsound('/mnt/m4storage/Data/Audio/Capture-completed.mp3')
         return folder_name
     
     def produce(self, folder_name):
@@ -238,3 +240,5 @@ class I4d6110(BaseInterferometer):
         
         shutil.move(os.path.join(Interferometer.PRODUCE_FOLDER_NAME_M4OTT_PC, folder_name),
                     fold_name.OPD_IMAGES_ROOT_FOLDER)
+        playsound.playsound('/mnt/m4storage/Data/Audio/produce-completed.mp3')
+
