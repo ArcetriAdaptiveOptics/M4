@@ -96,7 +96,8 @@ setup(name=NAME,
                         "guietta",
                         "pyyaml",
                         "serial",
-                        "pandas"
+                        "pandas",
+                        "playsound"
                         ],
       package_data={
           'm4': ['data/*'],

@@ -7,6 +7,7 @@ HOW TO USE IT::
     from m4.configuration import start
     ott, interf, dm = start.create_ott(config_file_path)
 '''
+import os
 from m4.configuration.create_ott import OTT
 from m4.configuration.config_reader import configuration_path
 from m4.devices.opc_ua_controller import OpcUaController
@@ -31,6 +32,7 @@ from m4.devices.accelerometers import ZmqAccelerometers
 from m4.devices.interferometer import I4d6110
 
 from m4.configuration.config_uploader import config_rewriter
+from m4.configuration.ott_parameters import Sound
 import playsound
 
 def create_ott(config_file_name='/home/m4/git/M4/m4/configuration/towerConfig.yaml'):
@@ -107,10 +109,12 @@ def create_ott(config_file_name='/home/m4/git/M4/m4/configuration/towerConfig.ya
     ott = OTT(parabola_slider, reference_mirror_slider, angle_rotator,
               parab, reference_mirror, m4, temperature_sensor, accelerometers)
 
-    playsound.playsound('/mnt/m4storage/Data/Audio/ott-ini.mp3')
+    if Sound.PLAY is True:
+        playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH,'ott-ini.mp3'))
 
     if conf_obj.simulated_interf is True:
         interf.set_ott(ott)
         interf.set_dm(dm)
-    playsound.playsound('/mnt/m4storage/Data/Audio/ott-conf.mp3')
+    if Sound.PLAY is True:
+        playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, 'ott-conf.mp3'))
     return ott, interf, dm

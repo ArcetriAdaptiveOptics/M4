@@ -2,10 +2,12 @@
 Authors
   - C. Selmi: written in 2020
 '''
+import os
 from m4.configuration.ott_parameters import OpcUaParameters
 import logging
 from m4.devices.base_reference_mirror_slider import BaseReferenceMirrorSlider
 import playsound
+from m4.configuration.ott_parameters import Sound
 
 class OpcUaReferenceMirrorSlider(BaseReferenceMirrorSlider):
     ''' Class for reference mirror slider control via opc ua
@@ -52,7 +54,8 @@ class OpcUaReferenceMirrorSlider(BaseReferenceMirrorSlider):
                                         absolute_position_in_mm)
         self._opcUa.move_object(OpcUaParameters.CAR)
         self._opcUa.wait_for_stop(OpcUaParameters.CAR)
-        playsound.playsound('/mnt/m4storage/Data/Audio/ref-in.mp3')
+        if Sound.PLAY is True:
+            playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, 'ref-in.mp3'))
         return self.getPosition()
 
     def _checkRslide(self, r_slide):

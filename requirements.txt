@@ -17,3 +17,4 @@ guietta
 pyyaml
 serial
 pandas
+playsound

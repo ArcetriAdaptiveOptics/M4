@@ -14,7 +14,7 @@ Functions for tower alignment
 - :func:`align_M4`
 
 '''
-
+import os
 import numpy as np
 from matplotlib import pyplot as plt
 from m4.configuration import config_folder_names as config
@@ -22,6 +22,7 @@ from m4.ott_calibrator_and_aligner import OttCalibAndAlign
 from m4.ground import logger_set_up as lsu
 from m4.configuration.ott_parameters import OttParameters
 import playsound
+from m4.configuration.ott_parameters import Sound
 #print("sono io")
 
 def start_log(logging_level=20):
@@ -191,7 +192,8 @@ def align_PARAndRM(ott, interf, tt_calib,
     print('comandi separati')
     print(par_cmd)
     print(rm_cmd)
-    playsound.playsound('/mnt/m4storage/Data/Audio/aligncomp.mp3')
+    if Sound.PLAY is True:
+        playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, 'aligncomp.mp3'))
     return tt_align
 
 #### Calibrazione ed allineamneto per m4 (in cartellaBella.m4.toImplement.ott_calibrator_and_aligner ###
