@@ -52,10 +52,13 @@ class Runner():
             gui.plot3 = ima_mean
             gui.plot3.set_clim(vmin=ima_mean.min(), vmax=ima_mean.max())
             #gui.set_title('Media burst') #comando sbagliato
-            gui.zernike_coeff_array, mat = zernike.zernikeFit(ima_mean,
-                                                              np.arange(11)+1)
-            
-        
+            zernike_coeff_array, mat = zernike.zernikeFit(ima_mean,
+                                                          np.arange(11)+1)
+            gui.tip_value = zernike_coeff_array[0]
+            gui.tilt_value = zernike_coeff_array[1]
+            gui.focus_value = zernike_coeff_array[2]
+            gui.coma1_value = zernike_coeff_array[6]
+            gui.coma2_value = zernike_coeff_array[7]
 
         def Start_Differential_TipTilt(gui, *args):
             ''' current differential tip/tilt (at the acquisition frequency): noise.noise_vibrations with fixed template.
@@ -141,19 +144,48 @@ class Runner():
         def Start_Convective_Regions(gui, *args):
             ''' convective regions (pixel-wise stdev): cubo delle immagini senza tip/tilt, std nella direzione giusta che restituisce un'immagine.
             '''
+            #troppo lento
+            # n = Noise()
+            # lista = n._createOrdListFromFilePath(np.str(gui.file_path))
+            # cube_list = []
+            # for i in range(len(lista)):
+            #     name = 'img_%04d' %i
+            #     print(name)
+            #     image = read_data.read_phasemap(lista[i])
+            #     cube_list.append(image)
+            #
+            # ima_list = []
+            # for image in cube_list:
+            #     print(i)
+            #     coef, mat = zernike.zernikeFit(image,
+            #                                    np.arange(11)+1)
+            #     surf = zernike.zernikeSurface(image, coef[:2], mat[:,:2])
+            #     image_ttr = image - surf
+            #     ima_list.append(image_ttr)
+            #
+            # cube = np.ma.dstack(ima_list)
+            # imm = np.std(cube, axis=2)
+            # gui.plot6 = imm
+            # gui.plot6.set_clim(vmin=imm.min(), vmax=imm.max())
             pass
+            
 
-        def Start_Analysis(gui, *args):
+        def Start_All_The_Analysis(gui, *args):
             ''' Start all the analysis
             '''
             pass
 
-        gui_analysis = Gui(['Set data file path', '__file_path__', ___, ___, ___, ___, ___, ___],
-                           [Start_Mean_Burst, ___, ___, ___, MA('plot3'), ___, ___, ___],
-                           [ 'RMS value:',___, ___, 'stdBurst', _, _, _, _],
-                           [ 'Zernike:',___, ___, 'zernike_coeff_array', ___, ___, ___, ___],
+        gui_analysis = Gui(['Set data file path', '__file_path__', ___, ___, ___, _, Start_All_The_Analysis, ___],
+                           [Start_Mean_Burst, ___, ___, MA('plot3'), ___, ___, ___, ___],
+                           [ 'RMS value:',___, 'stdBurst', _, _, _, _, _],
+                           [ 'Zernike (tip, tilt, fuoco, coma):',___, 'tip_value', ___, 'tilt_value', ___, 'focus_value', ___],
+                           [_, _, 'coma1_value', ___, 'coma2_value', ___, ___, ___],
                            [Start_Differential_TipTilt, ___, ___, ___, Start_Decorrelation_Time, ___, ___, ___],
-                           [MA('plot'), ___, ___, ___, MA('plot2'), ___, ___, ___])
+                           [MA('plot'), ___, ___, ___, MA('plot2'), ___, ___, ___],
+                           [Start_Decorrelation_Noise, ___, ___, ___, Start_Convection_Footprint_PSD, ___, ___, ___],
+                           [MA('plot4'), ___, ___, ___, MA('plot5'), ___, ___, ___],
+                           [Start_Convective_Regions, ___, ___, MA('plot6'), ___, ___, ___, ___],
+                           )
         
         self.gui = Gui([G('OTT_Monitor_GUI')])
         self.gui.OTT_Monitor_GUI = gui_analysis
