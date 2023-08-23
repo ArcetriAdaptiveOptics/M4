@@ -2,7 +2,7 @@
 Authors
   - C. Selmi: written in 2023
 '''
-from guietta import Gui, G, _, ___, HB, MA
+from guietta import Gui, G, _, ___, HB, MA, III
 from m4.analyzers.noise_data_analyzer import Noise
 from m4.configuration.ott_parameters import Interferometer
 from scipy.optimize import curve_fit
@@ -40,18 +40,25 @@ class Runner():
             '''
             n = Noise()
             lista = n._createOrdListFromFilePath(np.str(gui.file_path))
-            cube_list = []
+            #cube_list = []
             for i in range(len(lista)):
                 name = 'img_%04d' %i
                 print(name)
                 image = read_data.read_phasemap(lista[i])
-                cube_list.append(image)
-            cube = np.ma.dstack(cube_list)
-            ima_mean = np.ma.mean(cube, axis=2)
+                if i == 0:
+                    ima_sum = image.data
+                    mask = image.mask
+                else:
+                    ima_sum += image.data
+                    mask = np.ma.mask_or(mask, image.mask)
+                #cube_list.append(image)
+            #cube = np.ma.dstack(cube_list)
+            #ima_mean = np.ma.mean(cube, axis=2)
+            ima_mean = np.ma.masked_array(ima_sum/len(lista), mask=mask)
             gui.stdBurst = np.std(ima_mean)
             gui.plot3 = ima_mean
             gui.plot3.set_clim(vmin=ima_mean.min(), vmax=ima_mean.max())
-            #gui.set_title('Media burst') #comando sbagliato
+            gui.plot3.set_title('Media burst')
             zernike_coeff_array, mat = zernike.zernikeFit(ima_mean,
                                                           np.arange(11)+1)
             gui.tip_value = zernike_coeff_array[0]
@@ -134,12 +141,31 @@ class Runner():
         def Start_Decorrelation_Noise(gui, *args):
             ''' current decorrelated noise: diff delle immagini dopo tau (prima - ultima). Output: image and RMS
             '''
-            pass
+            n_start_ima = 0
+            tau = np.int(gui.tau or 3)
+            n_after_tau_ima = np.int(tau * Interferometer.BURST_FREQ)
+            
+            n = Noise()
+            lista = n._createOrdListFromFilePath(np.str(gui.file_path))
+            start_ima = read_data.read_phasemap(lista[n_start_ima])
+            after_tau_ima = read_data.read_phasemap(lista[n_after_tau_ima])
+            diff_ima = start_ima - after_tau_ima
+            gui.stdDiff = np.std(diff_ima)
+            gui.plot4 = diff_ima
+            gui.plot4.set_clim(vmin=diff_ima.min(), vmax=diff_ima.max())
 
         def Start_Convection_Footprint_PSD(gui, *args):
             ''' convection footprint PSD: codice di Marchino che restituisce PSD da immagine del punto 4 (decorrelation noise)
             '''
-            pass
+            n_start_ima = 0
+            n_after_tau_ima = np.int(np.int(gui.tau) * Interferometer.BURST_FREQ)
+            
+            n = Noise()
+            lista = n._createOrdListFromFilePath(np.str(gui.file_path))
+            start_ima = read_data.read_phasemap(lista[n_start_ima])
+            after_tau_ima = read_data.read_phasemap(lista[n_after_tau_ima])
+            diff_ima = start_ima - after_tau_ima
+            
 
         def Start_Convective_Regions(gui, *args):
             ''' convective regions (pixel-wise stdev): cubo delle immagini senza tip/tilt, std nella direzione giusta che restituisce un'immagine.
@@ -173,22 +199,32 @@ class Runner():
         def Start_All_The_Analysis(gui, *args):
             ''' Start all the analysis
             '''
-            pass
+            #non funziona per via del tau in ingresso
+            Start_Mean_Burst(gui, *args)
+            Start_Differential_TipTilt(gui, *args)
+            Start_Decorrelation_Time(gui, *args)
+            Start_Decorrelation_Noise(gui, *args)
+            Start_Convection_Footprint_PSD(gui, *args)
+            Start_Convective_Regions(gui, *args)
 
-        gui_analysis = Gui(['Set data file path', '__file_path__', ___, ___, ___, _, Start_All_The_Analysis, ___],
-                           [Start_Mean_Burst, ___, ___, MA('plot3'), ___, ___, ___, ___],
-                           [ 'RMS value:',___, 'stdBurst', _, _, _, _, _],
-                           [ 'Zernike (tip, tilt, fuoco, coma):',___, 'tip_value', ___, 'tilt_value', ___, 'focus_value', ___],
-                           [_, _, 'coma1_value', ___, 'coma2_value', ___, ___, ___],
-                           [Start_Differential_TipTilt, ___, ___, ___, Start_Decorrelation_Time, ___, ___, ___],
-                           [MA('plot'), ___, ___, ___, MA('plot2'), ___, ___, ___],
-                           [Start_Decorrelation_Noise, ___, ___, ___, Start_Convection_Footprint_PSD, ___, ___, ___],
-                           [MA('plot4'), ___, ___, ___, MA('plot5'), ___, ___, ___],
-                           [Start_Convective_Regions, ___, ___, MA('plot6'), ___, ___, ___, ___],
+        gui_analysis = Gui([      'Set data file path', '__file_path__',          ___,  ___,         Start_All_The_Analysis,    ___,            ___,   ___],
+                           [         Start_Mean_Burst ,             ___,          ___,  ___,                    MA('plot3'),    ___,            ___,   ___],
+                           [              'RMS value:',      'stdBurst',            _,  ' ',                             III,    III,           III,   III],
+                           [                'Zernike:',               _,  'tip_value',    _,                    'tilt_value',    ' ', 'focus_value',   ' '],
+                           [                         _,               _,'coma1_value',    _,                   'coma2_value',      _,             _,     _],
+                           [Start_Differential_TipTilt,             ___,          ___,   ___,        Start_Decorrelation_Time,   ___,            ___,  ___],
+                           [                MA('plot'),             ___,          ___,   ___,                     MA('plot2'),   ___,            ___,  ___],
+                           [             'Set tau [s]',               _,  '__tau__:3',     _,                               _,     _,              _,    _],
+                           [ Start_Decorrelation_Noise,             ___,          ___,   ___,  Start_Convection_Footprint_PSD,   ___,            ___,  ___],
+                           [               MA('plot4'),             ___,          ___,   ___,                     MA('plot5'),   ___,            ___,  ___],
+                           [              'RMS value:',       'stdDiff',            _,     _,                               _,     _,              _,    _],
+                           [  Start_Convective_Regions,             ___,          ___,   ___,                     MA('plot6'),   ___,            ___,  ___],
                            )
         
         self.gui = Gui([G('OTT_Monitor_GUI')])
         self.gui.OTT_Monitor_GUI = gui_analysis
+        for i in range(8):
+            gui_analysis.layout().setColumnStretch(i, 10)
         
     def run(self):
         ''' Run the GUI '''
