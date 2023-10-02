@@ -159,7 +159,9 @@ class I4d6110(BaseInterferometer):
         return masked_ima
 
     def _fromDataArrayToMaskedArray(self, width, height, data_array):
-        data = np.reshape(data_array, (width, height))
+       # data = np.reshape(data_array, (width, height))
+        data = np.reshape(data_array, (height,width)) #mod20231002, rectangular frames were bad. now fixed
+
         idx, idy = np.where(np.isnan(data))
         mask = np.zeros((data.shape[0], data.shape[1]))
         mask[idx, idy] = 1
