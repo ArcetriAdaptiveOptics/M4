@@ -21,7 +21,7 @@ def spiral_pos(nstep, step):
                     p = p+np.array([0,direct])
                     pp.append(p)
     pp = np.array(pp)
-    plot(pp[:,0],pp[:,1],'-x')
+    plt.plot(pp[:,0],pp[:,1],'-x')
     return pp
 
 
@@ -31,7 +31,7 @@ def spiralize(p):
     for i in range(npos):
         p0 = ott.parabola.getPosition()
         p1 = p0 + np.array([0,0,0,p[i,0],p[i,1],0])
-        print('New Par command:');print(p1
+        print('New Par command:');print(p1)
         ott.parabola.setPosition(p1)
         r0 = ott.referenceMirror.getPosition()
         r1 = r0 + np.array([0,0,0,-2*p[i,0],-2*p[i,1],0])

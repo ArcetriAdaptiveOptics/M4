@@ -26,6 +26,7 @@ from m4.ground.timestamp import Timestamp
 from m4.configuration.ott_parameters import Interferometer
 import shutil
 import playsound
+from m4.configuration.ott_parameters import Sound
 
 class Measurements():
     '''
@@ -71,7 +72,8 @@ class Measurements():
         tt: string
             tracking number of measurements
         '''
-        playsound.playsound('/mnt/m4storage/Data/Audio/monitoring-started.mp3')
+        if Sound.PLAY is True:
+            playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, 'monitoring-started.mp3'))
         store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
         dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
         print(tt)

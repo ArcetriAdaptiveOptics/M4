@@ -1,3 +1,6 @@
+
+import numpy as np
+from matplotlib import pyplot as plt
 from m4.mini_OTT import timehistory as th
 from m4.utils.parabola_identification import ParabolaActivities
 from matplotlib.patches import Circle
@@ -57,11 +60,11 @@ def getMarkers(tn,flip=False, diam=24, thr=0.2):
         img = th.frame(j,fl)
         if flip is True:
             print('flipping')
-            img = numpy.fliplr(img)
+            img = np.fliplr(img)
         imaf = pa.rawMarkersPos(img)
         c0 = pa.filterMarkersPos(imaf, (1-thr)*npix, (1+thr)*npix)
         if j == 0:
-                nmark = shape(c0)[1]
+                nmark = np.shape(c0)[1]
                 pos = np.zeros([2,nmark,nf])
         pos[:,:,j]=c0
     pos = np.average(pos,2)
@@ -79,20 +82,20 @@ p0 = getMarkers(tn0,flip=True, diam=24)
 p1 = getMarkers(tn1, diam=28)
 p0 = coord2ima(p0)
 p1 = coord2ima(p1)
-imshow(img0)
-for i in range(shape(p0)[1]):
-    text(p0[0,i],p0[1,i],i)
-figure(2)
-imshow(img1)
-for i in range(shape(p1)[1]):
-    text(p1[0,i],p1[1,i],i)
+plt.imshow(img0)
+for i in range(np.shape(p0)[1]):
+    plt.text(p0[0,i],p0[1,i],i)
+plt.figure(2)
+plt.imshow(img1)
+for i in range(np.shape(p1)[1]):
+    plt.text(p1[0,i],p1[1,i],i)
 
 #CGH vs OTT markers match, at Center_view
 mark_cgh = np.array([8,11,12,6,13,18,17,14,7])
 mark_ottc= np.array([2,3,4,1,6,8,7,5,0])
 
 pcgh = p0[:,mark_cgh]
-pott = p1[:,mark_ott]
+pott = p1[:,mark_ottc]
 
 
  

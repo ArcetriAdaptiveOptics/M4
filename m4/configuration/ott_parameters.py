@@ -17,6 +17,10 @@ import numpy as np
 tnconf_mirror = ''
 tnconf = ''
 
+class Sound():
+    AUDIO_FILE_PATH = '/mnt/m4storage/Data/Audio'
+    PLAY = False
+
 class Interferometer():
     ''' Interferometer parameters
     '''

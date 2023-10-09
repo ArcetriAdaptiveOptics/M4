@@ -27,9 +27,9 @@ newmask = geo.draw_mask(img1.data,cc[0],cc[1],rad)
 newmask = -newmask+1
 img2 = np.ma.masked_array(img1.data,newmask)
 img2 = th.removeZernike(img2,[1,2,3,4])
-imshow(img1.mask)
-imshow(img2)
-cc_par, mat_par = zern.zernikeFit(img2, arange(36)+1)
+plt.imshow(img1.mask)
+plt.imshow(img2)
+cc_par, mat_par = zern.zernikeFit(img2, np.arange(36)+1)
 
 
 
@@ -54,7 +54,7 @@ img1 = th.averageFrames(0,100,fl)
 img1 = th.removeZernike(img1, [1,2,3,4])
 cir = geo.qpupil(np.invert(img1.mask))
 ### sottraggo i modi di par
-cc, mat = zern.zernikeFit(img1, arange(36)+1)
+cc, mat = zern.zernikeFit(img1, np.arange(36)+1)
 surf = zern.zernikeSurface(img1, cc_par, mat)
 dd = img1 - surf
 dd = img1
