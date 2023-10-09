@@ -480,4 +480,14 @@ def comp_psd(img,  nbins=None, verbose=None):
 
         
 
-
+def tnscan(tn0, tn1):
+    '''
+        returns the list of tracknum in a given datafolder, in between tn0 and tn1
+    syntax: tnlist = tnscan(tn0, tn1)
+    '''
+    datafold = findTracknum(tn0)
+    ll = sorted(os.listdir(foldname.OPT_DATA_FOLDER+'/'+datafold))
+    id0 = ll.index(tn0)
+    id1 = ll.index(tn1)
+    tnlist = ll[id0:id1+1]
+    return tnlist
