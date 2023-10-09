@@ -90,7 +90,8 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
                 if n_patches is None:
                     final_ima = _circleImage(new_ima, x[p], y[p], raggio_px)
                     if final_ima is not None:
-                        #list_ima.append(final_ima)
+                           if i == 2:
+                            list_ima.append(final_ima)
                         final_ima = final_ima - np.mean(final_ima)
                         result_list.append(np.std(final_ima))
                 else:
@@ -99,7 +100,7 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
                         for ima in list_circleima:
                             list_ima.append(ima)
                             result_list.append(np.std(ima))
-        if radius_m == 0.1:
+        if radius_m == 0.25:
             thresh = 0.95
             r_px1 = 0.1/2/ps
             ima = _circleImage(image, x[p], y[p], r_px1)
