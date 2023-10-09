@@ -91,7 +91,7 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
                     final_ima = _circleImage(new_ima, x[p], y[p], raggio_px)
                     if final_ima is not None:
                            if i == 2:
-                            list_ima.append(final_ima)
+                               list_ima.append(final_ima)
                         final_ima = final_ima - np.mean(final_ima)
                         result_list.append(np.std(final_ima))
                 else:
