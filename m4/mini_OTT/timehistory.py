@@ -230,6 +230,28 @@ def averageFrames(first, last, fileList, thresh=None, fsel=None):
         
     return aveimg
 
+def saveAverage(tn, id0=0, id1=None):
+    fold = findTracknum(tn)
+    fname = foldname.OPT_DATA_FOLDER + '/'+fold+'/'+tn+ '/average.fits'
+    print(fname)
+    #check file esiste
+    
+    if os.path.isfile(fname)==True:
+        print('average already exist')
+    else:
+        fl = fileList(tn)
+        if id1==None: 
+            id1=np.size(fl)-1
+            #print(id0,id1)
+        aveimg = averageFrames(id0, id1, fl)
+        fold = findTracknum(tn)
+        fname = foldname.OPT_DATA_FOLDER + '/'+fold+'/'+tn+ '/average.fits'
+        print(fname)
+        pyfits.writeto(fname, aveimg.data)
+        pyfits.append(fname, aveimg.mask.astype(np.uint8))
+
+
+
 def removeZernike(ima, modes=np.array([1,2,3,4])):
 
         coeff, mat = zernike.zernikeFit(ima, modes)
