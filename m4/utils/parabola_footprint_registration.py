@@ -145,8 +145,16 @@ class ParabolaFootprintRegistration():
         polycoeff = np.matmul(ottf, base_cgh_plus )
         return polycoeff
 
-    def _expandbase(self, cx, cy):
-            return np.stack((cx**2, cy**2, cx*cy, cx, cy, np.ones(cx.size)), axis=0)
+    def _expandbase(self, cx, cy, order=10):
+        print("Fitting order %i" % order)
+        if order == 3:
+            zz = np.stack((cx, cy, np.ones(cx.size)), axis=0)
+        if order == 6:
+            zz = np.stack((cx**2, cy**2, cx*cy, cx, cy, np.ones(cx.size)), axis=0)
+        if order == 10:
+            zz = np.stack((cx**3, cy**3,cx**2*cy, cy**2*cx, cx**2,cy**2,cx*cy, cx, cy, np.ones(cx.size)), axis=0)
+
+        return zz
 
     def cgh_coord_tranform_and_trig_interpolatio(self, cgh_image, ott_image,
                                                  cgh_not_blobs, polycoeff):
@@ -172,6 +180,76 @@ class ParabolaFootprintRegistration():
         self._rms_cgh = np.std(cgh_image[mask]*632.8e-9)
         print("Ott_image rms = %g, gch_image rms = %g, Difference rms = %g" %(self._rms_ott, self._rms_cgh, self._rms_diff))
         return cgh_on_ott, mask_float, difference
+
+    def cgh_tf(self, cgh_image, ott_image, cgh_not_blobs, polycoeff, display=False):
+        from scipy.interpolate import LinearNDInterpolator
+        from scipy.spatial import Delaunay
+
+        npix = np.max(cgh_image.shape)
+        grid_y, grid_x = np.mgrid[0:npix:1, 0:npix:1]
+        idw = cgh_not_blobs == 1
+        coord_mat = self._expandbase(grid_x[idw], grid_y[idw])
+        tf_coord_mat = np.matmul(np.transpose(coord_mat), np.transpose(polycoeff))
+        tf_coord_mat = tf_coord_mat[:,[1,0]]
+
+        #tri = Delaunay(tf_coord_mat[:,[1,0]])
+        tri = Delaunay(tf_coord_mat)
+        fitND = LinearNDInterpolator(tri, cgh_image[idw], fill_value=0)
+        cgh_on_ott = fitND(grid_x, grid_y)
+        fitND = LinearNDInterpolator(tri, cgh_not_blobs[idw], fill_value=0)
+        cgh_on_ott_mask= fitND(grid_x, grid_y) == 1
+
+        if display:
+            figure()
+            imshow(cgh_on_ott_mask)
+            plot(grid_x[idw], grid_y[idw], '.r')
+            plot(tf_coord_mat[:,0], tf_coord_mat[:,1],'.g')
+
+
+        self._grid_x = grid_x
+        self._grid_y = grid_y
+        mask_not = ott_image == 0
+        mask = ~mask_not
+        mask_float = np.array(mask, dtype='float')
+        difference = (ott_image - 2*cgh_on_ott)*mask_float#*632.8e-9
+        self._rms_diff = np.std(difference[mask])
+        self._rms_ott = np.std(ott_image[mask])#*632.8e-9)
+        self._rms_cgh = np.std(cgh_image[mask])#*632.8e-9)
+        print("Ott_image rms = %g, gch_image rms = %g, Difference rms = %g" %(self._rms_ott, self._rms_cgh, self._rms_diff))
+        return cgh_on_ott, mask_float, difference
+
+
+
+
+    def image_transformation(self, cgh_image, ott_image, cghf, ottf):
+        from scipy.interpolate import LinearNDInterpolator
+        from scipy.spatial import Delaunay
+        polycoeff = self.fit_trasformation_parameter(cghf, ottf)
+        npix = np.max(cgh_image.shape)
+        #npix = np.max(ott_image.shape)  #only for test
+        grid_x, grid_y = np.mgrid[0:npix:1, 0:npix:1]
+        idw = cgh_image.mask == False
+        #idw = cgh_not_blobs == 1
+        coord_mat = self._expandbase(grid_x[idw], grid_y[idw])
+        tf_coord_mat = np.matmul(np.transpose(coord_mat), np.transpose(polycoeff))
+        tri = Delaunay(tf_coord_mat)
+        fitND = LinearNDInterpolator(tri, cgh_image.data[idw], fill_value=0)
+        cgh_on_ott = fitND(grid_x, grid_y)
+        self._grid_x = grid_x
+        self._grid_y = grid_y
+        mask_not = ott_image == 0
+        mask = ~mask_not
+        mask = -1*mask+1
+        mask_float = np.array(mask, dtype='float')
+        difference = (ott_image.data - 2*cgh_on_ott)*(-1*mask_float+1)#*632.8e-9
+        #self._rms_diff = np.std(difference[mask])
+        #self._rms_ott = np.std(ott_image[mask]*632.8e-9)
+        #self._rms_cgh = np.std(cgh_image[mask]*632.8e-9)
+        #print("Ott_image rms = %g, gch_image rms = %g, Difference rms = %g" %(self._rms_ott, self._rms_cgh, self._rms_diff))
+        cgh_tra = np.ma.masked_array(cgh_on_ott, mask_float)
+        return cgh_on_ott, mask_float, cgh_tra, difference
+
+
 
     def show_results(self, cgh_image, cgh_on_ott, ott_image,
                      mask_float, difference):
