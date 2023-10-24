@@ -90,8 +90,8 @@ def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None
                 if n_patches is None:
                     final_ima = _circleImage(new_ima, x[p], y[p], raggio_px)
                     if final_ima is not None:
-                           if i == 2:
-                               list_ima.append(final_ima)
+                        if i == 2:
+                            list_ima.append(final_ima)
                         final_ima = final_ima - np.mean(final_ima)
                         result_list.append(np.std(final_ima))
                 else:
@@ -257,7 +257,7 @@ def tiptilt_fit(ima):
 #     beta  = 0.5*( coeff[0]+ coeff[1]- np.sqrt((coeff[0]-coeff[1])**2 + coeff[2]**2) )
 #     return alpha, beta
 
-def curv_fit_v2(image, platescale_px_mm):
+def curv_fit_v2(image, platescale_px_mm): #note by RB 20231020: this is officialy used in patch analysis after the work by Luca to fix the code
     '''
     Parameters
     ----------
@@ -316,7 +316,7 @@ def roc(alpha, beta):
         raggio: float
             radius of curvature
     '''
-    vect = np.array([1/(2*alpha), 1/(2*beta)])
+    vect = np.array([1/(2*alpha), 1/(2*beta)])#check and clarify the 2*
     raggi_km = np.abs(vect)/1000
 #     wfe = test_diameter**2 /(8*np.sqrt(3)) * np.sqrt(2*(alpha-beta)**2 - (alpha+beta)**2)
 #     rho = test_diameter/2
