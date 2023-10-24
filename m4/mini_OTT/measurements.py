@@ -27,6 +27,7 @@ from m4.configuration.ott_parameters import Interferometer
 import shutil
 import playsound
 from m4.configuration.ott_parameters import Sound
+from m4.configuration import ott_status
 
 class Measurements():
     '''
@@ -79,6 +80,8 @@ class Measurements():
         print(tt)
         shutil.copy(Interferometer.SETTINGS_CONF_FILE_M4OTT_PC, dove)
         shutil.move(dove+'/AppSettings.ini',dove+'/4DSettings.ini')
+        ott_status.save(dove, self._ott) #saving the ott status
+        
         print('waiting {:n} s...'.format(start_delay))
         time.sleep(start_delay)
         print('start measuring')
