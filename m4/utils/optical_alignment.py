@@ -15,7 +15,7 @@ from m4.ground import zernike
 from m4.configuration.ott_parameters import OttParameters, OtherParameters
 from m4.ground.timestamp import Timestamp
 from m4.utils.roi import ROI
-
+from m4.configuration import ott_status
 
 class OpticalAlignment():
     """
@@ -93,9 +93,20 @@ class OpticalAlignment():
 
         img = self._interf.acquire_phasemap(n_images, delay)
         name = 'StartImage.fits'
+        calfilename = 'CalibrationTracknum.txt'
         self.tt_al = Timestamp.now()
-        dove = os.path.join(self._storageFolder(), self.tt_cal + '--' + self.tt_al)
+        #dove = os.path.join(self._storageFolder(), self.tt_cal + '--' + self.tt_al)#old folder naming convention, with CalibratioTN--ResultTN. modRB 20231024
+        dove = os.path.join(self._storageFolder(), self.tt_al)#old folder naming convention, with CalibratioTN--ResultTN. modRB 20231024
         os.makedirs(dove)
+        #modRB 20231024 to save in text file the calibration tracknum
+        calfile = open(dove+'/'+self.tt_cal,'w')
+        calfile.write('')
+        calfile.close()
+        calfile = open(dove+'/'+calfilename,'w')
+        calfile.write(self.tt_cal)
+        calfile.close()
+        ott_status.save(dove, self._ott) #saving the ott status
+        #end of modRB
         self._interf.save_phasemap(dove, name, img)
 
         if self._who == 'PAR + RM':
