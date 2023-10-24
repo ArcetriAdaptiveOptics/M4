@@ -8,6 +8,7 @@ from m4.configuration import start_onlydata
 start_onlydata.create_conf_paths(os.environ['PYOTTCONF'])
 from m4.configuration import config_folder_names as foldname
 from m4.ground import zernike
+from m4.ground import geo
 from m4.ground.read_data import InterferometerConverter
 from matplotlib.pyplot import *
 import psutil
@@ -19,6 +20,7 @@ a = foldname.OPT_DATA_FOLDER + '/'
 #a='/mnt/m4storage/Data/M4Data/OPTData/'
 #tn = '20210425_085242'   #fits
 #tn  ='20210429_224400_noise'
+from m4.configuration import read_4dconfig as readconf4d
 from m4.ground.read_4DConfSettingFile import ConfSettingReader
 
 
@@ -237,8 +239,9 @@ def saveAverage(tn, id0=0, id1=None):
     #check file esiste
     
     if os.path.isfile(fname)==True:
-        print('average already exist')
+        print('average already exists')
     else:
+        print('average do not exists jet')
         fl = fileList(tn)
         if id1==None: 
             id1=np.size(fl)-1
@@ -250,8 +253,21 @@ def saveAverage(tn, id0=0, id1=None):
         pyfits.writeto(fname, aveimg.data)
         pyfits.append(fname, aveimg.mask.astype(np.uint8))
 
+def openAverage(tn):
+    fold = findTracknum(tn)
+    fname = foldname.OPT_DATA_FOLDER + '/'+fold+'/'+tn+ '/average.fits'
 
-
+    if os.path.isfile(fname)==True:
+        print('average exist')
+        hduList = pyfits.open(fname)
+        image = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
+        
+    else:
+        print('average do not exist')
+    
+    return image
+        
+        
 def removeZernike(ima, modes=np.array([1,2,3,4])):
 
         coeff, mat = zernike.zernikeFit(ima, modes)
@@ -343,19 +359,23 @@ def cubeFromList(fileList):
     #print(psutil.Process().open_files())
     return image_list
 
-def frame2ottFrame(img, croppar):
-    nfullpix = np.array([2000,2000])
+def frame2ottFrame(img, croppar, flipOffset = True):
+    off = croppar.copy()
+    if flipOffset == True:
+        off = np.flip(croppar)
+        print('Offset values flipped:' +str(off))
+    #nfullpix = np.array([2000,2000])
+    nfullpix = np.array([2048,2048])
     fullimg = np.zeros(nfullpix)
     fullmask = np.ones(nfullpix)
-    offx = croppar[0]
-    offy = croppar[1]
+    offx = off[0]
+    offy = off[1]
     sx   = np.shape(img)[0] #croppar[2] 
     sy   = np.shape(img)[1] #croppar[3]
     fullimg[offx:offx+sx,offy:offy+sy]=img.data
     fullmask[offx:offx+sx,offy:offy+sy]=img.mask
     fullimg = np.ma.masked_array(fullimg, fullmask)
     return fullimg
-
 
 def timevec(tn):
     fold = findTracknum(tn)
@@ -401,8 +421,22 @@ def track2date(tni):
 def runningMean(vec, npoints):
     
     return np.convolve(vec, np.ones(npoints), 'valid') / npoints       
-        
-        
+def readTemperatures(tn):
+    fold=findTracknum(tn)
+    fname = foldname.OPT_DATA_FOLDER + '/'+fold+'/'+tn+ '/temperature.fits'
+    temperatures = (pyfits.open(fname))[0].data
+    return temperatures
+
+def readZernike(tn):
+    fold=findTracknum(tn)
+    fname = foldname.OPT_DATA_FOLDER + '/'+fold+'/'+tn+ '/zernike.fits'
+    temperatures = (pyfits.open(fname))[0].data
+    return temperatures
+
+
+
+
+
 def strfunct(vect, gapvect):
     '''
     vect shall be npoints x m
@@ -462,9 +496,188 @@ def strfunct(vect, gapvect):
 #         st[j]=np.mean(np.mean(np.mean(tx,1),1))
 #     return st
 
+def readFrameCrop(tn):
+    fold=findTracknum(tn)
+    path = a+'/'+fold+'/'+tn
+    print(path)
+    w,h,x,y,fr = readconf4d.getCameraConfig(path)
+    return np.array([w,h,x,y],dtype=np.int64)
+
+def readFrameRate(tn):
+    fold=findTracknum(tn)
+    path = a+'/'+fold+'/'+tn
+    print(path)
+    w,h,x,y,fr = readconf4d.getCameraConfig(tn)
+    return fr
 
 
-def comp_psd(img,  nbins=None, verbose=None):
+def comp_filtered_image(imgin,verbose=False, disp=False, d=1, crop=True, freq2filter=None):
+
+#    if crop:
+#        cir = geo.qpupil(-1*imgin.mask+1)
+#        cir = np.array(cir[0:3]).astype(int)
+#        img = imgin.data[cir[0]-cir[2]:cir[0]+cir[2],cir[1]-cir[2]:cir[1]+cir[2]]
+#        m = imgin.mask[cir[0]-cir[2]:cir[0]+cir[2],cir[1]-cir[2]:cir[1]+cir[2]]
+#        img = np.ma.masked_array(img, m)
+#    else:
+    img = imgin.copy()
+
+
+    sx = (np.shape(img))[0]
+
+    #img = img-np.mean(img)
+    mask = np.invert(img.mask)
+
+    img[mask ==0]=0
+    norm='ortho'
+    tf2d = scipy.fft.fft2(img.data,norm=norm)
+    #tf2d[0,0]=0
+
+    kfreq = np.fft.fftfreq(sx, d=d)                #frequenza in cicli  
+    kfreq2D = np.meshgrid(kfreq, kfreq)            #griglia di frequenze xx e yy
+    knrm = np.sqrt(kfreq2D[0]**2 + kfreq2D[1]**2)  #griglia di frequenze distanza
+
+
+    #maschera (da mettere opzionale) per limitarsi al cerchio e non prendere il quadrato
+    fmask1 = 1.0 * (knrm > np.max(kfreq))
+
+    if freq2filter is None:
+        fmin = -1
+        fmax = np.max(kfreq)
+    else:
+        fmin, fmax = freq2filter
+
+    fmask2 = 1.0*(knrm > fmax)
+    fmask3 = 1.0*(knrm < fmin)
+
+    fmask = (fmask1+fmask2+fmask3) > 0
+
+    tf2d_filtered= tf2d.copy()
+    tf2d_filtered[fmask]=0
+    imgf = scipy.fft.ifft2(tf2d_filtered,norm=norm)
+    imgout= np.ma.masked_array(np.real(imgf), mask=imgin.mask)
+    if disp:
+        figure()
+        imshow(knrm)
+        title('freq')
+        figure()
+        imshow(fmask1)
+        title('fmask1')
+        figure()
+        imshow(fmask2)
+        title('fmask2')
+        figure()
+        imshow(fmask3)
+        title('fmask3')
+        figure()
+        imshow(fmask)
+        title('fmask')
+        figure()
+        imshow(np.abs(tf2d))
+        title("Initial spectrum")
+        figure()
+        imshow(np.abs(tf2d_filtered))
+        title("Filtered spectrum")
+        figure()
+        imshow(imgin)
+        title("Initial image")
+        figure()
+        imshow(imgout)
+        title("Filtered image")
+
+
+    e1 =np.sqrt(np.sum(img[mask]**2)/np.sum(mask))*1e9
+    e2 =np.sqrt(np.sum(imgout[mask]**2)/np.sum(mask))*1e9
+    e3 =np.sqrt(np.sum(np.abs(tf2d)**2)/np.sum(mask))*1e9
+    e4 =np.sqrt(np.sum(np.abs(tf2d_filtered)**2)/np.sum(mask))*1e9
+
+    if verbose:
+        print("RMS image [nm]            %5.2f" % e1)
+        print("RMS image filtered [nm]   %5.2f" % e2)
+        print("RMS spectrum              %5.2f" % e3)
+        print("RMS spectrum filtered     %5.2f" % e4)
+
+
+    return imgout
+
+def comp_psd(imgin,  nbins=None, norm='backward',verbose=False, disp=False, d=1, sigma=None, crop=True):
+
+    if crop:
+        cir = geo.qpupil(-1*imgin.mask+1)
+        cir = np.array(cir[0:3]).astype(int)
+        img = imgin.data[cir[0]-cir[2]:cir[0]+cir[2],cir[1]-cir[2]:cir[1]+cir[2]]
+        m = imgin.mask[cir[0]-cir[2]:cir[0]+cir[2],cir[1]-cir[2]:cir[1]+cir[2]]
+        img = np.ma.masked_array(img, m)
+    else:
+        img = imgin.copy()
+
+    sx = (np.shape(img))[0]
+
+    if nbins is None:
+        nbins = sx//2
+    img = img-np.mean(img)
+    mask = np.invert(img.mask)
+
+    #DA IMPLEMENTARE: finestre contro effetti di bordo
+#        maskf = scipy.ndimage.fourier_gaussian(np.array(mask, dtype=float), sigma=sigma)
+
+#    img=maskf*img#0
+    img[mask ==0]=0
+    if sigma is not None:
+        img = scipy.ndimage.fourier_gaussian(img, sigma=sigma)
+    tf2d = scipy.fft.fft2(img,norm=norm)
+    tf2d[0,0]=0
+    tf2d_power_spectrum = np.abs(tf2d)**2
+
+    #kfreq = np.fft.fftfreq(sx) * sx                #freq spaziale in pixel
+    kfreq = np.fft.fftfreq(sx, d=d)                #frequenza in cicli  
+    kfreq2D = np.meshgrid(kfreq, kfreq)            #griglia di frequenze xx e yy
+    knrm = np.sqrt(kfreq2D[0]**2 + kfreq2D[1]**2)  #griglia di frequenze distanza
+
+    #maschera (da mettere opzionale) per limitarsi al cerchio e non prendere il quadrato
+    fmask = knrm < np.max(kfreq)
+    #fmask = mask.copy()
+    knrm = knrm[fmask].flatten()
+    fourier_amplitudes = tf2d_power_spectrum[fmask].flatten()
+    Abins, x_edges, y_edges = stats.binned_statistic(knrm, fourier_amplitudes,
+                                         statistic = "sum",
+                                         bins = nbins)
+
+    #assert(Abins[0] == 0)
+    #ediff = (np.sum(img[mask]i**2) - np.sum(Abins))/np.sum(img[mask]**2)
+    e1 =np.sum(img[mask]**2/np.sum(mask))
+    e2 =np.sum(Abins)/np.sum(mask)
+    ediff = np.abs(e2-e1)/e1
+
+    fout=kfreq[0:sx//2]
+    Aout=Abins/np.sum(mask)
+    if verbose:
+        print("RMS from spectrum %e" % np.sqrt(e2))
+        print("RMS [nm]          %5.2f" % (np.std(img[mask])*1e9))
+    else:
+        print("Sampling          %e" % d)
+        print("Energy signal     %e" % e1)
+        print("Energy spectrum    %e" % e2)
+        print("Energy difference %e" % ediff)
+        print("RMS from spectrum %e" % np.sqrt(e2))
+        print("RMS [nm]          %5.2f" % (np.std(img[mask])*1e9))
+        print(kfreq[0:4])
+        print(kfreq[-4:])
+    if disp == True:
+        figure()
+        plot(fout[1:],Aout[1:]*fout[1:],'.')
+        yscale('log');
+        xscale('log');
+        title("Power spectrum")
+        xlabel("[Hz]")
+        ylabel("[A^2]")
+
+    return fout, Aout
+
+
+
+
+def comp_psd_old(img,  nbins=None, verbose=None):
     sx = (np.shape(img))[0]
 
     if nbins is None:
@@ -500,7 +713,10 @@ def comp_psd(img,  nbins=None, verbose=None):
     Abins = Abins / np.sum(Abins) *(np.sum(img**2))
     return (kvals, Abins)
 
-        
+def integrate_psd(y,img):
+    nn = np.sqrt(np.sum(-1*img.mask+1))
+    yint = np.sqrt(np.cumsum(y))/nn
+    return yint        
 
 def tnscan(tn0, tn1):
     '''
