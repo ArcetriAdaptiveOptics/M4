@@ -16,6 +16,7 @@ from m4.configuration.ott_parameters import OttParameters, OtherParameters
 from m4.ground.timestamp import Timestamp
 from m4.utils.roi import ROI
 from m4.configuration import ott_status
+from m4.ground import geo
 
 class OpticalAlignment():
     """
@@ -92,6 +93,12 @@ class OpticalAlignment():
         self._intMat, self._rec, self._cmat = self.selectModesInIntMatAndRecConstruction(zernike_to_be_corrected, dof_command_id)
 
         img = self._interf.acquire_phasemap(n_images, delay)
+        #modRB20231027 to implement fullframe
+        img = self._interf.intoFullFrame(img)
+        #par = self._load_registeredPar(tnpar)
+        #img = img -2*par
+        #print('Par Removed')
+        #endmod
         name = 'StartImage.fits'
         calfilename = 'CalibrationTracknum.txt'
         self.tt_al = Timestamp.now()
@@ -105,7 +112,7 @@ class OpticalAlignment():
         calfile = open(dove+'/'+calfilename,'w')
         calfile.write(self.tt_cal)
         calfile.close()
-        ott_status.save(dove, self._ott) #saving the ott status
+        #ott_status.save(dove, self._ott) #saving the ott status
         #end of modRB
         self._interf.save_phasemap(dove, name, img)
 
@@ -117,9 +124,11 @@ class OpticalAlignment():
             self._loggerRuna.info('Calibration tt used = %s', self.tt_cal)
             self._loggerRuna.info('Zernike calculate on image before alignment =  %s', str(total_zernike_vector))
             self._loggerRuna.info('Tracking number for alignment measurements = %s',  self.tt_al)
+            ott_status.save(dove, self._ott) #saving the ott status
             return self.par_command, self.rm_command, dove
         elif self._who == 'M4':
             pass
+
             #cmd, zernike_vector = self._commandGenerator(img)
             #m4_command, zernike_vector_selected, total_zernike_vector = self._reorgCmdForM4(cmd)
             #self._saveAllDataM4(dove, m4_position, m4_command)
@@ -254,7 +263,27 @@ class OpticalAlignment():
         mm = np.ma.mask_or(img.mask, mask)
 
         new_image = np.ma.masked_array(img, mask=mm)
-        coef, mat = zernike.zernikeFit(new_image, np.arange(10)+1)
+        #coef, mat = zernike.zernikeFit(new_image, np.arange(10)+1)
+        #modRB20231026 to implement aux mask fitting. the following lines replace the previous one
+        #from m4.misc import image_registration_lib as imgreg
+        #from m4.mini_OTT import timehistory as th
+        #img = th.frame2ottFrame(new_image,[580,20])
+        tnpar  = '20231016_124531'
+        par = self._load_registeredPar(tnpar)
+        img = new_image -2*par
+        print('Par Removed')
+        print('Par not removed')
+
+        print('Using global modes fitting, TNPar: '+tnpar)
+
+        #par = imgreg.load_registeredPar(tnpar)
+        cir = geo.qpupil(-1*par.mask+1)
+        mm = geo.draw_mask(par.data*0,cir[0],cir[1],1.44/0.00076/2,out=0)
+        #img = img-2*par !!!! removing the PAR twice!!noooooooo
+        print('Removing the PAR shape')
+        coef, mat = zernike.zernikeFitAuxmask(img,mm, np.arange(10)+1)
+
+        # end of modRB
         z = np.array([1, 2, 3, 6, 7])
         all_final_coef = coef[z]
 
@@ -340,6 +369,19 @@ class OpticalAlignment():
         theObject._commandId = hduList[4].data
         theObject._zernikeVectorSelected = hduList[5].data
         return theObject
+
+    def _load_registeredPar(self,tn,zlist = [1,2,3,4]):
+        #fold=th.foldname.PARABOLA_REMAPPED_FOLDER+'/'+tn+'/'
+        name = fold_name.PARABOLA_REMAPPED_FOLDER+'/'+tn+'/'+'par_remapped.fits'
+        print('Loading registered Par '+name)
+        hdu = pyfits.open(name)
+        img = hdu[0].data
+        mask = hdu[1].data
+        imgout = np.ma.masked_array(img, mask)
+        coeff, mat = zernike.zernikeFit(imgout, zlist)
+        surf = zernike.zernikeSurface(imgout, coeff, mat)
+        imgout = imgout-surf
+        return imgout
 
 
 ### M4 ###
