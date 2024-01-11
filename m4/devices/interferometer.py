@@ -16,6 +16,8 @@ from m4.ground.read_data import InterferometerConverter
 from m4.devices.base_interferometer import BaseInterferometer
 import playsound
 from m4.configuration.ott_parameters import Sound
+from m4.ground.read_4DConfSettingFile import ConfSettingReader #modRB 20231027 to implement frame2OTTframe here
+
 
 class I4d4020(BaseInterferometer):
     ''' Class for i4d interferometer
@@ -246,3 +248,61 @@ class I4d6110(BaseInterferometer):
                     fold_name.OPD_IMAGES_ROOT_FOLDER)
         if Sound.PLAY is True:
             playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH,'produce-completed.mp3'))
+
+    def getCameraSettings(self):
+        '''
+        Return 
+        ----------
+        output: list
+        the output is a 4 elements list with width_pixel, height_pixel, offset_x, offset_y, as read from the local copy of the 4D camera settings file 
+        '''
+
+        file_path = Interferometer.SETTINGS_CONF_FILE_M4OTT_PC
+        setting_reader = ConfSettingReader(file_path)
+        width_pixel = setting_reader.getImageWidhtInPixels()
+        height_pixel = setting_reader.getImageHeightInPixels()
+        offset_x = setting_reader.getOffsetX()
+        offset_y = setting_reader.getOffsetY()
+        return [width_pixel, height_pixel, offset_x, offset_y]
+
+    def getFrameRate(self):
+        '''
+        Return 
+        ----------
+        frame_rate: float
+        frame rate of the interferometer
+        '''
+
+        file_path = Interferometer.SETTINGS_CONF_FILE_M4OTT_PC
+        setting_reader = ConfSettingReader(file_path)
+        frame_rate = setting_reader.getFrameRate()
+        return frame_rate
+
+    def intoFullFrame(self, img):
+        '''
+        The function fits the passed frame (expected cropped) into the full interferometer frame (2048x2048), after reading the cropping parameters.
+
+        Parameters
+        ----------
+        img: masked_array
+
+        Return 
+        ----------
+        output: masked_array
+        the output is the interferometer full frame
+        '''
+
+        off = (self.getCameraSettings())[2: 4]
+        off = np.flip(off)
+        nfullpix = np.array([2048, 2048])
+        fullimg = np.zeros(nfullpix)
+        fullmask = np.ones(nfullpix)
+        offx = off[0]
+        offy = off[1]
+        sx   = np.shape(img)[0] #croppar[2] 
+        sy   = np.shape(img)[1] #croppar[3]
+        fullimg[offx: offx+sx, offy: offy + sy]  = img.data
+        fullmask[offx: offx+sx, offy: offy + sy] = img.mask
+        fullimg = np.ma.masked_array(fullimg, fullmask)
+        return fullimg
+
