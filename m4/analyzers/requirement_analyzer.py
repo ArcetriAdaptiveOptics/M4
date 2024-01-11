@@ -444,17 +444,28 @@ def diffPiston(image):
 
     Returns
     -------
-        diff_piston: numpy masked array
+        diff_piston: float
     '''
-    dimx = image.shape[0]
-    dimy = image.shape[1]
-    imas = image[:, 0:np.int(dimy/2)]
-    imad = image[np.int(dimx/2):, :]
+    #dimx = image.shape[0]
+    #dimy = image.shape[1]
+    #imas = image[:, 0:np.int(dimy/2)]
+    #imad = image[np.int(dimx/2):, :]
 
-    coefs, mat = zernike.zernikeFit(imas, np.arange(3)+1)
-    coefd, mat = zernike.zernikeFit(imad, np.arange(3)+1)
-    diff_piston = coefs[0]-coefd[1]
+    #coefs, mat = zernike.zernikeFit(imas, np.arange(3)+1)
+    #coefd, mat = zernike.zernikeFit(imad, np.arange(3)+1)
+    #diff_piston = coefs[0]-coefd[1]
+    
+    cir = geo.qpupil(-1*image.mask+1)
+    cir = cir[0: 3]
+    cir = np.fix(cir).astype(int)
+    imas = image[0:cir[0],:]
+    imad = image[cir[0]+1:,:]
+    #coefs, mat = zernike.zernikeFit(imas, np.arange(3)+1)
+    #coefd, mat = zernike.zernikeFit(imad, np.arange(3)+1)
+    print('Diff piston evaluated as differntial mean, without removing TipTilt')
+    diff_piston = np.mean(imas)-np.mean(imad)
     return diff_piston
+
 
 
 ### ROBUST IMAGE ###
