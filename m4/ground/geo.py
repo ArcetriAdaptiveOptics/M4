@@ -12,6 +12,7 @@ from skimage.measure import EllipseModel
 #from skimage.draw import ellipse
 from skimage.measure import CircleModel
 from skimage.draw import disk
+import scipy.interpolate
 
 
 def qpupil_circle(image, pixel_dir=0):
@@ -224,3 +225,29 @@ def rotate(img, angle):
     img1 = img1[int((s1[0]-s0[0])/2):s0[0]+int((s1[0]-s0[0])/2),
                 int((s1[1]-s0[1])/2):s0[1]+int((s1[1]-s0[1])/2)]
     return img1
+
+def integrate_psd(x,y):
+    '''
+    to be checked
+    '''
+    w = np.sqrt(np.sum(y/(2*np.pi*x)**2))
+    return w
+
+def crop_frame(mask):
+    cir = qpupil(mask)
+    cir = np.array(cir[0:3]).astype(int)
+    img = mask[cir[0]-cir[2]:cir[0]+cir[2],cir[1]-cir[2]:cir[1]+cir[2]]
+    return img
+
+
+def congrid2D(img, newdims, method='linear', centre=False, minusone=False):
+    dims = img.shape
+    xo = np.linspace(1,dims[0], dims[0])
+    yo = np.linspace(1,dims[1], dims[1])
+    x = np.linspace(1,dims[0],newdims[0])
+    y = np.linspace(1,dims[1],newdims[1])
+    xg,yg =np.meshgrid(x,y,indexing='ij')
+    interp = scipy.interpolate.RegularGridInterpolator((xo,yo),img)
+    newimg = interp((xg,yg))
+    return newimg
+
