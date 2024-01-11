@@ -103,6 +103,7 @@ class OttCalibAndAlign():
             pos_rm = self._ott.referenceMirror.getPosition()
             self._ott.referenceMirror.setPosition(pos_rm + rm_cmd)
         image = self._interf.acquire_phasemap(n_images, delay)
+        image = self._interf.intoFullFrame(image)#modRB20231027 to implement fullFrame
         name = 'FinalImage.fits'
         all_final_coef, final_coef_selected = aliner.getZernikeWhitAlignerObjectOptions(image)
         self._alignmentLog(aliner, all_final_coef, dof_command_id, zernike_to_be_corrected, move)#mod
