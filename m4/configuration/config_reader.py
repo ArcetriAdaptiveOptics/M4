@@ -288,3 +288,10 @@ class configuration_path():
             return self._conf['parabola_cgh_measurements_folder']
         else:
             return os.path.join(self.OPT_DATA_FOLDER, 'ParabolaCGHMeasurements')
+
+    @property
+    def PARABOLA_REMAPPED_FOLDER(self):
+        if 'parabola_remapped_folder' in self._conf.keys():
+            return self._conf['parabola_remapped_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'ParabolaRemapped')

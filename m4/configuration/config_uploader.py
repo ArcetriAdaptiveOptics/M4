@@ -60,3 +60,5 @@ class config_rewriter():
         #config.POINTER_ALIGN_ROOT_FOLDER = self.cc.POINTER_ALIGN_ROOT_FOLDER
         config.SIMUL_DATA_CALIB_DM_FOLDER = self.cc.SIMUL_DATA_CALIB_DM_FOLDER
         config.PARABOLA_CGH_FOLDER = self.cc.PARABOLA_CGH_FOLDER
+        config.PARABOLA_REMAPPED_FOLDER = self.cc.PARABOLA_REMAPPED_FOLDER
+
