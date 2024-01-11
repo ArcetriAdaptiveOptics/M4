@@ -115,7 +115,8 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle):
     pyfits.writeto(os.path.join(dove, 'n_temp_vector_%d.fits' % tidy_or_shuffle), n_temp, overwrite=True)
     pyfits.writeto(os.path.join(dove, 'ptv_%d.fits' % tidy_or_shuffle), ptv_medio, overwrite=True)
 
-    tt = data_file_path.split('/')[-2]
+    tt = data_file_path.split('/')[-1]
+    
     plt.clf()
     # WFE = 2*rms_medio
     plt.plot(n_temp, rms_medio * 1e9, '-o')
@@ -220,6 +221,8 @@ def convection_noise(data_file_path, tau_vector, fits_analysis=False, nzern=None
     rms_nm = rms * 1e9
     if h5_or_fits is None:
         x = tau_vector * (1 / Interferometer.BURST_FREQ)
+        pyfits.writeto(os.path.join(dove, 'time_vector_conv.fits'), x,
+                   overwrite=True)
         param = [5, 0.5, 32]
         try:
 
@@ -241,7 +244,7 @@ def convection_noise(data_file_path, tau_vector, fits_analysis=False, nzern=None
 #         plt.plot(decorr_time, _funFit(decorr_time,*pp), 'og',
 #                  label='Dec time = %d [s]' %np.round(decorr_time))
         plt.legend()
-        tt = data_file_path.split('/')[-2]
+        tt = data_file_path.split('/')[-1]
         plt.title('%s' % tt)
         plt.show()
         name = os.path.join(dove, 'rms_tau.png')
@@ -252,6 +255,8 @@ def convection_noise(data_file_path, tau_vector, fits_analysis=False, nzern=None
     else:
         time_diff = _time_for_plot(data_file_path)
         x = tau_vector * time_diff
+        pyfits.writeto(os.path.join(dove, 'time_vector_conv.fits'), x,
+                   overwrite=True)
         plt.figure()
         plt.clf()
         plt.plot(x, rms * 1e9, '-o', label='time_diff = %d' % time_diff)
