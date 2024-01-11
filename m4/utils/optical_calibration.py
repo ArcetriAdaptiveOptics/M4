@@ -159,6 +159,8 @@ class OpticalCalibration():
                             print(par1)
                             self._ott.parabola.setPosition(par0 + par1)
                             masked_ima = self._interf.acquire_phasemap(n_frames, delay)
+                            masked_ima = self._interf.intoFullFrame(masked_ima)
+
                             name = 'Frame_%04d.fits' % (2 * i + mis[v])
                             print(name)
                             self._interf.save_phasemap(dove, name, masked_ima)
@@ -178,6 +180,8 @@ class OpticalCalibration():
                                 self._ott.referenceMirror.setPosition(rm0 + rm1)
                             print(par1, rm1)
                             masked_ima = self._interf.acquire_phasemap(n_frames, delay)
+                            masked_ima= self._interf.intoFullFrame(masked_ima)
+
                             name = 'Frame_%04d.fits' % (2 * i + mis[v])
                             print(name)
                             self._interf.save_phasemap(dove, name, masked_ima)
@@ -190,6 +194,7 @@ class OpticalCalibration():
                             self._ott.referenceMirror.setPosition(rm0 + rm1)
                             print(rm1)
                             masked_ima = self._interf.acquire_phasemap(n_frames, delay)
+                            masked_ima = self._interf.intoFullFrame(masked_ima)
                             name = 'Frame_%04d.fits' % (2 * i + mis[v])
                             print(name)
                             self._interf.save_phasemap(dove, name, masked_ima)
@@ -209,6 +214,7 @@ class OpticalCalibration():
                         m4_cmd = command_list[i] * vec_push_pull[v]
                         self._ott.me.setPosition(m0 + m4_cmd)
                         masked_ima = self._interf.acquire_phasemap(n_frames, delay)
+                        masked_ima = self._interf.intoFullFrame(masked_ima)
                         name = 'Frame_%04d.fits' %( 2*i + mis[v])
                         self._interf.save_phasemap(dove, name, masked_ima)
             self._ott.m4Exapode.setPosition(m0)
@@ -408,6 +414,21 @@ class OpticalCalibration():
         for i in range(self._cube.shape[2]):
             ima = np.ma.masked_array(self._cube[:, :, i], mask=mask)
             coef, mat = zernike.zernikeFit(ima, np.arange(10) + 1)
+
+            #modRB20231026 to implement aux mask fitting. the following lines replace the previous one
+            #from m4.misc import image_registration_lib as imgreg
+            from m4.ground import geo
+            #img = self._interf.intoFullFrame(ima) this was removed since the frames are already saved in fullframe
+            tnpar  = '20231016_124531'
+            print('Using global modes fitting, TNPar: '+tnpar)
+            #par = imgreg.load_registeredPar(tnpar)
+            par = self._load_registeredPar(tnpar)
+
+            cir = geo.qpupil(-1*par.mask+1)
+            mm = geo.draw_mask(par.data*0,cir[0],cir[1],1.44/0.00076/2,out=0)
+            coef, mat = zernike.zernikeFitAuxmask(ima,mm, np.arange(10)+1)  #was img
+            #end modRB
+
             # z= np.array([2,3,4,7,8])
             z = np.array([1, 2, 3, 6, 7])
             final_coef = np.zeros(z.shape[0])
@@ -430,3 +451,17 @@ class OpticalCalibration():
         if self._intMat is None:
             self._createInteractionMatrix(self._mask)
         return self._intMat
+
+    def _load_registeredPar(self,tn,zlist = [1,2,3,4]):
+        #fold=th.foldname.PARABOLA_REMAPPED_FOLDER+'/'+tn+'/'
+        name = fold_name.PARABOLA_REMAPPED_FOLDER+'/'+tn+'/'+'par_remapped.fits'
+        print('Loading registered Par '+name)
+        hdu = pyfits.open(name)
+        img = hdu[0].data
+        mask = hdu[1].data
+        imgout = np.ma.masked_array(img, mask)
+        coeff, mat = zernike.zernikeFit(imgout, zlist)
+        surf = zernike.zernikeSurface(imgout, coeff, mat)
+        imgout = imgout-surf
+        return imgout
+
