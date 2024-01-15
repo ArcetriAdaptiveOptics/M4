@@ -274,6 +274,13 @@ def removeZernike(ima, modes=np.array([1,2,3,4])):
         surf = zernike.zernikeSurface(ima, coeff, mat)
         new_ima = ima-surf
         return new_ima
+
+def removeZernikeAuxMask(img, mm, zlist):
+    coef, mat = zernike.zernikeFitAuxmask(img,mm, zlist)
+    surf = zernike.zernikeSurface(img, coef, mat)
+    new_ima = np.ma.masked_array(img-surf,img.mask)
+    return new_ima
+
         
 def zernikePlot(mylist, modes=np.array(range(1,11))):
     mytype = type(mylist)
