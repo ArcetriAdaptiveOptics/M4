@@ -19,7 +19,7 @@ tnconf = ''
 
 class Sound():
     AUDIO_FILE_PATH = '/mnt/m4storage/Data/Audio'
-    PLAY = True
+    PLAY = False
 
 class Interferometer():
     ''' Interferometer parameters

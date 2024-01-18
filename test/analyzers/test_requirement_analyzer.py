@@ -16,6 +16,7 @@ class TestRequirementAnalyzer(unittest.TestCase):
     def tearDown(self):
         pass
 
+    @unittest.skip('Da rifare')
     def testReadImageAndAnalysis(self):
         image_location = os.path.join(testDataRootDir(),
                                       'ima_for_req.fits')

@@ -68,6 +68,48 @@ class FakeInterferometer(BaseInterferometer):
 
         return masked_ima
 
+    def getCameraSettings(self):
+        '''
+        Return 
+        ----------
+        output: list
+        the output is a 4 elements list with width_pixel, height_pixel, offset_x, offset_y, as read from the local copy of the 4D camera settings file 
+        '''
+
+        width_pixel = 100
+        height_pixel = 100 
+        offset_x = 0
+        offset_y = 0
+        return [width_pixel, height_pixel, offset_x, offset_y]
+
+    def intoFullFrame(self, img):
+            '''
+            The function fits the passed frame (expected cropped) into the full interferometer frame (2048x2048), after reading the cropping parameters.
+    
+            Parameters
+            ----------
+            img: masked_array
+    
+            Return 
+            ----------
+            output: masked_array
+            the output is the interferometer full frame
+            '''
+    
+            off = (self.getCameraSettings())[2: 4]
+            off = np.flip(off)
+            nfullpix = np.array([2048, 2048])
+            fullimg = np.zeros(nfullpix)
+            fullmask = np.ones(nfullpix)
+            offx = off[0]
+            offy = off[1]
+            sx   = np.shape(img)[0] #croppar[2] 
+            sy   = np.shape(img)[1] #croppar[3]
+            fullimg[offx: offx+sx, offy: offy + sy]  = img.data
+            fullmask[offx: offx+sx, offy: offy + sy] = img.mask
+            fullimg = np.ma.masked_array(fullimg, fullmask)
+            return fullimg
+
     def set_ott(self, ott):
         ''' Function for setting optical tower data
         '''
