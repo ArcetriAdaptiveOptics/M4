@@ -41,7 +41,7 @@ ott.referenceMirrorSlider.setPosition(975)
 #     - Command amplitudes and general initializations
 par_piston = 0.7; 
 par_tip = 100 ; par_tilt = 100
-rm_tip  = 3   ; rm_tilt  = 3
+rm_tip  = 6   ; rm_tilt  = 6
 command_amp_vector = np.array([par_piston, par_tip, par_tilt, rm_tip, rm_tilt])
 nPushPull = 2; n_frames=20
 #     - Acquistion
@@ -51,6 +51,8 @@ tnc = '20230704_225757'
 tnc = '20230714_133434'
 tnc = '20230720_185546'
 tnc = '20230720_192515'
+tnc = '20231027_095920' #!! with global modes, 20 frames, large amplitudes
+tnc = '20231027_131458' #global modes, high SNR
 # Alignment
 #   - Definition of what and who
 # alignment of focus
@@ -118,8 +120,11 @@ phcamfocus.loadConfiguration(confnoise)
 tau_vector = np.arange(1,100,2)
 tn = interf.capture(2000)
 interf.produce(tn)
-dfpath = th.foldname.OPD_IMAGES_ROOT_FOLDER+'/'+tn+'/'
+# burst analysis, results saved in "/mnt/m4storage/Data/M4Data/Results/Noise"
+dfpath = os.path.join(th.foldname.OPD_IMAGES_ROOT_FOLDER,tn)
 noise.convection_noise(dfpath, tau_vector)
+template=np.array([3,11,25,37,51])
+noise.noise_vibrations(dfpath,template)
 
 
 #  Averaged frame for PAR subtraction tbc
@@ -132,6 +137,7 @@ aveimg = th.averageFrames(0,999, fl)
 fname = th.foldname.OPD_SERIES_ROOT_FOLDER+'/'+tnott+ '/average.fits'
 pyfits.writeto(fname, aveimg.data)
 pyfits.append(fname, aveimg.mask.astype(np.uint8))
+
 
 
 
