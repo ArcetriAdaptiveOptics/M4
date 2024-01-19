@@ -251,3 +251,18 @@ def congrid2D(img, newdims, method='linear', centre=False, minusone=False):
     newimg = interp((xg,yg))
     return newimg
 
+def spiral_pos(nstep, step):
+    p = np.array([0,0])
+    pp = []
+    for i in range(nstep):
+            direct = (-1)**i
+            mov = i+1
+            for j in range(mov):
+                    p = p+np.array([direct,0])
+                    pp.append(p)
+            for j in range(mov):
+                    p = p+np.array([0,direct])
+                    pp.append(p)
+    pp = np.array(pp)
+    plt.plot(pp[:,0],pp[:,1],'-x')
+    return pp
