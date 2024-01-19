@@ -7,9 +7,7 @@ def pack(img):
     m0 = np.min(img)
     dm = m1-m0
     pimg = (img-m0)/dm * 32767*2
-
-
-    return pimg, exval
+    return pimg
 
 # test routine, in IDL!!!
 #mm = minmax(img)

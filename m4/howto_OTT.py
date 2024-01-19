@@ -1,4 +1,6 @@
-%run /home/m4/git/M4/m4/misc/initOTT.py
+# to initialize the tower run the following line (without the #)
+#%run /home/m4/git/M4/m4/misc/initOTT.py
+
 #  4D Configurations
 confcenter = 'D:/config/20230714_ott_center.4Dini'
 confnoisecenter = 'D:/config/20230714_ott_center-LowRes.4Dini'

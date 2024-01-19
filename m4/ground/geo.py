@@ -6,7 +6,7 @@ Autors
 
 """
 import numpy as np
-#from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 from scipy import ndimage
 from skimage.measure import EllipseModel
 #from skimage.draw import ellipse
