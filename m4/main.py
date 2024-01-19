@@ -23,6 +23,7 @@ from m4.ground import logger_set_up as lsu
 from m4.configuration.ott_parameters import OttParameters
 import playsound
 from m4.configuration.ott_parameters import Sound
+from m4.ground import geo
 #print("sono io")
 
 def start_log(logging_level=20):
@@ -211,6 +212,19 @@ def getOttConfigurator(ott):
     from m4.ground.ott_configurations import OttConfigurations
     oc = OttConfigurations(ott)
     return oc
+
+def spiralize(npos, step):
+    p = geo.spiral_pos(npos, step)
+    npos = np.int(len(p)/2)
+    for i in range(npos):
+        p0 = ott.parabola.getPosition()
+        p1 = p0 + np.array([0,0,0,p[i,0],p[i,1],0])
+        print('New Par command:');print(p1)
+        ott.parabola.setPosition(p1)
+        r0 = ott.referenceMirror.getPosition()
+        r1 = r0 + np.array([0,0,0,-2*p[i,0],-2*p[i,1],0])
+        print('New RM command:'); print(r1)
+        ott.referenceMirror.setPosition(r1)
 
 
 ### ROTATION FOR ALIGNMENT (ASSE OTTICO E ASSE MECCANICO)

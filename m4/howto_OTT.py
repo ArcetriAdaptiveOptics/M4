@@ -1,6 +1,26 @@
 # to initialize the tower run the following line (without the #)
 #%run /home/m4/git/M4/m4/misc/initOTT.py
+import numpy as np
+#from matplotlib import pyplot as plt
+from m4.misc import par_meas as pp
+from m4.ground import read_data as rr
+from m4.mini_OTT import timehistory as th
+from m4.ground import zernike as zern
+from m4.mini_OTT.measurements import Measurements
+from m4 import main
+from astropy.io import fits as pyfits
+from m4.configuration import start
+from m4.devices.i4d import I4D
+from m4.configuration.ott_parameters import Interferometer
+from m4 import noise
+from m4.ground import geo
+import time
+conf='/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
+ott, interf, dm = start.create_ott(conf)
+meas = Measurements(ott,interf)
+phcamfocus = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
 
+                                                                           
 #  4D Configurations
 confcenter = 'D:/config/20230714_ott_center.4Dini'
 confnoisecenter = 'D:/config/20230714_ott_center-LowRes.4Dini'
@@ -127,16 +147,4 @@ pyfits.append(fname, aveimg.mask.astype(np.uint8))
 
 
 
-# Spiralizing with the PAR
-p = geo.spiral_pos(npos, step)
-def spiralize(p):
-    npos = len(p)
-    for i in range(npos):
-        p0 = ott.parabola.getPosition()
-        p1 = p0 + np.array([0,0,0,p[i,0],p[i,1],0])
-        print('New Par command:');print(p1)
-        ott.parabola.setPosition(p1)
-        r0 = ott.referenceMirror.getPosition()
-        r1 = r0 + np.array([0,0,0,-2*p[i,0],-2*p[i,1],0])
-        print('New RM command:'); print(r1)
-        ott.referenceMirror.setPosition(r1)
+
