@@ -1,6 +1,7 @@
 # to initialize the tower run the following line (without the #)
 #%run /home/m4/git/M4/m4/misc/initOTT.py
 import numpy as np
+import os
 #from matplotlib import pyplot as plt
 from m4.misc import par_meas as pp
 from m4.ground import read_data as rr

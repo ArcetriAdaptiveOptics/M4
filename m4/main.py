@@ -213,7 +213,7 @@ def getOttConfigurator(ott):
     oc = OttConfigurations(ott)
     return oc
 
-def spiralize(npos, step):
+def spiralize(ott, npos, step):
     p = geo.spiral_pos(npos, step)
     npos = np.int(len(p)/2)
     for i in range(npos):
