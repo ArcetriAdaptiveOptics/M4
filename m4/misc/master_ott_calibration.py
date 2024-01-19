@@ -14,13 +14,16 @@ REQ verification
 
 how to add markers in 20230901_par_registration_test.py
 '''
-from m4.misc import image_registration_lib as imgreg
+import numpy as np
+from m4.utils import image_registration_lib as imgreg
 from m4.mini_OTT import timehistory as th
-from m4.misc import read_ottcalib_conf
+from m4.ground import read_ottcalib_conf
 from m4.ground import zernike as zern
 from m4.analyzers import requirement_analyzer as ra
 from m4.ground import geo
+from matplotlib.pyplot import *
 from importlib import reload
+from astropy.io import fits as pyfits
 # Initilization data
 
 px_ott = 0.00076
@@ -208,7 +211,7 @@ slo = imgreg.compSlope(res, px_ott, rfact);print('Slope error, pxscale: '+px_ott
 #HF error < 9 nm, with mild manipulation
 res1 = imgreg.thresh_image(res, 50e-9,zlist,inrad=0.2)
 qq = imgreg.quick243(res1*2, 1/px_ott);figure();imshow(qq);colorbar();title('WFE at interact scale')
-qv = (sort(qq.flatten()));figure();plot(qv)
+qv = (np.sort(qq.flatten()));figure();plot(qv)
 qs = qv[int(np.sum(np.invert(qq.mask))*0.95)]
 print('HF WF error:')
 print(qs)
@@ -263,13 +266,13 @@ rr=np.array(rr)
 ss=np.array(ss)
 close('all')
 m = []
-for i in tn:
+for i in tnlist:
     q=imgreg.load_ott(i)
     m.append(-1*q.mask+1)
 imshow(sum(m,0))
 
 rr=[]
-for i in tn:
+for i in tnlist:
     res, ott, par= imgreg.ott_calib(i, tnpar, zlist=[1,2,3,4,7,8],filtfreq=[0,18], crpar=None);roc = ra.test283(res,1/px_ott, step);print(roc)
     rr.append(roc)
 
@@ -278,7 +281,7 @@ for i in tn:
 #images for the report
 #ratio rms to PtV for Zernike modes 2-11: PtV/RMS
 zamp = np.array([20,20,20,20,20,6])
-zampptv =np.array([4,2*sqrt(3),sqrt(6),sqrt(8),2*sqrt(5),3.35])
+zampptv =np.array([4,2*np.sqrt(3),np.sqrt(6),np.sqrt(8),2*np.sqrt(5),3.35])
 #
 rcParams['image.cmap'] = 'hot'
 base = '/mnt/m4storage/Data/Results/Req/'
@@ -339,7 +342,7 @@ rr=np.array(rr)
 ss=np.array(ss)
 rc = np.array(rc)
 
-roc = sort(concatenate(allcurv))
+roc = np.sort(np.concatenate(allcurv))
 plot(roc);title('Local curvature distribution');xlabel('Patch id');ylabel('Curvature [km]')
 rx = roc[int(len(roc)*0.05)]
 plot(int(len(roc)*0.05),rx,'or')
@@ -362,9 +365,9 @@ for i in range(0,5):
     subplot(1,5,i+1);imshow(wl, vmax=80)
     wl = wl[wl.mask == False]
     wl = wl.data
-    wl = sort(wl.flatten())
+    wl = np.sort(wl.flatten())
     cc.append(wl)
-roc = sort(concatenate(cc))
+roc = np.sort(np.concatenate(cc))
 plot(roc);title('Local curvature distribution');xlabel('Patch id');ylabel('Curvature [km]')
 plot(int(len(roc)*0.05),rx,'or')
 rx = roc[int(len(roc)*0.05)]
@@ -383,7 +386,7 @@ for i in range(0,5):
     wl = wl[wl.mask ==  False]
     wl = sort(wl.flatten())
     cc.append(wl)
-roc = sort(concatenate(cc))
+roc = np.sort(np.concatenate(cc))
 rx = roc[int(len(roc)*0.05)]
 print(rx)
 
