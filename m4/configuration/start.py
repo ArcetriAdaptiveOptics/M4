@@ -35,7 +35,7 @@ from m4.configuration.config_uploader import config_rewriter
 from m4.configuration.ott_parameters import Sound
 import playsound
 
-def create_ott(config_file_name='/home/m4/git/M4/m4/configuration/towerConfig.yaml'):
+def create_ott(config_file_name='/home/m4/git/M4/m4/configuration/myConfig.yaml'):
     ''' Function for the ott creation
 
     Parameters
