@@ -18,3 +18,4 @@ pyyaml
 serial
 pandas
 playsound==1.2.2
+jdcal
