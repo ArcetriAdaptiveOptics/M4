@@ -96,7 +96,7 @@ setup(name=NAME,
                         "pyyaml",
                         "serial",
                         "pandas",
-                        "playsound"
+                        "playsound",
                         "jdcal"
                         ],
       package_data={
