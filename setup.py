@@ -97,7 +97,8 @@ setup(name=NAME,
                         "serial",
                         "pandas",
                         "playsound",
-                        "jdcal"
+                        "jdcal",
+                        "matplotlib"
                         ],
       package_data={
           'm4': ['data/*'],
