@@ -77,7 +77,6 @@ setup(name=NAME,
                 'm4.ground',
                 'm4.gui',
                 'm4.mini_OTT',
-                'm4.misc',
                 'm4.ott_sim',
                 'm4.type',
                 'm4.utils'
@@ -98,6 +97,7 @@ setup(name=NAME,
                         "serial",
                         "pandas",
                         "playsound"
+                        "jdcal"
                         ],
       package_data={
           'm4': ['data/*'],
