@@ -23,7 +23,7 @@ class Runner():
         from m4.configuration import start
         ott, interf, dm = start.create_ott(conf)
         from m4.gui import monitor_GUI
-        g = monitor_GUI.Runner(ott)
+        g = monitor_GUI.Runner()
         g.run()
     '''
 
