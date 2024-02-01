@@ -11,22 +11,19 @@ Authors
 
 import time
 import os
-import numpy as np
+import shutil
 import logging
+import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from m4 import main
-from m4.configuration.ott_parameters import OpcUaParameters
+from m4.configuration.ott_parameters import OpcUaParameters, Interferometer, Sound
 from m4.devices.opc_ua_controller import OpcUaController
 from m4.configuration import config_folder_names as fold_name
 from m4.ott_calibrator_and_aligner import OttCalibAndAlign
-from m4.ground import tracking_number_folder
-from m4.ground import zernike
+from m4.ground import tracking_number_folder, zernike
 from m4.ground.timestamp import Timestamp
-from m4.configuration.ott_parameters import Interferometer
-import shutil
 import playsound
-from m4.configuration.ott_parameters import Sound
 from m4.configuration import ott_status
 
 class Measurements():
@@ -47,17 +44,24 @@ class Measurements():
         self._ottca = OttCalibAndAlign(ott, interf)
         self._opc = OpcUaController()
 
-    def ParAlign(self,n_frames=5):
-        
+    def ParAlign(self, n_frames=5):
+        '''
+        Alignment of tip, titl and focus using a standard tracking number
+
+        Parameters
+        ----------
+        n_frames: int
+            number of images to acquire
+        '''
         tnc = '20230113_102942'
         zern2corrf = np.array([0,1,2]) #TipTilt focus
         dofidf = np.array([0,1,2])# parpist, ParTip, ParTilt
-        tna = main.align_PARAndRM(self._ott, self._interf, tnc, zern2corrf, dofidf,n_frames)
+        tna = main.align_PARAndRM(self._ott, self._interf, tnc, zern2corrf, dofidf, n_frames)
 
 
     def opticalMonitoring(self, n_images, delay, start_delay = 0):
         '''
-        #monitora
+        Acquisition of images for monitoring
 
         Parameters
         ----------
@@ -67,7 +71,7 @@ class Measurements():
             waiting time (in seconds) between two image acquisitions
         start_delay: int[s]
             waiting time before starting the measure (in seconds) 
-                    
+
         Returns
         ------
         tt: string
@@ -79,9 +83,10 @@ class Measurements():
         dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
         print(tt)
         shutil.copy(Interferometer.SETTINGS_CONF_FILE_M4OTT_PC, dove)
-        shutil.move(dove+'/AppSettings.ini',dove+'/4DSettings.ini')
+        shutil.move(os.path.join(dove, '/AppSettings.ini'),
+                    os.path.join(dove, '/4DSettings.ini'))
         ott_status.save(dove, self._ott) #saving the ott status
-        
+
         print('waiting {:n} s...'.format(start_delay))
         time.sleep(start_delay)
         print('start measuring')
@@ -111,17 +116,20 @@ class Measurements():
             time.sleep(delay)
         return tt
 
-    def diffOpticalMonitoring(self, n_images, delayshort, delaylong):
+    def diffOpticalMonitoring(self, n_repetition, delayshort, delaylong):
         '''
-        # Fa due misure poco distanti tra loro e poi aspetta tanto
+        unction for the acquisition of two measurements close to each other
+        with a long wait compared to the next two
+
         Parameters
         ----------
-        n_images: int
-            number of images to acquire
-        delayshort: float
+        n_repetition: int
+            number of iteration for the couple acquisition
+        delayshort: int
+            time gap between two images
+        delaylong: int
             time gap between images couple
-        delaylong: float
-            time gap between images couple
+
         Returns
         ------
         tt: string
