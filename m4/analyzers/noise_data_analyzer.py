@@ -362,7 +362,7 @@ class Noise():
 
 
 
-    def analysis_whit_structure_function(self, data_file_path, tau_vector, h5_or_fits=None, tn=None, nzern=None):
+    def analysis_whit_structure_function(self, data_file_path, tau_vector, h5_or_fits=None, nzern=None):
         '''
         .. 4000 = total number of image in hdf5
 
@@ -375,8 +375,12 @@ class Noise():
 
         Other Parameters
         ----------------
-        h5_or_fits: if it is none the .h5 or .4D data analysis is performed
-        else the fits analysis is performed
+        h5_or_fits: None
+            if it is none the .h5 or .4D data analysis is performed
+            else the fits analysis is performed
+        nzern: int
+            if None first three zernike are are subtracted from the differential image
+            else the number specified
 
         Returns
         -------
