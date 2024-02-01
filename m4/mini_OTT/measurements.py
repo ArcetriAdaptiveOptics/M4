@@ -141,7 +141,7 @@ class Measurements():
         zer_list = []
         temp_list = []
         t0 = time.time()
-        for i in range(n_images):
+        for i in range(n_repetition):
             for i in range(2):
                 ti = time.time()
                 dt = ti - t0
