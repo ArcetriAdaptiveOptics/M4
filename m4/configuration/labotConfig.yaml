@@ -1,2 +1,14 @@
-base_path: '/home/labot/data/M4/Data'
-simulated: 1
+#base_path: '/mnt/data/M4/Data/'
+base_path: '/mnt/backup/Archeopterix_20230517/Data/'
+simulated_interf: True
+simulated_dm: True
+simulated_accelerometers: True
+simulated_angleRotator: True
+simulated_m4Exapode: True
+simulated_parSlider: True
+simulated_par: True
+simulated_rmSlider: True
+simulated_rm: True
+simulated_tempSensors: True
+
+#simulated: 1
