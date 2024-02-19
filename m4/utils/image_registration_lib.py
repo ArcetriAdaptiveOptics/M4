@@ -12,7 +12,7 @@ from astropy.io import fits as pyfits
 #from m4.misc import refmirror_lib as rm_lib
 from scipy.ndimage.interpolation import shift
 from m4.ground.timestamp import Timestamp
-from m4.misc import read_ottcalib_conf
+from m4.ground import read_ottcalib_conf
 from arte.utils import rebin
 import os
 import shutil
