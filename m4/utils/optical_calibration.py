@@ -416,7 +416,7 @@ class OpticalCalibration():
             coef, mat = zernike.zernikeFit(ima, np.arange(10) + 1)
 
             #modRB20231026 to implement aux mask fitting. the following lines replace the previous one
-            #from m4.misc import image_registration_lib as imgreg
+            #from m4.utils import image_registration_lib as imgreg
             from m4.ground import geo
             #img = self._interf.intoFullFrame(ima) this was removed since the frames are already saved in fullframe
             tnpar  = '20231016_124531'

@@ -17,7 +17,7 @@ import numpy as np
 from matplotlib.pyplot import *
 from m4.ground import geo
 from importlib import reload
-from m4.misc import image_registration_lib as imgreg
+from m4.utils import image_registration_lib as imgreg
 from astropy.io import fits as pyfits
 
 def _funFit(x, a, b, c):

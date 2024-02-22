@@ -332,7 +332,7 @@ for i in range(len(tnlist)):
         savefig(base+tnlist[i]+'-Curvature.png')
     wl = w1[w1.mask == False]
     wl = wl.data
-    wl = sort(wl.flatten())
+    wl = np.sort(wl.flatten())
     roc = wl[len(wl)*int(0.05)]
     rc.append(roc)
     allcurv.append(wl)
@@ -384,7 +384,7 @@ for i in range(0,5):
     wl = np.ma.masked_array(w1.data*(w1.mask==0),mask=((w1.data)*(w1.mask==0)<30))
     subplot(1,5,i+1);imshow(wl, vmax=80)
     wl = wl[wl.mask ==  False]
-    wl = sort(wl.flatten())
+    wl = np.sort(wl.flatten())
     cc.append(wl)
 roc = np.sort(np.concatenate(cc))
 rx = roc[int(len(roc)*0.05)]
@@ -402,7 +402,7 @@ print('Slope error');print(ss.mean());print(rr.std())
 print('Curv error');print(rc.mean());print(rc)
 
 def congrid(img, rfact):
-    ss = np.array(shape(img))
+    ss = np.array(np.shape(img))
     slid = geo.congrid2D(img,(ss/rfact).astype(int))
     slim = geo.congrid2D(-1*img.mask+1,(ss/rfact).astype(int))
     sli = np.ma.masked_array(slid,(-1*slim+1))

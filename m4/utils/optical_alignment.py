@@ -265,7 +265,7 @@ class OpticalAlignment():
         new_image = np.ma.masked_array(img, mask=mm)
         #coef, mat = zernike.zernikeFit(new_image, np.arange(10)+1)
         #modRB20231026 to implement aux mask fitting. the following lines replace the previous one
-        #from m4.misc import image_registration_lib as imgreg
+        #from m4.utils import image_registration_lib as imgreg
         #from m4.mini_OTT import timehistory as th
         #img = th.frame2ottFrame(new_image,[580,20])
         tnpar  = '20231016_124531'
