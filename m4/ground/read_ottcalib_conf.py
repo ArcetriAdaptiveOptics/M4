@@ -2,6 +2,7 @@ import numpy as np
 import configparser
 import json
 from m4.mini_OTT import timehistory as th
+import itertools
 #config=configparser.ConfigParser()
 basepath = th.foldname.OPT_DATA_FOLDER
 fold = 'OTTCalibConf/'
@@ -19,8 +20,17 @@ nott_tn_img      = 'ott_tn_img'
 nmark_ott_list   = 'mark_ott_list'
 npx_ott          = 'px_ott'
 def _get_nparray(key1,key2):
-    out   = np.array(json.loads(key1[key2]))
-    return out
+    data = list(json.loads(key1[key2]))
+    pp=[]
+    for ii in data:
+        if ii.__class__==int:
+            pp.append(ii)
+        else:
+            for jj in ii:
+                pp.append(jj)
+
+    #return np.array(pp)
+    return data
     
 def gimmetheconf(tn):
     '''
