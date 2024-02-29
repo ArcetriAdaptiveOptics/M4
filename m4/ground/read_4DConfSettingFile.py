@@ -18,23 +18,23 @@ class ConfSettingReader():
     #CAMERA
     def getFrameRate(self):
         frame_rate = self.config.get(self.camera_section, 'FrameRate')
-        return np.float(frame_rate)
+        return float(frame_rate)
     
     def getImageWidhtInPixels(self):
         image_width_in_pixels = self.config.get(self.camera_section, 'ImageWidthInPixels')
-        return np.int(image_width_in_pixels)
+        return int(image_width_in_pixels)
     
     def getImageHeightInPixels(self):
         image_height_in_pixels = self.config.get(self.camera_section, 'ImageHeightInPixels')
-        return np.int(image_height_in_pixels)
+        return int(image_height_in_pixels)
     
     def getOffsetX(self):
         offset_x = self.config.get(self.camera_section, 'OffsetX')
-        return np.int(offset_x)
+        return int(offset_x)
     
     def getOffsetY(self):
         offset_y = self.config.get(self.camera_section, 'OffsetY')
-        return np.int(offset_y)
+        return int(offset_y)
 
     def getPixelFormat(self):
         pixel_format = self.config.get(self.camera_section, 'PixelFormat')
