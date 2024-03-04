@@ -143,6 +143,7 @@ class ParabolaFootprintRegistration():
 
         base_cgh_plus = scipy.linalg.pinv(base_cgh)
         polycoeff = np.matmul(ottf, base_cgh_plus )
+        print(polycoeff)
         return polycoeff
 
     def _expandbase(self, cx, cy, forder=10):
@@ -151,6 +152,8 @@ class ParabolaFootprintRegistration():
             zz = np.stack((cx, cy, np.ones(cx.size)), axis=0)
         if forder == 6:
             zz = np.stack((cx**2, cy**2, cx*cy, cx, cy, np.ones(cx.size)), axis=0)
+        if forder == 5:
+            zz = np.stack((cx**2, cy**2, cx, cy, np.ones(cx.size)), axis=0)
         if forder == 10:
             zz = np.stack((cx**3, cy**3,cx**2*cy, cy**2*cx, cx**2,cy**2,cx*cy, cx, cy, np.ones(cx.size)), axis=0)
 
