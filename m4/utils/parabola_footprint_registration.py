@@ -137,34 +137,34 @@ class ParabolaFootprintRegistration():
             assert(False)
         return cghf, ottf, cgh_not_blobs
 
-    def fit_trasformation_parameter(self, cghf, ottf):
-        base_cgh = self._expandbase(cghf[0,:],cghf[1,:])
-        base_ott = self._expandbase(ottf[0,:], ottf[1,:]) 
+    def fit_trasformation_parameter(self, cghf, ottf, forder=10):
+        base_cgh = self._expandbase(cghf[0,:],cghf[1,:], forder=forder)
+        base_ott = self._expandbase(ottf[0,:], ottf[1,:], forder=forder) 
 
         base_cgh_plus = scipy.linalg.pinv(base_cgh)
         polycoeff = np.matmul(ottf, base_cgh_plus )
         return polycoeff
 
-    def _expandbase(self, cx, cy, order=10):
-        print("Fitting order %i" % order)
-        if order == 3:
+    def _expandbase(self, cx, cy, forder=10):
+        print("Fitting order %i" % forder)
+        if forder == 3:
             zz = np.stack((cx, cy, np.ones(cx.size)), axis=0)
-        if order == 6:
+        if forder == 6:
             zz = np.stack((cx**2, cy**2, cx*cy, cx, cy, np.ones(cx.size)), axis=0)
-        if order == 10:
+        if forder == 10:
             zz = np.stack((cx**3, cy**3,cx**2*cy, cy**2*cx, cx**2,cy**2,cx*cy, cx, cy, np.ones(cx.size)), axis=0)
 
         return zz
 
     def cgh_coord_tranform_and_trig_interpolatio(self, cgh_image, ott_image,
-                                                 cgh_not_blobs, polycoeff):
+                                                 cgh_not_blobs, polycoeff, forder=10):
         from scipy.interpolate import LinearNDInterpolator
         from scipy.spatial import Delaunay
 
         npix = np.max(cgh_image.shape)
         grid_x, grid_y = np.mgrid[0:npix:1, 0:npix:1]
         idw = cgh_not_blobs == 1
-        coord_mat = self._expandbase(grid_x[idw], grid_y[idw])
+        coord_mat = self._expandbase(grid_x[idw], grid_y[idw], forder=forder)
         tf_coord_mat = np.dot(np.transpose(coord_mat), np.transpose(polycoeff))
         tri = Delaunay(tf_coord_mat)
         fitND = LinearNDInterpolator(tri, cgh_image[idw], fill_value=0)
@@ -181,14 +181,14 @@ class ParabolaFootprintRegistration():
         print("Ott_image rms = %g, gch_image rms = %g, Difference rms = %g" %(self._rms_ott, self._rms_cgh, self._rms_diff))
         return cgh_on_ott, mask_float, difference
 
-    def cgh_tf(self, cgh_image, ott_image, cgh_not_blobs, polycoeff, display=False):
+    def cgh_tf(self, cgh_image, ott_image, cgh_not_blobs, polycoeff, forder=10, display=False):
         from scipy.interpolate import LinearNDInterpolator
         from scipy.spatial import Delaunay
 
         npix = np.max(cgh_image.shape)
         grid_y, grid_x = np.mgrid[0:npix:1, 0:npix:1]
         idw = cgh_not_blobs == 1
-        coord_mat = self._expandbase(grid_x[idw], grid_y[idw])
+        coord_mat = self._expandbase(grid_x[idw], grid_y[idw], forder=forder)
         tf_coord_mat = np.matmul(np.transpose(coord_mat), np.transpose(polycoeff))
         tf_coord_mat = tf_coord_mat[:,[1,0]]
 
@@ -221,16 +221,16 @@ class ParabolaFootprintRegistration():
 
 
 
-    def image_transformation(self, cgh_image, ott_image, cghf, ottf):
+    def image_transformation(self, cgh_image, ott_image, cghf, ottf, forder=10):
         from scipy.interpolate import LinearNDInterpolator
         from scipy.spatial import Delaunay
-        polycoeff = self.fit_trasformation_parameter(cghf, ottf)
+        polycoeff = self.fit_trasformation_parameter(cghf, ottf, forder=forder)
         npix = np.max(cgh_image.shape)
         #npix = np.max(ott_image.shape)  #only for test
         grid_x, grid_y = np.mgrid[0:npix:1, 0:npix:1]
         idw = cgh_image.mask == False
         #idw = cgh_not_blobs == 1
-        coord_mat = self._expandbase(grid_x[idw], grid_y[idw])
+        coord_mat = self._expandbase(grid_x[idw], grid_y[idw], forder=forder)
         tf_coord_mat = np.matmul(np.transpose(coord_mat), np.transpose(polycoeff))
         tri = Delaunay(tf_coord_mat)
         fitND = LinearNDInterpolator(tri, cgh_image.data[idw], fill_value=0)

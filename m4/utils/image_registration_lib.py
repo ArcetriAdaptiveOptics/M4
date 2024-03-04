@@ -72,8 +72,8 @@ def marker_general_remap(cghf,ottf,pos2t):
     return cghf_tra
 
 
-def par_remap(cgh_image, ott_image, cghf, ottf):
-    par_on_ott, mask_float, cgh_tra, difference = pfr.image_transformation(cgh_image, ott_image, cghf, ottf)
+def par_remap(cgh_image, ott_image, cghf, ottf, forder=10):
+    par_on_ott, mask_float, cgh_tra, difference = pfr.image_transformation(cgh_image, ott_image, cghf, ottf, forder=forder)
     cgh_tra = np.ma.masked_array(cgh_tra.data,cgh_tra == 0)
     #cgh_tra = th.removeZernike(cgh_tra,[1,2,3,4])
     return cgh_tra 
@@ -209,13 +209,13 @@ def init_data(tnconf):
     ott_image = image_data(ott_tn_img, flip=False)
     return cgh_image, ott_image, cghf, ottf
 
-def register_par(tnconf, show=False):
+def register_par(tnconf, show=False, forder=10):
     #cgh_tn_marker,ott_tn_marker,mark_cgh_list,mark_ott_list,cgh_tn_img, ott_tn_img, show=False):
     cgh_image, ott_image, cghf, ottf = init_data(tnconf)
     if show is not False:
         view_markers(cghf, ottf)
         
-    cgh_tra = par_remap(cgh_image, ott_image, cghf, ottf)
+    cgh_tra = par_remap(cgh_image, ott_image, cghf, ottf, forder=forder)
     cgh_tra = np.ma.masked_array(cgh_tra.data,cgh_tra == 0)
     cgh_tra = th.removeZernike(cgh_tra,[1,2,3,4])
     ott_image = th.removeZernike(ott_image,[1,2,3,4])
