@@ -98,6 +98,7 @@ setup(name=NAME,
                         "playsound==1.2.2",
                         "jdcal",
                         "matplotlib"
+                        "arte"
                         ],
       package_data={
           'm4': ['data/*'],

@@ -50,6 +50,9 @@ class OpticalCalibration():
         self._mask = None
         self._intMat = None
 
+        self._fullCommandMatrix=None
+        self._fullCube=None
+
     @staticmethod
     def _storageFolder():
         """ Creates the path where to save measurement data"""
@@ -129,6 +132,32 @@ class OpticalCalibration():
                     command matrix used for calibration
         '''
         return self._commandMatrix
+
+    def getFullCommandMatrix(self):
+        '''
+        Returns
+        -------
+        commandMatrix: numpy array
+                    command matrix used for calibration
+        '''
+
+        # Split each array into a list of columns
+        arr1= self._commandMatrix.copy()
+        arr2= -arr1
+        columns1 = np.hsplit(arr1, arr1.shape[1])
+        columns2 = np.hsplit(arr2, arr2.shape[1])
+
+        # Alternate columns from each array
+        interlaced_columns = [column for pair in zip(columns1, columns2) for column in pair]
+
+        # Horizontally stack the alternated columns back into a single array
+        interlaced_array = np.hstack(interlaced_columns)
+
+        self._fullCommandMatrix= np.tile(interlaced_array, self._nPushPull)
+
+
+        return self._fullCommandMatrix
+
 
     def getMask(self):
         '''
@@ -356,6 +385,31 @@ class OpticalCalibration():
         theObject._intMat = hduList[3].data
         return theObject
 
+    def _createFullCube(self, norm=True):
+        """
+        """
+        if norm != True:
+            self._commandAmpVector = np.ones(self._commandAmpVector.size)
+        self._logger.info('Creation of the cube relative to %s', self.tt)
+        self._fullCube = None
+        self._fold = os.path.join(OpticalCalibration._storageFolder(), self.tt)
+        
+        if self._fullCommandMatrix is None:
+            dummy=self.getFullCommnadMatrix()
+        for i in range(self._fullCommandMatrix.shape[1]):
+            name_pos = 'Frame_%04d.fits' % i
+            print("Reding "+name_pos)
+            file = os.path.join(self._fold, name_pos)
+            hduList = pyfits.open(file)
+            final_ima = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
+
+            if self._fullCube is None:
+                self._fullCube = final_ima
+            else:
+                self._fullCube = np.ma.dstack((self._fullCube, final_ima))
+        return
+
+
     def _createCube(self, norm=True):
         """
         """
@@ -408,6 +462,18 @@ class OpticalCalibration():
             self._cube = self.getCube()
         return self._cube
 
+    def getFullCube(self):
+        '''
+        Returns
+        -------
+        cube: numpy masked array
+            analyzed measurements
+        '''
+        if self._fullCube is None:
+            self._createFullCube(False) #lo crea sempre non normalizzato
+        return self._fullCube
+
+
     def _createInteractionMatrix(self, mask):
         coefList = []
         self._cube = self.getCube()
@@ -439,6 +505,26 @@ class OpticalCalibration():
         self._intMat = np.zeros((coefList[0].shape[0], self._cube.shape[2]))
         for j in range(self._cube.shape[2]):
             self._intMat.T[j] = coefList[j]
+
+    def getFullLocalInteractionMatrix(self):
+        coefList = []
+        self._cube = self.getFullCube()
+        for i in range(self._fullCube.shape[2]):
+            ima = np.ma.masked_array(self._fullCube[:, :, i], mask=self._mask)
+            coef, mat = zernike.zernikeFit(ima, np.arange(10) + 1)
+
+            # z= np.array([2,3,4,7,8])
+            z = np.array([1, 2, 3, 6, 7])
+            final_coef = np.zeros(z.shape[0])
+            final_coef = coef[z]
+            self._mat = mat
+            coefList.append(final_coef)
+
+        self._fullIntMat = np.zeros((coefList[0].shape[0], self._cube.shape[2]))
+        for j in range(self._fullCube.shape[2]):
+            self._fullIntMat.T[j] = coefList[j]
+        return self._fullIntMat
+
 
 
     def getInteractionMatrix(self):
