@@ -10,6 +10,7 @@ import os
 from m4.ground import zernike
 from matplotlib import pyplot as plt
 import time
+import numpy as np
 
 
 def main():
@@ -48,7 +49,7 @@ def showMovie(imgcube,diff=0):
     for j in range(len(imgcube)):
         plt.pause(0.1)
         plt.show()
-        imshow(imgcube[j,:,:])
+        plt.imshow(imgcube[j,:,:])
         
 
     
