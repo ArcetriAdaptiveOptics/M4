@@ -9,6 +9,8 @@ import glob
 import os
 from m4.ground import zernike
 from matplotlib import pyplot as plt
+from matplotlib import *
+import matplotlib
 import time
 import numpy as np
 
