@@ -113,7 +113,7 @@ def rebin2DArray(a, new_shape, sample=False):
 
     if sample:
         slices = [slice(0, old, float(old) / new) for old, new in zip(a.shape, (m, n))]
-        idx = np.mgrid[slices].astype(int32)
+        idx = np.mgrid[slices].astype(int)
         return a[tuple(idx)]
     else:
         if m <= M and n <= N:
