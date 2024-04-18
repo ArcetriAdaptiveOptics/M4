@@ -26,7 +26,8 @@ HOW TO USE IT::
 
 import numpy as np
 from m4.ground import geo
-fac = np.math.factorial
+import math
+fac = math.factorial
 
 def zernikeFit(img, zernike_index_vector, qpupil=True):
     '''

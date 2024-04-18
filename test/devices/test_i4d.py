@@ -185,7 +185,7 @@ class Testi4d(unittest.TestCase):
             return ret
         # FRAME BURST PROXY #
         else:
-            self._logger.warn("unknown url %s" % this_call)
+            self._logger.warning("unknown url %s" % this_call)
             return
 
     def tearDown(self):

@@ -7,7 +7,7 @@ import os
 import unittest
 import mock
 from m4.ott_sim.fake_accelerometers import FakeAccelerometers
-from test.test_helper import testDataRootDir
+from test.helper_test_library import testDataRootDir
 
 
 class TestFakeAccelerometers(unittest.TestCase):

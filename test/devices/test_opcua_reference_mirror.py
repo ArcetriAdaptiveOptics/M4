@@ -2,19 +2,19 @@
 Authors
   - C. Selmi: written in 2021
 '''
-import unittest
+from  unittest import TestCase
 import numpy as np
-import mock
-from mock.mock import call
+
+from unittest.mock import call, MagicMock, Mock
 from numpy import testing
 from m4.devices.reference_mirror import OpcUaReferenceMirror
 from m4.configuration.ott_parameters import OpcUaParameters
 
 
-class TestOpcUaReferenceMirror(unittest.TestCase):
+class TestOpcUaReferenceMirror(TestCase):
 
     def setUp(self):
-        self._opc = mock.MagicMock()
+        self._opc = MagicMock()
         self._rm = OpcUaReferenceMirror(self._opc)
 
     def testGetPositionReturnSixTuple(self):
@@ -32,13 +32,13 @@ class TestOpcUaReferenceMirror(unittest.TestCase):
         tip = 1e-6
         tilt = 0.007
 
-        values = {OpcUaParameters.RM_PISTON: piston,
+        self._values = {OpcUaParameters.RM_PISTON: piston,
                   OpcUaParameters.RM_TIP: tip,
                   OpcUaParameters.RM_TILT: tilt}
 
         def side_effect(arg):
-            return values[arg]
-        self._opc.get_position = mock.Mock(side_effect=side_effect)
+            return self._values[arg]
+        self._opc.get_position = Mock(side_effect=side_effect)
 
         pos = self._rm.getPosition()
         calls = [call(OpcUaParameters.RM_PISTON),
@@ -62,8 +62,8 @@ class TestOpcUaReferenceMirror(unittest.TestCase):
         def side_effect_get(arg):
             return self._values[arg]
 
-        self._opc.get_position = mock.Mock(side_effect=side_effect_get)
-        self._opc.set_target_position = mock.Mock(side_effect=side_effect_set)
+        self._opc.get_position = Mock(side_effect=side_effect_get)
+        self._opc.set_target_position = Mock(side_effect=side_effect_set)
 
         newpos = self._rm.setPosition(pos)
 
@@ -75,3 +75,11 @@ class TestOpcUaReferenceMirror(unittest.TestCase):
         self._opc.wait_for_stop.assert_called_once_with(OpcUaParameters.RM_KIN)
 
         testing.assert_almost_equal(pos, newpos)
+
+if __name__ == '__main__':
+    from m4.utils.roi import TestOpcUaReferenceMirror
+    TestOpcUaReferenceMirror().testGetPositionReturnSixTuple()
+    TestOpcUaReferenceMirror().testCallOpcUaOnGetPosition()
+    TestOpcUaReferenceMirror().testCallOpcUaOnSetPosition()
+    
+    print('All test passed')

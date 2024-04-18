@@ -146,7 +146,7 @@ class InterferometerConverter():
         file = h5py.File(h5filename, 'r')
         genraw = file['measurement0']['genraw']['data']
         data = np.array(genraw)
-        mask = np.zeros(data.shape, dtype=np.bool)
+        mask = np.zeros(data.shape, dtype=bool)
         mask[np.where(data == data.max())] = True
         ima = np.ma.masked_array(data * 632.8e-9, mask=mask)
         return ima

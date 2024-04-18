@@ -50,7 +50,7 @@ class ROI():
         #pro= skm.watershed(ima, markers)
         roiList = []
         for i in range(1, 13):
-            maski = np.zeros(labels.shape, dtype=np.bool)
+            maski = np.zeros(labels.shape, dtype=bool)
             maski[np.where(labels == i)] = 1
             final_roi = np.ma.mask_or(np.invert(maski), ima.mask)
             roiList.append(final_roi)

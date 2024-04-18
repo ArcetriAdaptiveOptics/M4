@@ -8,9 +8,9 @@ from setuptools import setup, Command
 
 NAME = 'm4'
 DESCRIPTION = 'A suite of tools to calibrate ELT M4 deformable mirror',
-URL = 'https://github.com/ChiaraSelmi/M4'
-EMAIL = 'chiara.selmi@inaf.it',
-AUTHOR = 'Chiara Selmi',
+URL = 'https://github.com/ArcetriAdaptiveOptics/M4'
+EMAIL = 'marco.xompero@inaf.it',
+AUTHOR = 'Marco Xompero, Chiara Selmi',
 LICENSE = 'MIT'
 KEYWORDS = 'Adaptive Optics, Astrophysics, INAF, Arcetri',
 

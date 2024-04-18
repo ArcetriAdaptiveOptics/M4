@@ -6,7 +6,7 @@ import unittest
 import os
 import numpy as np
 from m4.utils.influence_functions_maker import IFFunctionsMaker
-from test.test_helper import testDataRootDir
+from test.helper_test_library import testDataRootDir
 import mock
 
 class TestInfluenceFunctionsMaker(unittest.TestCase):

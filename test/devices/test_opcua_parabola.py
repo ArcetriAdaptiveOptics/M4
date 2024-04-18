@@ -2,7 +2,8 @@
 import unittest
 import numpy as np
 from m4.devices.parabola import OpcUaParabola
-import mock
+#import mock
+from unittest.mock import Mock, MagicMock
 from m4.configuration.ott_parameters import OpcUaParameters
 from mock.mock import call
 from numpy import testing
@@ -11,7 +12,7 @@ from numpy import testing
 class TestOpcUaParabola(unittest.TestCase):
 
     def setUp(self):
-        self._opc = mock.MagicMock()
+        self._opc = MagicMock()
         self._parabola = OpcUaParabola(self._opc)
 
     def testGetPositionReturnSixTuple(self):
@@ -23,14 +24,14 @@ class TestOpcUaParabola(unittest.TestCase):
         tip = 1e-5
         tilt = 0.003
 
-        values = {OpcUaParameters.PAR_PISTON: piston,
+        self._values = {OpcUaParameters.PAR_PISTON: piston,
                   OpcUaParameters.PAR_TILT: tilt,
                   OpcUaParameters.PAR_TIP: tip}
 
         def side_effect(arg):
-            return values[arg]
+            return self._values[arg]
 
-        self._opc.get_position = mock.Mock(side_effect=side_effect)
+        self._opc.get_position = Mock(side_effect=side_effect)
 
         pos = self._parabola.getPosition()
         calls = [call(OpcUaParameters.PAR_PISTON),
@@ -55,8 +56,8 @@ class TestOpcUaParabola(unittest.TestCase):
         def side_effect_get(arg):
             return self._values[arg]
 
-        self._opc.get_position = mock.Mock(side_effect=side_effect_get)
-        self._opc.set_target_position = mock.Mock(side_effect=side_effect_set)
+        self._opc.get_position = Mock(side_effect=side_effect_get)
+        self._opc.set_target_position = Mock(side_effect=side_effect_set)
 
         newpos = self._parabola.setPosition(pos)
 

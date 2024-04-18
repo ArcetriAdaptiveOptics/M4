@@ -1,7 +1,7 @@
-'''
+"""
 Authors
   - C. Selmi:  written in 2020
-'''
+"""
 
 import os
 import logging
@@ -18,9 +18,8 @@ from m4.ground import read_data
 from m4.mini_OTT import timehistory as th
 
 
-
-class Noise():
-    '''
+class Noise:
+    """
     Class for noise evaluation
 
     HOW TO USE IT::
@@ -31,22 +30,29 @@ class Noise():
         tt = n.noise_analysis_from_hdf5_folder(tidy_or_shuffle, template)
         #analisi di pi cartelle di dati
         rms_medio, tip, tilt, n_temp = n.different_template_analyzer(tt_list)
-    '''
+    """
 
     def __init__(self):
-        """The constructor """
-        self._logger = logging.getLogger('NOISE:')
+        """The constructor"""
+        self._logger = logging.getLogger("NOISE:")
         self._ic = InterferometerConverter()
         self._numberOfNoiseIma = None
         self._cubeFromAnalysis = None
 
     @staticmethod
     def _storageFolder():
-        """ Creates the path where to save measurement data"""
+        """Creates the path where to save measurement data"""
         return fold_name.NOISE_ROOT_FOLDER
 
-    def _defAnalyzer(self, data_file_path, tidy_or_shuffle, template, n_push_pull=None, actsVector=None):
-        '''
+    def _defAnalyzer(
+        self,
+        data_file_path,
+        tidy_or_shuffle,
+        template,
+        n_push_pull=None,
+        actsVector=None,
+    ):
+        """
         arg:
             tidy_or_shuffle = (int) 0 per tidy, 1 per shuffle
             template = np.array composed by 1 and -1
@@ -55,25 +61,24 @@ class Noise():
 
         returns:
             an = analyzer object
-        '''
+        """
         an = AnalyzerIFF()
-        #lista = glob.glob(os.path.join(data_file_path,'*.h5'))
-        #if len(lista)==0:
+        # lista = glob.glob(os.path.join(data_file_path,'*.h5'))
+        # if len(lista)==0:
         #    lista = glob.glob(os.path.join(data_file_path,'*.fits'))
         #    if len(lista)==0:
         #        lista = glob.glob(os.path.join(data_file_path,'*.4D'))
         lista = self._createOrdListFromFilePath(data_file_path)
         n_tot = len(lista)
-        
 
         an._template = template
         if n_push_pull is None:
             an._nPushPull = 6
-            #an._nPushPull = np.int(n_tot/an._template.size) #cosi il cubo diventa una immagine
+            # an._nPushPull = int(n_tot/an._template.size) #cosi il cubo diventa una immagine
         else:
             an._nPushPull = n_push_pull
         if actsVector is None:
-            n_acts = np.int(n_tot / (an._template.size * an._nPushPull))
+            n_acts = int(n_tot / (an._template.size * an._nPushPull))
             an._actsVector = np.arange(n_acts)
             an._modeVector = np.copy(an._actsVector)
         else:
@@ -92,10 +97,15 @@ class Noise():
         an._indexingList = np.array(indexingList)
         return an
 
-
-    def noise_analysis_from_hdf5_folder(self, data_file_path, tidy_or_shuffle, template,
-                                        n_push_pull=None, actsVector=None):
-        '''
+    def noise_analysis_from_hdf5_folder(
+        self,
+        data_file_path,
+        tidy_or_shuffle,
+        template,
+        n_push_pull=None,
+        actsVector=None,
+    ):
+        """
         Parameters
         ----------
             data_file_path: string
@@ -115,25 +125,33 @@ class Noise():
         -------
                 tt: string
                     tracking number of measurements made
-        '''
-        an = self._defAnalyzer(data_file_path, tidy_or_shuffle, template, actsVector, n_push_pull)
+        """
+        an = self._defAnalyzer(
+            data_file_path, tidy_or_shuffle, template, actsVector, n_push_pull
+        )
 
-        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(self._storageFolder())
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
+            self._storageFolder()
+        )
 
-        self._logger.info('Creating analysis in %s', tt)
+        self._logger.info("Creating analysis in %s", tt)
         self._cubeFromAnalysis = an.createCubeFromImageFolder(data_file_path)
-        fits_file_name = os.path.join(dove, 'Cube.fits')
+        fits_file_name = os.path.join(dove, "Cube.fits")
         pyfits.writeto(fits_file_name, self._cubeFromAnalysis.data)
         pyfits.append(fits_file_name, self._cubeFromAnalysis.mask.astype(int))
 
-        self._saveInfo(dove, tidy_or_shuffle, an._template, an._actsVector, an._nPushPull)
+        self._saveInfo(
+            dove, tidy_or_shuffle, an._template, an._actsVector, an._nPushPull
+        )
 
-        rms_mean, quad_mean, tilt_mean, ptv_mean = self._rmsFromCube(self._cubeFromAnalysis)
+        rms_mean, quad_mean, tilt_mean, ptv_mean = self._rmsFromCube(
+            self._cubeFromAnalysis
+        )
         self._saveResults(rms_mean, quad_mean, ptv_mean, dove)
         return tt
 
     def _rmsFromCube(self, cube_to_process):
-        '''
+        """
         Parameters
         ----------
             cube_to_process: [pixel, pixel, number of imagescube]
@@ -147,8 +165,8 @@ class Noise():
                 tip averaged on the number of modes used in the iff's acquisition
             tilt: numpy array
                 tilt averaged on the number of modes used in the iff's acquisition
-        '''
-        self._logger.debug('Calculation of rms, tip and tilt')
+        """
+        self._logger.debug("Calculation of rms, tip and tilt")
         rms_list = []
         coef_tilt_list = []
         coef_tip_list = []
@@ -159,13 +177,13 @@ class Noise():
             coef, mat = zernike.zernikeFit(image, np.array([1, 2, 3]))
             sur = zernike.zernikeSurface(image, coef, mat)
             image_ttr = image - sur
-            ptv = np.max(image_ttr)-np.min(image_ttr)
+            ptv = np.max(image_ttr) - np.min(image_ttr)
             ptv_list.append(ptv)
             rms = image_ttr.std()
             rms_list.append(rms)
             coef_tip_list.append(coef[1])
             coef_tilt_list.append(coef[2])
-            quad = np.sqrt(coef[1]**2 + coef[2]**2)
+            quad = np.sqrt(coef[1] ** 2 + coef[2] ** 2)
             quad_list.append(quad)
         ptv_vector = np.array(ptv_list)
         rms_vector = np.array(rms_list)
@@ -177,7 +195,7 @@ class Noise():
         return rms_mean, quad_tt, tilt, ptv_mean
 
     def spectrumAllData(self, data_file_path):
-        '''
+        """
         Parameters
         ----------
         data_file_path: string
@@ -193,15 +211,15 @@ class Noise():
             spectrum obtained by fft of tilt data
         freq_tilt: numpy array
             frequency obtained by fft of tilt data
-        '''
+        """
         lista = self._createOrdListFromFilePath(data_file_path)
 
         coef_tilt_list = []
         coef_tip_list = []
         for i in range(len(lista)):
-            name = 'img_%04d' %i
+            name = "img_%04d" % i
             print(name)
-            #file_name = os.path.join(data_file_path, name)
+            # file_name = os.path.join(data_file_path, name)
             start_image = image = read_data.read_phasemap(lista[i])
             coef, mat = zernike.zernikeFit(start_image, np.array([2, 3]))
             coef_tip_list.append(coef[0])
@@ -216,68 +234,66 @@ class Noise():
     def _fft(self, vector):
         dt = 35e-3
         n = vector.size
-        T = n*dt
+        T = n * dt
 
-        spe = np.fft.fftshift(np.fft.rfft(vector, norm='ortho'))
+        spe = np.fft.fftshift(np.fft.rfft(vector, norm="ortho"))
         freq = np.fft.fftshift(np.fft.rfftfreq(vector.size, d=dt))
-        #freq = np.fft.fftshift(np.fft.rfftfreq(spe.size, d=dt))
-#         res = np.fft.fft(rms_vector)
-#         qq = res.real**2+res.imag**2
+        # freq = np.fft.fftshift(np.fft.rfftfreq(spe.size, d=dt))
+        #         res = np.fft.fft(rms_vector)
+        #         qq = res.real**2+res.imag**2
         return spe, freq
 
-
     def _saveResults(self, rms_mean, quad_mean, ptv_mean, destination_file_path):
-        ''' Save results as text file
-        '''
-        fits_file_name = os.path.join(destination_file_path, 'results.txt')
-        file = open(fits_file_name, 'w+')
-        file.write('%e %e %e' %(rms_mean, quad_mean, ptv_mean))
+        """Save results as text file"""
+        fits_file_name = os.path.join(destination_file_path, "results.txt")
+        file = open(fits_file_name, "w+")
+        file.write("%e %e %e" % (rms_mean, quad_mean, ptv_mean))
         file.close()
 
     def _saveInfo(self, dove, tidy_or_shuffle, template, actsVector, n_push_pull):
-        ''' Save measurement data as file fits
-        '''
-        fits_file_name = os.path.join(dove, 'Info.fits')
+        """Save measurement data as file fits"""
+        fits_file_name = os.path.join(dove, "Info.fits")
         header = pyfits.Header()
-        header['NPUSHPUL'] = n_push_pull
-        header['TIDYSHUF'] = tidy_or_shuffle
+        header["NPUSHPUL"] = n_push_pull
+        header["TIDYSHUF"] = tidy_or_shuffle
         pyfits.writeto(fits_file_name, template)
         pyfits.append(fits_file_name, actsVector)
         return
 
     def _readCube(self, tt):
-        '''
+        """
         args:
             tt = tracking number of measurement
 
         return:
             _cubeFromAnalysis = cube obtained after iff analysis
-        '''
+        """
         store_in_folder = Noise._storageFolder()
         file_path = os.path.join(store_in_folder, tt)
-        fits_file_name = os.path.join(file_path, 'Cube.fits')
+        fits_file_name = os.path.join(file_path, "Cube.fits")
         hduList = pyfits.open(fits_file_name)
-        self._cubeFromAnalysis = np.ma.masked_array(hduList[0].data,
-                                                    hduList[1].data.astype(bool))
+        self._cubeFromAnalysis = np.ma.masked_array(
+            hduList[0].data, hduList[1].data.astype(bool)
+        )
         return self._cubeFromAnalysis
 
     def _readTempFromInfoFile(self, tt):
-        '''
+        """
         args:
             tt = tracking number of measurement
 
         return:
             n_temp = (int) length of template vector
-        '''
+        """
         store_in_folder = Noise._storageFolder()
         file_path = os.path.join(store_in_folder, tt)
-        fits_file_name = os.path.join(file_path, 'Info.fits')
+        fits_file_name = os.path.join(file_path, "Info.fits")
         hduList = pyfits.open(fits_file_name)
         n_temp = hduList[0].data.shape[0]
         return n_temp
 
     def different_template_analyzer(self, tt_list):
-        '''
+        """
         Parameters
         ----------
             tt_list: lista
@@ -289,9 +305,9 @@ class Noise():
                      vector of mean rms (one for each data folder)
             n_tempo: numpy array
                     vector of the length of the templates used
-        '''
-        self._logger.info('Analysis whit different template')
-        self._logger.debug('tt_list used: %s', tt_list)
+        """
+        self._logger.info("Analysis whit different template")
+        self._logger.debug("tt_list used: %s", tt_list)
         rms_list = []
         ptv_list = []
         quad_list = []
@@ -313,6 +329,7 @@ class Noise():
         n_temp = np.array(n_temp_list)
         ptv_medio = np.array(ptv_list)
         return rms_medio, quad, n_temp, ptv_medio
+
     ### tt_list ###
     # measurementFolder ='/Users/rm/Desktop/Arcetri/M4/ProvaCodice/Noise'
     # lista= os.listdir(measurementFolder); lista.sort()
@@ -321,49 +338,48 @@ class Noise():
     # plot(n_temp, rms, '-o'); plt.xlabel('n_temp'); plt.ylabel('rms_medio')
 
     ### FUNZIONE DI STRUTTURA ###
-    def comp_spatial_stf(self, image_ma, pixsc=1e-3, nbins = None):
-        #lista = self._createOrdListFromFilePath(data_file_path)
+    def comp_spatial_stf(self, image_ma, pixsc=1e-3, nbins=None):
+        # lista = self._createOrdListFromFilePath(data_file_path)
 
-        
         img = image_ma.data
-        mask = (image_ma.mask == 0)
+        mask = image_ma.mask == 0
         sy = img.shape[0]
         sx = img.shape[1]
 
         if nbins is None:
-            nbins = int(sy/10)
+            nbins = int(sy / 10)
 
         sy, sx = img.shape
 
-        vec=img[0:int(sx/2)+1,int(sy/2)]
-        for posiz in np.arange(int(sx/2), 0,-1):
+        vec = img[0 : int(sx / 2) + 1, int(sy / 2)]
+        for posiz in np.arange(int(sx / 2), 0, -1):
             val = vec[posiz]
             if ~np.isnan(val):
-                #print(posiz, val)
+                # print(posiz, val)
                 break
-        xx,yy = np.meshgrid(np.arange(sx)-posiz, np.arange(sy)-sy/2)
-        rr=np.sqrt(xx**2+yy**2)
-        data2hist = (img[mask]-val)**2
-        r2hist= rr[mask]
+        xx, yy = np.meshgrid(np.arange(sx) - posiz, np.arange(sy) - sy / 2)
+        rr = np.sqrt(xx**2 + yy**2)
+        data2hist = (img[mask] - val) ** 2
+        r2hist = rr[mask]
         hist, bin_edges = np.histogram(r2hist, bins=nbins)
 
         idd = np.digitize(r2hist, bin_edges)
-        idd_uniq  = np.unique(idd)
+        idd_uniq = np.unique(idd)
         stf = hist * 0.0
 
         for ii in np.arange(len(stf)):
             data2mean = data2hist[idd == ii]
-            if len(data2mean)==0:
+            if len(data2mean) == 0:
                 stf[ii] = 0
             else:
                 stf[ii] = np.mean(data2hist[idd == ii])
 
-        return (bin_edges[1:]-(bin_edges[1]-bin_edges[0]))*pixsc, stf
+        return (bin_edges[1:] - (bin_edges[1] - bin_edges[0])) * pixsc, stf
 
-
-
-    def analysis_whit_structure_function(self, data_file_path, tau_vector, h5_or_fits=None, nzern=None):
-        '''
+    def analysis_whit_structure_function(
+        self, data_file_path, tau_vector, h5_or_fits=None, nzern=None
+    ):
+        """
         .. 4000 = total number of image in hdf5
 
         Parameters
@@ -389,28 +405,29 @@ class Noise():
             quad_med: numpy array
                      squaring sum of tip and tilt calculated on the difference
                     of the images
-        '''
-        #if h5_or_fits is None:
+        """
+        # if h5_or_fits is None:
         #    lista = glob.glob(os.path.join(data_file_path, '*.h5'))
         #    if len(lista)==0:
         #        lista = glob.glob(os.path.join(data_file_path,'*.4D'))
         #    lista.sort()
-        #else:
+        # else:
         #    listtot = glob.glob(os.path.join(data_file_path, '*.fits'))
         #    listtot.sort()
         #    lista = listtot[0:-2]
-        #print(lista)
-
+        # print(lista)
 
         lista = self._createOrdListFromFilePath(data_file_path)
         if nzern is None:
-            zv= np.arange(3)+1
+            zv = np.arange(3) + 1
         else:
-            zv=np.arange(nzern)+1
+            zv = np.arange(nzern) + 1
 
         image_number = len(lista)
-        i_max = np.int((image_number - tau_vector[tau_vector.shape[0]-1]) /
-                       (tau_vector[tau_vector.shape[0]-1] * 2))
+        i_max = int(
+            (image_number - tau_vector[tau_vector.shape[0] - 1])
+            / (tau_vector[tau_vector.shape[0] - 1] * 2)
+        )
         if i_max <= 10:
             print("Warning low sampling...")
         #    raise OSError('tau = %s too large. i_max = %d' %(tau_vector[tau_vector.shape[0]-1], i_max))
@@ -424,22 +441,24 @@ class Noise():
             for i in range(i_max):
                 k = i * dist * 2
                 if h5_or_fits is None:
-                    #k = i * dist * 2
-                    #name = 'img_%04d' %k
-                    #file_name = os.path.join(data_file_path, name)
+                    # k = i * dist * 2
+                    # name = 'img_%04d' %k
+                    # file_name = os.path.join(data_file_path, name)
                     image_k = image = read_data.read_phasemap(lista[k])
-                    #name = 'img_%04d' %(k+dist)
-                    #file_name = os.path.join(data_file_path, name)
-                    image_dist = image = read_data.read_phasemap(lista[k+dist])
+                    # name = 'img_%04d' %(k+dist)
+                    # file_name = os.path.join(data_file_path, name)
+                    image_dist = image = read_data.read_phasemap(lista[k + dist])
                 else:
                     image_k = read_data.readFits_maskedImage(lista[k])
-                    image_dist = read_data.readFits_maskedImage(lista[k+dist])
+                    image_dist = read_data.readFits_maskedImage(lista[k + dist])
 
                 image_diff = image_k - image_dist
                 zernike_coeff_array, mat = zernike.zernikeFit(image_diff, zv)
                 sur = zernike.zernikeSurface(image_diff, zernike_coeff_array, mat)
                 image_ttr = image_diff - sur
-                quad = np.sqrt(zernike_coeff_array[0]**2 + zernike_coeff_array[1]**2)
+                quad = np.sqrt(
+                    zernike_coeff_array[0] ** 2 + zernike_coeff_array[1] ** 2
+                )
 
                 rms = image_ttr.std()
                 rms_list.append(rms)
@@ -455,10 +474,11 @@ class Noise():
         n_meas = rms_vector.shape[0] * 2 * tau_vector.shape[0]
 
         return rms_medio, quad_med, n_meas
+
     # plot(tau_vector, rms, '-o'); plt.xlabel('tau'); plt.ylabel('rms_medio')
 
     def piston_noise(self, data_file_path):
-        ''' Remove tip and tilt from image and average the results
+        """Remove tip and tilt from image and average the results
         .. dovrei vedere una variazione nel tempo
 
         Parameters
@@ -472,19 +492,18 @@ class Noise():
                 vector containing images's mean
             time: numpy array
                 vector of the time at which the image were taken
-        '''
+        """
         lista = self._createOrdListFromFilePath(data_file_path)
 
         image_number = len(lista)
-        time = np.arange(image_number) * (1/Interferometer.BURST_FREQ)
+        time = np.arange(image_number) * (1 / Interferometer.BURST_FREQ)
 
         mean_list = []
         for j in range(image_number):
-            #name = 'img_%04d' %j
-            #file_name = os.path.join(data_file_path, name)
+            # name = 'img_%04d' %j
+            # file_name = os.path.join(data_file_path, name)
             image = image = read_data.read_phasemap(lista[j])
-            zernike_coeff_array, mat = zernike.zernikeFit(image,
-                                                              np.array([2, 3]))
+            zernike_coeff_array, mat = zernike.zernikeFit(image, np.array([2, 3]))
             sur = zernike.zernikeSurface(image, zernike_coeff_array, mat)
             image_ttr = image - sur
             mean = image_ttr.mean()
@@ -494,7 +513,7 @@ class Noise():
         return np.array(mean_list), time, spe, freq
 
     def tiptilt_series(self, data_file_path):
-        ''' Remove tip and tilt from image and average the results
+        """Remove tip and tilt from image and average the results
         .. dovrei vedere una variazione nel tempo
 
         Parameters
@@ -508,35 +527,35 @@ class Noise():
                 vector containing images's mean
             time: numpy array
                 vector of the time at which the image were taken
-        '''
+        """
         lista = self._createOrdListFromFilePath(data_file_path)
         image_number = len(lista)
-        time = np.arange(image_number) * (1/Interferometer.BURST_FREQ)
+        time = np.arange(image_number) * (1 / Interferometer.BURST_FREQ)
 
         tt_list = []
         for j in range(image_number):
-            #name = 'img_%04d.h5' %j
-            #file_name = os.path.join(data_file_path, name)
+            # name = 'img_%04d.h5' %j
+            # file_name = os.path.join(data_file_path, name)
             image = image = read_data.read_phasemap(lista[j])
-            coeff, mat = zernike.zernikeFit(image,np.array([1,2, 3]))
+            coeff, mat = zernike.zernikeFit(image, np.array([1, 2, 3]))
 
             tt_list.append(coeff)
 
         tt = np.array(tt_list)
         return tt
 
-    def _createOrdListFromFilePath(self, data_file_path ):
+    def _createOrdListFromFilePath(self, data_file_path):
 
-#        lista = glob.glob(os.path.join(data_file_path,'*.h5'))
-#        if len(lista)==0:
-#            lista = glob.glob(os.path.join(data_file_path,'*.fits'))
-#            if len(lista)==0:
-#                lista = glob.glob(os.path.join(data_file_path,'*.4D'))
-#        lista.sort()
-        #da controllare ordinamento nel caso di file .4D
-        lista = th.fileList(None, fold=data_file_path,name ='*.h5')
-        if len(lista)==0:
-            lista = th.fileList(None, fold=data_file_path,name ='*.4D')
-            if len(lista)==0:
-                lista = th.fileList(None, fold=data_file_path,name ='20*.fits')
+        #        lista = glob.glob(os.path.join(data_file_path,'*.h5'))
+        #        if len(lista)==0:
+        #            lista = glob.glob(os.path.join(data_file_path,'*.fits'))
+        #            if len(lista)==0:
+        #                lista = glob.glob(os.path.join(data_file_path,'*.4D'))
+        #        lista.sort()
+        # da controllare ordinamento nel caso di file .4D
+        lista = th.fileList(None, fold=data_file_path, name="*.h5")
+        if len(lista) == 0:
+            lista = th.fileList(None, fold=data_file_path, name="*.4D")
+            if len(lista) == 0:
+                lista = th.fileList(None, fold=data_file_path, name="20*.fits")
         return lista

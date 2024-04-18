@@ -6,7 +6,7 @@ import unittest
 import os
 import mock
 import numpy as np
-from test.test_helper import testDataRootDir
+from test.helper_test_library import testDataRootDir
 
 class TestCalc(unittest.TestCase):
 

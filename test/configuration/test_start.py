@@ -8,7 +8,7 @@ import mock
 from m4.configuration.start import create_ott
 from m4.ott_sim.fake_parabola_slider import FakeParabolaSlider
 from m4.ott_sim.fake_interferometer import FakeInterferometer
-from test.test_helper import testDataRootDir
+from test.helper_test_library import testDataRootDir
 
 
 

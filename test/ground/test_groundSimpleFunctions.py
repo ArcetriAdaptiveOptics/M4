@@ -12,12 +12,12 @@ from m4.ground import logger_set_up
 from m4.ground import tracking_number_folder
 from m4.ground import zernike
 from m4.ground import read_data
-from test.test_helper import testDataRootDir
+from test.helper_test_library import testDataRootDir
 
 
 
 
-class Test(unittest.TestCase):
+class TestGroundSimpleFcn(unittest.TestCase):
 
     @unittest.skip('Mettere dei file')
     def testFindDirectory(self):

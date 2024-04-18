@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 import os
 import mock
-from test.test_helper import testDataRootDir
+from test.helper_test_library import testDataRootDir
 from m4.utils import optical_calibration
 
 PARDATA_FILENAME = os.path.join(os.path.dirname(__file__), 'img_0000.fits')

@@ -9,7 +9,7 @@ import mock
 #from m4.gui import geometry_GUI
 
 from m4.configuration import start
-from test.test_helper import testDataRootDir
+from test.helper_test_library import testDataRootDir
 
 
 class TestGui(unittest.TestCase):

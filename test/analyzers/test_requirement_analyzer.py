@@ -5,7 +5,7 @@ Authors
 import unittest
 import os
 from m4.analyzers import requirement_analyzer as req_check
-from test.test_helper import testDataRootDir
+from test.helper_test_library import testDataRootDir
 from m4.ground import read_data
 
 class TestRequirementAnalyzer(unittest.TestCase):

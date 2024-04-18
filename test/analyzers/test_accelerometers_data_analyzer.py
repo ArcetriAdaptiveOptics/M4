@@ -6,7 +6,7 @@ import unittest
 import os
 from m4.analyzers.accelerometers_data_analyzer import AccelerometersDataAnalyzer
 import mock
-from test.test_helper import testDataRootDir
+from test.helper_test_library import testDataRootDir
 
 
 class TestAccelerometersDataAnalyzer(unittest.TestCase):

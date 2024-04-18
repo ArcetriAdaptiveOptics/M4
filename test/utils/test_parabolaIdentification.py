@@ -8,9 +8,9 @@ from m4.utils.parabola_identification import ParabolaActivities
 
 TESTDATA_FILENAME = os.path.join(os.path.dirname(__file__), 'img_0000.fits')
 
-class Test(unittest.TestCase):
+class TestParabolaIdentification(unittest.TestCase):
 
-    @unittest.skip('Non funziona il linalg.eig (non va da github)')
+    #@unittest.skip('Non funziona il linalg.eig (non va da github)')
     def testFiduciali(self):
         pz = ParabolaActivities()
         image = pz._imaTest(TESTDATA_FILENAME)

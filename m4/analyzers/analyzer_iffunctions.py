@@ -97,7 +97,7 @@ class AnalyzerIFF():
                             product of the masks of the cube
         '''
         aa = np.sum(self._cube.mask.astype(int), axis=2)
-        master_mask = np.zeros(aa.shape, dtype=np.bool)
+        master_mask = np.zeros(aa.shape, dtype=bool)
         master_mask[np.where(aa > 0)] = True
         return master_mask
 

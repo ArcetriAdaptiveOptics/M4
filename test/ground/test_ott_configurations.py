@@ -5,7 +5,7 @@ Authors
 import unittest
 import os
 import mock
-from test.test_helper import testDataRootDir
+from test.helper_test_library import testDataRootDir
 
 class TestCalc(unittest.TestCase):
 

@@ -4,7 +4,7 @@ Authors
 '''
 import os
 import unittest
-from test.test_helper import testDataRootDir
+from test.helper_test_library import testDataRootDir
 from m4.devices.accelerometers import ZmqAccelerometers
 import mock
 from m4.type.accelerometers_data import AccelerometersData

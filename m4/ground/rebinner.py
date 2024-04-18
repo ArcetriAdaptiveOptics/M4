@@ -1,12 +1,14 @@
-'''
+"""
 Authors
   - C. Selmi: written in April 2020
-'''
+"""
+
 import numpy as np
 
+
 def rebin(a, *args):
-    #modRB to correct for the wrong amplitude after rebin
-    '''rebin ndarray data into a smaller ndarray of the same rank whose dimensions
+    # modRB to correct for the wrong amplitude after rebin
+    """rebin ndarray data into a smaller ndarray of the same rank whose dimensions
     are factors of the original dimensions. eg. An array with 6 columns and 4 rows
     can be reduced to have 6,3,2 or 1 columns and 4,2 or 1 rows.
     example usages:
@@ -19,21 +21,25 @@ def rebin(a, *args):
             vector for rebin
         *args: int
             new dimension for vector
-    '''
+    """
     shape = a.shape
     lenShape = len(shape)
-    factor = np.asarray(shape)/np.asarray(args)
-    evList = ['a.reshape('] + \
-             ['args[%d],factor[%d],'%(i,i) for i in range(lenShape)] + \
-             [')'] + ['.sum(%d)'%(i+1) for i in range(lenShape)] + \
-             ['/factor[%d]'%i for i in range(lenShape)]
-    print (''.join(evList))
-    return eval(''.join(evList))
+    factor = np.asarray(shape) / np.asarray(args)
+    evList = (
+        ["a.reshape("]
+        + ["args[%d],factor[%d]," % (i, i) for i in range(lenShape)]
+        + [")"]
+        + [".sum(%d)" % (i + 1) for i in range(lenShape)]
+        + ["/factor[%d]" % i for i in range(lenShape)]
+    )
+    print("".join(evList))
+    return eval("".join(evList))
 
 
 def rebin2(a, shape):
-    sh = shape[0],a.shape[0]//shape[0],shape[1],a.shape[1]//shape[1]
+    sh = shape[0], a.shape[0] // shape[0], shape[1], a.shape[1] // shape[1]
     return a.reshape(sh).mean(-1).mean(1)
+
 
 # From ARTE #
 def rebin2DArray(a, new_shape, sample=False):
@@ -93,24 +99,24 @@ def rebin2DArray(a, new_shape, sample=False):
     M, N = a.shape
 
     if m <= M and n <= M:
-        if (M//m != M/m) or (N//n != N/n):
-            raise ValueError('Cannot downsample by non-integer factors')
+        if (M // m != M / m) or (N // n != N / n):
+            raise ValueError("Cannot downsample by non-integer factors")
 
     elif M <= m and M <= m:
-        if (m//M != m/M) or (n//N != n/N):
-            raise ValueError('Cannot upsample by non-integer factors')
+        if (m // M != m / M) or (n // N != n / N):
+            raise ValueError("Cannot upsample by non-integer factors")
 
     else:
-        raise NotImplementedError('Up- and down-sampling in different axes '
-                                  'is not supported')
+        raise NotImplementedError(
+            "Up- and down-sampling in different axes " "is not supported"
+        )
 
     if sample:
-        slices = [slice(0, old, float(old) / new)
-                  for old, new in zip(a.shape, (m, n))]
-        idx = np.mgrid[slices].astype(np.int32)
+        slices = [slice(0, old, float(old) / new) for old, new in zip(a.shape, (m, n))]
+        idx = np.mgrid[slices].astype(int32)
         return a[tuple(idx)]
     else:
         if m <= M and n <= N:
-            return a.reshape((m, M//m, n, N//n)).mean(3).mean(1)
+            return a.reshape((m, M // m, n, N // n)).mean(3).mean(1)
         elif m >= M and n >= M:
-            return np.repeat(np.repeat(a, m/M, axis=0), n/N, axis=1)
+            return np.repeat(np.repeat(a, m / M, axis=0), n / N, axis=1)

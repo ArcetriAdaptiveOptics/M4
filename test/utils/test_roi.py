@@ -4,13 +4,15 @@ Authors
 '''
 import unittest
 import os
-from test.test_helper import testDataRootDir
+from test.helper_test_library import testDataRootDir
 from m4.ground import read_data
 
-class TestCalc(unittest.TestCase):
+class TestRoi(unittest.TestCase):
 
     def _readImage(self, name):
-        directory = os.path.join(testDataRootDir(), 'base',
+        datadir = testDataRootDir()
+        assert os.path.exists(datadir)
+        directory = os.path.join(datadir, 'base',
                                               'M4Data', 'OPTData',
                                               'ROI')
         data_file_path = os.path.join(directory, name)
@@ -32,3 +34,5 @@ class TestCalc(unittest.TestCase):
 
         ima = self._readImage('cent_rmin.fits')
         segList = r.automatical_roi_selection(ima, False, True)
+
+        
