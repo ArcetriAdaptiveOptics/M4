@@ -222,7 +222,7 @@ class SingleThreadExecutor(MultiThreadExecutor):
         MultiThreadExecutor.__init__(self, maxThreads= 1, logger= logger)
 
 
-class BusyExecutorException(ArgosException):
+class BusyExecutorException(Exception):
 
     def __init__(self, message, nameOfCurrentTask):
         Exception.__init__(self, message)
