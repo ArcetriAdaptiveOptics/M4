@@ -51,7 +51,7 @@ class SnapshotTweaker():
                         del hdr[k]
                         hdr.update('HIERARCH '+newK, v)
                 hdulist.close(output_verify='fix')
-            except Exception, e:
+            except Exception as e:
                 self._logger.warn('headerRename failed (%s)') % str(e)
                 pass
 
