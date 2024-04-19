@@ -28,22 +28,40 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install --upgrade wheel
-        pip install setuptools
-        #sudo apt-get install -y xvfb libdbus-1-3 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
-        #-y xvfb
-        pip install black codespell flake8 isort pytest
-        #python -m pip install flake8 pytest
-        #if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install -r requirements.txt
-#        conda install -c conda-forge pyside2
     - name: Lint with flake8
       run: |
+        pip install flake8
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        #pytest
-        xvfb-run pytest
+        pip install pytest
+        pip install pytest-cov
+        pytest --cov=./
+ 
+ 
+#     - name: Install dependencies
+      #run: |
+        #python -m pip install --upgrade pip
+        #pip install --upgrade wheel
+        #pip install setuptools
+        ##sudo apt-get install -y xvfb libdbus-1-3 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
+        ##-y xvfb
+        #pip install black codespell flake8 isort pytest
+        ##python -m pip install flake8 pytest
+        ##if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        #pip install -r requirements.txt
+##        conda install -c conda-forge pyside2
+    #- name: Lint with flake8
+      #run: |
+        ## stop the build if there are Python syntax errors or undefined names
+        #flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        ## exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        #flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    #- name: Test with pytest
+      #run: |
+        ##pytest
+        #xvfb-run pytest
