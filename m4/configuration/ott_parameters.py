@@ -63,7 +63,8 @@ class OttParameters():
     rm_max_displacement = np.array([0, 0, 0, 10, 10, 0]) #range of maximum allowed displacement
     m4_max_displacement = np.array([0, 0, 0, 1, 1, 0]) #range of maximum allowed displacement
 
-
+    PAR_SLIDER_KIN_OFFSET = 1291.57
+    RM_SLIDER_KIN_OFFSET = 42.58
     PARABOLA_DOF = np.array([2, 3, 4])
     RM_DOF_PISTON = np.array([2, 3, 4])
     RM_DOF = np.array([3, 4])
