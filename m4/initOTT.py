@@ -39,7 +39,7 @@ def help():
             ]
 
 
-TEXT = """
+    TEXT = """
 The (Simulated) OTT has been initialized.
 
 HIGH-LEVEL USAGE:
