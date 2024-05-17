@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from matplotlib import pyplot as plt
 #from m4.misc import par_meas as pp
 from m4.ground import read_data as rr
@@ -14,7 +15,8 @@ from m4.configuration.ott_parameters import Interferometer
 from m4 import noise
 import time
 #conf='/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
-conf = os.path.join(os.path.expanduser('~'), 'git/M4/m4/configuration','myConfig.yaml')
+conf = os.environ["PYOTTCONF"]
+#conf = os.path.join(os.path.expanduser('~'), 'git/M4/m4/configuration','myConfig.yaml')
 ott, interf, dm = start.create_ott(conf)
 truss = Parabola(ott, conf) # could name 'optical_beam'
 rm = ReferenceMirror(ott, conf)
