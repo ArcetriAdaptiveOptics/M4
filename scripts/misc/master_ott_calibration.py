@@ -60,6 +60,14 @@ tnott = '20231028_223658' #RM800
 tnott = '20231028_204448' #RM1000
 z2corr = [1,2,3,4]
 
+### FULL HowTo Section
+#last step: from tnconf to calibration
+tnconf = '20231013_230000' #.ini not required
+cgh_tra, ott_image, tn = imgreg.register_par(tnconf)
+
+
+
+
 
 #### HOW TO SECTION
 #restoring the configuration (All TNs and markers list)
