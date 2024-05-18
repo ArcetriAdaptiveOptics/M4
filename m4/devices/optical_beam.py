@@ -150,7 +150,7 @@ class ReferenceMirror:
         pos_in_mm = pos_in_m * 1000
 
         if self._config['simulated_rmSlider'] == False:
-            opcua_pos = pos_in_mm - OttParameters.RM_SLIDER_KIN_OFFSET
+            opcua_pos = pos_in_mm + OttParameters.RM_SLIDER_KIN_OFFSET*1000
         else:
             opcua_pos = pos_in_mm
 
@@ -172,9 +172,11 @@ class ReferenceMirror:
         current_pos : float
             Current position, in meters, of the reference mirror slider
         '''
-        old_pos = self.rmGetPosition()
-        new_pos = old_pos + change_in_m
-        self._slider.setPosition(new_pos * 1000)
+        #old_pos = self.rmGetPosition()
+        #new_pos = old_pos + change_in_m
+        #self._slider.setPosition(new_pos * 1000)
+        old_pos self._slider.getPosition()
+        self._slider.setPosition(old_pos + change_in_m * 1000)
         current_pos = self._pos = self.rmGetPosition()
         return current_pos
 

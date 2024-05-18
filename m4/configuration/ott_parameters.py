@@ -63,10 +63,10 @@ class OttParameters():
     rm_max_displacement = np.array([0, 0, 0, 10, 10, 0]) #range of maximum allowed displacement
     m4_max_displacement = np.array([0, 0, 0, 1, 1, 0]) #range of maximum allowed displacement
     # conversion parameters from OPCUA to M4 reference
-    PAR_SLIDER_KIN_OFFSET = 1.29157
-    PAR_SLIDER_DIRECTION = 1
-    RM_SLIDER_KIN_OFFSET = 0.04258
-    RM_SLIDER_DIRECTION = -1
+    PAR_SLIDER_KIN_OFFSET = 1.26876  #1.29157
+    PAR_SLIDER_DIRECTION = -1
+    RM_SLIDER_KIN_OFFSET = -0.04258
+    RM_SLIDER_DIRECTION = 1
     #max movement range of truss and RM in mm for OPCUA
     MAX_PAR_SLIDER_RANGE = 2000
     MAX_RM_SLIDER_RANGE = 2000
