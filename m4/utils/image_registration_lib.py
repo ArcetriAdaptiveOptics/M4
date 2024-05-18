@@ -117,8 +117,8 @@ def view_markers(p0, p1):
     plot(p0[1,:],p0[0,:],'o');axis('equal')
     plot(p1[1,:],p1[0,:],'x')
     for i in range(np.shape(p0)[1]):
-        text(p0[1,:],p0[0,:],str(i))
-        text(p1[1,:]+10,p1[0,:]+10,str(i))
+        text(p0[1,i],p0[0,i],str(i))        #modRB 20240518 was text(p0[1,:],p0[0,:],str(i))
+        text(p1[1,i]+10,p1[0,i]+10,str(i))  #text(p1[1,:]+10,p1[0,:]+10,str(i))
     title('Markers position comparison')
     p00 = marker_remap(p0, p1)
     dd = np.sqrt((p00[0,:]-p1[0,:])**2+(p00[1,:]-p1[1,:])**2)

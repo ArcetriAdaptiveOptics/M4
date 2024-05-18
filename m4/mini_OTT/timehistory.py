@@ -523,7 +523,8 @@ def readFrameCrop(tn):
     path = a + "/" + fold + "/" + tn
     print(path)
     w, h, x, y, fr = readconf4d.getCameraConfig(path)
-    return np.array([w, h, x, y], dtype=int64)
+    return np.array([w, h, x, y], dtype=np.int64)  #modRB20240518, was dtype=int64
+
 
 
 def readFrameRate(tn):
