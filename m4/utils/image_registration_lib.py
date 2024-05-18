@@ -128,7 +128,12 @@ def view_markers(p0, p1):
         text(p1[0,i],p0[1,i],str(i))
     title('Remapping error')
 
-
+def plot_markers(p0):
+    figure()
+    plot(p0[1,:],p0[0,:],'o');axis('equal')
+    title('Markers position in the frame')
+    for i in range(np.shape(p0)[1]):
+        text(p0[1,i],p0[0,i],str(i)) 
 
 def marker_data(tn_marker,mark_list, diam,flip=False):
     '''

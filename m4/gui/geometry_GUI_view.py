@@ -9,6 +9,7 @@ import numpy as np
 from m4.ott_sim.ott_images import OttImages
 from guietta import Gui, G, MA, _, ___, III, HB
 from m4.ground.package_data import data_root_dir
+from m4.configuration.ott_parameters import OttParameters
 
 # from guietta import Empty, Exceptions
 
@@ -33,7 +34,8 @@ class Runner:
             tower object
         """
         self.ott = ott
-
+        self.paroffset = OttParameters.PAR_SLIDER_KIN_OFFSET
+        self.rmoffset = OttParameters.RM_SLIDER_KIN_OFFSET
     def _setUp(self):
 
         def setPlot(gui, image):
@@ -51,9 +53,11 @@ class Runner:
                 gui.parpos = self.ott.parabola.getPosition()
                 gui.rmpos = self.ott.referenceMirror.getPosition()
                 gui.m4pos = self.ott.m4Exapode.getPosition()
-                gui.pslider = self.ott.parabolaSlider.getPosition()
+                gui.pslider = self.ott.parabolaSlider.getPosition()+1
                 gui.anglepos = self.ott.angleRotator.getPosition()
-                gui.rslider = self.ott.referenceMirrorSlider.getPosition()
+                gui.rslider = self.ott.referenceMirrorSlider.getPosition()+1
+                #gui.psliderM4 = self.ott.parabolaSlider.getPosition()+self.paroffset*1000
+                #gui.rsliderM4 = self.ott.referenceMirrorSlider+self.rmoffset*1000
             ottIma = OttImages(self.ott)
             image = ottIma.ott_view()
             setPlot(gui, image)
@@ -167,11 +171,11 @@ class Runner:
 
         gui_image.timer_start(getstatus, 1)
 
-        self.gui = Gui([G("OTT"), G("Control")])
-        self.gui_control = control_gui
+        self.gui = Gui([G("OTT")])#, G("Control")])
+        #self.gui_control = control_gui
         self.gui_image = gui_image
         self.gui.OTT = gui_image
-        self.gui.Control = control_gui
+        #self.gui.Control = control_gui
 
     def runImage(self):
         self._setUp()
