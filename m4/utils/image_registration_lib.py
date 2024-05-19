@@ -135,6 +135,13 @@ def plot_markers(p0):
     for i in range(np.shape(p0)[1]):
         text(p0[1,i],p0[0,i],str(i)) 
 
+def markers_explorer(tn):
+    p0=marker_data(tn, None, diam=28, flip=False)
+    plot_markers(p0)
+    xlim(0,2048);ylim(0,2048)
+    title(tn)
+
+
 def marker_data(tn_marker,mark_list, diam,flip=False):
     '''
     usage:
@@ -142,6 +149,10 @@ def marker_data(tn_marker,mark_list, diam,flip=False):
     for cgh markers: marker_data(tn,mark_list, 24,flip=True)
     if tn_marker is a tnvector, mark list shall be a 2D vector
     '''
+    ttt = """for ott markers: marker_data(tn,mark_list, 28,flip=False)
+    for cgh markers: marker_data(tn,mark_list, 24,flip=True)
+    if tn_marker is a tnvector, mark list shall be a 2D vector')"""
+    print(ttt)
     fl0 = th.fileList(tn_marker)
     img0=th.frame(0, fl0)
     if flip is True:
