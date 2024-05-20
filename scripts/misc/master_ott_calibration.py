@@ -85,7 +85,8 @@ par_remapped = imgreg.load_registeredPar(tnpar)
 ott = imgreg.load_ott(tnott)
 
 #how to filter the PAR and compute the OTT calibrated SFMap
-par_filtered = th.comp_filtered_image(par_remapped,  d=px_ott, verbose=True, disp=False, freq2filter=(f0,f1))ar = imgreg.image_remask(par_filtered, ott)
+par_filtered = th.comp_filtered_image(par_remapped,  d=px_ott, verbose=True, disp=False, freq2filter=(f0,f1))
+par = imgreg.image_remask(par_filtered, ott)
 #res = ott-2*par_ott
 res = ott-2*par
 
