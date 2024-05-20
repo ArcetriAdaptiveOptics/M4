@@ -10,11 +10,12 @@ scikit-image
 IPython
 opcua
 mock
-pyzabbix
+py-zabbix
 zmq
 guietta
 pyyaml
 serial
+psutil
 pandas
 playsound==1.2.2
 jdcal
