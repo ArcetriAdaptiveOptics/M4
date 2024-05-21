@@ -485,7 +485,7 @@ class OpticalCalibration():
             #from m4.utils import image_registration_lib as imgreg
             from m4.ground import geo
             #img = self._interf.intoFullFrame(ima) this was removed since the frames are already saved in fullframe
-            tnpar  = '20231016_124531'
+            tnpar  = '20240521_161525'  #'20231016_124531'
             print('Using global modes fitting, TNPar: '+tnpar)
             #par = imgreg.load_registeredPar(tnpar)
             par = self._load_registeredPar(tnpar)

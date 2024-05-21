@@ -3,7 +3,7 @@ import configparser
 import json
 from m4.mini_OTT import timehistory as th
 basepath = th.foldname.OPT_DATA_FOLDER
-statusfilename =' OTTStatus.ini'
+statusfilename ='OTTStatus.ini'
 def read(tn):
     fold = th.findTracknum(tn)
     f2read = basepath+'/'+fold+'/'+tn+'/'+statusfilename
@@ -39,7 +39,13 @@ def save(basepath, ott):
     f.close()
 
 def gotogeometry(tn,ott):
+    import time
     ps, rs, ang, par, rm, m4 = read(tn)
+    print('moving ps')
+    print(ps)
+    print('moving rs')
+    print(rs)
+    time.sleep(5)
     ott.parabolaSlider.setPosition(ps)
     ott.referenceMirrorSlider.setPosition(rs)
 

@@ -8,6 +8,7 @@ HOW TO USE IT::
     zabbix.main()
 '''
 
+print("Zabbix module start")
 import sys
 import time
 from functools import reduce
@@ -17,7 +18,12 @@ from pyzabbix import ZabbixMetric, ZabbixSender
 sys.path.insert(0,'/home/m4/git/M4')
 from m4.devices.opc_ua_controller import OpcUaController
 from m4.configuration.ott_parameters import OpcUaParameters
+print("Zabbix module import done")
 opcUa = OpcUaController()
+print("opcUA controller initialized")
+#zapi = ZabbixAPI(url='http://192.168.22.22/zabbix/', user='Admin', password='zabbix')
+print("Zabbix module initialized")
+print("note: the data retrieval from zabbix to python is broken")
 
 
 def mainZabbix():
@@ -29,7 +35,6 @@ def mainZabbix():
     result1: tuple
     result2: tuple
     """
-    zapi = _createZabbixAPI()
     hostname = OpcUaParameters.zabbix_hostname
     zserver = OpcUaParameters.zabbix_server
     port = OpcUaParameters.zabbix_port
@@ -37,16 +42,18 @@ def mainZabbix():
     temperature_vector = _read_temperature_from_OpcUa()
 #     valore2 = getZabbixMetrics(zapi, hostname, 'key')
     packet = _write_tempertaure(hostname, temperature_vector)
+    print("Read temperature")
     result1 = ZabbixSender(zserver, port, use_config=None).send(packet)
 
     var_positions = _read_var_pos_from_OpcUa()
+    print("Read motor position")
     packet = _write_var_pos(hostname, var_positions)
     result2 = ZabbixSender(zserver, port, use_config=None).send(packet)
     return result1, result2
 
 
 def _createZabbixAPI():
-    zapi = ZabbixAPI(url='http://192.168.22.22/zabbix/', user='Admin', password='zabbix')
+    zapi = ZabbixAPI(url='https://192.168.22.22/zabbix/', user='Admin', password='zabbix')
     return zapi
 
 def _read_temperature_from_OpcUa():

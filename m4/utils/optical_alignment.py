@@ -268,7 +268,7 @@ class OpticalAlignment():
         #from m4.utils import image_registration_lib as imgreg
         #from m4.mini_OTT import timehistory as th
         #img = th.frame2ottFrame(new_image,[580,20])
-        tnpar  = '20231016_124531'
+        tnpar  = '20240521_161525'  #'20231016_124531'
         par = self._load_registeredPar(tnpar)
         img = new_image -2*par
         print('Par Removed')

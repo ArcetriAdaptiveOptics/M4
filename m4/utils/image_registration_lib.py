@@ -78,6 +78,11 @@ def par_remap(cgh_image, ott_image, cghf, ottf, forder=10):
     #cgh_tra = th.removeZernike(cgh_tra,[1,2,3,4])
     return cgh_tra 
 
+def par_remap_only(cgh_image, cghf, ottf, forder=10):
+    par_on_ott, mask_float, cgh_tra, difference = pfr.image_transformation(cgh_image, cgh_image*0, cghf, ottf, forder=forder)
+    cgh_tra = np.ma.masked_array(cgh_tra.data,cgh_tra == 0)
+    #cgh_tra = th.removeZernike(cgh_tra,[1,2,3,4])
+    return cgh_tra
 
 def ott_remap(cgh_tra, ott_image):
     mask = ott_image.mask
@@ -127,6 +132,7 @@ def view_markers(p0, p1):
     for i in range(np.shape(p0)[1]):
         text(p1[0,i],p0[1,i],str(i))
     title('Remapping error')
+    colorbar()
 
 def plot_markers(p0):
     figure()
@@ -239,6 +245,21 @@ def register_par(tnconf, show=False, forder=10):
     tn = save_registration(cgh_tra,tnconf)
 
     return cgh_tra, ott_image, tn
+
+def register_par_only(tnconf, show=False, forder=10):
+    #cgh_tn_marker,ott_tn_marker,mark_cgh_list,mark_ott_list,cgh_tn_img, ott_tn_img, show=False):
+    cgh_image, ott_image, cghf, ottf = init_data(tnconf)
+    if show is not False:
+        view_markers(cghf, ottf)
+
+    cgh_tra = par_remap(cgh_image, ott_image, cghf, ottf, forder=forder)
+    cgh_tra = np.ma.masked_array(cgh_tra.data,cgh_tra == 0)
+    cgh_tra = th.removeZernike(cgh_tra,[1,2,3,4])
+    ott_image = th.removeZernike(ott_image,[1,2,3,4])
+    #tn = save_registration(cgh_tra,cgh_tn_img,cgh_tn_marker,ott_tn_marker)
+    tn = save_registration(cgh_tra,tnconf)
+    return cgh_tra, ott_image, tn
+
 
 def save_registration(img, tnconf):#(img,cgh_tn_img,cgh_tn_marker,ott_tn_marker):
     tn = Timestamp.now()

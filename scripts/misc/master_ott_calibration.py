@@ -63,6 +63,7 @@ z2corr = [1,2,3,4]
 ### FULL HowTo Section
 #last step: from tnconf to calibration
 tnconf = '20231013_230000' #.ini not required
+tnconf = '20240521_120000' 
 imgreg.markers_explorer(tn) #for testing ott markers
 cgh_image, ott_image, cghf, ottf = imgreg.init_data(tnconf)
 imgreg.plot_markers(cghf)

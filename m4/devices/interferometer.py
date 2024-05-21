@@ -18,7 +18,6 @@ import playsound
 from m4.configuration.ott_parameters import Sound
 from m4.ground.read_4DConfSettingFile import ConfSettingReader #modRB 20231027 to implement frame2OTTframe here
 
-
 class I4d4020(BaseInterferometer):
     ''' Class for i4d interferometer
 
@@ -160,6 +159,37 @@ class I4d6110(BaseInterferometer):
 #             plt.imshow(masked_ima, origin='lower')
 #             plt.colorbar()
         return masked_ima
+
+    def acquire_detector(self, nframes=1, delay=0):
+        """
+        Parameters
+        ----------
+            nframes: int
+                number of frames
+            delay: int [s]
+                delay between images
+
+        Returns
+        -------
+            data2d: numpy masked array
+                    detector interferometer image 
+        """
+        self.acquire_phasemap()
+        
+        if nframes == 1:
+            data, height, pixel_size_in_microns, width=self._i4d.getFringeAmplitudeData()
+            data2d = np.reshape(data, (width, height))
+        else:
+            image_list = []
+            for i in range(nframes):
+                data, height, pixel_size_in_microns, width=self._i4d.getFringeAmplitudeData()
+                data2d_t = np.reshape(data, (width, height))
+                image_list.append(data2d_t)
+                time.sleep(delay)
+            images = np.ma.dstack(image_list)
+            data2d = np.ma.mean(images, 2)
+
+        return data2d
 
     def _fromDataArrayToMaskedArray(self, width, height, data_array):
        # data = np.reshape(data_array, (width, height))
