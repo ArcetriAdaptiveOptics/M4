@@ -35,8 +35,14 @@ class Parabola:
             print(f"Error loading configuration file: {e}")
             self._config = {}
 
-    def _conversion(self, pos):
-        return (pos + OttParameters.PAR_SLIDER_KIN_OFFSET)
+    def _conversion(self, pos: float, get=False) -> float:
+        '''
+        Converts the given position with relative to M4 Center. Pos is in meters
+        '''
+        if get==False:
+            return (pos + OttParameters.PAR_SLIDER_KIN_OFFSET*1000)
+        elif get==True: 
+            return (pos - OttParameters.PAR_SLIDER_KIN_OFFSET*1000)
 
     def trussGetPosition(self) -> float:
         '''
@@ -48,7 +54,7 @@ class Parabola:
             Current position of the parabola slider, in meters
         '''
         self._pos = self._slider.getPosition()
-        current_pos = self._conversion(self._pos / 1000)
+        current_pos = self._conversion(self._pos, get=True)
         return current_pos
 
     def moveTrussTo(self, pos_in_m: float) -> float:
@@ -68,7 +74,7 @@ class Parabola:
         pos_in_mm = pos_in_m * 1000
 
         if self._config['simulated_parSlider'] == False:
-            opcua_pos = self._conversion(pos_in_mm)
+            opcua_pos = self._conversion(pos_in_mm, get=False)
         else: 
             opcua_pos = pos_in_mm
 
@@ -90,9 +96,9 @@ class Parabola:
         current_pos : float
             Current position, in meters, of the parabola slider
         '''
-        old_pos = self.trussGetPosition()
-        new_pos = old_pos + change_in_m
-        self._slider.setPosition(new_pos * 1000)
+        old_pos = self._slider.getPosition()
+        new_pos = old_pos + change_in_m*1000
+        self._slider.setPosition(new_pos)
         current_pos = self._pos = self.trussGetPosition()
         return current_pos
 
@@ -160,8 +166,11 @@ class ReferenceMirror:
             print(f"Error loading configuration file: {e}")
             self._config = {}
 
-    def _conversion(self, pos):
-        return (pos - OttParameters.RM_SLIDER_KIN_OFFSET)
+    def _conversion(self, pos: float, get=False) -> float:
+        if get==False:
+            return (pos + OttParameters.RM_SLIDER_KIN_OFFSET*1000)
+        elif get==True: 
+            return (pos - OttParameters.RM_SLIDER_KIN_OFFSET*1000)
 
     def rmGetPosition(self) -> float:
         '''
@@ -173,7 +182,7 @@ class ReferenceMirror:
             Current position of the reference mirror slider, in meters
         '''
         self._pos = self._slider.getPosition()
-        current_pos = self._conversion(self._pos / 1000)
+        current_pos = self._conversion(self._pos, get=True)
         return current_pos
 
     def moveRmTo(self, pos_in_m: float) -> float:
@@ -193,7 +202,7 @@ class ReferenceMirror:
         pos_in_mm = pos_in_m * 1000
 
         if self._config['simulated_rmSlider'] == False:
-            opcua_pos = self._conversion(pos_in_mm)
+            opcua_pos = self._conversion(pos_in_mm, get=False)
         else:
             opcua_pos = pos_in_mm
 
@@ -215,9 +224,9 @@ class ReferenceMirror:
         current_pos : float
             Current position, in meters, of the reference mirror slider
         '''
-        old_pos = self.rmGetPosition()
-        new_pos = old_pos + change_in_m
-        self._slider.setPosition(new_pos * 1000)
+        old_pos = self._slider.getPosition()
+        new_pos = old_pos + change_in_m*1000
+        self._slider.setPosition(new_pos)
         current_pos = self._pos = self.rmGetPosition()
         return current_pos
 
