@@ -4,7 +4,7 @@ Author:
 
 Description
 --------------
-High-level , end-user functions to move both the parabola and the reference mirror slider, with respect to the optical aligned centre. both the simulated and real case are handled passing by the configuration file
+High-level, end-user functions to move both the parabola and the reference mirror slider, with respect to the optical aligned centre. both the simulated and real case are handled passing by the configuration file
 
 How To Use
 --------------
@@ -12,12 +12,12 @@ with the configuration file defined and the ott created
 
     conf = 'path/to/config.yaml'
     ott, _, _ = start.create_ott(conf)
-
-Stand alone use:
-
+-
     from m4.devices.opt_beam import Parabola, ReferenceMirror
-    par = Parabola(ott, conf)
-    rm = ReferenceMirror(ott, conf)
+    truss   = Parabola(ott, conf)
+    flat    = ReferenceMirror(ott, conf)
+    angrot  = AngleRotator(ott, conf)
+
 '''
 import yaml
 from m4.configuration.ott_parameters import OttParameters
@@ -25,15 +25,18 @@ from m4.configuration.ott_parameters import OttParameters
 class Parabola:
     def __init__(self, ott, conf):
         '''The Constructor'''
+        self._par=ott.parabola
         self._slider = ott.parabolaSlider
         self._pos = self._slider.getPosition()
 
         try:
             with open(conf, 'r') as file:
-                self._config = yaml.safe_load(file)
+                config = yaml.safe_load(file)
+                if ('simulated_parSlider' in config) == False:
+                    raise KeyError(f"Parameter not found")
+                self._config = config['simulated_parSlider']
         except Exception as e:
-            print(f"Error loading configuration file: {e}")
-            self._config = {}
+            raise e            
 
     def _conversion(self, pos: float, get=False) -> float:
         '''
@@ -54,7 +57,10 @@ class Parabola:
             Current position of the parabola slider, in meters
         '''
         self._pos = self._slider.getPosition()
-        current_pos = self._conversion(self._pos, get=True)
+        if self._config == False:
+            current_pos = self._conversion(self._pos, get=True)
+        else:
+            current_pos = self._pos
         return current_pos
 
     def moveTrussTo(self, pos_in_m: float) -> float:
@@ -73,7 +79,7 @@ class Parabola:
         '''
         pos_in_mm = pos_in_m * 1000
 
-        if self._config['simulated_parSlider'] == False:
+        if self._config == False:
             opcua_pos = self._conversion(pos_in_mm, get=False)
         else: 
             opcua_pos = pos_in_mm
@@ -102,71 +108,72 @@ class Parabola:
         current_pos = self._pos = self.trussGetPosition()
         return current_pos
 
-    def angleRotatorGetPosition(self) -> float:
+    def parabolaPiston(self, intensity):
         '''
-        Gets the current position of the angle rotator in degrees
+        Applies a relative piston command to the parabola. For absolute position movements, refer to ott.parabola.
 
         Parameters
         ---------------
+        intensity : int
+            Relative change in position to apply, in mllimeters, of the parabola piston.
 
         Returns
         ---------------
-        current_pos : float
-            Current position of the angle rotator, in degrees
+        pos : int
+            Current position of the piston, in millimeters
         '''
-        current_pos = self._rotator.getPosition()
-        return current_pos
 
-    def angleRotatorSetPositions(self, absolute_deg: float) -> float:
+        coords = self._par.getPosition()
+        coords[2] += intensity
+        self._par.setPosition(coords)
+        return self._par.getPosition()[2]
+
+    def parabolaTipTilt(self, tt):
         '''
-        Sets the angular position to a desired degree
+        Applies a relative tip/tilt command to the parabola. For asbolute positioning, refer to ott.parabola.
 
         Parameters
         ---------------
-        absolute_deg : float
-            Angular position where to set the parabola
+        intensity : int
+            Relative change in position, in arcseconds, of the parabola tip and tilt.
 
         Returns
         ---------------
-        current_pos : float
-            Current angular position of the parabola
+        pos : int
+            Current position of the tip and tilt, in millimeters.
         '''
-        current_pos = self._rotator.setPosition(absolute_deg)
-        return self.angleRotatorGetPosition()
 
-    def rotateBy(self, rel_deg) -> float:
-        '''
-        Rotates the parabola, from the current angular position, by a desired amount
+        if not isinstance(tt, np.ndarray):
+            raise ValueError("tt must be a NumPy array!")
+        if tt.shape != (2,):
+            raise ValueError("The input array has shape {}, but shape (2,) is expected!".format(tt.shape))
 
-        Parameters
-        ---------------
-        rel_deg : float
-            Change in degrees of the current angular position
+        coords = self._par.getPosition()
+        coords[3] += tt[0]
+        coords[4] += tt[1]
+        self._par.setPosition(coords)
 
-        Returns
-        ---------------
-        current_pos : float
-            Current angular position of the parabola
-        '''
-        old_pos = self.angleRotatorGetPosition()
-        new_pos = old_pos + rel_deg
-        self.angleRotatorSetPosition(new_pos)
-        return self.angleRotatorGetPosition()
 
 class ReferenceMirror:
     def __init__(self, ott, conf):
         '''The Constructor'''
+        self._rm = ott.referenceMirror
         self._slider = ott.referenceMirrorSlider
         self._pos = self._slider.getPosition()
 
         try:
             with open(conf, 'r') as file:
-                self._config = yaml.safe_load(file)
+                config = yaml.safe_load(file)
+                if ('simulated_rmSlider' in config) == False:
+                    raise KeyError(f"Parameter not found")
+                self._config = config['simulated_rmSlider']
         except Exception as e:
-            print(f"Error loading configuration file: {e}")
-            self._config = {}
+            raise e
 
     def _conversion(self, pos: float, get=False) -> float:
+        '''
+        Converts the given position with relative to M4 Center. Pos is in meters
+        '''
         if get==False:
             return (pos + OttParameters.RM_SLIDER_KIN_OFFSET*1000)
         elif get==True: 
@@ -182,7 +189,10 @@ class ReferenceMirror:
             Current position of the reference mirror slider, in meters
         '''
         self._pos = self._slider.getPosition()
-        current_pos = self._conversion(self._pos, get=True)
+        if self._config == False:
+            current_pos = self._conversion(self._pos, get=True)
+        else: 
+            current._pos = self._pos
         return current_pos
 
     def moveRmTo(self, pos_in_m: float) -> float:
@@ -201,7 +211,7 @@ class ReferenceMirror:
         '''
         pos_in_mm = pos_in_m * 1000
 
-        if self._config['simulated_rmSlider'] == False:
+        if self._config == False:
             opcua_pos = self._conversion(pos_in_mm, get=False)
         else:
             opcua_pos = pos_in_mm
@@ -230,3 +240,110 @@ class ReferenceMirror:
         current_pos = self._pos = self.rmGetPosition()
         return current_pos
 
+    def rmPiston(self, intensity: int) -> int:
+        '''
+        Applies a relative piston command to the reference mirror. For absolute positioning, refer to ott.referenceMirror.
+
+        Parameters
+        ---------------
+        intensity : int
+            Relative change in position to apply, in millimeters, to the reference mirror piston.
+
+        Returns
+        ---------------
+        pos : int
+            Current position of the piston, in millimeters
+        '''
+        coords = self._rm.getPosition()
+        coords[2] += intensity
+        self._rm.setPosition(coords)
+        return self._rm.getPosition()[2]
+
+    def rmTipTilt(self, tt):
+        '''
+        Applies a relative tip/tilt command to the reference mirror. For absolute positioning, refer to ott.referenceMirror
+
+        Parameters
+        ---------------
+        intensity : int
+            Relative change in position to apply, in arcseconds, to the reference mirror tip and tilt.
+
+        Returns
+        ---------------
+        pos : int
+            Current position of the tip and tilt, in millimeters
+        '''
+
+        if not isinstance(tt, np.ndarray):
+            raise ValueError("tt must be a NumPy array!")
+        if tt.shape != (2,):
+            raise ValueError("The input array has shape {}, but shape (2,) is expected!".format(tt.shape))
+
+        coords = self._rm.getPosition()
+        coords[3] += tt[0]
+        coords[4] += tt[1]
+        self._rm.setPosition(coords)
+        return self._rm.getPosition()[3:5]
+
+class AngleRotator:
+    def __init__(self, ott, conf):
+        '''The Constructor'''
+        self._rotator = ott.angleRotator
+        self._pos = ott.angleRotator.getPosition()
+        try:
+            with open(conf, 'r') as file:
+                self._config = yaml.safe_load(file)
+        except Exception as e:
+            print(f"Error loading configuration file: {e}")
+            self._config = {}
+
+    def getPosition(self) -> float:
+        '''
+        Gets the current position of the angle rotator in degrees
+
+        Parameters
+        ---------------
+
+        Returns
+        ---------------
+        current_pos : float
+            Current position of the angle rotator, in degrees
+        '''
+        current_pos = self._rotator.getPosition()
+        return current_pos
+
+    def setPosition(self, absolute_deg: float) -> float:
+        '''
+        Sets the angular position to a desired degree
+
+        Parameters
+        ---------------
+        absolute_deg : float
+            Angular position where to set the parabola
+
+        Returns
+        ---------------
+        current_pos : float
+            Current angular position of the parabola
+        '''
+        self._rotator.setPosition(absolute_deg)
+        return self.getPosition()
+
+    def rotateBy(self, rel_deg) -> float:
+        '''
+        Rotates the parabola, from the current angular position, by a desired amount
+
+        Parameters
+        ---------------
+        rel_deg : float
+            Change in degrees of the current angular position
+
+        Returns
+        ---------------
+        current_pos : float
+            Current angular position of the parabola
+        '''
+        old_pos = self.getPosition()
+        new_pos = old_pos + rel_deg
+        self.setPosition(new_pos)
+        return self.getPosition()

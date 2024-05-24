@@ -10,16 +10,17 @@ from m4 import main
 from astropy.io import fits as pyfits
 from m4.configuration import start
 from m4.devices.i4d import I4D
-from m4.devices.opt_beam import Parabola, ReferenceMirror
+from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
 from m4.configuration.ott_parameters import Interferometer
 from m4 import noise
 import time
-#conf='/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
+
 conf = os.environ["PYOTTCONF"]
 #conf = os.path.join(os.path.expanduser('~'), 'git/M4/m4/configuration','myConfig.yaml')
 ott, interf, dm = start.create_ott(conf)
 truss = Parabola(ott, conf) # could name 'optical_beam'
-rm = ReferenceMirror(ott, conf)
+flat = ReferenceMirror(ott, conf)
+angrot = AngleRotator(ott, conf)
 meas = Measurements(ott,interf)
 phcamfocus = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
 
@@ -27,12 +28,13 @@ print("\n Type help() for information on the available operations")
 
 def help():
     INIT = [
-            "OTT INITIALIZATION DOCUMENTATION",
+            "OTT  DOCUMENTATION",
             "",
-            "     M       M        4 4",
-            "     M M   M M       4  4",
-            "     M  M M  M      4   4",
-            "     M   M   M     4 4 4 4 4",
+            "     M       M         44",
+            "     M M   M M        4 4",
+            "     M  M M  M       4  4",
+            "     M   M   M      4   4",
+            "     M       M     4 4 4 4 4",
             "     M       M          4",
             "     M       M          4",
             "     M       M          4",
@@ -40,11 +42,11 @@ def help():
 
 
     TEXT = """
-The (Simulated) OTT has been initialized.
+The OTT is initialized.
 
 HIGH-LEVEL USAGE:
 
-    truss : parabola slider with respect to optical axis.
+--> truss : parabola slider with respect to optical axis.
 
     Available functions:
 
@@ -54,20 +56,25 @@ HIGH-LEVEL USAGE:
 
         moveTrussBy(change_in_m) : Change the current position of the parabola slider by the desired quantity.
 
-        parabolaSetPosition(coord) : Change piston position of the desired quantity. Takes the 6-D coordinates array as imput, where the piston/focus coordinate must be the third.
-            Example: coord = np.array([0,0,x,-,-,0]
+        parabolaPiston(intensity) : Change piston position of the desired quantity, from the starting position. Takes the 3th coordinate of the full 6D coordinates array as imput.
+            Example: coord = np.array([0,0,x,-,-,0] --> intensity = x
 
-        parabolaTilt(coords) : Change tilt in the parabola. Takes the 6-D coordinte array as imput, where the tilt coordinates must be the fourth and the fifth.
-            Example: coord = np.array([0,0,-,x,x,0])
+        parabolaTipTilt(tt) : Change the tip and tilt of the parabola of the desired quantity, from the starting position. Takes the 4th and 5th coordinates of the full 6D coordinate array as imput.
+            Example: coord = np.array([0,0,-,x,y,0]) --> tt = np.array([x,y])
+    -------------------
 
-        angleRotatorGetPosition() : Returns the current angolar position of the parabola.
+--> angrot : Angle rotator class.
 
-        angleRotatorSetPosition(absolute_deg) : Rotates the parabola of the desired angular quantity.
+    Available functions:
+
+        getPosition() : Returns the current angolar position of the parabola.
+
+        setPosition(absolute_deg) : Rotates the parabola of the desired angular quantity.
 
         rotateBy(rel_deg) : Rotate the parabola from the current position of the desired angle.
 
     -------------------
- rm : Reference mirror slider with respect to optical axis.
+-->  rm : Reference mirror slider with respect to optical axis.
 
     Available functions:
 
@@ -77,9 +84,15 @@ HIGH-LEVEL USAGE:
 
         moveRmBy(change_in_m) : Change the current position of the reference mirror slider by the desired quanty.
 
+        rmPiston(intensity) : Change the current piston position of the desired amount. Takes the 3th coordinate of the full 6D coordinate array as imput.
+            Example: coord = np.array([0,0,x,-,-,0]) --> intensity = x
+
+        rmTipTilt(tt) :  Change the current tip and tilt position of the parabola by the desired quantity. Takes the 4th and 5th coordinates of the full 6D coordinate array as imput.
+            Example: coord = np.array([0,0,-,x,y,0]) --> tt = np.array([x,y])
+
     -------------------
 
-    interf : Class controlling the interferometer, containing all the commands documented by 4D.
+--> interf : Class controlling the interferometer, containing all the commands documented by 4D.
 
     Available functions:
 
@@ -98,6 +111,10 @@ HIGH-LEVEL USAGE:
         intoFullFrame(img) : Takes the cropped acquisition and returns it into the full 2048x2048 interferometer frame, after reading the cropping parameters.
          dm : Class containing all the Deformable Mirror function able to controll it.
 
+    -------------------
+
+--> dm : Class controlling the actuators on the deformable mirror
+
     Available functions:
 
         setActsCommand(command, rel=True) : Set the given command array to the dm actuators. If rel=True, then relative commands are applied, else absolute.
@@ -111,6 +128,7 @@ HIGH-LEVEL USAGE:
         setZeroToSegActs() : Resets the piston position for all actuators.
 
         setRandomCommandToSegActs(amp, rel=False) : Generates a set of random distribution of piston between 0 and amp.
+
  -------------------
 
 LOW LEVEL USAGE
