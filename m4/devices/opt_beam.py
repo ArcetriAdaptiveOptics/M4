@@ -20,6 +20,7 @@ with the configuration file defined and the ott created
 
 '''
 import yaml
+import numpy as np
 from m4.configuration.ott_parameters import OttParameters
 
 class Parabola:
@@ -142,9 +143,8 @@ class Parabola:
         pos : int
             Current position of the tip and tilt, in millimeters.
         '''
-
-        if not isinstance(tt, np.ndarray):
-            raise ValueError("tt must be a NumPy array!")
+        tt = np.array(tt)
+        
         if tt.shape != (2,):
             raise ValueError("The input array has shape {}, but shape (2,) is expected!".format(tt.shape))
 
@@ -273,9 +273,8 @@ class ReferenceMirror:
         pos : int
             Current position of the tip and tilt, in millimeters
         '''
-
-        if not isinstance(tt, np.ndarray):
-            raise ValueError("tt must be a NumPy array!")
+        tt = np.array(tt)
+        
         if tt.shape != (2,):
             raise ValueError("The input array has shape {}, but shape (2,) is expected!".format(tt.shape))
 

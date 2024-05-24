@@ -213,13 +213,12 @@ def align_PARAndRM(
         delay = 0
 
     move = doit
-    print("Ott alignemnt")
     c_a = OttCalibAndAlign(ott, interf)
     par_cmd, rm_cmd, dove = c_a.par_and_rm_aligner(
         move, tt_calib, n_frames, delay, zernike_to_be_corrected, dof_command_id
     )
     tt_align = dove.split("/")[-1]
-    print("comandi separati")
+    print("Mixed par+rm commands")
     print(par_cmd)
     print(rm_cmd)
     if Sound.PLAY is True:

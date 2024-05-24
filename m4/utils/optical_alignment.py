@@ -271,9 +271,6 @@ class OpticalAlignment():
         tnpar  = '20240521_161525'  #'20231016_124531'
         par = self._load_registeredPar(tnpar)
         img = new_image -2*par
-        print('Par Removed')
-        print('Par not removed')
-
         print('Using global modes fitting, TNPar: '+tnpar)
 
         #par = imgreg.load_registeredPar(tnpar)

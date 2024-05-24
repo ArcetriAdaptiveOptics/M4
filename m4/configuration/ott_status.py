@@ -15,9 +15,9 @@ def read(tn):
     par = np.array(json.loads(pp['PAR']))
     rm = np.array(json.loads(pp['RM']))
     m4 = np.array(json.loads(pp['M4']))
-    ps = pp['PAR_SLIDER']  
-    rs = pp['RM_SLIDER']  
-    ang= pp['ROT_ANGLE']
+    ps = float(pp['PAR_SLIDER'])
+    rs = float(pp['RM_SLIDER'])
+    ang= float(pp['ROT_ANGLE'])
     return ps, rs, ang, par, rm, m4
 
 

@@ -9,7 +9,7 @@ import numpy as np
 from m4.ott_sim.ott_images import OttImages
 from guietta import Gui, G, MA, _, ___, III, HB
 from m4.ground.package_data import data_root_dir
-from m4.configuration.ott_parameters import OttParameters
+from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
 
 # from guietta import Empty, Exceptions
 
@@ -34,8 +34,8 @@ class Runner:
             tower object
         """
         self.ott = ott
-        self.paroffset = OttParameters.PAR_SLIDER_KIN_OFFSET
-        self.rmoffset = OttParameters.RM_SLIDER_KIN_OFFSET
+        
+
     def _setUp(self):
 
         def setPlot(gui, image):
