@@ -204,7 +204,7 @@ def spectrumFromData(data_file_path):
     plt.savefig(name)
 
 
-def convection_noise(data_file_path, tau_vector, fits_analysis=False, nzern=None):
+def convection_noise(data_file_path, tau_vector, freq=Interferometer.BURST_FREQ, fits_analysis=False, nzern=None):
     """
     Parameters
     ----------
@@ -237,7 +237,7 @@ def convection_noise(data_file_path, tau_vector, fits_analysis=False, nzern=None
 
     rms_nm = rms * 1e9
     if h5_or_fits is None:
-        x = tau_vector * (1 / Interferometer.BURST_FREQ)
+        x = tau_vector * (1 / freq)
         pyfits.writeto(os.path.join(dove, "time_vector_conv.fits"), x, overwrite=True)
         param = [5, 0.5, 32]
         try:
