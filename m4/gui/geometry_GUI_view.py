@@ -10,6 +10,7 @@ from m4.ott_sim.ott_images import OttImages
 from guietta import Gui, G, MA, _, ___, III, HB
 from m4.ground.package_data import data_root_dir
 from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
+conf = '/home/pietrof/git/M4/m4/configuration/myConfig.yaml'
 
 # from guietta import Empty, Exceptions
 
@@ -33,8 +34,10 @@ class Runner:
         ott: object
             tower object
         """
-        self.ott = ott
-        
+        self.ott    = ott
+        self.truss  = Parabola(ott, conf)
+        self.rm     = ReferenceMirror(ott, conf)
+        self.angrot = AngleRotator(ott, conf)
 
     def _setUp(self):
 
@@ -49,13 +52,16 @@ class Runner:
 
         def getstatus(gui):
             """Function to reload tower data and image"""
-            if self.ott:
+            if self.truss and self.rm and self.angrot:
                 gui.parpos = self.ott.parabola.getPosition()
                 gui.rmpos = self.ott.referenceMirror.getPosition()
                 gui.m4pos = self.ott.m4Exapode.getPosition()
-                gui.pslider = self.ott.parabolaSlider.getPosition()+1
-                gui.anglepos = self.ott.angleRotator.getPosition()
-                gui.rslider = self.ott.referenceMirrorSlider.getPosition()+1
+                #gui.pslider = self.ott.parabolaSlider.getPosition()+1
+                gui.pslider = self.truss.trussGetPosition()
+                #gui.anglepos = self.ott.angleRotator.getPosition()
+                gui.anglepos = self.angrot.getPosition()
+                #gui.rslider = self.ott.referenceMirrorSlider.getPosition()+1
+                gui.rslider = self.rm.rmGetPosition()
                 #gui.psliderM4 = self.ott.parabolaSlider.getPosition()+self.paroffset*1000
                 #gui.rsliderM4 = self.ott.referenceMirrorSlider+self.rmoffset*1000
             ottIma = OttImages(self.ott)
@@ -91,21 +97,27 @@ class Runner:
 
         def Set_ReferenceMirrorSlider(gui, *args):
             """Function to move the reference mirror slider"""
-            pos = int(gui.rmslider) or self.ott.referenceMirrorSlider.getPosition()
-            if self.ott:
-                self.ott.referenceMirrorSlider.setPosition(pos)
+            pos = self.rm.rmGetPosition()
+            if gui.rslider:
+                pos = float(gui.rslider)
+            if self.rm:
+                self.rm.moveRmTo(pos)
 
         def Set_AngleRotator(gui, *args):
             """Function to rotate the tower angle"""
-            pos = int(gui.angle) or self.ott.angleRotator.getPosition()
-            if self.ott:
-                self.ott.angleRotator.setPosition(pos)
+            pos = self.angrot.getPosition()
+            if gui.anglepos:
+                pos = int(gui.anglepos)
+            if self.angrot:
+                self.angrot.setPosition(pos)
 
         def Set_ParabolaSlider(gui, *args):
             """Function to move the parabola slider"""
-            pos = int(gui.parslider) or self.ott.parabolaSlider.getPosition()
-            if self.ott:
-                self.ott.parabolaSlider.setPosition(pos)
+            pos = self.truss.trussGetPosition()
+            if gui.pslider:
+                pos = float(gui.pslider)
+            if self.truss:
+                self.truss.moveTrussTo(pos)
 
         gui_image = Gui(
             [MA("plot"), ___, ___, ___],
@@ -153,11 +165,11 @@ class Runner:
                 "mm",
             ],
             [Set_M4, ___, ___, ___, ___, ___, ___, ___],
-            ["New Par Slider position", "__parslider__", _, _, _, _, _, "mm"],
+            ["New Par Slider position", "__pslider__", _, _, _, _, _, "m"],
             [Set_ParabolaSlider, ___, ___, ___, ___, ___, ___, ___],
-            ["New Rm Slider position", "__rmslider__", _, _, _, _, _, "mm"],
+            ["New Rm Slider position", "__rslider__", _, _, _, _, _, "m"],
             [Set_ReferenceMirrorSlider, ___, ___, ___, ___, ___, ___, ___],
-            ["New Angle Rot position", "__angle__", _, _, _, _, _, "deg"],
+            ["New Angle Rot position", "__anglepos__", _, _, _, _, _, "deg"],
             [Set_AngleRotator, ___, ___, ___, ___, ___, ___, ___],
         )  # exceptions=Exceptions.OFF)
 
@@ -171,11 +183,11 @@ class Runner:
 
         gui_image.timer_start(getstatus, 1)
 
-        self.gui = Gui([G("OTT")])#, G("Control")])
-        #self.gui_control = control_gui
+        self.gui = Gui([G("OTT"), G("Control")])
+        self.gui_control = control_gui
         self.gui_image = gui_image
         self.gui.OTT = gui_image
-        #self.gui.Control = control_gui
+        self.gui.Control = control_gui
 
     def runImage(self):
         self._setUp()

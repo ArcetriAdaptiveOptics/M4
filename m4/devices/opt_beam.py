@@ -192,7 +192,7 @@ class ReferenceMirror:
         if self._config == False:
             current_pos = self._conversion(self._pos, get=True)
         else: 
-            current._pos = self._pos
+            current_pos = self._pos
         return current_pos
 
     def moveRmTo(self, pos_in_m: float) -> float:
