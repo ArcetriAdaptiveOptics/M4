@@ -65,7 +65,7 @@ class Runner:
                 #gui.psliderM4 = self.ott.parabolaSlider.getPosition()+self.paroffset*1000
                 #gui.rsliderM4 = self.ott.referenceMirrorSlider+self.rmoffset*1000
             ottIma = OttImages(self.ott)
-            image = ottIma.ott_view()
+            image = ottIma.ott_m4view()
             setPlot(gui, image)
 
         def Set_Parabola(gui, *args):
