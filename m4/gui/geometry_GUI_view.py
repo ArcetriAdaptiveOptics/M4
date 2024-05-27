@@ -183,7 +183,7 @@ class Runner:
 
         gui_image.timer_start(getstatus, 1)
 
-        self.gui = Gui([G("OTT"), G("Control")])
+        self.gui = Gui([G("OTT")])#, G("Control")])
         self.gui_control = control_gui
         self.gui_image = gui_image
         self.gui.OTT = gui_image

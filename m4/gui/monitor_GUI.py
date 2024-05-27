@@ -260,9 +260,10 @@ class Runner:
 
 
 def main():
+    import os
     from m4.configuration import start
 
-    conf = "/mnt/m4storage/Data/SYSCONFData/m4Config.yaml"
+    conf = os.environ['PYOTTCONF'] 
     ott, interf, dm = start.create_ott(conf)
 
     runner = Runner(ott)

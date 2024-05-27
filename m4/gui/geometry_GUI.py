@@ -2,13 +2,15 @@
 Authors
   - C. Selmi: written in 2021
 """
-
+import os
 import sys
 import time
 import numpy as np
 from m4.ott_sim.ott_images import OttImages
 from guietta import Gui, G, MA, _, ___, III, HB
 from m4.ground.package_data import data_root_dir
+from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
+conf = os.environ['PYOTTCONF']
 
 # from guietta import Empty, Exceptions
 
@@ -32,7 +34,10 @@ class Runner:
         ott: object
             tower object
         """
-        self.ott = ott
+        self.ott    = ott
+        self.truss  = Parabola(ott, conf)
+        self.rm     = ReferenceMirror(ott, conf)
+        self.angrot = AngleRotator(ott, conf)
 
     def _setUp(self):
 
@@ -47,15 +52,15 @@ class Runner:
 
         def getstatus(gui):
             """Function to reload tower data and image"""
-            if self.ott:
+            if self.truss and self.rm and self.angrot:
                 gui.parpos = self.ott.parabola.getPosition()
                 gui.rmpos = self.ott.referenceMirror.getPosition()
                 gui.m4pos = self.ott.m4Exapode.getPosition()
-                gui.pslider = self.ott.parabolaSlider.getPosition()
-                gui.anglepos = self.ott.angleRotator.getPosition()
-                gui.rslider = self.ott.referenceMirrorSlider.getPosition()
+                gui.pslider = self.truss.trussGetPosition()
+                gui.anglepos = self.angrot.getPosition()
+                gui.rslider = self.rm.rmGetPosition()
             ottIma = OttImages(self.ott)
-            image = ottIma.ott_view()
+            image = ottIma.ott_m4view()
             setPlot(gui, image)
 
         def Set_Parabola(gui, *args):
@@ -87,29 +92,35 @@ class Runner:
 
         def Set_ReferenceMirrorSlider(gui, *args):
             """Function to move the reference mirror slider"""
-            pos = int(gui.rmslider) or self.ott.referenceMirrorSlider.getPosition()
-            if self.ott:
-                self.ott.referenceMirrorSlider.setPosition(pos)
+            pos = self.rm.rmGetPosition()
+            if gui.rslider:
+                pos = float(gui.rslider)
+            if self.rm:
+                self.rm.moveRmTo(pos)
 
         def Set_AngleRotator(gui, *args):
             """Function to rotate the tower angle"""
-            pos = int(gui.angle) or self.ott.angleRotator.getPosition()
-            if self.ott:
-                self.ott.angleRotator.setPosition(pos)
+            pos = self.angrot.getPosition()
+            if gui.anglepos:
+                pos = int(gui.anglepos)
+            if self.angrot:
+                self.angrot.setPosition(pos)
 
         def Set_ParabolaSlider(gui, *args):
             """Function to move the parabola slider"""
-            pos = int(gui.parslider) or self.ott.parabolaSlider.getPosition()
-            if self.ott:
-                self.ott.parabolaSlider.setPosition(pos)
+            pos = self.truss.trussGetPosition()
+            if gui.pslider:
+                pos = float(gui.pslider)
+            if self.truss:
+                self.truss.moveTrussTo(pos)
 
         gui_image = Gui(
             [MA("plot"), ___, ___, ___],
             ["Par position:", "parpos", ___, "[-, -, mm, arcsec, arcsec, -]"],
             ["Rm position:", "rmpos", ___, "[-, -, mm, arcsec, arcsec, -]"],
             ["M4 exapode position:", "m4pos", ___, "mm"],
-            ["Par slider position:", "pslider", ___, "mm"],
-            ["Rm slider position:", "rslider", ___, "mm"],
+            ["Par slider position:", "pslider", ___, "m"],
+            ["Rm slider position:", "rslider", ___, "m"],
             ["Ang rot position:", "anglepos", ___, "deg"],
             [_, _, HB("heart_empty_30.png", "heart_full_30.png"), _],
             images_dir=data_root_dir(),
@@ -149,21 +160,20 @@ class Runner:
                 "mm",
             ],
             [Set_M4, ___, ___, ___, ___, ___, ___, ___],
-            ["New Par Slider position", "__parslider__", _, _, _, _, _, "mm"],
+            ["New Par Slider position", "__pslider__", _, _, _, _, _, "m"],
             [Set_ParabolaSlider, ___, ___, ___, ___, ___, ___, ___],
-            ["New Rm Slider position", "__rmslider__", _, _, _, _, _, "mm"],
+            ["New Rm Slider position", "__rslider__", _, _, _, _, _, "m"],
             [Set_ReferenceMirrorSlider, ___, ___, ___, ___, ___, ___, ___],
-            ["New Angle Rot position", "__angle__", _, _, _, _, _, "deg"],
+            ["New Angle Rot position", "__anglepos__", _, _, _, _, _, "deg"],
             [Set_AngleRotator, ___, ___, ___, ___, ___, ___, ___],
         )  # exceptions=Exceptions.OFF)
 
         ottIma = OttImages(self.ott)
-        image = ottIma.ott_view()
+        image = ottIma.ott_m4view()
 
         gui_image.plot = image
         gui_image.plot.set_title("OTT geometry")
         gui_image.plot.colorbar()
-        # gui_image.plot.text(30, 50, 'ciao')
 
         gui_image.timer_start(getstatus, 1)
 
@@ -186,7 +196,7 @@ class Runner:
 def main():
     from m4.configuration import start
     import os
-    conf = os.environ["PYOTTCONF"]  # conf = "/mnt/m4storage/Data/SYSCONFData/m4Config.yaml" modRB20240518
+    conf = os.environ["PYOTTCONF"]
     ott, interf, dm = start.create_ott(conf)
 
     runner = Runner(ott)
