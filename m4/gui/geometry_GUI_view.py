@@ -2,7 +2,7 @@
 Authors
   - C. Selmi: written in 2021
 """
-
+import os
 import sys
 import time
 import numpy as np
@@ -10,7 +10,7 @@ from m4.ott_sim.ott_images import OttImages
 from guietta import Gui, G, MA, _, ___, III, HB
 from m4.ground.package_data import data_root_dir
 from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
-conf = '/home/pietrof/git/M4/m4/configuration/myConfig.yaml'
+conf = os.environ['PYOTTCONF']
 
 # from guietta import Empty, Exceptions
 
@@ -124,8 +124,8 @@ class Runner:
             ["Par position:", "parpos", ___, "[-, -, mm, arcsec, arcsec, -]"],
             ["Rm position:", "rmpos", ___, "[-, -, mm, arcsec, arcsec, -]"],
             ["M4 exapode position:", "m4pos", ___, "mm"],
-            ["Par slider position:", "pslider", ___, "mm"],
-            ["Rm slider position:", "rslider", ___, "mm"],
+            ["Par slider position:", "pslider", ___, "m"],
+            ["Rm slider position:", "rslider", ___, "m"],
             ["Ang rot position:", "anglepos", ___, "deg"],
             [_, _, HB("heart_empty_30.png", "heart_full_30.png"), _],
             images_dir=data_root_dir(),
@@ -174,7 +174,7 @@ class Runner:
         )  # exceptions=Exceptions.OFF)
 
         ottIma = OttImages(self.ott)
-        image = ottIma.ott_view()
+        image = ottIma.ott_m4view()
 
         gui_image.plot = image
         gui_image.plot.set_title("OTT geometry")
@@ -202,7 +202,7 @@ class Runner:
 def main():
     from m4.configuration import start
     import os
-    conf = os.environ["PYOTTCONF"]  # conf = "/mnt/m4storage/Data/SYSCONFData/m4Config.yaml" modRB20240518
+    conf = os.environ["PYOTTCONF"]
     ott, interf, dm = start.create_ott(conf)
 
     runner = Runner(ott)

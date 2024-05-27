@@ -62,7 +62,7 @@ class Parabola:
             current_pos = self._conversion(self._pos, get=True)
         else:
             current_pos = self._pos
-        return current_pos
+        return current_pos/1000
 
     def moveTrussTo(self, pos_in_m: float) -> float:
         '''
@@ -193,7 +193,7 @@ class ReferenceMirror:
             current_pos = self._conversion(self._pos, get=True)
         else: 
             current_pos = self._pos
-        return current_pos
+        return current_pos/1000
 
     def moveRmTo(self, pos_in_m: float) -> float:
         '''

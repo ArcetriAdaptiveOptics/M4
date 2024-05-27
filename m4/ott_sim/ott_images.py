@@ -251,6 +251,34 @@ class OttImages():
 
         return ottimg
 
+    def ott_m4view(self, show=None):
+        from m4.devices.opt_beam import Parabola, ReferenceMirror
+        import os
+        conf        = os.environ['PYOTTCONF']
+        par         = Parabola(self._ott, conf)
+        rm          = ReferenceMirror(self._ott, conf)
+
+        m4          = self.m4pupil.copy()
+        pixscale    = OttParameters.PIXEL_SCALE
+        parxy       = [par.trussGetPosition()*pixscale, 0]
+        refmxy      = [rm.rmGetPosition()*pixscale, 0]
+        ang         = (-self._ott.angleRotator.getPosition())*np.pi/180
+        rmat        = np.array([[np.cos(ang), np.sin(ang)], [-np.sin(ang), np.cos(ang)]])
+        parxy       = rmat.dot(parxy)
+        refmxy      = rmat.dot(refmxy)
+        ss          = np.array(np.shape(m4))
+        m4c         = (ss-1)/2
+
+        parcircle   = geo.draw_mask(m4*0, parxy[0]+m4c[0], parxy[1]+m4c[1], OttParameters.parab_radius*pixscale)
+        refmcircle  = geo.draw_mask(m4*0, refmxy[0]+m4c[0], refmxy[1]+m4c[1], OttParameters.rflat_radius*pixscale)
+
+        ottimg      = m4+parcircle+refmcircle
+
+        if show is not None:
+            plt.imshow(ottimg)
+
+        return ottimg
+
     def iff_images(self, zonal_modal):
         a = np.zeros((21, 21))
         b = geo.draw_mask(a, 10, 10, 10)
