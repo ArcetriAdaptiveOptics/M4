@@ -1,4 +1,8 @@
 #Preparazione - Class??
+import os
+import copy
+import numpy as np
+import h5py
 from astropy.io import fits as pyfits
 from m4.type.modalAmplitude import ModalAmplitude
 from m4.type.modalBase import ModalBase
@@ -6,11 +10,12 @@ from m4.type.commandHisotry import CmdHistory
 import configparser
 config = configparser.ConfigParser() # Potrebbe ancora servire, vediamo
 
-class Preparation():
+class IFFCapturePreparation():
 
     def __init__(self): #file .ini per inizializzare? No, non c'è bisogno. leggono le funzioni in caso
         self._nActs         = # get N Acts from file? Or load DM?
         self._cmdMatrix     = # load mirror command matrix, Serve?
+        self._indexingList  = None
 
         self._paddingTemp   = None
         self._triggMode     = None
@@ -32,11 +37,39 @@ class Preparation():
 
         return timedCmdList
 
-    def createCmdMatrix(self, modes_matrix, modes_amplitude, cmd_template, shuffle=False):
+    def createCmdMatrixHistory(self, modes_matrix, modes_amplitude, cmd_template, shuffle=False):
         # Si può riutilizzare molto di quello che si ha già, 
         # magari sistemato un po' e reso più flessibile e chiaro
-        
+        self._modeVector = copy.copy(mode_vector) # modes_matrix?
+        self._nPushPull = n_push_pull # ??
+        self._cmdMatrix = cmd_matrix # cmd_template?
+        indList = []
 
+        if shuffle==True:
+            for i in range(len(n_push_pull):
+                np.random.shuffle(mode_vector)
+                indexingList.append(list(mode_vector))
+        else:
+            for i in range(n_push_pull):
+                indList.append(mode_vector)
+
+        self._indexingList = np.array(indList)
+
+        n_frame = mode_vector.size * n_push_pull
+        cmd_matrixHistroy = np.zeros((self._nActs, n_frame))
+
+        cmdList = []
+        for i in mode_vector:
+            cmd = cmd_matrix[:, i]
+            cmdList.append(cmd)
+
+        for j in range(n_push_pull):
+            for i in range(len(cmdList)):
+                k = len(cmdList)*j + i
+                cmd_matrixHistory.T[k] = cmdList[i]
+
+        self.cmdMatHistory = cmd_matrixHistory
+ 
         return cmd_matrixHistory
 
     def createAuxCmdHistory(self, reg_patterncmdList, trigger_paddingCmdList):
@@ -46,6 +79,8 @@ class Preparation():
         # il salvataggio o il loading va incluso
 
         return aux_cmdHistory
+
+    # Ha senso tenere le due funzioni separate?
 
     def createRegistrationPattern(self, reg_modes, reg_amplitudes, reg_template):
         # Sono dei modi sparati in successione, tipo due mega trifogli, che dicono
