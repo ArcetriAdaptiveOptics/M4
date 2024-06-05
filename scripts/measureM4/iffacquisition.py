@@ -2,6 +2,7 @@
 this module includes the functions for the preparation and the acquisition  IFF data
 '''
 from m4.configuration import iffConfig as iffc  #contains a dictionary or similar with configuration
+from m4.device import deformable_mirror as dm
 
 '''Template
 def yyy(a,b)
@@ -15,8 +16,7 @@ def yyy(a,b)
     return xxx
 '''
 
-
-def iffCapture(modesList, amplitude, nRepetitions, modalBase = None):
+def iffDataCollection(modesList, amplitude, nRepetitions, modalBase = None):
     """
     This is the user-level function for the sampling of the IFF data
     Parameters
@@ -31,24 +31,44 @@ def iffCapture(modesList, amplitude, nRepetitions, modalBase = None):
         identifier of the modal base to be used
     Returns
     -------
-    tnif: string
+    tn: string
         tracking number of the dataset acquired
     """
-    #qui decidere se questo crea i comandi o solo fa l'acqusizione
-    return tnif
-
-def iffAcq(mlist, amp):
-    tn =  prepare4IFF(mlist, amp, extra)
-    fullCmdmat=createCmdmat(id)
-    cmdMat = fullcmdMat(mlist)
-    cmdHist =createCmHist(cmdHist, extra)
-    iffcapture(tn,)timedCmdHist = createTimedCmdHist(mlist, amp, extra)
-    uploadCmdHist(cmdHist)
-    runcmdHist
-    start4DAcq
+    tn = prepareIFFcollection(modesList, amplitude, nRepetitions, modalBase = None)
+    iffCapture(tn)
+    return tn
 
 
 
-def createRegistrationCommands():
+def iffCapture(tn):
+    """
+    This function manages the interfacing equence for collecting the IFF data
+    Parameters
+    ----------------
+    tn: string
+        the tracking number in the xxx folder where the cmd history is saved
+    Returns
+    -------
+    """
+
+    cmdHist = getCmdHist(tn)
+    dm.uploadCmdHist(cmdHist)
+    dm.runCmdHist()
+    print('Now launching the acquisition sequence')
+    start4DAcq(tn)
+    print('Acquisition completed. Dataset tracknum:')
+    print(tn)
+
+
+def getCmdHist(tn):
+    """
+    This function ...
+    Parameters
+    ----------------
+    Returns
+    -------
+    """
+    cmdHist = [1,2,3]
+    return cmdHist
 
 

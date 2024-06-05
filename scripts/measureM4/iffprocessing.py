@@ -1,6 +1,7 @@
 '''
 this module includes the functions for the processing and analysis of the IFF data
 '''
+from m4.configuration import iffConfig as iffc  #contains a dictionary or similar with configuration
 
 
 def yyy(a,b)
@@ -13,6 +14,8 @@ def yyy(a,b)
     """
     return xxx
 
+def ifRedux(flist,
+
 def getRegistrationFrames(flist, triggerId)
     """
     This function ...
@@ -21,6 +24,7 @@ def getRegistrationFrames(flist, triggerId)
     Returns
     -------
     """
+
     return xxx
 
 def findFirstFrame(flist, amplitude)
