@@ -73,6 +73,16 @@ class IFFCapturePreparation():
         return cmd_matrixHistory
 
     def createAuxCmdHistory(self, reg_patterncmdList, trigger_paddingCmdList):
+    '''
+    Creates the initial parteof the final command history matrix that will be passed to M4. This includes the Trigger Frame, the first frame to have a non-zero command, and the Padding Frame, two frames with high rms, useful for setting a start to the real acquisition.
+
+    Parameters
+    ----------
+
+
+    Result
+    ------
+    '''
         # Gli input sono gli output di altre due funzioni (interne?)
         # Ha senso? Ni, dipende da quanto sono complesse queste due funzioni
         # e quanto separarle rende il codice flessibile e chiaro. Sicuramente 
@@ -80,7 +90,7 @@ class IFFCapturePreparation():
 
         return aux_cmdHistory
 
-    # Ha senso tenere le due funzioni separate?
+    # Ha senso tenere le due funzioni sotto separate da questa sopra? Potrebbee non essere necessario
 
     def createRegistrationPattern(self, reg_modes, reg_amplitudes, reg_template):
         # Sono dei modi sparati in successione, tipo due mega trifogli, che dicono
