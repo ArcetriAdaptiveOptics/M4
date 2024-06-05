@@ -12,7 +12,7 @@ class IFFCapturePreparation():
 
     def __init__(self): #file .ini per inizializzare? No, non c'è bisogno. leggono le funzioni in caso
         self._nActs         = # get N Acts from file? Or load DM?
-        self._cmdMatrix     = # load mirror command matrix, Serve?
+        self._cmdMatrix     = # loaded command base in _getCmdMatrix()
         self._indexingList  = None
 
         self._paddingTemp   = None
@@ -139,10 +139,8 @@ class IFFCapturePreparation():
             cmdBase = np.eye(self._NActs)
         elif indetif=='hadamard':
             from scipy.linalg import hadamard
-            cmdBase = hadamard(self._NActs)
-            # OPPURE, PROBABILMENTE SARA' COSÌ
-            with pyfits.open('percorso con file fits') as hdul:
-                cmdBase = hdul[0].data
+            hadm = hadamard(2*10)
+            cmdBase = hadm[:self._NActs, :self._NActs]
         else:
             flist = th.fileList(identif)
             for item in flist:
@@ -160,4 +158,5 @@ class IFFCapturePreparation():
         cmdMat.T[k] = cmdBase[:,n]
         k += 1
 
+    self._cmdMatrix = cmdMat
     return cmdMat
