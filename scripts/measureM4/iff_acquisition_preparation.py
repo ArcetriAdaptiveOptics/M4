@@ -112,3 +112,17 @@ class IFFCapturePreparation():
         return trigger_paddingCmdList
 
 
+    def getCmdMatrix(identif, mlist):
+        """
+        This function ...
+        Parameters
+        ----------------
+        Returns
+        -------
+        cmdMat: float |array
+        """
+
+    return cmdMat
+
+
+

@@ -16,13 +16,13 @@ def yyy(a,b)
 '''
 
 
-def iffCapture(first, last, amplitude, nRepetitions, modalBase = None):
+def iffCapture(modesList, amplitude, nRepetitions, modalBase = None):
     """
     This is the user-level function for the sampling of the IFF data
     Parameters
     ----------------
-    first, last: int
-        first and last mode index to be measured, relative to the command matrix to be used
+    modesList: int | list, array like
+        list of modes index to be measured, relative to the command matrix to be used
     amplitude: float
         command amplitude
     nRepetitions: int
@@ -36,6 +36,18 @@ def iffCapture(first, last, amplitude, nRepetitions, modalBase = None):
     """
     #qui decidere se questo crea i comandi o solo fa l'acqusizione
     return tnif
+
+def iffAcq(mlist, amp):
+    tn =  prepare4IFF(mlist, amp, extra)
+    fullCmdmat=createCmdmat(id)
+    cmdMat = fullcmdMat(mlist)
+    cmdHist =createCmHist(cmdHist, extra)
+    iffcapture(tn,)timedCmdHist = createTimedCmdHist(mlist, amp, extra)
+    uploadCmdHist(cmdHist)
+    runcmdHist
+    start4DAcq
+
+
 
 def createRegistrationCommands():
 
