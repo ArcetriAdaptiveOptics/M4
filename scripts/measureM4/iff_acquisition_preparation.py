@@ -4,10 +4,8 @@ import copy
 import numpy as np
 import h5py
 from astropy.io import fits as pyfits
-from m4.type.modalAmplitude import ModalAmplitude
-from m4.type.modalBase import ModalBase
-from m4.type.commandHisotry import CmdHistory
 import configparser
+from m4.mini_ott import timehisory as th
 config = configparser.ConfigParser() # Potrebbe ancora servire, vediamo
 
 class IFFCapturePreparation():
@@ -112,17 +110,54 @@ class IFFCapturePreparation():
         return trigger_paddingCmdList
 
 
-    def getCmdMatrix(identif, mlist):
+    def _getCmdMatrix(identif, mlist):
         """
         This function ...
+
         Parameters
-        ----------------
+        ----------
+        identif : str
+            Identification string of the command matrix to load. Values can be:
+
+                'zonal'    : It loads the zonal command matrix of the mirror;
+
+                'hadamard' : It loads the hadamard's command matrix;
+
+                'tn'       : A tracking number containing the fits file of the command matrix to load. Can be the case of the mirror's modal command matrix.
+
+        mlist : int | int or ArrayLike
+            List of modes to be used from the loaded command matrix.
+
         Returns
         -------
-        cmdMat: float |array
+        cmdMat : float | ArrayLike
+            Extracted command matrix of the selected modes only.
+
         """
+    if isinstance(indentif, str):
+        if identif=='zonal':
+            cmdBase = np.eye(self._NActs)
+        elif indetif=='hadamard':
+            from scipy.linalg import hadamard
+            cmdBase = hadamard(self._NActs)
+            # OPPURE, PROBABILMENTE SARA' COSÌ
+            with pyfits.open('percorso con file fits') as hdul:
+                cmdBase = hdul[0].data
+        else:
+            flist = th.fileList(identif)
+            for item in flist:
+                if 'nomefile' in item:
+                    file = item
+
+            with pyfits.open(file) as hdul:
+                cmdBase = hdul[0].data
+    else:
+        raise TypeError("'identif' must be a str, and can be 'zonal', 'hadamard' or a tracking number")
+
+    cmdMat = np.zeros((cmdBase.shape[0], len(mlist)))
+    k = 0
+    for n in mlist:
+        cmdMat.T[k] = cmdBase[:,n]
+        k += 1
 
     return cmdMat
-
-
-
