@@ -137,7 +137,7 @@ class IFFCapturePreparation():
         return triggHist
 
 
-    def _getCmdMatrix(identif: str, mlist: list):
+    def _getCmdMatrix(identif: str, mlist: list = None):
         """
         This function gets the base command matrix to use for the IFF acquisition. If 'zonal' or 'hadamard' are passe as arguments, it is analytically generated, while if a tn is passed, it will load the modal base from the corresponding .fits file contained in the tn folder.
 
@@ -178,12 +178,17 @@ class IFFCapturePreparation():
                 cmdBase = hdul[0].data
     else:
         raise TypeError("'identif' must be a str, and can be 'zonal', 'hadamard' or a tracking number")
+    
+    if mlist is not None:
+        cmdMat = np.zeros((cmdBase.shape[0], len(mlist)))
+        k = 0
+        for n in mlist:
+            cmdMat.T[k] = cmdBase[:,n]
+            k += 1
 
-    cmdMat = np.zeros((cmdBase.shape[0], len(mlist)))
-    k = 0
-    for n in mlist:
-        cmdMat.T[k] = cmdBase[:,n]
-        k += 1
+        self._cmdMatrix = cmdMat
+        return cmdMat
+    else:
 
-    self._cmdMatrix = cmdMat
-    return cmdMat
+        self.cmdMatrix = cmdBase
+        return cmdBase
