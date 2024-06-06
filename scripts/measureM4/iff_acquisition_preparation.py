@@ -1,14 +1,13 @@
-#Preparazione - Class??
-import os
-import copy
+'''
+Author(s):
+    - P. Ferraiuolo
+
+Written in June 2024
+'''
 import numpy as np
-import h5py
 from astropy.io import fits as pyfits
-import configparser
 from m4.mini_ott import timehisory as th
 from m4.configuration import iffConfig as iffc  #contains a dictionary or similar with configuration
-
-config = configparser.ConfigParser() # Potrebbe ancora servire, vediamo
 
 class IFFCapturePreparation():
 
@@ -18,33 +17,52 @@ class IFFCapturePreparation():
         self._indexingList      = None
         self._modeVector        = None
         
+        self.cmdMatHistory      = None
+        self.auxCmdHistory      = None
         self.triggPadCmdList    = None
         self.regPadCmdList      = None
-        self.auxCmdHistory      = None
-        self.cmdMatHistory      = None
 
 
-    def createTimedCmdHistory(self, aux_cmdhistory, cmd_matrixHistory, timing_info): 
-        # timing info as dict? ini?? -> comunque esterne al codice
-        # Si può prendere spunto dalle funzioni sotto
+    def createTimedCmdHistory(self): 
+        '''
+        Function that creates the final timed command history to be applied
 
-        return timedCmdList
+        Parameters
+        ----------
 
-    def createCmdMatrixHistory(self, modesList, modes_amplitude, template, shuffle=False):
-        # Si può riutilizzare molto di quello che si ha già, 
-        # magari sistemato un po' e reso più flessibile e chiaro
+        Returns
+        -------
+        timedCmdHist : float | ArrayLike
+            Final timed command history, including the trigger padding, the registration pattern and the command matrix history.
+        '''
+        self.createCmdMatrixHistory()
+        self.creatAuxCmdHistory()
+        cmdHistory = np.hstack((slef.auxCmdHistory, self.cmdMatHistory))
+
+        timedCmdHist = np.repeat((cmdHistory, ifcc.TIMING, axis=1)
+
+        self.triggPadCmdHistory = timedCmdhist
+        return timedCmdHist
+
+    def createCmdMatrixHistory(self, modesList, modes_amplitude, template=None, shuffle=False):
+        '''
+
+        '''
+        if template is None:
+            template = [1,-1,1]
+
         self._modeVector = modesList
-        n_push_pull = len(template)
-        self._cmdMatrix = _getCmdMatrix(ifcc.CMD_BASE, modesList)
+        n_push_pull      = len(template)
+        cmd_matrix       = self._getCmdMatrix(ifcc.CMD_BASE, modesList)
 
         indList = []
         if shuffle==True:
             for i in range(len(n_push_pull):
-                np.random.shuffle(mode_vector)
-                indexingList.append(list(mode_vector))
+                np.random.shuffle(modesList)
+                indexingList.append(list(modesList))
         else:
             for i in range(n_push_pull):
-                indList.append(mode_vector)
+                indList.append(modesList)
 
         self._indexingList = np.array(indList)
 
@@ -62,19 +80,16 @@ class IFFCapturePreparation():
                 cmd_matrixHistory.T[k] = cmdList[i]
 
         self.cmdMatHistory = cmd_matrixHistory
- 
         return cmd_matrixHistory
 
     def createAuxCmdHistory(self):
         '''
         Creates the initial parteof the final command history matrix that will be passed to M4. This includes the Trigger Frame, the first frame to have a non-zero command, and the Padding Frame, two frames with high rms, useful for setting a start to the real acquisition.
-    
-        Parameters
-        ----------
-    
-    
+
         Result
         ------
+        aus_cmdHistory : float | ArrayLike
+            
         '''
 
         self._createRegistrationPattern()
@@ -113,8 +128,8 @@ class IFFCapturePreparation():
             Trigger padding command history
 
         '''
-        paddingScheme = np.zeros((self._NActs, ifcc.TIMING_SCHEME))# o .N_ZEROS
-        trigg = iffc.T0  # trigg o è un vettore con già le ampiezze desiderate, oppure si crea un vettore vuoto e si popola. Meglio la prima
+        paddingScheme = np.zeros((self._NActs, ifcc.N_PADDING_ZEROS))
+        trigg = iffc.T0  # trigg o è un vettore con già le ampiezze desiderate, oppure si crea un vettore vuoto e si popola. Meglio la prima se è roba di default sempre uguale
         triggHist = np.hstack((paddingScheme, trigg))
         
         self.triggPadCmdList = triggHist
