@@ -13,22 +13,15 @@ config = configparser.ConfigParser() # Potrebbe ancora servire, vediamo
 class IFFCapturePreparation():
 
     def __init__(self): #file .ini per inizializzare? No, non c'è bisogno. leggono le funzioni in caso
-        self._nActs         = # get N Acts from file? Or load DM?
-        self._cmdMatrix     = # loaded command base in _getCmdMatrix()
-        self._indexingList  = None
-
-        self._paddingTemp   = None
-        self._triggMode     = None
-        self._triggAmpl     = None
-        self._triggTemp     = None
-        self._regModes      = None
-        self._regAmpl       = None
-        self._regTemp       = None
+        self._nActs             = ifcc.NACTS
+        self._cmdMatrix         = None
+        self._indexingList      = None
+        self._modeVector        = None
         
-        self.triggPadCmdList   = None
-        self.regPadCmdList     = None
-        self.auxCmdHistory     = None
-        self.cmdMatHistory     = None
+        self.triggPadCmdList    = None
+        self.regPadCmdList      = None
+        self.auxCmdHistory      = None
+        self.cmdMatHistory      = None
 
 
     def createTimedCmdHistory(self, aux_cmdhistory, cmd_matrixHistory, timing_info): 
@@ -37,14 +30,14 @@ class IFFCapturePreparation():
 
         return timedCmdList
 
-    def createCmdMatrixHistory(self, modes_matrix, modes_amplitude, cmd_template, shuffle=False):
+    def createCmdMatrixHistory(self, modesList, modes_amplitude, template, shuffle=False):
         # Si può riutilizzare molto di quello che si ha già, 
         # magari sistemato un po' e reso più flessibile e chiaro
-        self._modeVector = copy.copy(mode_vector) # modes_matrix?
-        self._nPushPull = n_push_pull # ??
-        self._cmdMatrix = cmd_matrix # cmd_template?
-        indList = []
+        self._modeVector = modesList
+        n_push_pull = len(template)
+        self._cmdMatrix = _getCmdMatrix(ifcc.CMD_BASE, modesList)
 
+        indList = []
         if shuffle==True:
             for i in range(len(n_push_pull):
                 np.random.shuffle(mode_vector)
@@ -55,7 +48,7 @@ class IFFCapturePreparation():
 
         self._indexingList = np.array(indList)
 
-        n_frame = mode_vector.size * n_push_pull
+        n_frame = len(modesList) * n_push_pull
         cmd_matrixHistroy = np.zeros((self._nActs, n_frame))
 
         cmdList = []
@@ -72,57 +65,66 @@ class IFFCapturePreparation():
  
         return cmd_matrixHistory
 
-    def createAuxCmdHistory(self, reg_patterncmdList, trigger_paddingCmdList):
-    '''
-    Creates the initial parteof the final command history matrix that will be passed to M4. This includes the Trigger Frame, the first frame to have a non-zero command, and the Padding Frame, two frames with high rms, useful for setting a start to the real acquisition.
+    def createAuxCmdHistory(self):
+        '''
+        Creates the initial parteof the final command history matrix that will be passed to M4. This includes the Trigger Frame, the first frame to have a non-zero command, and the Padding Frame, two frames with high rms, useful for setting a start to the real acquisition.
+    
+        Parameters
+        ----------
+    
+    
+        Result
+        ------
+        '''
 
-    Parameters
-    ----------
+        self._createRegistrationPattern()
+        self._createTriggerPadding()
 
+        aux_cmdHistory = np.hstack((self._triggPadCmdHist, self._regPadCmdHist))
+        self._auxCmdHistory = aux_cmdHistory
 
-    Result
-    ------
-    '''
-        # Gli input sono gli output di altre due funzioni (interne?)
-        # Ha senso? Ni, dipende da quanto sono complesse queste due funzioni
-        # e quanto separarle rende il codice flessibile e chiaro. Sicuramente 
-        # il salvataggio o il loading va incluso
-        mette insieme i due sotto
         return aux_cmdHistory
 
     # Ha senso tenere le due funzioni sotto separate da questa sopra? Potrebbee non essere necessario
 
-    def createRegistrationPattern(self, reg_modes, reg_amplitudes, reg_template):
-        # Sono dei modi sparati in successione, tipo due mega trifogli, che dicono
-        # 'da qui iniziano i dati'. Sono gli Rx e Ry.
-        stesso schema di trigger padding
-        input viene da iffc: e sarebbe quali attuatori alzare per fare i marker, con che ampiezza e eventualmente quante ripetizioni (template)
-        return reg_patternCmdList
+    def _createRegistrationPattern(self, reg_modes, reg_amplitudes, reg_template):
+        '''
+        Creates the registration pattern to apply after the triggering and before the commands to apply for the IFF acquisition
 
-    def createTriggerPadding(self, padding_template=None, trigger_mode=None, trigger_amplitude=None, trigger_template=None, save=False):# Salvare gli output? Vengono salvati comunque nella classe
+        Returns
+        -------
+        regHist : float | ArrayLike
+            Registration pattern command history
 
-        # Come vogliamo gli imput? File? Vettori passati da python? Info su file di configurazione? 
-        # Catena di if per le variabili di ingresso. Se l'imput è None, allora carica le variabili
-        # 'standard', altrimenti vengono specificate
+        '''
 
-        # Serve ad identificare il primo frame buono per far partire l'acquisizione / unwrapping. E' il T_0
+        #stesso schema di trigger padding
+        #input viene da iffc: e sarebbe quali attuatori alzare per fare i marker, con che ampiezza ed eventualmente quante ripetizioni (template)
 
-        # Ok no va bene perché c'è la possibilità che vogliano essere cambiati o che si vogliano skippare
-        # quindi in generale è meglio fare le funzioni. Gli imput vengono da file. Caricato all'inizio? forse meglio.
+        return regHist
 
-        cmdxx= getCmdMatrix(mirrorModes) #legge da configurazioni
-        triggCmd = cmdxx[triggId,:]
-        paddingscheme = lo leggi da iffc (vedi import iniziale, sono quanti zeri mettere all'inizio)
-        triggTimeHist = la creai asemblando gli zeri con i lcomando di trigg
+    def _createTriggerPadding(self):
+        '''
+        Function that creates the trigger padding scheme to apply before the registration padding scheme
+
+        Returns
+        -------
+        triggHist : float | ArrayLike
+            Trigger padding command history
+
+        '''
+        paddingScheme = np.zeros((self._NActs, ifcc.TIMING_SCHEME))# o .N_ZEROS
+        trigg = iffc.T0  # trigg o è un vettore con già le ampiezze desiderate, oppure si crea un vettore vuoto e si popola. Meglio la prima
+        triggHist = np.hstack((paddingScheme, trigg))
+        
+        self.triggPadCmdList = triggHist
+
+        return triggHist
 
 
-
-        return trigger_paddingCmdList
-
-
-    def _getCmdMatrix(identif, mlist):
+    def _getCmdMatrix(identif: str, mlist: list):
         """
-        This function ...
+        This function gets the base command matrix to use for the IFF acquisition. If 'zonal' or 'hadamard' are passe as arguments, it is analytically generated, while if a tn is passed, it will load the modal base from the corresponding .fits file contained in the tn folder.
 
         Parameters
         ----------
