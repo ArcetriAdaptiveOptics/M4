@@ -6,6 +6,8 @@ import h5py
 from astropy.io import fits as pyfits
 import configparser
 from m4.mini_ott import timehisory as th
+from m4.configuration import iffConfig as iffc  #contains a dictionary or similar with configuration
+
 config = configparser.ConfigParser() # Potrebbe ancora servire, vediamo
 
 class IFFCapturePreparation():
@@ -85,7 +87,7 @@ class IFFCapturePreparation():
         # Ha senso? Ni, dipende da quanto sono complesse queste due funzioni
         # e quanto separarle rende il codice flessibile e chiaro. Sicuramente 
         # il salvataggio o il loading va incluso
-
+        mette insieme i due sotto
         return aux_cmdHistory
 
     # Ha senso tenere le due funzioni sotto separate da questa sopra? Potrebbee non essere necessario
@@ -93,7 +95,8 @@ class IFFCapturePreparation():
     def createRegistrationPattern(self, reg_modes, reg_amplitudes, reg_template):
         # Sono dei modi sparati in successione, tipo due mega trifogli, che dicono
         # 'da qui iniziano i dati'. Sono gli Rx e Ry.
-
+        stesso schema di trigger padding
+        input viene da iffc: e sarebbe quali attuatori alzare per fare i marker, con che ampiezza e eventualmente quante ripetizioni (template)
         return reg_patternCmdList
 
     def createTriggerPadding(self, padding_template=None, trigger_mode=None, trigger_amplitude=None, trigger_template=None, save=False):# Salvare gli output? Vengono salvati comunque nella classe
@@ -106,6 +109,13 @@ class IFFCapturePreparation():
 
         # Ok no va bene perché c'è la possibilità che vogliano essere cambiati o che si vogliano skippare
         # quindi in generale è meglio fare le funzioni. Gli imput vengono da file. Caricato all'inizio? forse meglio.
+
+        cmdxx= getCmdMatrix(mirrorModes) #legge da configurazioni
+        triggCmd = cmdxx[triggId,:]
+        paddingscheme = lo leggi da iffc (vedi import iniziale, sono quanti zeri mettere all'inizio)
+        triggTimeHist = la creai asemblando gli zeri con i lcomando di trigg
+
+
 
         return trigger_paddingCmdList
 

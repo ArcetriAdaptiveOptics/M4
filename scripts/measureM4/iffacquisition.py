@@ -4,7 +4,7 @@ this module includes the functions for the preparation and the acquisition  IFF 
 from m4.configuration import iffConfig as iffc  #contains a dictionary or similar with configuration
 from m4.device import deformable_mirror as dm
 
-'''Template
+#Template
 def yyy(a,b)
     """
     This function ...
@@ -14,7 +14,7 @@ def yyy(a,b)
     -------
     """
     return xxx
-'''
+
 
 def iffDataCollection(modesList, amplitude, nRepetitions, modalBase = None):
     """
