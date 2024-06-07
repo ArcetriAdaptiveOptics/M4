@@ -4,6 +4,8 @@
 # the current shape is intended to allow a first startup of the procedure.
 # make sure to re-shape the module into a more "formal" scheme (e.g. class, yaml, ...)
 
+#### --- convert this file into a yaml and provide libraries to read it. so you can copy into the data folder and re-read it to analyze the dataset
+
 # the following part contains the parameters for the initial padding and triggering sequence
 numberOfTriggerZeros = 25 #number of empty (0 ampl.) frames before the trigger command
 
