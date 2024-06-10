@@ -46,4 +46,4 @@ def getConfig(bpath,key):
     modeAmp = float(cc[modeAmpName])
     template = np.array(json.loads(cc[templateName]))
 
-    return nzeros, modeId,modeAmp, template
+    return nzeros, modeId, modeAmp, template
