@@ -103,13 +103,13 @@ def fileList(tn, fold=None, name=None):
     """
     Parameters
     ----------
-    tn: string
+    tn: str
         tracking number where to search for the images file list
 
     Returns
     -------
-    lsdir: the list of image files
-    fold1: the path where the file is found
+    lsdir : str | ArrayLike
+        The list of image files
     """
     if fold is not None:
         if name is None:
