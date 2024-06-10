@@ -7,23 +7,26 @@ Written in June 2024
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.mini_ott import timehisory as th
-from m4.configuration import iffConfig as iffc  #contains a dictionary or similar with configuration
+from m4.configuration.read_iffconfig import getConfig
+
+bpath = os.environ['M4CONF']
 
 class IFFCapturePreparation():
 
-    def __init__(self): #file .ini per inizializzare? No, non c'è bisogno. leggono le funzioni in caso
-        self._nActs             = ifcc.NACTS
+    def __init__(self): #file .ini per inizializzare?
+        '''The Constructor'''
+        self._nActs             = ifcc.NACTS #Dove trovo la info? Si deve caricare il dm? o leggiamo conf?
+        self._modesList         = None
         self._cmdMatrix         = None
         self._indexingList      = None
-        self._modeVector        = None
         
         self.cmdMatHistory      = None
         self.auxCmdHistory      = None
-        self.triggPadCmdList    = None
-        self.regPadCmdList      = None
+        self.triggPadCmdHist    = None
+        self.regPadCmdHist      = None
 
 
-    def createTimedCmdHistory(self): 
+    def createTimedCmdHistory(self, cmdBase, modesList=None, modesAmp=None, template=None, shuffle=False): 
         '''
         Function that creates the final timed command history to be applied
 
@@ -35,7 +38,9 @@ class IFFCapturePreparation():
         timedCmdHist : float | ArrayLike
             Final timed command history, including the trigger padding, the registration pattern and the command matrix history.
         '''
-        self.createCmdMatrixHistory()
+        self._modesList = modesList
+        self._getCmdMatrix(cmdBase, modesList)
+        self.createCmdMatrixHistory(modesAmp, template, shuffle)
         self.creatAuxCmdHistory()
         cmdHistory = np.hstack((slef.auxCmdHistory, self.cmdMatHistory))
 
@@ -44,40 +49,55 @@ class IFFCapturePreparation():
         self.triggPadCmdHistory = timedCmdhist
         return timedCmdHist
 
-    def createCmdMatrixHistory(self, modesList, modes_amplitude, template=None, shuffle=False):
+    def createCmdMatrixHistory(self, modesAmp=None, template=None, shuffle=False):
         '''
+        Creates the command matrix history for the IFF acquisition.
 
+        Parameters
+        ----------
+        modesAmp : float 
+            Amplitude of the modes to be commanded. If no argument is passed, it will be loaded from the configuration file iffConfig.ini
+        template : int | ArrayLike
+            Template for the push-pull application of the modes. If no argument is passed, it will be loaded from the configuration file iffConfig.ini
+        shuffle : boolean
+            Decides to wether shuffle or not the order in which the modes are applied. Default is False
+
+        Returns
+        -------
+        cmd_matrixHistory : float | ArrayLike
+            Command matrix history to be applied, with the correct push-pull application, following the desired template.
         '''
         if template is None:
-            template = [1,-1,1]
+            _,_,_, template = getconfig(bpath, 'IFFUNC')
+        if modesAmps is None:
+            _,_,modesAmp,_ = getconfig(bpath, 'IFFUNC')
 
-        self._modeVector = modesList
         n_push_pull      = len(template)
-        cmd_matrix       = self._getCmdMatrix(ifcc.CMD_BASE, modesList)
 
-        indList = []
-        if shuffle==True:
-            for i in range(len(n_push_pull):
-                np.random.shuffle(modesList)
-                indexingList.append(list(modesList))
-        else:
-            for i in range(n_push_pull):
-                indList.append(modesList)
+        if shuffle:
+            cmd_matrix = np.zeros((self._cmdMatrix.shape[0], self._cmdMatrix.shape[1]))
+            modesList = np.random.shuffle(self._modesList)
+            k=0
+            for i in randomList:
+                cmd_matrix.T[k] = self._cmdMatrix[i]
+                k += 1
+            self._indexingList = np.array(modesList)
+        else: 
+            cmd_matrix = self._cmdMatrix
+            modesList = self._modesList
 
-        self._indexingList = np.array(indList)
-
-        n_frame = len(modesList) * n_push_pull
+        n_frame = len(self._modesList) * n_push_pull
         cmd_matrixHistroy = np.zeros((self._nActs, n_frame))
 
         cmdList = []
-        for i in mode_vector:
+        for i in modesList:
             cmd = cmd_matrix[:, i]
             cmdList.append(cmd)
 
         for j in range(n_push_pull):
             for i in range(len(cmdList)):
                 k = len(cmdList)*j + i
-                cmd_matrixHistory.T[k] = cmdList[i]
+                cmd_matrixHistory.T[k] = cmdList[i]*template[j]*modesAmp
 
         self.cmdMatHistory = cmd_matrixHistory
         return cmd_matrixHistory
@@ -91,7 +111,6 @@ class IFFCapturePreparation():
         aus_cmdHistory : float | ArrayLike
             
         '''
-
         self._createRegistrationPattern()
         self._createTriggerPadding()
 
@@ -102,7 +121,7 @@ class IFFCapturePreparation():
 
     # Ha senso tenere le due funzioni sotto separate da questa sopra? Potrebbee non essere necessario
 
-    def _createRegistrationPattern(self, reg_modes, reg_amplitudes, reg_template):
+    def _createRegistrationPattern(self):
         '''
         Creates the registration pattern to apply after the triggering and before the commands to apply for the IFF acquisition
 
@@ -112,9 +131,16 @@ class IFFCapturePreparation():
             Registration pattern command history
 
         '''
+        nZeros, regId, regAmp, regTemp = getconfig(bpath, 'REGISTRATION')
 
-        #stesso schema di trigger padding
-        #input viene da iffc: e sarebbe quali attuatori alzare per fare i marker, con che ampiezza ed eventualmente quante ripetizioni (template)
+        zeroScheme = np.zeros((self._NActs, nZeros))
+        regScheme = np.zeros((self._NActs, len(regTemp))
+        for t in range(len(regTemp)):
+            for i in redIg:
+                regScheme[i,t] = regAmp*regTemp[t]
+
+        regHist = np.hstack((zeroScheme, regScheme))
+        self.regPadCmdHist = regHist
 
         return regHist
 
@@ -128,11 +154,15 @@ class IFFCapturePreparation():
             Trigger padding command history
 
         '''
-        paddingScheme = np.zeros((self._NActs, ifcc.N_PADDING_ZEROS))
-        trigg = iffc.T0  # trigg o è un vettore con già le ampiezze desiderate, oppure si crea un vettore vuoto e si popola. Meglio la prima se è roba di default sempre uguale
-        triggHist = np.hstack((paddingScheme, trigg))
-        
-        self.triggPadCmdList = triggHist
+        nZeros, trigId, trigAmp, trigTemp = getConfig(bpath, 'TRIGGER')
+        zeroScheme = np.zeros((self._NActs, nZeros))
+
+        if self.cmdMatrix is not None:
+            trigMode = self.cmdMatrix[:,trigId]*trigAmp
+        else raise ValueError("Command Matrix not Loaded yet. Run 'createCmdMatrixHistory' first to solve the issue ")
+
+        triggHist = np.hstack((zeroScheme, trigMode))
+        self.triggPadCmdHist = triggHist
 
         return triggHist
 
@@ -150,7 +180,7 @@ class IFFCapturePreparation():
 
                 'hadamard' : It loads the hadamard's command matrix;
 
-                'tn'       : A tracking number containing the fits file of the command matrix to load. Can be the case of the mirror's modal command matrix.
+                'tn'       : A tracking number in which is contained the fits file of the command matrix to load. Can be the case of the mirror's modal command matrix.
 
         mlist : int | int or ArrayLike
             List of modes to be used from the loaded command matrix.
@@ -180,6 +210,7 @@ class IFFCapturePreparation():
         raise TypeError("'identif' must be a str, and can be 'zonal', 'hadamard' or a tracking number")
     
     if mlist is not None:
+        self._indexingList = np.linspace(0, len(mlist), 1)
         cmdMat = np.zeros((cmdBase.shape[0], len(mlist)))
         k = 0
         for n in mlist:
@@ -189,6 +220,6 @@ class IFFCapturePreparation():
         self._cmdMatrix = cmdMat
         return cmdMat
     else:
-
         self.cmdMatrix = cmdBase
+        self._indexingList = np.linspace(0, cmdBas.shape[1], 1)
         return cmdBase
