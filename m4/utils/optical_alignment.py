@@ -192,9 +192,9 @@ class OpticalAlignment():
             S_inv = np.linalg.inv(S)
             SMat = (S_inv[:,zernike2control].T)[:,zernike2control].T
             W = SMat.T @ SMat
-            rec = cmat @ np.linalg.inv(new_intMat.T @ W @ new_intMat) @ new_intMat.T @ W
             new_intMat = intMat
             new_cmat = cmat
+            rec = cmat @ np.linalg.inv(new_intMat.T @ W @ new_intMat) @ new_intMat.T @ W
 
         else:
             intMat = self.cal.getInteractionMatrix()
