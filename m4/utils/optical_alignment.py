@@ -17,6 +17,7 @@ from m4.ground.timestamp import Timestamp
 from m4.utils.roi import ROI
 from m4.configuration import ott_status
 from m4.ground import geo
+from arte.utils.zernike_projection_on_subaperture import ZernikeProjectionOnSubaperture
 
 class OpticalAlignment():
     """
@@ -56,7 +57,7 @@ class OpticalAlignment():
         return fold_name.ALIGNMENT_ROOT_FOLDER
 
 
-    def opt_aligner(self, n_images, delay, zernike_to_be_corrected=None, dof_command_id=None):
+    def opt_aligner(self, n_images, delay, zernike_to_be_corrected=None, dof_command_id=None, subapOffsets=False):
         """
         Parameters
         ----------
@@ -72,9 +73,11 @@ class OpticalAlignment():
                         for tip, tilt, fuoco, coma, coma
             commandId: numpy array
                     array containing the number of degrees of freedom to be commanded
+            subapOffsets: tuple containing the subaperture offset in meters (axis from the center) and degrees (azimuthal angle) 
+            according Negro94
 
-        nota: gli zernike possono essere [0,1], [0,1,3,4], [0,1,2,3,4]
-             e vanno in coppia con i dof [3,4], [1,2,3,4], [0,1,2,3,4]
+        Note: Zernike idx can be [0,1], [0,1,3,4], [0,1,2,3,4]
+              and are coupled with dof [3,4], [1,2,3,4], [0,1,2,3,4] (??)
 
         Returns
         -------
@@ -90,7 +93,7 @@ class OpticalAlignment():
                           self.tt_cal)
         self._intMatModesVector = zernike_to_be_corrected
         self._commandId = dof_command_id
-        self._intMat, self._rec, self._cmat = self.selectModesInIntMatAndRecConstruction(zernike_to_be_corrected, dof_command_id)
+        self._intMat, self._rec, self._cmat = self.selectModesInIntMatAndRecConstruction(zernike_to_be_corrected, dof_command_id, use_xmp_style)
 
         img = self._interf.acquire_phasemap(n_images, delay)
         #modRB20231027 to implement fullframe
@@ -154,7 +157,7 @@ class OpticalAlignment():
         file.close()
 
     def selectModesInIntMatAndRecConstruction(self, zernike2control=None,
-                                               commandId=None):
+                                               commandId=None, subapOffsets=None):
         '''
         Other Parameters
         ----------
@@ -166,22 +169,50 @@ class OpticalAlignment():
 
         nota: gli zernike possono essere [0,1], [0,1,3,4], [0,1,2,3,4]  
              e vanno in coppia con i dof [3,4], [1,2,3,4], [0,1,2,3,4]
+
+        if use_xmp_style is True, the function returns the interaction matrix and the command matrix according Negro84 Zernike weighting
         '''
-        intMat = self.cal.getInteractionMatrix()
-        cmat = self.cal.getCommandMatrix()
-        if zernike2control is None:
+        if subapOffsets is not None:
+            subapOffAxisRadiusInMeter, subapOffAxisAzimuthInDegrees = subapOffsets
+            if zernike2control is None:
+                zernike2control = np.array([0, 1, 2, 3, 4])
+            intMat = self.cal.getfullLocalInteractionMatrix()
+            cmat = self.cal.getFullCommandMatrix()
+            #Simulate M4 case sub-pupil
+            pupilRadiusInMeter = 0.7   #to be dynamically set
+            subapsRadiusInMeter = 0.3  #to be dynamically set
+            #parpos = self._ott.parabola.getPosition()
+            #rmpos  = (self._ott.referenceMirror.getPosition()-600)/1e3
+            #subapOffAxisRadiusInMeter = 0.15 #to be dynamically set
+            #subapOffAxisAzimuthInDegrees = 0 #to be dynamically set
+            Zproj = ZernikeProjectionOnSubaperture(pupilRadiusInMeter,subapsRadiusInMeter,subapOffAxisRadiusInMeter,subapOffAxisAzimuthInDegrees)
+            #print("Negro84 sensitivity matrix small pupil coeffs (rows) and large pupil coeffs (columns)")
+            S = Zproj.get_projection_matrix()
+            #print("Negro84 sensitivity matrix large pupil coeffs (rows) and small pupil coeffs (columns)")
+            S_inv = np.linalg.inv(S)
+            SMat = (S_inv[:,zernike2control].T)[:,zernike2control].T
+            W = SMat.T @ SMat
+            rec = cmat @ np.linalg.inv(new_intMat.T @ W @ new_intMat) @ new_intMat.T @ W
             new_intMat = intMat
             new_cmat = cmat
+
         else:
-            new_intMat = intMat[zernike2control, :]
+            intMat = self.cal.getInteractionMatrix()
+            cmat = self.cal.getCommandMatrix()
+            
+            if zernike2control is None:
+                new_intMat = intMat
+                new_cmat = cmat
+            else:
+                new_intMat = intMat[zernike2control, :]
 
-        if commandId is not None:
-            new_intMat = new_intMat[:, commandId]
-            new_cmat = cmat[commandId, :]
-            new_cmat = new_cmat[:, commandId]
+            if commandId is not None:
+                new_intMat = new_intMat[:, commandId]
+                new_cmat = cmat[commandId, :]
+                new_cmat = new_cmat[:, commandId]
 
-        rec = np.linalg.pinv(new_intMat)
-        #self._plotIntMat()
+            rec = np.linalg.pinv(new_intMat)
+            #self._plotIntMat()
         return new_intMat, rec, new_cmat
 
     def _plotIntMat(self):
@@ -395,3 +426,53 @@ class OpticalAlignment():
         vector = np.array([m4_position, m4_command])
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, vector)
+
+
+#write test function for the class opticalAlignment here using unittest
+#the test functino will test all the interfaces
+#the test function will test the class OpticalAlignment
+
+if __name__ == '__main__':
+
+    # test the class OpticalAlignment
+    import unittest
+
+    class TestOptical():
+        def test_opt_aligner(self):
+            pass
+
+        def test_selectModesInIntMatAndRecConstruction(self):
+            pass
+
+        def test_reorgCmdForParAndRm(self):
+            pass
+
+        def test_getReorganizatedCommandForParAndRm(self):
+            pass
+
+        def test_commandGenerator(self):
+            pass
+
+        def test_zernikeCoeffCalculator(self):
+            pass
+
+        def test_getZernikeWhitAlignerObjectOptions(self):
+            pass
+
+        def test_saveData(self):
+            pass
+
+        def test_loadAlignmentObjectFromFits(self):
+            pass
+
+        def test_load_registeredPar(self):
+            pass
+
+        def test_reorgCmdForM4(self):
+            pass
+
+        def test_saveAllDataM4(self):
+            pass
+
+
+
