@@ -15,7 +15,7 @@ class IFFCapturePreparation():
 
     def __init__(self): #file .ini per inizializzare?
         '''The Constructor'''
-        self._nActs             = ifcc.NACTS #Dove trovo la info? Si deve caricare il dm? o leggiamo conf?
+        self._nActs             = ifcc.NACTS #Dove trovo l'info? Si deve caricare il dm? o leggiamo conf?
         self._modesList         = None
         self._cmdMatrix         = None
         self._indexingList      = None
@@ -32,6 +32,26 @@ class IFFCapturePreparation():
 
         Parameters
         ----------
+        cmdBase : str
+           Identification string of the base nd matrix to load. Values can be:
+
+                'zonal'    : It loads the zonal command matrix of the mirror;
+
+                'hadamard' : It loads the hadamard's command matrix;
+
+                'tn'       : A tracking number in which is contained the fits file of the command matrix to load. Can be the case of the mirror's modal command matrix.
+
+        modesList : int | ArrayLike
+            List of selected modes to use. Default is None, that means all modes of the base command matrix are used.
+
+        modesAmp : float
+            Amplitude of the modes. Default is None, that means the value is loaded from the 'iffconfig.ini' file
+
+        template : int | ArrayLike
+            Template for the push-pull measures. List of 1 and -1. Default is None, which means the template is loaded from the 'iffcongig.ini' file.
+
+        shuffle : boolean
+            Decide wether to shuffle or not the modes order. Default is False
 
         Returns
         -------
@@ -44,7 +64,7 @@ class IFFCapturePreparation():
         self.creatAuxCmdHistory()
         cmdHistory = np.hstack((slef.auxCmdHistory, self.cmdMatHistory))
 
-        timedCmdHist = np.repeat((cmdHistory, ifcc.TIMING, axis=1)
+        timedCmdHist = np.repeat((cmdHistory, ifcc.TIMING, axis=1)) # Timing info where? iffconfig.ini?
 
         self.triggPadCmdHistory = timedCmdhist
         return timedCmdHist
@@ -122,19 +142,20 @@ class IFFCapturePreparation():
     # Ha senso tenere le due funzioni sotto separate da questa sopra? Potrebbee non essere necessario
 
     def _createRegistrationPattern(self):
-        '''
-        Creates the registration pattern to apply after the triggering and before the commands to apply for the IFF acquisition
+        """
+        Creates the registration pattern to apply after the triggering and before the commands to apply for the IFF acquisition. The information about number of zeros, mode(s) and amplitude are read from the 'iffconfig.ini' file.
 
         Returns
         -------
         regHist : float | ArrayLike
             Registration pattern command history
 
-        '''
+        """
         nZeros, regId, regAmp, regTemp = getconfig(bpath, 'REGISTRATION')
 
         zeroScheme = np.zeros((self._NActs, nZeros))
-        regScheme = np.zeros((self._NActs, len(regTemp))
+        regScheme = np.zeros((self._NActs, len(regTemp)))
+
         for t in range(len(regTemp)):
             for i in redIg:
                 regScheme[i,t] = regAmp*regTemp[t]
@@ -145,15 +166,15 @@ class IFFCapturePreparation():
         return regHist
 
     def _createTriggerPadding(self):
-        '''
-        Function that creates the trigger padding scheme to apply before the registration padding scheme
+        """
+        Function that creates the trigger padding scheme to apply before the registration padding scheme. The information about number of zeros, mode(s) and amplitude are read from the 'iffconfig.ini' file.
 
         Returns
         -------
         triggHist : float | ArrayLike
             Trigger padding command history
 
-        '''
+        """
         nZeros, trigId, trigAmp, trigTemp = getConfig(bpath, 'TRIGGER')
         zeroScheme = np.zeros((self._NActs, nZeros))
 

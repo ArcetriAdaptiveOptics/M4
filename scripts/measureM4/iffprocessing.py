@@ -4,6 +4,13 @@ this module includes the functions for the processing and analysis of the IFF da
 from m4.configuration.read_iffconfig import getConfig
 from m4.mini_ott import timehistory as th
 
+nTrigFrame  = 0
+nRegFrame   = 0
+
+class StopIteration(Exception):
+    pass
+
+
 def yyy(a,b)
     """
     This function ...
@@ -46,8 +53,20 @@ def findFirstFrame(flist, amplitude) # flist -> tn? / amplitude = iffconfig.ini?
     filelist = th.findtracknum(flist)
     _,_,amplitude,_ = getConfig(confile, 'TRIGGER') # poi si ragiona sul come il confile
 
+    try:
+        for file in filelist:
+            with pyfits.open(file) as hdu:
+                image = hdu[0].data
+                mask  = hdu[1].data.astype(bool)
+                count += 1
+                if :#condizione
+                    thefile = file
+                    trigger = np.ma.masked_array(image, mask)
+                    raise StopIteration
+    except StopIteration:
+        pass
 
-
+    global nTrigFrame
+    nTrigFrame = count
 
     return triggerId
-
