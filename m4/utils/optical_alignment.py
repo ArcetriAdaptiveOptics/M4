@@ -93,7 +93,7 @@ class OpticalAlignment():
                           self.tt_cal)
         self._intMatModesVector = zernike_to_be_corrected
         self._commandId = dof_command_id
-        self._intMat, self._rec, self._cmat = self.selectModesInIntMatAndRecConstruction(zernike_to_be_corrected, dof_command_id, use_xmp_style)
+        self._intMat, self._rec, self._cmat = self.selectModesInIntMatAndRecConstruction(zernike_to_be_corrected, dof_command_id, subapOffsets=subapOffsets)
 
         img = self._interf.acquire_phasemap(n_images, delay)
         #modRB20231027 to implement fullframe
