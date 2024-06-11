@@ -1,11 +1,21 @@
 '''
-this module includes the functions for the processing and analysis of the IFF data
+Authors
+    - P. Ferriauolo
+    - R. Briguglio
+    
+    Written in june 2024
+
+------------------------
+
+Module which contains functions for data processing and analysis of acquired M4's IFF.
 '''
+import os
 from m4.configuration.read_iffconfig import getConfig
 from m4.mini_ott import timehistory as th
+from m4.ground import read_data as rd
 
-nTrigFrame  = 0
-nRegFrame   = 0
+trigFrame  = 0
+regFrame   = 0
 
 class StopIteration(Exception):
     pass
@@ -25,48 +35,63 @@ def ifRedux(flist,
 
 def getRegistrationFrames(flist, triggerId)
     """
-    This function ...
+    This function identifies the registration pattern in the data frame sequence.
+
     Parameters
-    ----------------
+    ----------
+    flist : str / list
+        Complete list of the files. Can be either the folder's tracking number, containing the images, or the list of images itself.
+    trigFrame : int
+        The frame number of the trigger frame. Tells the function where to start the search.
+
     Returns
     -------
+    initial_regFrame : int
+        Number id of the first registration frame of the series.
+    final_regFrame : int
+        Number id of the last registration frame of the series.
     """
 
     return xxx
 
-def findFirstFrame(flist, amplitude) # flist -> tn? / amplitude = iffconfig.ini?
+def findFirstFrame(flist, amplitude=None)
     """
-    This function identifies the triggering frame in the frames sequence
+    This function identifies the triggering frame in the data frame sequence.
 
     Parameters
     ----------
-    flist : 
-        Complete list of the files
+    flist : str / list
+        Complete list of the files. Can be either the folder's tracking number, containing the images, or the list of images itself.
     amplitude: float
-        Amplitude of the trigger command applied
+        Amplitude of the trigger command applied. If no value is passed, it will be loaded from the 'iffconfig.ini' configuration file.
 
     Returns
     -------
-    triggerId: int
+    trigFrame : int
         Index of the frame containing the trigger. The subsequent frame (triggerId + 1) is the first 'useful' frame in the time history.
     """
-    filelist = th.findtracknum(flist)
-    _,_,amplitude,_ = getConfig(confile, 'TRIGGER') # poi si ragiona sul come il confile
+    if isinstance(flist, str):
+        filelist = th.findtracknum(flist)
+
+    configfile = os.path.join(os.path.directory(filelist[0]), 'iffconfig.iini')
+
+    if amplitude is None
+        _,_,amplitude,_ = getConfig(confile, 'TRIGGER')o 
+
+    global trigFrame
 
     try:
-        for file in filelist:
-            with pyfits.open(file) as hdu:
-                image = hdu[0].data
-                mask  = hdu[1].data.astype(bool)
-                count += 1
-                if :#condizione
-                    thefile = file
-                    trigger = np.ma.masked_array(image, mask)
-                    raise StopIteration
+        for ii in range(len(filelist)):
+            f0 = rd.readFits_maskedImage(filelist[ii])
+            f1 = rd.readFits_maskedImage(filelist[ii+1])
+            
+            diff = th.removeZernike(f1 - f0)
+            std_check = np.std(diff)
+
+            if (std_check>(amp/2)): # condizione
+                trigFrame = ii
+                raise StopIteration
     except StopIteration:
         pass
 
-    global nTrigFrame
-    nTrigFrame = count
-
-    return triggerId
+    return trigFrame
