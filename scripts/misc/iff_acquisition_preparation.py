@@ -28,7 +28,7 @@ class IFFCapturePreparation():
 
 
     def createTimedCmdHistory(self, cmdBase, modesList=None, modesAmp=None, template=None, shuffle=False): 
-        '''
+        """
         Function that creates the final timed command history to be applied
 
         Parameters
@@ -58,7 +58,7 @@ class IFFCapturePreparation():
         -------
         timedCmdHist : float | ArrayLike
             Final timed command history, including the trigger padding, the registration pattern and the command matrix history.
-        '''
+        """
         self._modesList = modesList
         self._getCmdMatrix(cmdBase, modesList)
         self.createCmdMatrixHistory(modesAmp, template, shuffle)
@@ -73,7 +73,7 @@ class IFFCapturePreparation():
         return timedCmdHist
 
     def createCmdMatrixHistory(self, modesAmp=None, template=None, shuffle=False):
-        '''
+        """
         Creates the command matrix history for the IFF acquisition.
 
         Parameters
@@ -89,7 +89,7 @@ class IFFCapturePreparation():
         -------
         cmd_matrixHistory : float | ArrayLike
             Command matrix history to be applied, with the correct push-pull application, following the desired template.
-        '''
+        """
         if template is None:
             _,_,_, template = readIffConf.getConfig('IFFUNC')
         if modesAmp is None:
