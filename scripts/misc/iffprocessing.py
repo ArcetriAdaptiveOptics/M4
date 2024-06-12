@@ -31,9 +31,9 @@ def yyy(a,b)
     """
     return xxx
 
-def ifRedux(flist,
+def ifRedux(flist)
 
-def getRegistrationFrames(flist, triggerId)
+def getRegistrationFrames(flist)
     """
     This function identifies the registration pattern in the data frame sequence.
 
@@ -41,8 +41,6 @@ def getRegistrationFrames(flist, triggerId)
     ----------
     flist : str / list
         Complete list of the files. Can be either the folder's tracking number, containing the images, or the list of images itself.
-    trigFrame : int
-        The frame number of the trigger frame. Tells the function where to start the search.
 
     Returns
     -------
@@ -51,8 +49,18 @@ def getRegistrationFrames(flist, triggerId)
     final_regFrame : int
         Number id of the last registration frame of the series.
     """
+    if isinstance(flist, str):
+        filelist = th.findtracknum(flist)
+    global trigFrame
+    if trigFrame>0:
+        startFrame = trigFrame+1
+    else startFrame=0
 
-    return xxx
+    for ii in range(startFrame, len(filelist)):
+        f0 = rd.readFits_maskedImage(filelist[ii])
+        f1 = rd.readFits_maskedImage(filelist[ii+1])
+
+    return regFrame
 
 def findFirstFrame(flist, amplitude=None)
     """
