@@ -4,7 +4,6 @@ import json
 import numpy as np
 config=configparser.ConfigParser()
 
-bpath = os.environ['M4CONF']
 iff_configFile   = 'iffConfig.ini'
 
 nzeroName    = 'numberOfZeros'
@@ -12,7 +11,7 @@ modeIdName   = 'modeId'
 modeAmpName  = 'modeAmp'
 templateName = 'template'
 
-def getConfig(key):
+def getConfig(key, bpath=None):
     '''
     Reads the configuration file for the IFF acquisition. The key passed is the block of information retrieved
 
@@ -37,8 +36,12 @@ def getConfig(key):
     template : int | ArrayLike
         Template of the mode(s) to apply
     '''
-    fname = os.path.join(bpath, iff_configFile)
-    print(fname)
+    if bpath is None:
+        bpath = os.path.dirname(os.environ['PYOTTCONF'])
+    if os.path.isdir(bpath):
+        fname = os.path.join(bpath, iff_configFile)
+    else:
+        fname = bpath
 
     config.read(fname)
     cc = config[key]
@@ -50,20 +53,36 @@ def getConfig(key):
 
     return nzeros, modeId, modeAmp, template
 
-def getNActs_fromConf():
-    fname = os.path.join(bpath, iff_configFile)
+def getNActs_fromConf(bpath=None):
+    """
+
+    """
+    if bpath is None:
+        bpath = os.path.dirname(os.environ['PYOTTCONF'])
+    if os.path.isdir(bpath):
+        fname = os.path.join(bpath, iff_configFile)
+    else:
+        fname = bpath
+
     config.read(fname)
     cc = config['DM']
-
     nacts = int(cc['NActs'])
 
     return nacts
 
-def getTiming():
-    fname = os.path.join(bpath, iff_configFile)
+def getTiming(bpath=None):
+    """
+
+    """
+    if bpath is None:
+        bpath = os.path.dirname(os.environ['PYOTTCONF'])
+    if os.path.isdir(bpath):
+        fname = os.path.join(bpath, iff_configFile)
+    else:
+        fname = bpath
+
     config.read(fname)
     cc = config['DM']
-
     timing = int(cc['Timing'])
 
     return timing
