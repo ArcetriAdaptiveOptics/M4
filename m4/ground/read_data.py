@@ -33,6 +33,28 @@ def read_phasemap(file_path):
         image = InterferometerConverter.fromPhaseCam4020(file_path)
     return image
 
+def save_phasemap(filename, masked_image,isCube=False):
+    '''
+    Function to save data in a standard fashion for OTT usage
+    To be implemented: cube saving
+    Parameters
+    ----------
+    filename: string
+            full path
+    masked_image: array
+            masked array of image to be saved
+
+    Returns
+    -------
+            object: numpy array
+    '''
+    if isCube is False:
+        pyfits.writeto(filename, masked_image.data)
+        pyfits.append(filename, masked_image.mask.astype(np.uint8))
+    else:  # this is to be checked, we guess that it should work
+        pyfits.writeto(filename, masked_image.data)
+        pyfits.append(filename, masked_image.mask.astype(np.uint8))
+
 ### Generiche
 def readFits_data(fits_file_path):
     '''
