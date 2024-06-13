@@ -5,10 +5,11 @@ Author(s):
 Written in June 2024
 '''
 import numpy as np
+import os
 from astropy.io import fits as pyfits
 from m4.mini_OTT import timehistory as th
 from m4.configuration import read_iffconfig
-
+from m4.configuration import config_folder_names as fn
 class IFFCapturePreparation():
     """
     Class for the preparation for the Influence Function Acquisition
@@ -31,7 +32,8 @@ class IFFCapturePreparation():
         '''The Constructor'''
         self._NActs             = read_iffconfig.getNActs_fromConf() #Dove trovo l'info? Si deve caricare il dm? o leggiamo conf?
         self._modesList         = None
-        self._cmdMatrix         = None
+        self._cmdMatrix=None #        = initDM_test()
+
         self._indexingList      = None
         
         self.timedCmdHistory    = None
@@ -41,6 +43,17 @@ class IFFCapturePreparation():
 
         self.triggPadCmdHist    = None
         self.regPadCmdHist      = None
+
+    def initDM_test(self):
+        '''
+        This function serves only for debugging, to retrieve the DM data
+        '''
+        dmFold = os.path.join(fn.OPT_DATA_FOLDER,'test')
+        cmdMatFile =  os.path.join(dmFold,'ff_v_matrix.fits')
+        hdu = pyfits.open(cmdMatFile)
+        cmdMat = hdu[0].data
+        nActs = np.shape(cmdMat)[0]
+        return cmdMat, nActs
 
     def createTimedCmdHistory(self, cmdBase, modesList=None, modesAmp=None, template=None, shuffle=False): 
         """
