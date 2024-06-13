@@ -13,12 +13,23 @@ import os
 from m4.configuration import read_iffconfig
 from m4.mini_ott import timehistory as th
 from m4.ground import read_data as rd
+from m4.configuration import config_folder_names as foldname
 
-trigFrame  = 0
-regFrame   = 0
+imgFold = foldname.OPD_IMAGES_ROOT_FOLDER
+ifFold  = foldname.IFFUNCTION_ROOT_FOLDER
+# intMatFold = foldname.INTMAT_ROOT_FOLDER --- To be defined
+
+regFrames  = 0
 
 class StopIteration(Exception):
     pass
+
+def process(tn):
+    """
+    """
+    regFrames, imgList = getTriggerAndRegistrationFrames(tn)
+    iffRedux(imgList)
+    registerRedux(regFrames)
 
 
 def yyy(a,b)
@@ -64,7 +75,8 @@ def iffRedux(flist):
             mis_amp = k * indexingList.shape[1] + n
 
         image = # caricata con la maschera da flist
-        # Algorimo centrale
+
+# Algorimo centrale
         for p in range(1, len(flist)):
             opd2add = image[p]*template[p] + image[p-1]*template[p-1]
             master_mask2add = np.ma.mask_or(image[p].mask, image[p-1].mask)
@@ -76,7 +88,7 @@ def iffRedux(flist):
     
         image = np.ma.masked_array(image, mask=master_mask)
         norm_image = image / (2*amp_reorg[mis_amp] * (template.shape[1]-1))
-
+        rd.save_phasemap(
 
 
 def getTriggerAndRegistrationFrames(flist, amplitude=None)
@@ -128,5 +140,7 @@ def getTriggerAndRegistrationFrames(flist, amplitude=None)
     regStart  = trigFrame + regZeros*timing
     regEnd    = len(regModes)*len(regTemplate)*timing
     regFrames = [regStart, regEnd]
-
-    return trigFrame, regFrames
+    
+    imgList = filelist[regFrames[1]:]
+    
+    return regFrames, imgList
