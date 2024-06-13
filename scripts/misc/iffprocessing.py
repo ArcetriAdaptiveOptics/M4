@@ -31,18 +31,51 @@ def yyy(a,b)
     """
     return xxx
 
+def _ampReorganization():
+    pass
+
+def _indexReorganization():
+    pass
+
 def iffRedux(flist):
     """
-    Applies the differenzial algorithm...
+    Apply the differential algorythm.
 
     Parameters
     ----------
-
+    flist : str / ArrayLike
+        Images file list or folder tracking number
 
     Returns
     -------
+    cube ?
 
     """
+    _,_,_,template  = read_iffconfig('IFFUNC')
+    nPushPull = len(template)
+    indexList = _indexReorganization()    # pass
+    amplitude = _ampReorganization()      # pass    
+
+    for i in range(nModes):
+        print(i)
+        for k in range(nPushPull)):        
+            p = nPushPull * i + k
+            n = where[p]
+            mis_amp = k * indexingList.shape[1] + n
+
+        image = # caricata con la maschera da flist
+        # Algorimo centrale
+        for p in range(1, len(flist)):
+            opd2add = image[p]*template[p] + image[p-1]*template[p-1]
+            master_mask2add = np.ma.mask_or(image[p].mask, image[p-1].mask)
+            if p==1:
+                master_mask = master_mask2add
+            else:
+                master_mask = np.na.mask_or(master_mask, master_mask2add)
+            image += opd2add
+    
+        image = np.ma.masked_array(image, mask=master_mask)
+        norm_image = image / (2*amp_reorg[mis_amp] * (template.shape[1]-1))
 
 
 

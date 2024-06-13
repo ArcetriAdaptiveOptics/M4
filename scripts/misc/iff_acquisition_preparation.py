@@ -7,13 +7,29 @@ Written in June 2024
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.mini_OTT import timehistory as th
-from m4.configuration import read_iffconfig as readIffConf
+from m4.configuration import read_iffconfig
 
 class IFFCapturePreparation():
-
+    """
+    Class for the preparation for the Influence Function Acquisition
+    
+    Methods
+    -------
+    _getCmdMatrix
+    
+    _createTriggerPadding
+    
+    _createRegistrationPattern
+    
+    createAuxCmdHistory
+    
+    createCmdMatrixHistory
+    
+    createTimedCmdHistory
+    """
     def __init__(self): #file .ini per inizializzare?
         '''The Constructor'''
-        self._NActs             = readIffConf.getNActs_fromConf() #Dove trovo l'info? Si deve caricare il dm? o leggiamo conf?
+        self._NActs             = read_iffconfig.getNActs_fromConf() #Dove trovo l'info? Si deve caricare il dm? o leggiamo conf?
         self._modesList         = None
         self._cmdMatrix         = None
         self._indexingList      = None
@@ -25,7 +41,6 @@ class IFFCapturePreparation():
 
         self.triggPadCmdHist    = None
         self.regPadCmdHist      = None
-
 
     def createTimedCmdHistory(self, cmdBase, modesList=None, modesAmp=None, template=None, shuffle=False): 
         """
@@ -64,8 +79,8 @@ class IFFCapturePreparation():
         self.createCmdMatrixHistory(modesAmp, template, shuffle)
         self.createAuxCmdHistory()
         cmdHistory = np.hstack((self.auxCmdHistory, self.cmdMatHistory))
-        
-        timing = readIffConf.getTiming()
+
+        timing = read_iffconfig.getTiming()
 
         timedCmdHist = np.repeat(cmdHistory, timing, axis=1) # Timing info where? iffconfig.ini?
 
@@ -91,9 +106,9 @@ class IFFCapturePreparation():
             Command matrix history to be applied, with the correct push-pull application, following the desired template.
         """
         if template is None:
-            _,_,_, template = readIffConf.getConfig('IFFUNC')
+            _,_,_, template = read_iffconfig.getConfig('IFFUNC')
         if modesAmp is None:
-            _,_,modesAmp,_ = readIffConf.getConfig('IFFUNC')
+            _,_,modesAmp,_ = read_iffconfig.getConfig('IFFUNC')
 
         n_push_pull = len(template)
 
@@ -101,7 +116,7 @@ class IFFCapturePreparation():
             cmd_matrix = np.zeros((self._cmdMatrix.shape[0], self._cmdMatrix.shape[1]))
             modesList = np.random.shuffle(self._modesList)
             k=0
-            for i in randomList:
+            for i in modesList:
                 cmd_matrix.T[k] = self._cmdMatrix[i]
                 k += 1
             self._indexingList = np.array(modesList)
@@ -137,8 +152,6 @@ class IFFCapturePreparation():
 
         return aux_cmdHistory
 
-    # Ha senso tenere le due funzioni sotto separate da questa sopra? Potrebbee non essere necessario
-
     def _createRegistrationPattern(self):
         """
         Creates the registration pattern to apply after the triggering and before the commands to apply for the IFF acquisition. The information about number of zeros, mode(s) and amplitude are read from the 'iffconfig.ini' file.
@@ -149,7 +162,7 @@ class IFFCapturePreparation():
             Registration pattern command history
 
         """
-        nZeros, regId, regAmp, regTemp = readIffConf.getConfig('REGISTRATION')
+        nZeros, regId, regAmp, regTemp = read_iffconfig.getConfig('REGISTRATION')
 
         zeroScheme = np.zeros((self._NActs, nZeros))
         regScheme = np.zeros((self._NActs, len(regTemp)*len(regId)))
@@ -175,7 +188,7 @@ class IFFCapturePreparation():
             Trigger padding command history
 
         """
-        nZeros, trigId, trigAmp, trigTemp = readIffConf.getConfig('TRIGGER')
+        nZeros, trigId, trigAmp,_= read_iffconfig.getConfig('TRIGGER')
         zeroScheme = np.zeros((self._NActs, nZeros))
 
         if self._cmdMatrix is not None:
@@ -186,7 +199,6 @@ class IFFCapturePreparation():
         self.triggPadCmdHist = triggHist
 
         return triggHist
-
 
     def _getCmdMatrix(self, identif: str, mlist: list = None):
         """
@@ -224,7 +236,6 @@ class IFFCapturePreparation():
                 for item in flist:
                     if 'nomefile' in item:
                         file = item
-    
                 with pyfits.open(file) as hdul:
                     cmdBase = hdul[0].data
         else:
@@ -239,8 +250,8 @@ class IFFCapturePreparation():
                 k += 1
     
             self._cmdMatrix = cmdMat
-            return cmdMat
         else:
             self._cmdMatrix = cmdBase
             self._indexingList = self._modesList = np.arange(0, cmdBase.shape[1], 1)
-            return cmdBase
+            
+        return self._cmdMatrix
