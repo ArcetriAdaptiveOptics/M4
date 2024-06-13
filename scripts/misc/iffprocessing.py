@@ -19,28 +19,12 @@ imgFold = foldname.OPD_IMAGES_ROOT_FOLDER
 ifFold  = foldname.IFFUNCTION_ROOT_FOLDER
 # intMatFold = foldname.INTMAT_ROOT_FOLDER --- To be defined
 
-regFrames  = 0
-
-class StopIteration(Exception):
-    pass
-
 def process(tn):
     """
     """
     regFrames, imgList = getTriggerAndRegistrationFrames(tn)
     iffRedux(imgList)
     registerRedux(regFrames)
-
-
-def yyy(a,b)
-    """
-    This function ...
-    Parameters
-    ----------------
-    Returns
-    -------
-    """
-    return xxx
 
 def _ampReorganization():
     pass
@@ -88,7 +72,7 @@ def iffRedux(flist):
     
         image = np.ma.masked_array(image, mask=master_mask)
         norm_image = image / (2*amp_reorg[mis_amp] * (template.shape[1]-1))
-        rd.save_phasemap(
+        rd.save_phasemap(os.path.join(intMatFold, 'mode_{:5d}.fits'.format(i)), norm_image)
 
 
 def getTriggerAndRegistrationFrames(flist, amplitude=None)
@@ -141,6 +125,9 @@ def getTriggerAndRegistrationFrames(flist, amplitude=None)
     regEnd    = len(regModes)*len(regTemplate)*timing
     regFrames = [regStart, regEnd]
     
-    imgList = filelist[regFrames[1]:]
+    imgList = filelist[(regFrames[1]+1):]
     
     return regFrames, imgList
+
+class StopIteration(Exception):
+    pass
