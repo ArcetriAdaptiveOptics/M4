@@ -5,19 +5,37 @@ Author(s):
 Written in June 2024
 '''
 import numpy as np
+import os
 from astropy.io import fits as pyfits
 from m4.mini_OTT import timehistory as th
-from m4.configuration import read_iffconfig as readIffConf
-
+from m4.configuration import read_iffconfig
+from m4.configuration import config_folder_names as fn
 class IFFCapturePreparation():
+    """
+    Class for the preparation for the Influence Function Acquisition
 
+    Methods
+    -------
+    _getCmdMatrix
+
+    _createTriggerPadding
+
+    _createRegistrationPattern
+
+    createAuxCmdHistory
+
+    createCmdMatrixHistory
+
+    createTimedCmdHistory
+    """
     def __init__(self): #file .ini per inizializzare?
         '''The Constructor'''
-        self._NActs             = readIffConf.getNActs_fromConf() #Dove trovo l'info? Si deve caricare il dm? o leggiamo conf?
+        self._NActs             = read_iffconfig.getNActs_fromConf() #Dove trovo l'info? Si deve caricare il dm? o leggiamo conf?
         self._modesList         = None
-        self._cmdMatrix         = None
+        self._cmdMatrix=None #        = initDM_test()
+
         self._indexingList      = None
-        
+
         self.timedCmdHistory    = None
 
         self.cmdMatHistory      = None
@@ -26,8 +44,18 @@ class IFFCapturePreparation():
         self.triggPadCmdHist    = None
         self.regPadCmdHist      = None
 
+    def initDM_test(self):
+        '''
+        This function serves only for debugging, to retrieve the DM data
+        '''
+        dmFold = os.path.join(fn.OPT_DATA_FOLDER,'test')
+        cmdMatFile =  os.path.join(dmFold,'ff_v_matrix.fits')
+        hdu = pyfits.open(cmdMatFile)
+        cmdMat = hdu[0].data
+        nActs = np.shape(cmdMat)[0]
+        return cmdMat, nActs
 
-    def createTimedCmdHistory(self, cmdBase, modesList=None, modesAmp=None, template=None, shuffle=False): 
+    def createTimedCmdHistory(self, cmdBase, modesList=None, modesAmp=None, template=None, shuffle=False):
         """
         Function that creates the final timed command history to be applied
 
@@ -64,8 +92,8 @@ class IFFCapturePreparation():
         self.createCmdMatrixHistory(modesAmp, template, shuffle)
         self.createAuxCmdHistory()
         cmdHistory = np.hstack((self.auxCmdHistory, self.cmdMatHistory))
-        
-        timing = readIffConf.getTiming()
+
+        timing = read_iffconfig.getTiming()
 
         timedCmdHist = np.repeat(cmdHistory, timing, axis=1) # Timing info where? iffconfig.ini?
 
@@ -78,7 +106,7 @@ class IFFCapturePreparation():
 
         Parameters
         ----------
-        modesAmp : float 
+        modesAmp : float
             Amplitude of the modes to be commanded. If no argument is passed, it will be loaded from the configuration file iffConfig.ini
         template : int | ArrayLike
             Template for the push-pull application of the modes. If no argument is passed, it will be loaded from the configuration file iffConfig.ini
@@ -91,9 +119,9 @@ class IFFCapturePreparation():
             Command matrix history to be applied, with the correct push-pull application, following the desired template.
         """
         if template is None:
-            _,_,_, template = readIffConf.getConfig('IFFUNC')
+            _,_,_, template = read_iffconfig.getConfig('IFFUNC')
         if modesAmp is None:
-            _,_,modesAmp,_ = readIffConf.getConfig('IFFUNC')
+            _,_,modesAmp,_ = read_iffconfig.getConfig('IFFUNC')
 
         n_push_pull = len(template)
 
@@ -101,11 +129,11 @@ class IFFCapturePreparation():
             cmd_matrix = np.zeros((self._cmdMatrix.shape[0], self._cmdMatrix.shape[1]))
             modesList = np.random.shuffle(self._modesList)
             k=0
-            for i in randomList:
+            for i in modesList:
                 cmd_matrix.T[k] = self._cmdMatrix[i]
                 k += 1
             self._indexingList = np.array(modesList)
-        else: 
+        else:
             cmd_matrix = self._cmdMatrix
             modesList = self._modesList
 
@@ -127,7 +155,7 @@ class IFFCapturePreparation():
         Result
         ------
         aus_cmdHistory : float | ArrayLike
-            
+
         '''
         self._createRegistrationPattern()
         self._createTriggerPadding()
@@ -136,8 +164,6 @@ class IFFCapturePreparation():
         self.auxCmdHistory = aux_cmdHistory
 
         return aux_cmdHistory
-
-    # Ha senso tenere le due funzioni sotto separate da questa sopra? Potrebbee non essere necessario
 
     def _createRegistrationPattern(self):
         """
@@ -149,7 +175,7 @@ class IFFCapturePreparation():
             Registration pattern command history
 
         """
-        nZeros, regId, regAmp, regTemp = readIffConf.getConfig('REGISTRATION')
+        nZeros, regId, regAmp, regTemp = read_iffconfig.getConfig('REGISTRATION')
 
         zeroScheme = np.zeros((self._NActs, nZeros))
         regScheme = np.zeros((self._NActs, len(regTemp)*len(regId)))
@@ -175,7 +201,7 @@ class IFFCapturePreparation():
             Trigger padding command history
 
         """
-        nZeros, trigId, trigAmp, trigTemp = readIffConf.getConfig('TRIGGER')
+        nZeros, trigId, trigAmp,_= read_iffconfig.getConfig('TRIGGER')
         zeroScheme = np.zeros((self._NActs, nZeros))
 
         if self._cmdMatrix is not None:
@@ -186,7 +212,6 @@ class IFFCapturePreparation():
         self.triggPadCmdHist = triggHist
 
         return triggHist
-
 
     def _getCmdMatrix(self, identif: str, mlist: list = None):
         """
@@ -224,12 +249,11 @@ class IFFCapturePreparation():
                 for item in flist:
                     if 'nomefile' in item:
                         file = item
-    
                 with pyfits.open(file) as hdul:
                     cmdBase = hdul[0].data
         else:
             raise TypeError("'identif' must be a str. Accepted values are 'zonal', 'hadamard' or a tracking number")
-        
+
         if mlist is not None:
             self._indexingList = np.linspace(0, len(mlist), 1)
             cmdMat = np.zeros((cmdBase.shape[0], len(mlist)))
@@ -237,10 +261,10 @@ class IFFCapturePreparation():
             for n in mlist:
                 cmdMat.T[k] = cmdBase[:,n]
                 k += 1
-    
+
             self._cmdMatrix = cmdMat
-            return cmdMat
         else:
             self._cmdMatrix = cmdBase
             self._indexingList = self._modesList = np.arange(0, cmdBase.shape[1], 1)
-            return cmdBase
+
+        return self._cmdMatrix
