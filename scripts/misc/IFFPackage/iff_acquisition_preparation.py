@@ -1,8 +1,18 @@
 '''
+NOTA:
+    la classe ha la creazione/lettura della base modale e i metodi per farci le storie temporali
+    la classe è replicata, ereditando i metodi, e aggiornando la crezione della base modale secondo cosa richiesto
+    esempio: istanzio la classe con la base modale che voglio e la classe si è ereditata i metodi della classe base
+'''
+'''
 Author(s):
     - P. Ferraiuolo
 
 Written in June 2024
+'''
+'''
+WARNING!!! al lthe elements relative to a cmdHistory (trigger, padding, etc), shall be act x frames (e.g. 892 x 200 commands)
+
 '''
 import numpy as np
 import os
@@ -30,9 +40,12 @@ class IFFCapturePreparation():
     """
     def __init__(self): #file .ini per inizializzare?
         '''The Constructor'''
-        self._NActs             = read_iffconfig.getNActs_fromConf() #Dove trovo l'info? Si deve caricare il dm? o leggiamo conf?
+        #self._NActs             = read_iffconfig.getNActs_fromConf() #Dove trovo l'info? Si deve caricare il dm? o leggiamo conf?
         self._modesList         = None
-        self._cmdMatrix=None #        = initDM_test()
+        #self._cmdMatrix=None #        = initDM_test()
+        self._mirrorModalBase, self._NActs = self.initDM_test()
+        self._modalBase         = self._mirrorModalBase   #e poi modificare questo quando si ridefinisce la base modale (zonal, had, ...)
+        self._cmdMatrix         = None
 
         self._indexingList      = None
 
@@ -203,17 +216,26 @@ class IFFCapturePreparation():
         """
         nZeros, trigId, trigAmp,_= read_iffconfig.getConfig('TRIGGER')
         zeroScheme = np.zeros((self._NActs, nZeros))
+        trigMode = self._mirrorModalBase[:,trigId]*trigAmp    #modRB
 
-        if self._cmdMatrix is not None:
-            trigMode = self._cmdMatrix[:,trigId]*trigAmp
-        else: raise ValueError("Command Matrix not Loaded yet. Run 'createCmdMatrixHistory' first to solve the issue")
+        #modRB
+        #if self._cmdMatrix is not None:
+        #    trigMode = self._modalBase[:,trigId]*trigAmp
+        #else: raise ValueError("Command Matrix not Loaded yet. Run 'createCmdMatrixHistory' first to solve the issue")
 
         triggHist = np.hstack((zeroScheme, trigMode))
         self.triggPadCmdHist = triggHist
 
         return triggHist
 
-    def _getCmdMatrix(self, identif: str, mlist: list = None):
+    def _createCmdMatrix(self,mlist):
+        '''
+        Cuts the modal base according the given modes list
+        '''
+        self._cmdMatrix = self._modalBase[:,mlist] #qui chiarire la direzione. è così per i dati in arrivo da IDL
+
+
+    def _getCmdMatrix2(self, identif: str, mlist: list = None):  #originale di Pietro
         """
         This function gets the base command matrix to use for the IFF acquisition. If 'zonal' or 'hadamard' are passe as arguments, it is analytically generated, while if a tn is passed, it will load the modal base from the corresponding .fits file contained in the tn folder.
 
@@ -242,7 +264,7 @@ class IFFCapturePreparation():
                 cmdBase = np.eye(self._NActs)
             elif identif=='hadamard':
                 from scipy.linalg import hadamard
-                hadm = hadamard(2**10)
+                hadm = hadamard(2**10)  #here we suppose that the HADAMARD matrix is used only to measure SEGMENT IFF (which makes sense)
                 cmdBase = hadm[:self._NActs, :self._NActs]
             else:
                 flist = th.fileList(identif)
@@ -268,3 +290,35 @@ class IFFCapturePreparation():
             self._indexingList = self._modesList = np.arange(0, cmdBase.shape[1], 1)
 
         return self._cmdMatrix
+
+    def updateCommandMatrix(self, identif: str =None):
+        '''
+        Redefines the command matrix to be used ma dice marco di buttare
+        '''
+        if isinstance(identif, str) is True:
+            if identif=='zonal':
+                cmdBase = np.eye(self._NActs)
+            elif identif=='hadamard':
+                from scipy.linalg import hadamard
+                hadm = hadamard(2**10)  #here we suppose that the HADAMARD matrix is used only to measure SEGMENT IFF (which makes sense)
+                cmdBase = hadm[:self._NActs, :self._NActs]
+            else:
+                flist = th.fileList(identif)
+                for item in flist:
+                    if 'nomefile' in item:
+                        file = item
+                with pyfits.open(file) as hdul:
+                    cmdBase = hdul[0].data
+        else:
+            cmdBase = self._cmdMatrix
+            print('Using CmdMatrix as passed from mirror configuration, nothing done')
+            #raise TypeError("'identif' must be a str. Accepted values are 'zonal', 'hadamard' or a tracking number")
+
+
+    def _saveMatrix(filename,matrix):
+        '''
+        Function as a placeholder to remember to save the matrices
+        !!! warning! shall this be inside a class? or shall it be a static method?
+        we don't want to create the object (== updating the intmat or doing anything weird) just to save the file
+        '''
+        pass
