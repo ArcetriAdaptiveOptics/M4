@@ -2,7 +2,7 @@
 Authors
     - P. Ferriauolo
     - R. Briguglio
-    
+
     Written in june 2024
 
 ------------------------
@@ -49,11 +49,11 @@ def iffRedux(flist):
     _,_,_,template  = read_iffconfig('IFFUNC')
     nPushPull = len(template)
     indexList = _indexReorganization()    # pass
-    amplitude = _ampReorganization()      # pass    
+    amplitude = _ampReorganization()      # pass
 
     for i in range(nModes):
         print(i)
-        for k in range(nPushPull)):        
+        for k in range(nPushPull)):
             p = nPushPull * i + k
             n = where[p]
             mis_amp = k * indexingList.shape[1] + n
@@ -69,7 +69,7 @@ def iffRedux(flist):
             else:
                 master_mask = np.na.mask_or(master_mask, master_mask2add)
             image += opd2add
-    
+
         image = np.ma.masked_array(image, mask=master_mask)
         norm_image = image / (2*amp_reorg[mis_amp] * (template.shape[1]-1))
         rd.save_phasemap(os.path.join(intMatFold, 'mode_{:5d}.fits'.format(i)), norm_image)
@@ -108,7 +108,7 @@ def getTriggerAndRegistrationFrames(flist, amplitude=None)
         for ii in range(len(filelist)):
             f0 = rd.readFits_maskedImage(filelist[ii])
             f1 = rd.readFits_maskedImage(filelist[ii+1])
-            
+
             diff = th.removeZernike(f1 - f0)
             std_check = np.std(diff)
 
@@ -124,9 +124,9 @@ def getTriggerAndRegistrationFrames(flist, amplitude=None)
     regStart  = trigFrame + regZeros*timing
     regEnd    = len(regModes)*len(regTemplate)*timing
     regFrames = [regStart, regEnd]
-    
+
     imgList = filelist[(regFrames[1]+1):]
-    
+
     return regFrames, imgList
 
 class StopIteration(Exception):

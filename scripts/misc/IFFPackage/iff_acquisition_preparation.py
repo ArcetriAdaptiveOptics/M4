@@ -13,19 +13,19 @@ from m4.configuration import config_folder_names as fn
 class IFFCapturePreparation():
     """
     Class for the preparation for the Influence Function Acquisition
-    
+
     Methods
     -------
     _getCmdMatrix
-    
+
     _createTriggerPadding
-    
+
     _createRegistrationPattern
-    
+
     createAuxCmdHistory
-    
+
     createCmdMatrixHistory
-    
+
     createTimedCmdHistory
     """
     def __init__(self): #file .ini per inizializzare?
@@ -35,7 +35,7 @@ class IFFCapturePreparation():
         self._cmdMatrix=None #        = initDM_test()
 
         self._indexingList      = None
-        
+
         self.timedCmdHistory    = None
 
         self.cmdMatHistory      = None
@@ -55,7 +55,7 @@ class IFFCapturePreparation():
         nActs = np.shape(cmdMat)[0]
         return cmdMat, nActs
 
-    def createTimedCmdHistory(self, cmdBase, modesList=None, modesAmp=None, template=None, shuffle=False): 
+    def createTimedCmdHistory(self, cmdBase, modesList=None, modesAmp=None, template=None, shuffle=False):
         """
         Function that creates the final timed command history to be applied
 
@@ -106,7 +106,7 @@ class IFFCapturePreparation():
 
         Parameters
         ----------
-        modesAmp : float 
+        modesAmp : float
             Amplitude of the modes to be commanded. If no argument is passed, it will be loaded from the configuration file iffConfig.ini
         template : int | ArrayLike
             Template for the push-pull application of the modes. If no argument is passed, it will be loaded from the configuration file iffConfig.ini
@@ -133,7 +133,7 @@ class IFFCapturePreparation():
                 cmd_matrix.T[k] = self._cmdMatrix[i]
                 k += 1
             self._indexingList = np.array(modesList)
-        else: 
+        else:
             cmd_matrix = self._cmdMatrix
             modesList = self._modesList
 
@@ -155,7 +155,7 @@ class IFFCapturePreparation():
         Result
         ------
         aus_cmdHistory : float | ArrayLike
-            
+
         '''
         self._createRegistrationPattern()
         self._createTriggerPadding()
@@ -253,7 +253,7 @@ class IFFCapturePreparation():
                     cmdBase = hdul[0].data
         else:
             raise TypeError("'identif' must be a str. Accepted values are 'zonal', 'hadamard' or a tracking number")
-        
+
         if mlist is not None:
             self._indexingList = np.linspace(0, len(mlist), 1)
             cmdMat = np.zeros((cmdBase.shape[0], len(mlist)))
@@ -261,10 +261,10 @@ class IFFCapturePreparation():
             for n in mlist:
                 cmdMat.T[k] = cmdBase[:,n]
                 k += 1
-    
+
             self._cmdMatrix = cmdMat
         else:
             self._cmdMatrix = cmdBase
             self._indexingList = self._modesList = np.arange(0, cmdBase.shape[1], 1)
-            
+
         return self._cmdMatrix
