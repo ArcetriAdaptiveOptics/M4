@@ -295,3 +295,11 @@ class configuration_path():
             return self._conf['parabola_remapped_folder']
         else:
             return os.path.join(self.OPT_DATA_FOLDER, 'ParabolaRemapped')
+
+
+    @property
+    def DM_CONFIGURATION_ID(self):
+        if 'dm_configuration' in self._conf.keys():
+            return str(self._conf['dm_configuration'])
+        else:
+            return os.path.join(self.MIRROR_FOLDER, '')

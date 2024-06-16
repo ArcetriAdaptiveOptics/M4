@@ -5,8 +5,58 @@ Authors
 import logging
 import numpy as np
 from m4.devices.base_deformable_mirror import BaseDeformableMirror
+from m4.configuration import config_folder_names as fn
+from astropy.io import fits as pyfits
+import os
 #put the imports from Mic Library
 
+#here we define the M4 class. 
+#implement it properly!!!
+
+mirrorModesFile = 'ff_v_matrix.fits'
+ffFile          = 'ff_matrix.fits'
+actCoordFile    = 'ActuatorCoordinates.fits'
+nActFile        = 'nActuators.dat'
+dmConf = os.path.join(fn.MIRROR_FOLDER,fn.DM_CONFIGURATION_ID)
+class M4AU():
+
+    def __init__(self):
+        self.nActs      = self._initNActuators()
+        self.mirrorModes = self._initMirrorModes()
+        #self._nActs       =
+        self.actCoord    = self._initActCoord
+
+    def _initNActuators(self):
+        fname = os.path.join(dmConf,nActFile)
+        f = open(fname,'r')
+        nact = int(f.read())
+        f.close
+        return nact
+
+    def _initMirrorModes(self):
+        '''
+        Creation of the mirror modes variable
+
+        '''
+        fname = os.path.join(dmConf,mirrorModesFile)
+        if os.path.exists(fname):
+            hdu = pyfits.open( fname)
+            mirrorModes = hdu[0].data
+        else:
+            mirrorModes = np.eyes(self.nActs)
+        #nActs = np.shape(cmdMat)[0]
+        return mirrorModes
+    
+    def _initActCoord(self):
+        fname = os.path.join(dmConf,actCoordFile)
+        hdu = pyfits.open(fname)
+        actCoord = hdu[0].data
+        #nActs = np.shape(cmdMat)[0]
+        return actCoord
+    #def _mirrorConfFolder(self):
+        #basef = fn.MIRROR_FOLDER
+        #conffolder = os.path.join(basef,tn)
+        #return conffolder
 
 def mirrorCommand(cmd, segment=None):
     """

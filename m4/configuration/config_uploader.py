@@ -61,4 +61,4 @@ class config_rewriter():
         config.SIMUL_DATA_CALIB_DM_FOLDER = self.cc.SIMUL_DATA_CALIB_DM_FOLDER
         config.PARABOLA_CGH_FOLDER = self.cc.PARABOLA_CGH_FOLDER
         config.PARABOLA_REMAPPED_FOLDER = self.cc.PARABOLA_REMAPPED_FOLDER
-
+        config.DM_CONFIGURATION_ID = self.cc.DM_CONFIGURATION_ID
