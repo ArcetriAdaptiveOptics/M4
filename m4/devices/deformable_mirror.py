@@ -18,11 +18,14 @@ ffFile          = 'ff_matrix.fits'
 actCoordFile    = 'ActuatorCoordinates.fits'
 nActFile        = 'nActuators.dat'
 dmConf = os.path.join(fn.MIRROR_FOLDER,fn.DM_CONFIGURATION_ID)
+
 class M4AU():
 
     def __init__(self):
+        print('Initializing the M4AU with configuration: '+fn.DM_CONFIGURATION_ID)
         self.nActs      = self._initNActuators()
         self.mirrorModes = self._initMirrorModes()
+        
         #self._nActs       =
         self.actCoord    = self._initActCoord
 
@@ -40,14 +43,19 @@ class M4AU():
         '''
         fname = os.path.join(dmConf,mirrorModesFile)
         if os.path.exists(fname):
+            print('Initializing mirror modes from data: nact x nmodes')
             hdu = pyfits.open( fname)
             mirrorModes = hdu[0].data
         else:
+            print('Initializing analytical modal base (identity, or zonal matrix')
             mirrorModes = np.eyes(self.nActs)
         #nActs = np.shape(cmdMat)[0]
         return mirrorModes
     
     def _initActCoord(self):
+        '''
+        Reading the actuators coordinate from file
+        '''
         fname = os.path.join(dmConf,actCoordFile)
         hdu = pyfits.open(fname)
         actCoord = hdu[0].data

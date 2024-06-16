@@ -20,6 +20,9 @@ from astropy.io import fits as pyfits
 from m4.mini_OTT import timehistory as th
 from m4.configuration import read_iffconfig
 from m4.configuration import config_folder_names as fn
+
+iffold = fn.IFFUNCTIONS_ROOT_FOLDER
+
 class IFFCapturePreparation():
     """
     Class for the preparation for the Influence Function Acquisition
@@ -38,11 +41,12 @@ class IFFCapturePreparation():
 
     createTimedCmdHistory
     """
-    def __init__(self): #file .ini per inizializzare?
+    def __init__(self,dm): #file .ini per inizializzare?
         '''The Constructor'''
         #self._NActs             = read_iffconfig.getNActs_fromConf() #Dove trovo l'info? Si deve caricare il dm? o leggiamo conf?
         self._modesList         = None
         #self._cmdMatrix=None #        = initDM_test()
+        self.mirrorModes = dm.mirrorModes
         self._mirrorModalBase, self._NActs = self.initDM_test()
         self._modalBase         = self._mirrorModalBase   #e poi modificare questo quando si ridefinisce la base modale (zonal, had, ...)
         self._cmdMatrix         = None
