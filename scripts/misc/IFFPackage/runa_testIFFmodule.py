@@ -1,15 +1,16 @@
 from importlib import reload
 
 
+from m4.devices import deformable_mirror as dm
 from scripts.misc.IFFPackage import iff_acquisition_preparation as ifa
-ifc=ifa.IFFCapturePreparation()
-#voglio usare i modi dello specchio:
-#non faccio niente
-#voglio usare i modi zonali o altri:
-ifc.updateCommandMatrix('zonal')
-ifc.updateCommandMatrix() #ritorna a modale
-t=ifc._createTriggerPadding()
+m4u = dm.M4AU()
 
-mlist = arange(1,5)
+ifc=ifa.IFFCapturePreparation(m4u)
+
+ifc._updateModalBase('zonal')
+t = ifc._createTriggerPadding()
+r = ifc._createRegistrationPattern()
+
+mlist = arange(0,5)
 mm = ifc._createCmdMatrix(mlist)
-tm = ifc.createCmdMatrixHistory(arange(1,5), 1e-7)
+tm = ifc.createCmdMatrixHistory(mlist, 1e-7)

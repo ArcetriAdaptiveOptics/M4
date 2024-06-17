@@ -10,6 +10,7 @@ nzeroName    = 'numberOfZeros'
 modeIdName   = 'modeId'
 modeAmpName  = 'modeAmp'
 templateName = 'template'
+modalBaseName= 'modalBase'
 
 def getConfig(key, bpath=cfoldname):
     '''
@@ -43,16 +44,16 @@ def getConfig(key, bpath=cfoldname):
     #else:
     #    fname = bpath
     fname=os.path.join(cfoldname,iff_configFile)
-
     config.read(fname)
     cc = config[key]
 
     nzeros = int(cc[nzeroName])
     modeId = np.array(json.loads(cc[modeIdName]))
     modeAmp = float(cc[modeAmpName])
+    modalBase = cc[modalBaseName]
     template = np.array(json.loads(cc[templateName]))
 
-    return nzeros, modeId, modeAmp, template
+    return nzeros, modeId, modeAmp, template, modalBase
 
 def getNActs_fromConf(bpath=cfoldname):
     """
@@ -65,7 +66,6 @@ def getNActs_fromConf(bpath=cfoldname):
     #else:
     #    fname = bpath
     fname=os.path.join(cfoldname,iff_configFile)
-
     config.read(fname)
     cc = config['DM']
     nacts = int(cc['NActs'])
@@ -84,6 +84,7 @@ def getTiming(bpath=cfoldname):
     #    fname = bpath
     #fname=os.path.join(cfoldname,iff_configFile)
 
+    fname=os.path.join(cfoldname,iff_configFile)
     config.read(fname)
     cc = config['DM']
     timing = int(cc['Timing'])
