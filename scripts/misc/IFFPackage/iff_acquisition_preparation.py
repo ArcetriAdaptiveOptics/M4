@@ -258,7 +258,7 @@ class IFFCapturePreparation():
             baseId = self.modalBaseId
         self._updateModalBase(baseId)
         self._cmdMatrix = self._modalBase[:,mlist] #qui chiarire la direzione. è così per i dati in arrivo da IDL
-        self._saveMatrix('CommandMatrix', self._cmdMatrix)
+        #self._saveMatrix('CommandMatrix', self._cmdMatrix)
         return self._cmdMatrix
 
 
@@ -363,11 +363,10 @@ class IFFCapturePreparation():
         return cmdBase
 
 
-    def _saveMatrix(filename,matrix):
+    def _saveMatrix(matrix):
         '''
         Function as a placeholder to remember to save the matrices
         !!! warning! shall this be inside a class? or shall it be a static method?
         we don't want to create the object (== updating the intmat or doing anything weird) just to save the file
         '''
-        pathbase = 
         pass

@@ -4,6 +4,11 @@ this module includes the functions for the preparation and the acquisition  IFF 
 from m4.configuration import iffConfig as iffc  #contains a dictionary or similar with configuration
 from m4.device import deformable_mirror as dm
 
+from scripts.misc.IFFPackage import iff_acquisition_preparation as ifa
+m4u = dm.M4AU()
+
+ifc=ifa.IFFCapturePreparation(m4u)
+
 #Template
 def yyy(a,b)
     """
@@ -16,7 +21,7 @@ def yyy(a,b)
     return xxx
 
 
-def iffDataCollection(modesList, amplitude, nRepetitions, modalBase = None):
+def iffDataCollection(modesList, amplitude, template=None, modalBase = None,shuffle = False):
     """
     This is the user-level function for the sampling of the IFF data
     Parameters
@@ -34,7 +39,12 @@ def iffDataCollection(modesList, amplitude, nRepetitions, modalBase = None):
     tn: string
         tracking number of the dataset acquired
     """
-    tn = prepareIFFcollection(modesList, amplitude, nRepetitions, modalBase = None)
+    ifc._modalBaseId = modalbase
+    tmh = ifc.createTimedCmdMatrixHistory(modesList,amplitude, template, shuffle )
+    tn = Timestamp.now()
+    _saveMatrix(filename, ifc._cmdMatrix)
+    _saveMatrix(filenamex,amplitude)
+    #tn = prepareIFFcollection(modesList, amplitude, nRepetitions, modalBase = None)
     iffCapture(tn)
     return tn
 
