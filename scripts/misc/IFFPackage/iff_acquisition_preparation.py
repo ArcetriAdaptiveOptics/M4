@@ -53,6 +53,7 @@ class IFFCapturePreparation():
         self._NActs             = dm.nActs
         #self._mirrorModalBase, self._NActs = self.initDM_test()
         self._modalBase         = self.mirrorModes   #e poi modificare questo quando si ridefinisce la base modale (zonal, had, ...)
+        self.modalBaseId        = None
         self._cmdMatrix         = None
 
         self._indexingList      = None
@@ -76,7 +77,7 @@ class IFFCapturePreparation():
         return cmdMat, nActs
     '''
 
-    def createTimedCmdHistory(self,  modesList=None, modesAmp=None, template=None, cmdBase='mirror',shuffle=False):    #was: self, cmdBase, modesList=None, modesAmp=None, template=None, shuffle=False)
+    def createTimedCmdHistory(self,  modesList=None, modesAmp=None, template=None, shuffle=False):    #was: self, cmdBase, modesList=None, modesAmp=None, template=None, shuffle=False)
         """
         Function that creates the final timed command history to be applied
 
@@ -111,7 +112,7 @@ class IFFCapturePreparation():
         self._modesList = modesList
         #self._getCmdMatrix(cmdBase, modesList) #this was the original from Pietro
         #self._createCmdMatrix(mlist,cmdBase)
-        self.createCmdMatrixHistory(modesAmp, template, shuffle, cmdBase)
+        self.createCmdMatrixHistory(modesList,modesAmp, template, shuffle)
         self.createAuxCmdHistory()
         cmdHistory = np.hstack((self.auxCmdHistory, self.cmdMatHistory))
 
@@ -122,7 +123,7 @@ class IFFCapturePreparation():
         self.timedCmdHistory = timedCmdHist
         return timedCmdHist
 
-    def createCmdMatrixHistory(self,mlist, modesAmp=None, template=None, shuffle=False, cmdBase=None):
+    def createCmdMatrixHistory(self,mlist, modesAmp=None, template=None, shuffle=False):
         """
         Creates the command matrix history for the IFF acquisition.
 
@@ -140,13 +141,20 @@ class IFFCapturePreparation():
         cmd_matrixHistory : float | ArrayLike
             Command matrix history to be applied, with the correct push-pull application, following the desired template.
         """
+        if self.modalBaseId is None:
+            _,_,_,_,baseId = read_iffconfig.getConfig('IFFUNC')
+        else:
+            baseId = self.modalBaseId
         if template is None:
             _,_,_, template,_ = read_iffconfig.getConfig('IFFUNC')
         if modesAmp is None:
             _,_,modesAmp,_,_ = read_iffconfig.getConfig('IFFUNC')
 
-        self._createCmdMatrix(mlist,cmdBase)
+        self._createCmdMatrix(mlist,baseId)
         self._modesList = mlist        
+        nModes =self._cmdMatrix.shape[1]
+        if np.size(modesAmp) ==1:
+            modesAmp = np.zeros(nModes)+modesAmp
         n_push_pull = len(template)
 
         if shuffle:
@@ -165,9 +173,9 @@ class IFFCapturePreparation():
         cmd_matrixHistory = np.zeros((self._NActs, n_frame))
 
         for j in range(n_push_pull):
-            for i in range(cmd_matrix.shape[1]):
+            for i in range(nModes):
                 k = cmd_matrix.shape[1]*j + i
-                cmd_matrixHistory.T[k] = cmd_matrix[:,i]*template[j]*modesAmp
+                cmd_matrixHistory.T[k] = cmd_matrix[:,i]*template[j]*modesAmp[i]
 
         self.cmdMatHistory = cmd_matrixHistory
         return cmd_matrixHistory
@@ -244,10 +252,13 @@ class IFFCapturePreparation():
         '''
         Cuts the modal base according the given modes list
         '''
-        if mbase is None:
-            _, _, _,_,mbase= read_iffconfig.getConfig('IFFUNC')
-        self._updateModalBase(mbase)
+        if self.modalBaseId is None:
+            _,_,_,_,baseId = read_iffconfig.getConfig('IFFUNC')
+        else:
+            baseId = self.modalBaseId
+        self._updateModalBase(baseId)
         self._cmdMatrix = self._modalBase[:,mlist] #qui chiarire la direzione. è così per i dati in arrivo da IDL
+        self._saveMatrix('CommandMatrix', self._cmdMatrix)
         return self._cmdMatrix
 
 
@@ -358,5 +369,5 @@ class IFFCapturePreparation():
         !!! warning! shall this be inside a class? or shall it be a static method?
         we don't want to create the object (== updating the intmat or doing anything weird) just to save the file
         '''
-
+        pathbase = 
         pass
