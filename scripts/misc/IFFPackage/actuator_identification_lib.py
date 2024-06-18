@@ -24,7 +24,7 @@ def findFrameCoord(imglist, actlist, actcoord):
         pos.append(findActuator(i))
     pos = (np.array(pos)).T
 
-    frameCenter= imgreg.marker_general_remap(actcoord[:,actlist],pos, actcoord[:,(center_act,center_act)]) #the last variable has been vectorized (by adding a second element) don't know why but so it works
+    frameCenter= imgreg.marker_general_remap(actcoord[:,actlist], pos, actcoord[:,(center_act,center_act)]) #the last variable has been vectorized (by adding a second element) don't know why but so it works
     frameCenter = frameCenter[:,0]
     return frameCenter
 
@@ -37,8 +37,8 @@ def findActuator(img):
     imgout: array
         coordinates of the act
     '''
-    imgw = extractPeak(img,radius=50)
-    pos = centroid_2dg(imgw)
+    imgw    = extractPeak(img,radius=50)
+    pos     = centroid_2dg(imgw)
     return pos
 
 
@@ -47,13 +47,13 @@ def extractPeak(img, radius = 50):
     '''
     Extract a circular area around the peak in the image
     '''
-    yp, xp = np.where(img == np.max(abs(img)))
-    img1 = img*np.invert(img.mask)
-    m = np.invert(geo.draw_mask(img.mask,yp,xp, radius))
-    imgout = np.ma.masked_array(img1,m)
+    yp, xp  = np.where(img == np.max(abs(img)))
+    img1    = img*np.invert(img.mask)
+    m       = np.invert(geo.draw_mask(img.mask, yp, xp, radius))
+    imgout  = np.ma.masked_array(img1, m)
     return imgout
 
-def combineMasks(imglist): #deve sparire!!!
+def combineMasks(imglist): #!!! deve sparire
     '''
     combine masks layers of masked arrays, or a list of masks, to produce the intersection masks: not masked here AND not mnaked there
     masks are expected as in the np.ma convention: True when not masked
@@ -69,8 +69,7 @@ def combineMasks(imglist): #deve sparire!!!
             mm.append(np.invert(i.mask).astype(int))
         if imglistIsmasksList:
             mm.append(np.invert(i).astype(int))
-
-    mmask = product(mm,0)
+    mmask = product(mm, 0)
     return mmask
 
 

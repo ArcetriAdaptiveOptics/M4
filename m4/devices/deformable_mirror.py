@@ -23,10 +23,8 @@ class M4AU():
 
     def __init__(self):
         print('Initializing the M4AU with configuration: '+fn.DM_CONFIGURATION_ID)
-        self.nActs      = self._initNActuators()
+        self.nActs       = self._initNActuators()
         self.mirrorModes = self._initMirrorModes()
-        
-        #self._nActs       =
         self.actCoord    = self._initActCoord()
 
     def _initNActuators(self):

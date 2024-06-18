@@ -17,7 +17,7 @@ WARNING!!! al lthe elements relative to a cmdHistory (trigger, padding, etc), sh
 import numpy as np
 import os
 from astropy.io import fits as pyfits
-from m4.mini_OTT import timehistory as th
+#from m4.mini_OTT import timehistory as th
 from m4.configuration import read_iffconfig
 from m4.configuration import config_folder_names as fn
 
@@ -44,29 +44,23 @@ class IFFCapturePreparation():
 
     createTimedCmdHistory
     """
-    def __init__(self,dm): #file .ini per inizializzare?
+    def __init__(self, dm):
         '''The Constructor'''
-        #self._NActs             = read_iffconfig.getNActs_fromConf() #Dove trovo l'info? Si deve caricare il dm? o leggiamo conf?
-        self._modesList         = None
-        #self._cmdMatrix=None #        = initDM_test()
-        self.mirrorModes = dm.mirrorModes
+        # DM information
+        self.mirrorModes        = dm.mirrorModes
         self._NActs             = dm.nActs
-        #self._mirrorModalBase, self._NActs = self.initDM_test()
-        self._modalBase         = self.mirrorModes   #e poi modificare questo quando si ridefinisce la base modale (zonal, had, ...)
+        # IFF info
         self.modalBaseId        = None
+        self._modesList         = None
+        self._modalBase         = self.mirrorModes 
         self._cmdMatrix         = None
-
         self._indexingList      = None
-
+        # Matrices
         self.timedCmdHistory    = None
-
         self.cmdMatHistory      = None
         self.auxCmdHistory      = None
-
         self.triggPadCmdHist    = None
         self.regPadCmdHist      = None
-    
-
     '''
     def initDM_test(self): #used only for debug
         dmFold = os.path.join(fn.OPT_DATA_FOLDER,'test')
@@ -77,21 +71,12 @@ class IFFCapturePreparation():
         return cmdMat, nActs
     '''
 
-    def createTimedCmdHistory(self,  modesList=None, modesAmp=None, template=None, shuffle=False):    #was: self, cmdBase, modesList=None, modesAmp=None, template=None, shuffle=False)
+    def createTimedCmdHistory(self,  modesList=None, modesAmp=None, template=None, shuffle=False): 
         """
         Function that creates the final timed command history to be applied
 
         Parameters
         ----------
-        cmdBase : str
-           Identification string of the base nd matrix to load. Values can be:
-
-                'zonal'    : It loads the zonal command matrix of the mirror;
-
-                'hadamard' : It loads the hadamard's command matrix;
-
-                'tn'       : A tracking number in which is contained the fits file of the command matrix to load. Can be the case of the mirror's modal command matrix.
-
         modesList : int | ArrayLike
             List of selected modes to use. Default is None, that means all modes of the base command matrix are used.
 
@@ -110,20 +95,15 @@ class IFFCapturePreparation():
             Final timed command history, including the trigger padding, the registration pattern and the command matrix history.
         """
         self._modesList = modesList
-        #self._getCmdMatrix(cmdBase, modesList) #this was the original from Pietro
-        #self._createCmdMatrix(mlist,cmdBase)
-        self.createCmdMatrixHistory(modesList,modesAmp, template, shuffle)
+        self.createCmdMatrixHistory(modesList, modesAmp, template, shuffle)
         self.createAuxCmdHistory()
         cmdHistory = np.hstack((self.auxCmdHistory, self.cmdMatHistory))
-
         timing = read_iffconfig.getTiming()
-
-        timedCmdHist = np.repeat(cmdHistory, timing, axis=1) # Timing info where? iffconfig.ini?
-
+        timedCmdHist = np.repeat(cmdHistory, timing, axis=1) 
         self.timedCmdHistory = timedCmdHist
         return timedCmdHist
 
-    def createCmdMatrixHistory(self,mlist, modesAmp=None, template=None, shuffle=False):
+    def createCmdMatrixHistory(self, mlist, modesAmp=None, template=None, shuffle=False):
         """
         Creates the command matrix history for the IFF acquisition.
 
@@ -182,7 +162,10 @@ class IFFCapturePreparation():
 
     def createAuxCmdHistory(self):
         '''
-        Creates the initial parteof the final command history matrix that will be passed to M4. This includes the Trigger Frame, the first frame to have a non-zero command, and the Padding Frame, two frames with high rms, useful for setting a start to the real acquisition.
+        Creates the initial part of the final command history matrix that will\
+        be passed to M4. This includes the Trigger Frame, the first frame to have\
+        a non-zero command, and the Padding Frame, two frames with high rms, useful\
+        for setting a start to the real acquisition.
 
         Result
         ------
@@ -199,7 +182,9 @@ class IFFCapturePreparation():
 
     def _createRegistrationPattern(self):
         """
-        Creates the registration pattern to apply after the triggering and before the commands to apply for the IFF acquisition. The information about number of zeros, mode(s) and amplitude are read from the 'iffconfig.ini' file.
+        Creates the registration pattern to apply after the triggering and before\
+        the commands to apply for the IFF acquisition. The information about number\
+        of zeros, mode(s) and amplitude are read from the 'iffconfig.ini' file.
 
         Returns
         -------
@@ -225,7 +210,9 @@ class IFFCapturePreparation():
 
     def _createTriggerPadding(self):
         """
-        Function that creates the trigger padding scheme to apply before the registration padding scheme. The information about number of zeros, mode(s) and amplitude are read from the 'iffconfig.ini' file.
+        Function that creates the trigger padding scheme to apply before the \
+        registration padding scheme. The information about number of zeros, \
+        mode(s) and amplitude are read from the 'iffconfig.ini' file.
 
         Returns
         -------
@@ -233,22 +220,15 @@ class IFFCapturePreparation():
             Trigger padding command history
 
         """
-        nZeros, trigId, trigAmp,_,mbase= read_iffconfig.getConfig('TRIGGER')
+        nZeros, trigId, trigAmp, _, mbase= read_iffconfig.getConfig('TRIGGER')
         self._updateModalBase(mbase)
         zeroScheme = np.zeros((self._NActs, nZeros))
-        trigMode = self._modalBase[:,trigId]*trigAmp    #modRB
-
-        #modRB
-        #if self._cmdMatrix is not None:
-        #    trigMode = self._modalBase[:,trigId]*trigAmp
-        #else: raise ValueError("Command Matrix not Loaded yet. Run 'createCmdMatrixHistory' first to solve the issue")
-
+        trigMode = self._modalBase[:,trigId]*trigAmp
         triggHist = np.hstack((zeroScheme, trigMode))
         self.triggPadCmdHist = triggHist
-
         return triggHist
 
-    def _createCmdMatrix(self,mlist,mbase=None):
+    def _createCmdMatrix(self, mlist, mbase=None):
         '''
         Cuts the modal base according the given modes list
         '''
@@ -261,64 +241,7 @@ class IFFCapturePreparation():
         #self._saveMatrix('CommandMatrix', self._cmdMatrix)
         return self._cmdMatrix
 
-
-    def _getCmdMatrix(self, identif: str, mlist: list = None):  #originale di Pietro
-        """
-        This function gets the base command matrix to use for the IFF acquisition. If 'zonal' or 'hadamard' are passe as arguments, it is analytically generated, while if a tn is passed, it will load the modal base from the corresponding .fits file contained in the tn folder.
-
-        Parameters
-        ----------
-        identif : str
-            Identification string of the command matrix to load. Values can be:
-
-                'zonal'    : It loads the zonal command matrix of the mirror;
-
-                'hadamard' : It loads the hadamard's command matrix;
-
-                'tn'       : A tracking number in which is contained the fits file of the command matrix to load. Can be the case of the mirror's modal command matrix.
-
-        mlist : int | int or ArrayLike
-            List of modes to be used from the loaded command matrix.
-
-        Returns
-        -------
-        cmdMat : float | ArrayLike
-            Extracted command matrix of the selected modes only.
-
-        """
-        if isinstance(identif, str) is True:
-            if identif=='zonal':
-                cmdBase = np.eye(self._NActs)
-            elif identif=='hadamard':
-                from scipy.linalg import hadamard
-                hadm = hadamard(2**10)  #here we suppose that the HADAMARD matrix is used only to measure SEGMENT IFF (which makes sense)
-                cmdBase = hadm[:self._NActs, :self._NActs]
-            else:
-                flist = th.fileList(identif)
-                for item in flist:
-                    if 'nomefile' in item:
-                        file = item
-                with pyfits.open(file) as hdul:
-                    cmdBase = hdul[0].data
-        else:
-            raise TypeError("'identif' must be a str. Accepted values are 'zonal', 'hadamard' or a tracking number")
-
-        if mlist is not None:
-            self._indexingList = np.linspace(0, len(mlist), 1)
-            cmdMat = np.zeros((cmdBase.shape[0], len(mlist)))
-            k = 0
-            for n in mlist:
-                cmdMat.T[k] = cmdBase[:,n]
-                k += 1
-
-            self._cmdMatrix = cmdMat
-        else:
-            self._cmdMatrix = cmdBase
-            self._indexingList = self._modesList = np.arange(0, cmdBase.shape[1], 1)
-
-        return self._cmdMatrix
-
-    def _updateModalBase(self,mbasename=None):
+    def _updateModalBase(self, mbasename=None):
         '''
         Redefines the command matrix to be used ma dice marco di buttare
         '''
@@ -326,47 +249,142 @@ class IFFCapturePreparation():
         if (mbasename is None) or (mbasename == 'mirror'):
             print('Using mirror modes')
             self._modalBase = self.mirrorModes
-            return
         else:
             if mbasename == 'zonal':
                 print('Using zonal modes')
                 self._modalBase = self._createZonalMat()
-                return
             if mbasename == 'hadamard':
                 print('Using Hadamard modes')
                 self._modalBase = self._createHadamardMat()
-                return
             #implement here other options, or they can be read by file as below
             else:
                 print('Using user-defined modes')
                 self._modalBase = self._createUserMat(mbasename) #this is expected to be a tracknum
-                return
+            
 
-    def _createUserMat(self, tracknum: str =None):
+    def _createUserMat(self, tracknum: str = None):
+        """
+        
+
+        Parameters
+        ----------
+        tracknum : str, optional
+            DESCRIPTION. The default is None.
+
+        Returns
+        -------
+        cmdBase : TYPE
+            DESCRIPTION.
+
+        """
         print('Reading modal base from tracknum: '+tracknum)
-        mbfile = os.path.join(fn.MODALBASE_ROOT_FOLDER,tracknum,modalBasefileName)
-        cmdBase = (pyfits.open(mbfile))[0].data
+        modalBaseFileName = 'Standard modal base file name' # !!! RE-DEFINE THIS 
+        mbfile = os.path.join(fn.MODALBASE_ROOT_FOLDER, tracknum, modalBaseFileName)
+        with pyfits.open(mbfile) as hdul:
+            cmdBase = hdul[0].data
         return cmdBase
 
     def _createZonalMat(self):
+        """
+        
+
+        Returns
+        -------
+        cmdBase : TYPE
+            DESCRIPTION.
+
+        """
         cmdBase = np.eye(self._NActs)
         return cmdBase
 
     def _createHadamardMat(self):
+        """
+        
+
+        Returns
+        -------
+        cmdBase : TYPE
+            DESCRIPTION.
+
+        """
         from scipy.linalg import hadamard
         import math
         numb = math.ceil(math.log(self._NActs,2))
         hadm = hadamard(2**numb)  #here we suppose that the HADAMARD matrix is used only to measure SEGMENT IFF (which makes sense)
-        #cmdBase = hadm[:self._NActs, :self._NActs]
-        cmdBase = hadm[1:self._NActs+1,1 :self._NActs+1] #to remove the piston mode. check if it is ok !!!!!
+        cmdBase = hadm[1:self._NActs+1, 1:self._NActs+1] #to remove the piston mode. check if it is ok !!!!!
         print('Removed 1st column of Hadamard matrix, or piston mode')
         return cmdBase
 
 
-    def _saveMatrix(matrix):
-        '''
-        Function as a placeholder to remember to save the matrices
-        !!! warning! shall this be inside a class? or shall it be a static method?
-        we don't want to create the object (== updating the intmat or doing anything weird) just to save the file
-        '''
-        pass
+    # def _saveMatrix(matrix):
+    #     '''
+    #     Function as a placeholder to remember to save the matrices
+    #     !!! warning! shall this be inside a class? or shall it be a static method?
+    #     we don't want to create the object (== updating the intmat or doing anything weird) just to save the file
+    #     '''
+    #     pass
+ 
+    
+ 
+    # originale di Pietro
+    #
+    # def _getCmdMatrix(self, identif: str, mlist: list = None):  
+    #     """
+    #     This function gets the base command matrix to use for the IFF acquisition.\
+    #     If 'zonal' or 'hadamard' are passe as arguments, it is analytically \
+    #     generated, while if a tn is passed, it will load the modal base from the \
+    #     corresponding .fits file contained in the tn folder.
+
+    #     Parameters
+    #     ----------
+    #     identif : str
+    #         Identification string of the command matrix to load. Values can be:
+
+    #             'zonal'    : It loads the zonal command matrix of the mirror;
+
+    #             'hadamard' : It loads the hadamard's command matrix;
+
+    #             'tn'       : A tracking number in which is contained the fits file \
+    #                          of the command matrix to load. Can be the case of the \
+    #                          mirror's modal command matrix.
+
+    #     mlist : int | int or ArrayLike
+    #         List of modes to be used from the loaded command matrix.
+
+    #     Returns
+    #     -------
+    #     cmdMat : float | ArrayLike
+    #         Extracted command matrix of the selected modes only.
+
+    #     """
+    #     if isinstance(identif, str) is True:
+    #         if identif=='zonal':
+    #             cmdBase = np.eye(self._NActs)
+    #         elif identif=='hadamard':
+    #             from scipy.linalg import hadamard
+    #             hadm = hadamard(2**10)  #here we suppose that the HADAMARD matrix is used only to measure SEGMENT IFF (which makes sense)
+    #             cmdBase = hadm[:self._NActs, :self._NActs]
+    #         else:
+    #             flist = th.fileList(identif)
+    #             for item in flist:
+    #                 if 'nomefile' in item:
+    #                     file = item
+    #             with pyfits.open(file) as hdul:
+    #                 cmdBase = hdul[0].data
+    #     else:
+    #         raise TypeError("'identif' must be a str. Accepted values are 'zonal', 'hadamard' or a tracking number")
+
+    #     if mlist is not None:
+    #         self._indexingList = np.linspace(0, len(mlist), 1)
+    #         cmdMat = np.zeros((cmdBase.shape[0], len(mlist)))
+    #         k = 0
+    #         for n in mlist:
+    #             cmdMat.T[k] = cmdBase[:,n]
+    #             k += 1
+
+    #         self._cmdMatrix = cmdMat
+    #     else:
+    #         self._cmdMatrix = cmdBase
+    #         self._indexingList = self._modesList = np.arange(0, cmdBase.shape[1], 1)
+
+    #     return self._cmdMatrix
