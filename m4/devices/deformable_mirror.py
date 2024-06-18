@@ -27,7 +27,7 @@ class M4AU():
         self.mirrorModes = self._initMirrorModes()
         
         #self._nActs       =
-        self.actCoord    = self._initActCoord
+        self.actCoord    = self._initActCoord()
 
     def _initNActuators(self):
         fname = os.path.join(dmConf,nActFile)

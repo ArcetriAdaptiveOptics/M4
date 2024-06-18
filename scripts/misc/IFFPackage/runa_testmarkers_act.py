@@ -1,8 +1,30 @@
+from scripts.misc.IFFPackage import actuator_identification_lib as fa
+from m4.utils import image_registration_lib as imgreg
 from photutils.centroids import centroid_2dg
 from m4.ground import geo
-
-
+from m4.ground import read_data as rr
+from m4.devices import deformable_mirror as dm
 from astropy.io import fits as pyfits
+m4u=dm.M4AU()
+
+fname = '/mnt/cargo/data/M4/Data/M4Data/SimOPTData/OPDImages/20160516_114916/img_0008.fits'
+q = rr.read_phasemap(fname)
+
+pos = fa.findActuator(img)
+
+b = '/mnt/cargo/data/M4/Data/M4Data/SimOPTData/OPDImages/20160516_114916/img_000'
+f = ['7','8','9']
+imglist=[]
+for i in f:
+    imglist.append(rr.read_phasemap((b+i+'.fits'))
+
+
+actcoord = m4u.actCoord
+actlist = [ 585,110,609]
+fa.findFrameCoord(imglist, actlist, actcoord)
+
+
+#------
 
 a= '/home/runa/act-marker.fits'
 
