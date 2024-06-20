@@ -1,30 +1,26 @@
-'''
-NOTA:
-    la classe ha la creazione/lettura della base modale e i metodi per farci le storie temporali
-    la classe è replicata, ereditando i metodi, e aggiornando la crezione della base modale secondo cosa richiesto
-    esempio: istanzio la classe con la base modale che voglio e la classe si è ereditata i metodi della classe base
-'''
+# '''
+# NOTA:
+#     la classe ha la creazione/lettura della base modale e i metodi per farci le storie temporali
+#     la classe è replicata, ereditando i metodi, e aggiornando la crezione della base modale secondo cosa richiesto
+#     esempio: istanzio la classe con la base modale che voglio e la classe si è ereditata i metodi della classe base
+# '''
 '''
 Author(s):
     - P. Ferraiuolo
 
 Written in June 2024
 '''
-'''
-WARNING!!! al lthe elements relative to a cmdHistory (trigger, padding, etc), shall be act x frames (e.g. 892 x 200 commands)
+# '''
+# WARNING!!! al lthe elements relative to a cmdHistory (trigger, padding, etc), shall be act x frames (e.g. 892 x 200 commands)
 
-'''
-import numpy as np
+# '''
 import os
+import numpy as np
 from astropy.io import fits as pyfits
-#from m4.mini_OTT import timehistory as th
 from m4.configuration import read_iffconfig
 from m4.configuration import config_folder_names as fn
 
 iffold = fn.IFFUNCTIONS_ROOT_FOLDER
-#definire questi:
-#fn.INTMAT_FOLDER,tracknum
-#modalBasefileName
 
 class IFFCapturePreparation():
     """
@@ -55,21 +51,21 @@ class IFFCapturePreparation():
         self._modalBase         = self.mirrorModes 
         self._cmdMatrix         = None
         self._indexingList      = None
+        self._modesAmp          = None
         # Matrices
         self.timedCmdHistory    = None
         self.cmdMatHistory      = None
         self.auxCmdHistory      = None
         self.triggPadCmdHist    = None
         self.regPadCmdHist      = None
-    '''
-    def initDM_test(self): #used only for debug
-        dmFold = os.path.join(fn.OPT_DATA_FOLDER,'test')
-        cmdMatFile =  os.path.join(dmFold,'ff_v_matrix.fits')
-        hdu = pyfits.open(cmdMatFile)
-        cmdMat = hdu[0].data
-        nActs = np.shape(cmdMat)[0]
-        return cmdMat, nActs
-    '''
+
+    # def initDM_test(self): #used only for debug
+    #     dmFold = os.path.join(fn.OPT_DATA_FOLDER,'test')
+    #     cmdMatFile =  os.path.join(dmFold,'ff_v_matrix.fits')
+    #     hdu = pyfits.open(cmdMatFile)
+    #     cmdMat = hdu[0].data
+    #     nActs = np.shape(cmdMat)[0]
+    #     return cmdMat, nActs
 
     def createTimedCmdHistory(self,  modesList=None, modesAmp=None, template=None, shuffle=False): 
         """
@@ -121,25 +117,22 @@ class IFFCapturePreparation():
         cmd_matrixHistory : float | ArrayLike
             Command matrix history to be applied, with the correct push-pull application, following the desired template.
         """
-        if self.modalBaseId is None:
-            _,_,_,_,baseId = read_iffconfig.getConfig('IFFUNC')
-        else:
-            baseId = self.modalBaseId
         if template is None:
             _,_,_, template,_ = read_iffconfig.getConfig('IFFUNC')
         if modesAmp is None:
             _,_,modesAmp,_,_ = read_iffconfig.getConfig('IFFUNC')
-
-        self._createCmdMatrix(mlist,baseId)
-        self._modesList = mlist        
-        nModes =self._cmdMatrix.shape[1]
-        if np.size(modesAmp) ==1:
-            modesAmp = np.zeros(nModes)+modesAmp
+            
+        nModes = self._cmdMatrix.shape[1]
         n_push_pull = len(template)
-
+        if np.size(modesAmp)==1:
+            modesAmp = np.full(nModes, modesAmp)
+        self._createCmdMatrix(mlist)
+        self._modesList = mlist
+        self._modesAmp  = modesAmp
         if shuffle:
             cmd_matrix = np.zeros((self._cmdMatrix.shape[0], self._cmdMatrix.shape[1]))
-            modesList = np.random.shuffle(self._modesList)
+            modesList = np.copy(self._modesList)
+            np.random.shuffle(modesList)
             k=0
             for i in modesList:
                 cmd_matrix.T[k] = self._cmdMatrix[i]
@@ -148,15 +141,12 @@ class IFFCapturePreparation():
         else:
             cmd_matrix = self._cmdMatrix
             modesList = self._modesList
-
         n_frame = len(self._modesList) * n_push_pull
         cmd_matrixHistory = np.zeros((self._NActs, n_frame))
-
         for j in range(n_push_pull):
             for i in range(nModes):
                 k = cmd_matrix.shape[1]*j + i
                 cmd_matrixHistory.T[k] = cmd_matrix[:,i]*template[j]*modesAmp[i]
-
         self.cmdMatHistory = cmd_matrixHistory
         return cmd_matrixHistory
 
@@ -228,7 +218,7 @@ class IFFCapturePreparation():
         self.triggPadCmdHist = triggHist
         return triggHist
 
-    def _createCmdMatrix(self, mlist, mbase=None):
+    def _createCmdMatrix(self, mlist):
         '''
         Cuts the modal base according the given modes list
         '''
@@ -237,11 +227,10 @@ class IFFCapturePreparation():
         else:
             baseId = self.modalBaseId
         self._updateModalBase(baseId)
-        self._cmdMatrix = self._modalBase[:,mlist] #qui chiarire la direzione. è così per i dati in arrivo da IDL
-        #self._saveMatrix('CommandMatrix', self._cmdMatrix)
+        self._cmdMatrix = self._modalBase[:,mlist] 
         return self._cmdMatrix
 
-    def _updateModalBase(self, mbasename=None):
+    def _updateModalBase(self, mbasename: str = None):
         '''
         Redefines the command matrix to be used ma dice marco di buttare
         '''
@@ -249,17 +238,16 @@ class IFFCapturePreparation():
         if (mbasename is None) or (mbasename == 'mirror'):
             print('Using mirror modes')
             self._modalBase = self.mirrorModes
-        else:
-            if mbasename == 'zonal':
-                print('Using zonal modes')
-                self._modalBase = self._createZonalMat()
-            if mbasename == 'hadamard':
-                print('Using Hadamard modes')
-                self._modalBase = self._createHadamardMat()
+        elif mbasename == 'zonal':
+            print('Using zonal modes')
+            self._modalBase = self._createZonalMat()
+        elif mbasename == 'hadamard':
+            print('Using Hadamard modes')
+            self._modalBase = self._createHadamardMat()
             #implement here other options, or they can be read by file as below
-            else:
-                print('Using user-defined modes')
-                self._modalBase = self._createUserMat(mbasename) #this is expected to be a tracknum
+        else:
+            print('Using user-defined modes')
+            self._modalBase = self._createUserMat(mbasename) #this is expected to be a tracknum
             
 
     def _createUserMat(self, tracknum: str = None):
@@ -314,77 +302,27 @@ class IFFCapturePreparation():
         cmdBase = hadm[1:self._NActs+1, 1:self._NActs+1] #to remove the piston mode. check if it is ok !!!!!
         print('Removed 1st column of Hadamard matrix, or piston mode')
         return cmdBase
-
-
-    # def _saveMatrix(matrix):
-    #     '''
-    #     Function as a placeholder to remember to save the matrices
-    #     !!! warning! shall this be inside a class? or shall it be a static method?
-    #     we don't want to create the object (== updating the intmat or doing anything weird) just to save the file
-    #     '''
-    #     pass
- 
     
- 
-    # originale di Pietro
-    #
-    # def _getCmdMatrix(self, identif: str, mlist: list = None):  
-    #     """
-    #     This function gets the base command matrix to use for the IFF acquisition.\
-    #     If 'zonal' or 'hadamard' are passe as arguments, it is analytically \
-    #     generated, while if a tn is passed, it will load the modal base from the \
-    #     corresponding .fits file contained in the tn folder.
+    def getIndexingList(self):
+        """
+        
 
-    #     Parameters
-    #     ----------
-    #     identif : str
-    #         Identification string of the command matrix to load. Values can be:
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
 
-    #             'zonal'    : It loads the zonal command matrix of the mirror;
+        """
+        return self._indexingList
+    
+    def getAmplitude(self):
+        """
+        
 
-    #             'hadamard' : It loads the hadamard's command matrix;
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
 
-    #             'tn'       : A tracking number in which is contained the fits file \
-    #                          of the command matrix to load. Can be the case of the \
-    #                          mirror's modal command matrix.
-
-    #     mlist : int | int or ArrayLike
-    #         List of modes to be used from the loaded command matrix.
-
-    #     Returns
-    #     -------
-    #     cmdMat : float | ArrayLike
-    #         Extracted command matrix of the selected modes only.
-
-    #     """
-    #     if isinstance(identif, str) is True:
-    #         if identif=='zonal':
-    #             cmdBase = np.eye(self._NActs)
-    #         elif identif=='hadamard':
-    #             from scipy.linalg import hadamard
-    #             hadm = hadamard(2**10)  #here we suppose that the HADAMARD matrix is used only to measure SEGMENT IFF (which makes sense)
-    #             cmdBase = hadm[:self._NActs, :self._NActs]
-    #         else:
-    #             flist = th.fileList(identif)
-    #             for item in flist:
-    #                 if 'nomefile' in item:
-    #                     file = item
-    #             with pyfits.open(file) as hdul:
-    #                 cmdBase = hdul[0].data
-    #     else:
-    #         raise TypeError("'identif' must be a str. Accepted values are 'zonal', 'hadamard' or a tracking number")
-
-    #     if mlist is not None:
-    #         self._indexingList = np.linspace(0, len(mlist), 1)
-    #         cmdMat = np.zeros((cmdBase.shape[0], len(mlist)))
-    #         k = 0
-    #         for n in mlist:
-    #             cmdMat.T[k] = cmdBase[:,n]
-    #             k += 1
-
-    #         self._cmdMatrix = cmdMat
-    #     else:
-    #         self._cmdMatrix = cmdBase
-    #         self._indexingList = self._modesList = np.arange(0, cmdBase.shape[1], 1)
-
-    #     return self._cmdMatrix
+        """
+        return self._modesAmp
