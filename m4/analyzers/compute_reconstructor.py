@@ -74,30 +74,39 @@ class ComputeReconstructor():
         ax.set_xlabel('Mode number')
         ax.set_ylabel('Singular value')
         ax.grid()
-        ax.set_ylim([min(singular_values), max(singular_values)])
         ax.autoscale(tight=True)
+        ax.set_ylim([min(singular_values), max(singular_values)])
         ax.title.set_text('Singular values')
-        if current_threshold is None:
-            thy = np.finfo(np.float32).eps
-            thx = len(singular_values)
-        ax.axhline(thx, color='g',
+        # if current_threshold is None:
+        threshold = dict()
+
+        threshold['y'] = 0.01  # np.finfo(np.float32).eps
+        threshold['x'] = 5 % len(singular_values)
+        ax.axhline(threshold['y'], color='g',
                    linestyle='-', linewidth=1)
-        ax.axvline(thy,  color='g',
+        ax.axvline(threshold['x'],  color='g',
                    linestyle='-', linewidth=1)
+        ax.plot(modelist[singular_values < threshold['y']],
+                singular_values[singular_values < threshold['y']], 'r-x')
 
         # Funzione per aggiornare la posizione della croce rossa
         def update_crosshair(event):
             if event.inaxes:
+                xlim = ax.get_xlim()
+                ylim = ax.get_ylim()
                 ax.cla()
                 ax.loglog(modelist, singular_values, 'b-o')
+                ax.plot(modelist[singular_values < threshold['y']],
+                        singular_values[singular_values < threshold['y']], 'r-x')
                 ax.autoscale(tight=True)
                 ax.set_xlabel('Mode number')
                 ax.set_ylabel('Singular value')
                 ax.grid()
-                ax.set_ylim([min(singular_values), max(singular_values)])
-                ax.axhline(thy, color='g',
+                ax.set_xlim(xlim)
+                ax.set_ylim(ylim)
+                ax.axhline(threshold['y'], color='g',
                            linestyle='-', linewidth=1)
-                ax.axvline(thx,  color='g',
+                ax.axvline(threshold['x'],  color='g',
                            linestyle='-', linewidth=1)
                 ax.title.set_text('Singular values')
                 x_mouse, y_mouse = event.xdata, event.ydata
@@ -106,27 +115,32 @@ class ComputeReconstructor():
                 ax.axvline(x_mouse,  color='r',
                            linestyle='-', linewidth=1)
                 ax.figure.canvas.draw()
+                print(f"Current threshold: X = {
+                      threshold['x']:.2f}, Y = {threshold['y']:.5f}")
 
         # Connettere la funzione all'evento di movimento del mouse
         ax.add_artist(ax.patch)
-        fig.canvas.mpl_connect('motion_notify_event', update_crosshair)
+        fig.canvas.mpl_connect('motion_notify_event',
+                               lambda event: update_crosshair(event))
 
         # Funzione per registrare le coordinate del click
 
         def record_click(event):
-            if event.inaxes:
+            if event.inaxes and event.dblclick:
                 x_click, y_click = event.xdata, event.ydata
-                thx = x_click
-                thy = y_click
+                threshold['x'] = x_click
+                threshold['y'] = y_click
+                ax.axhline(threshold['x'], color='g',
+                           linestyle='-', linewidth=1)
+                ax.axvline(threshold['y'],  color='g',
+                           linestyle='-', linewidth=1)
                 print(f"New eigenvalues threshold: X = {
                       x_click:.2f}, Y = {y_click:.2f}")
                 return x_click, y_click
 
         # Connettere la funzione all'evento di click del tasto sinistro
-        fig.canvas.mpl_connect('button_press_event', record_click)
-
-        # Connettere la funzione all'evento di click del tasto destro per annullare
-        # fig.canvas.mpl_connect('button_press_event', record_click)
+        fig.canvas.mpl_connect('button_press_event',
+                               lambda event: record_click(event))
 
         # Visualizzare il grafico
         plt.show()
