@@ -21,7 +21,8 @@ from m4.devices import deformable_mirror as dm
 from scripts.misc.IFFPackage import iff_acquisition_preparation
 
 ifa = iff_acquisition_preparation.IFFCapturePreparation(dm.M4AU())
-
+regEnd = 0
+trigFrame = 0
 imgFold     = fn.OPD_IMAGES_ROOT_FOLDER
 ifFold      = fn.IFFUNCTIONS_ROOT_FOLDER
 intMatFold  = fn.INTMAT_ROOT_FOLDER
@@ -63,40 +64,42 @@ def iffRedux(tn):
     
 
     """
-    _,nModes,_,template,_  = read_iffconfig.getConfig('IFFUNC')
+    _,modesList,_,template,_  = read_iffconfig.getConfig('IFFUNC')
     nPushPull = len(template)
-    indexingList = _indexReorganization()    # to be implemented
-    amplitude = _ampReorganization()      # to be implemented
-    filelist = os.listdir(os.path.join(imgFold, tn))
-    for i in range(nModes):
-        print(i)
+    #indexingList = _indexReorganization()    # to be implemented
+    #amplitude = _ampReorganization()      # to be implemented
+    indexingList = rd.readFits_data(os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)+'/indexList.fits')
+    amplitude = rd.readFits_data(os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)+'/ampVector.fits')
+    filelist = sorted([os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, (tn+'/'+image)) for image in os.listdir(os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn))])
+    filelist = filelist[regEnd:]
+    for i in range(len(modesList)):
+        print('Mode', i) #!!! Debugging, no need to print
         for k in range(nPushPull):
             p = nPushPull * i + k
-            n = indexingList[p]
-            mis_amp = k * indexingList.shape[1] + n
-            mis = mis_amp*template.shape[0]
+            n = indexingList[i]
             # Crea il pacchetto di immagini del modo 'i', contenente nPushPull images
-            file_name = filelist[mis]
+            file_name = filelist[p]
             image_list = []
-            for l in range(0, template.shape[0]):
-                file_name = filelist[mis+l]
+            for l in range(0, template.shape[0]-1):
+                file_name = filelist[p+l]
                 ima = rd.read_phasemap(file_name)
                 image_list.append(ima)
             image = np.zeros((ima.shape[0], ima.shape[1]))
-        # Algorimo differenziale
-        for p in range(1, len(filelist)):
-            opd2add = image[p]*template[p] + image[p-1]*template[p-1]
-            master_mask2add = np.ma.mask_or(image[p].mask, image[p-1].mask)
-            if p==1:
-                master_mask = master_mask2add
-            else:
-                master_mask = np.na.mask_or(master_mask, master_mask2add)
-            image += opd2add
-        image = np.ma.masked_array(image, mask=master_mask)
-        norm_image = image / (2*amplitude[mis_amp] * (template.shape[1]-1))
+            # Algorimo differenziale
+            for x in range(1, len(image_list)):
+                opd2add = image_list[x]*template[x] + image_list[x-1]*template[x-1]
+                master_mask2add = np.ma.mask_or(image_list[x].mask, image_list[x-1].mask)
+                if x==1:
+                    master_mask = master_mask2add
+                else:
+                    master_mask = np.na.mask_or(master_mask, master_mask2add)
+                image += opd2add
+            image = np.ma.masked_array(image, mask=master_mask)
+            norm_image = image / (2*amplitude[n] * (template.shape[0]-1))
         fold = os.path.join(ifFold, tn)
-        rd.save_phasemap(os.path.join(fold, 'mode_{:5d}.fits'.format(i)), norm_image)
-        
+        img_name = os.path.join(fold, 'mode_{:04d}.fits'.format(i))
+        rd.save_phasemap(img_name, norm_image)
+
 def createCube(tn):
     """
     
@@ -147,6 +150,7 @@ def stackCubes(tnlist):
         hdul = pyfits.open(cube_name)
         cubelist.append(hdul[0].data)
         hdul.close()
+        #!!! Add the matrix stacking
     stacked_cube = np.ma.dstack(cubelist)
     new_tn = timestamp.Timestamp.now()
     save_fold = os.path.join(fn.INTMAT_ROOT_FOLDER, new_tn)
@@ -171,16 +175,15 @@ def registrationRedux(regFrames):
     """
     pass
 
-def getTriggerAndRegistrationFrames(flist, amplitude=None):
+def getTriggerAndRegistrationFrames(tn, amplitude=None):
     """
     This function identifies the triggering frame and the registration frames in
     the data frame sequence.
 
     Parameters
     ----------
-    flist : str / list
-        Complete list of the files. Can be either the folder's tracking number,
-        containing the images, or the list of images itself.
+    tn : str / list
+        Tracking number of the folder containing the images.
     amplitude: float
         Amplitude of the trigger command applied. If no value is passed, it will
         be loaded from the 'iffconfig.ini' configuration file.
@@ -195,28 +198,33 @@ def getTriggerAndRegistrationFrames(flist, amplitude=None):
         The subsequent frame is the start of the IFF acquisition commanded matrix
         history.
     """
-    if isinstance(flist, str):
-        filelist = th.fileList(flist)
+    # !!! Readable way
+    # flist = os.listdir(os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn))
+    # flist.sort()
+    # filelist = [os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, (tn+'/'+image)) for image in flist]
+    # Concise way
     if amplitude is None:
         _,_,amplitude,_, _ = read_iffconfig.getConfig('TRIGGER')
-    try:
-        for ii in range(len(filelist)):
-            f0 = rd.readFits_maskedImage(filelist[ii])
-            f1 = rd.readFits_maskedImage(filelist[ii+1])
-            diff = th.removeZernike(f1 - f0)
-            std_check = np.std(diff)
-            if std_check>(amplitude/2): # condizione -- check
-                trigFrame = ii
-                raise StopIteration
-    except StopIteration:
-        pass
-    timing = read_iffconfig.getTiming()
+    filelist = sorted([os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, (tn+'/'+image)) for image in os.listdir(os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn))])
     regZeros, regModes, _, regTemplate, _ = read_iffconfig.getConfig('REGISTRATION')
-    regStart  = trigFrame + regZeros*timing
-    regEnd    = len(regModes)*len(regTemplate)*timing
-    regFrames = [regStart, regEnd]
-    imgList = filelist[(regFrames[1]+1):]
-    return regFrames, imgList
+    global regEnd
+    trigFrame=0
+    for ii in range(1, len(filelist)):
+        f0 = rd.readFits_maskedImage(filelist[ii-1])
+        f1 = rd.readFits_maskedImage(filelist[ii])
+        diff = th.removeZernike(f1 - f0)
+        std = np.std(diff)
+        print('frame {} - {}'.format(ii, ii-1))
+        print('std = {:.3e}'.format(std))
+        if std!=0.0 and std>(amplitude/2):
+            trigFrame = ii
+            break
+    timing = read_iffconfig.getTiming()
+    regStart  = trigFrame + regZeros*timing +1
+    regEnd    = regStart + len(regModes)*len(regTemplate)*timing
+    trigger = filelist[trigFrame]
+    regList = filelist[regStart:regEnd]
+    return trigger, regList
 
 def _ampReorganization():
     """
@@ -243,6 +251,3 @@ def _indexReorganization():
     """
     amps = ifa.getAmplitude()
     return amps
-
-class StopIteration(Exception):
-    pass

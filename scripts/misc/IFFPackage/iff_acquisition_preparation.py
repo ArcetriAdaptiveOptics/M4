@@ -97,6 +97,7 @@ class IFFCapturePreparation():
         timing = read_iffconfig.getTiming()
         timedCmdHist = np.repeat(cmdHistory, timing, axis=1) 
         self.timedCmdHistory = timedCmdHist
+        # !!! save options??
         return timedCmdHist
 
     def createCmdMatrixHistory(self, mlist, modesAmp=None, template=None, shuffle=False):
