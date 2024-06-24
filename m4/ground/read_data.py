@@ -29,8 +29,11 @@ def read_phasemap(file_path):
         image = readFits_maskedImage(file_path)
     elif ext=='4D':
         image = InterferometerConverter.fromPhaseCam6110(file_path)
+    elif ext=='4Ds':
+        image = readFits_maskedImage(file_path)
     elif ext=='h5':
         image = InterferometerConverter.fromPhaseCam4020(file_path)
+
     return image
 
 def save_phasemap(filename, masked_image,isCube=False):

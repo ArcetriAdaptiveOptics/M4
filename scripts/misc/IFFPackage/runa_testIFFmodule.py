@@ -49,3 +49,12 @@ tm = ifc.createCmdMatrixHistory(mlist,amp )
 
 tm = ifc.createTimedCmdHistory(mlist,1e-7)
 
+
+#### test processing
+from scripts.misc.IFFPackage import iff_processing_runa as ifp
+from m4.configuration import config_folder_names as fn
+tn = '20160516_114916'
+
+infoT, infoR, infoIF = ifp.getAcqInfo(tn)
+ampVector, modesVector, template,indexList, registrationActs, shuffle=ifp.getAcqPar(tn)
+

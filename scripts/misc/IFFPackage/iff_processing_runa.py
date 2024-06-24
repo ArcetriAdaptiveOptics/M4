@@ -10,6 +10,7 @@ Authors
 Module which contains functions for data processing and analysis of M4's IFF.
 """
 import os
+import glob
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.ground import timestamp
@@ -17,10 +18,10 @@ from m4.configuration import read_iffconfig
 from m4.mini_OTT import timehistory as th
 from m4.ground import read_data as rd
 from m4.configuration import config_folder_names as fn
-from m4.devices import deformable_mirror as dm
-from scripts.misc.IFFPackage import iff_acquisition_preparation
+#from m4.devices import deformable_mirror as dm
+#from scripts.misc.IFFPackage import iff_acquisition_preparation
 
-ifa = iff_acquisition_preparation.IFFCapturePreparation(dm.M4AU())
+#ifa = iff_acquisition_preparation.IFFCapturePreparation(dm.M4AU())
 regEnd = 0
 trigFrame = 0
 imgFold     = fn.OPD_IMAGES_ROOT_FOLDER
@@ -32,7 +33,8 @@ ampVecFile = 'ampVector.fits'
 modesVecFile = 'modesVector.fits'
 templateFile = 'Template.fits'
 regisActFile = 'registrationActs.fits'
-shuffleFile  = 'shuffle.fits'
+shuffleFile  = 'shuffle.dat'
+indexListFile= 'indexList.fits'
 
 frameCenter = [200,200]
 
@@ -51,7 +53,7 @@ def process(tn, register = False):
     infoT, infoR, infoIF = getAcqInfo(tn)
     ampVector, modesVector, template,indexList, registrationActs, shuffle = getAcqPar(tn)
 
-    regMat, modesMat = findTriggerStartFrames(tn)
+    regMat, modesMat = findTriggerStartFrame(tn)
     actImgList = registrationRedux(regMat)
     modesMatReorg = modesReorganization(modesMat)
   
@@ -82,7 +84,7 @@ def iffRedux(fileMat, ampVect, modeList, template, shuffle=0):
     for i in range(0, nmodes-1):
         img = pushPullRedux(fileMat[i,:], template, shuffle)
         img = img / (2*ampVect[i])
-        img_name = os.path.join(fold, 'mode_{:04d}.fits'.format(modeList[i])
+        img_name = os.path.join(fold, 'mode_{:04d}.fits'.format(modeList[i]))
         rd.save_phasemap(img_name, norm_image)
 
 def registrationRedux(fileMat, template):
@@ -242,9 +244,9 @@ def findTriggerStartFrame(tn, amplitude=None):
     triggAmp = infoT[2]
     nRzeros = infoR[0]
     nRact = len(registrationActs)  #len(infoR[1])
-    nPPR = len(infoR[2])
+    nPPR = len(infoR[3])
     nIfzeros = infoIF[0]
-    filelist = getFileList(tn)
+    fileList = getFileList(tn)
     img0 = rd.read_phasemap(fileList[0])
     go = 1
     i = 1
@@ -262,7 +264,7 @@ def findTriggerStartFrame(tn, amplitude=None):
     print('Trigger frame found at position:' + str(i))
     regFrameNames = fileList[i+1:i+1+nRact*nPPR+1]
     regMat = reshape(regFrameNames,(nRact,nPPR))
-    ifFuncFirst = i+1:i+1+nRact*nPPR+1+nIfzeros
+    ifFuncFirst = i+1+nRact*nPPR+1+nIfzeros  #to be checked!!!
     ifFramenames = fileList[ifFuncFirst:ifFuncFirst+nmodes*nPP+1]
     if len(ifFramenames) != len(fileList[ifFuncFirst:]):
         print('Warning! Too much files in folder')
@@ -280,6 +282,30 @@ def getAcqInfo(tn):
 
 def getAcqPar(tn):
     '''
+    Utility function to read all the sampling parameters, necessary for the processing
+    Parameters
+    ----------
+    tn : string
+        Tracking number of the dataset
+
+    Returns
+    -------
+    ampVector: float, array
+        vector of the command amplitudes
+    modesVector: int, array
+        list of modes sampled
+    template: int, array
+        acquisition template, typically a sequence of +1;-1 (es: [+1,-1,+1])
+    indexList: int, array
+        positions index of the modes sampling, in case of shuffle option
+    registrationActs: int, array
+        list of actuators sampled for the frames registration
+    shuffle
+    TYPE
+        DESCRIPTION.
+
+    """
+
     '''
     base = os.path.join(ifFold, tn)
     ampVector = rd.readFits_data(os.path.join(base, ampVecFile))
@@ -294,7 +320,8 @@ def getAcqPar(tn):
 
 def getFileList(tn):
     bb = os.path.join(imgFold, tn)
-    name  = '/*.4D'
+    name  = '/*.4Ds'
+    print('Replace search key')
     lsdirs = glob.glob(bb + name)
     lsdirs.sort(key=_sortFunc4D)
     lsdirs.sort(key=_sortFunc4D)
@@ -302,7 +329,8 @@ def getFileList(tn):
 
 
 def _sortFunc4D(elem):
-    iid = os.path.basename(elem)[:-3]
+    iid = os.path.basename(elem)[:-4]
+    print('Replace search key')
     iis = "%5.5i" % int(iid)
     return iis
 
