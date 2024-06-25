@@ -1,9 +1,9 @@
 # Test IFF Package Pietro
 run '/home/pietrof/git/M4/m4/initOTT.py'
-# run '/home/pietrof/git/M4/m4/analysis_imports.py'
+run '/home/pietrof/git/M4/m4/analysis_imports.py'
 from m4.devices import deformable_mirror as dfm
 from scripts.misc.IFFPackage import iff_acquisition_preparation as ifa
-from scripts.misc.IFFPackage import iff_processing as ifp
+from scripts.misc.IFFPackage import iff_processing_pietro as ifp
 from m4.configuration import config_folder_names as fn
 from m4.ground import read_data as rd
 from m4.configuration import read_iffconfig
@@ -26,11 +26,20 @@ cmdh    = ifa.createCmdMatrixHistory(mlist);imshow(cmdh);colorbar()
 tcmdh   = ifa.createTimedCmdHistory(mlist,amp);imshow(tcmdh);colorbar()
 
 # Processing verification
-tn = '20160516_114916'
-filelist = sorted([os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, (tn+'/'+image)) for image in os.listdir(os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn))])
-trigImage, regFrames = ifp.getTriggerAndRegistrationFrames(tn)
+tn                      = '20160516_114916'
+parameters              = ifp._getAcqPar(tn)                # v
+infoT, infoR, infoIF    = ifp._getAcqInfo()                 # v
+filelist                = ifp._getFileList(tn)              # v
+trigF                   = ifp.getTriggerFrame(tn)           # v
+regEnd, regMat          = ifp.getRegFileMatrix(tn)          # v
+iffMat                  = ifp.getIffFileMatrix(tn)          # v
+regImgList              = ifp.registrationRedux(regMat)     # /v\
+ifp.iffRedux(tn, iffMat, ampVect, modesList, template)      # v
+ifp.saveCube(tn)                                            # v
+# check cube
+cube = rd.read_phasemap(os.path.join(fn.INTMAT_ROOT_FOLDER, tn, 'IMCube.fits'))
 
-##### !!! Plots the data
+##### !!! Plots the filelist data
 #----------------------------------------
 # for file in filelist:
 #     img = rd.readFits_maskedImage(file)
@@ -39,49 +48,7 @@ trigImage, regFrames = ifp.getTriggerAndRegistrationFrames(tn)
 #----------------------------------------
 ##### For visualization only
 
-ifp.iffRedux(tn)
-#############!!!
-_,modesList,_,template,_  = read_iffconfig.getConfig('IFFUNC')
-nPushPull = len(template)
-indexingList = rd.readFits_data(os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)+'/indexList.fits')    # to be implemented
-amplitude = rd.readFits_data(os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)+'/ampVector.fits')      # to be implemented
-filelist = sorted([os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, (tn+'/'+image)) for image in os.listdir(os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn))])
-filelist = filelist[10:] #regEnd:10
-for i in range(len(modesList)):
-    print('Mode', i) 
-    for k in range(nPushPull):
-        p = nPushPull * i + k
-        n = indexingList[i] # was 'p'
-        mis_amp = k * indexingList.shape[0] + n
-        mis = mis_amp*template.shape[0]
-        # Crea il pacchetto di immagini del modo 'i', contenente nPushPull images
-        file_name = filelist[p]
-        image_list = []
-        for l in range(0, template.shape[0]-1):
-            file_name = filelist[p+l]
-            ima = rd.readFits_maskedImage(file_name)
-            image_list.append(ima)
-        image = np.zeros((ima.shape[0], ima.shape[1]))
-        # Algorimo differenziale
-        for x in range(1, len(image_list)):
-            opd2add = image_list[x]*template[x] + image_list[x-1]*template[x-1]
-            master_mask2add = np.ma.mask_or(image_list[x].mask, image_list[x-1].mask)
-            if x==1:
-                master_mask = master_mask2add
-            else:
-                master_mask = np.ma.mask_or(master_mask, master_mask2add)
-            image += opd2add
-        image = np.ma.masked_array(image, mask=master_mask)
-        norm_image = image / (2*amplitude[n] * (template.shape[0]-1))
-    fold = os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)
-    img_name = os.path.join(fold, 'mode_{:04d}.fits'.format(i))
-    rd.save_phasemap(img_name, norm_image)
-##################
-ifp.createCube(tn)
-
-
-##!!!
-
+# !!!
 def rename4D(tn):
     fold = os.path.join(imgFold, tn)
     files = os.listdir(fold)

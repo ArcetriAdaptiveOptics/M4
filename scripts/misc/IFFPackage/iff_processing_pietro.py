@@ -16,6 +16,7 @@ from m4.configuration import read_iffconfig
 from m4.ground import read_data as rd
 from m4.configuration import config_folder_names as fn
 from m4.ground import zernike as zern
+from astropy.io import fits as pyfits
 
 imgFold     = fn.OPD_IMAGES_ROOT_FOLDER
 ifFold      = fn.IFFUNCTIONS_ROOT_FOLDER
@@ -72,7 +73,8 @@ def saveCube(tn):
         DESCRIPTION.
 
     """
-    filelist = _getFileList(tn)
+    filelist = _getFileList(tn, fold=ifFold)
+    filelist = [file for file in filelist if 'mode_' in file]
     cube_list = []
     for imgfits in filelist:
         image = rd.readFits_maskedImage(imgfits)
@@ -83,9 +85,9 @@ def saveCube(tn):
     rd.save_phasemap(cube_path, cube, isCube=True)
     # Copying the cmdMatrix and the ModesVector into the INTMAT Folder
     cmat = rd.readFits_data(os.path.join(ifFold, tn, 'cmdMatrix.fits'))
-    mvec = rd.readFits_data(os.path.join(ifFold, tn, 'modesvector.fits'))
-    rd.save_phasemap(os.path.join(intMatFold, tn, 'cmdMatrix.fits'), cmat)
-    rd.save_phasemap(os.path.join(intMatFold, tn, 'modesVector.fits'), mvec)
+    mvec = rd.readFits_data(os.path.join(ifFold, tn, 'modesVector.fits'))
+    pyfits.writeto(os.path.join(intMatFold, tn, 'cmdMatrix.fits'), cmat)
+    pyfits.writeto(os.path.join(intMatFold, tn, 'modesVector.fits'), mvec)
     print("Cube saved in '{}'".format(cube_path))
 
 def stackCubes(tnlist):
@@ -248,7 +250,7 @@ def pushPullRedux(fileVec, template, shuffle=0):
             if x==1:
                 master_mask = master_mask2add
             else:
-                master_mask = np.na.mask_or(master_mask, master_mask2add)
+                master_mask = np.ma.mask_or(master_mask, master_mask2add)
             image += opd2add
     else:
         print('Shuffle option')
@@ -265,7 +267,7 @@ def pushPullRedux(fileVec, template, shuffle=0):
     image = np.ma.masked_array(image, mask=master_mask)/ (template.shape[0]-1)
     return image
 
-def registrationRedux(fileMat, template):
+def registrationRedux(fileMat, template=None):
     """
     Parameters
     ----------
@@ -277,6 +279,9 @@ def registrationRedux(fileMat, template):
     None.
 
     """
+    if template is None:
+        _,infoR,_ = _getAcqInfo()
+        template = infoR['template']
     nAct = fileMat.shape[0]
     imglist = []
     for i in range(0, nAct-1):
@@ -368,8 +373,7 @@ def getTriggerFrame(tn, amplitude=None):
         infoT['amplitude'] = amplitude
     fileList = _getFileList(tn)
     img0 = rd.read_phasemap(fileList[0])
-    go = 0
-    i = 1
+    go = i = 1
     while go !=0:
         if go > infoT['zeros']:
             raise RuntimeError('Heading Zeros exceeded, error!!')
@@ -379,6 +383,7 @@ def getTriggerFrame(tn, amplitude=None):
             go=0
         else:
             i+=1
+            go+=1
             img0 = img1
     trigFrame = i
     return trigFrame
@@ -396,7 +401,7 @@ def getRegFileMatrix(tn):
     
 def getIffFileMatrix(tn):
     fileList    = _getFileList(tn)
-    infoIF      = _getAcqInfo()
+    _,_,infoIF  = _getAcqInfo()
     regEnd, _   = getRegFileMatrix(tn)
     iffList     = fileList[regEnd+infoIF['zeros']:]
     iffMat      = np.reshape(iffList, (len(infoIF['modes']), len(infoIF['template'])))
