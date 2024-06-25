@@ -107,8 +107,20 @@ def registrationRedux(fileMat, template):
     return imglist
 
 def findFrameOffset(imglist, actlist):
-    '''
-    '''
+    """
+    This function computes the position difference between the current frame and a reference
+    Parameters
+    ----------
+    imglist : list | masked arrays
+        list of the actuator images to be used
+    actlist: int | array
+        list of actuators (index)
+
+    Returns
+    -------
+    dp: float
+        position difference
+    """
     actcoordFile =  os.path.join(ifFold, tn,coordfile)
     actcoord = rd.readFits_data(actcoordfile)
     xy = fa.findFrameCoord(imglist, actlist, actcoord)
@@ -117,10 +129,24 @@ def findFrameOffset(imglist, actlist):
 
 
 def pushPullRedux(fileVec, template, shuffle=0):
-    '''
-    fileVect is a row in the fileMat, corresponding to all the realizations of the same mode (or act), with given template
-    shuffle case: shuffle is the # of repetitions, the template is by default +1,-1,+1
-    '''
+    """
+    This function performs the basic operation of processing PushPull data. It has been extracted from the higher level scripts to allow re-using at a lower level where requested (e.g. processing of PushPull for registration frames).
+   Parameters
+    ----------
+    fileVec : string | array
+        it is a row in the fileMat (the organized matrix of the images filename), corresponding to all the realizations of the same mode (or act), with given template. If shuffle option has been used, the fileMat (and fileVec) shall be reorganized before running this script
+    template: int | array
+        template for the PushPull acquisition
+    shuffle: int 
+        keyword for shuffle option used or not. if 0, shuffle not used. if !=0 it is the repetitions of the templated samplin
+
+    Returns
+    image: masked array
+        final processed image
+    -------
+    None.
+
+    """
     image_list = []
     for l in range(0, template.shape[0]-1):
         ima = rd.read_phasemap(fileVec[l])
