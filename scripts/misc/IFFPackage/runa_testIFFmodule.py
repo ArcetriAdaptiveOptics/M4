@@ -61,6 +61,9 @@ ampVector, modesVector, template,indexList, registrationActs, shuffle=ifp.getAcq
 filelist=ifp.getFileList(tn)
 regMat, modesMat = ifp.findTriggerStartFrame(tn)
 actImgList = ifp.registrationRedux(regMat, [1,-1])
+ifp.iffRedux(modesMat, tn, ampVector, modesVector, template, shuffle)
+
+
 
 #used to debug the trigger
     img0 = rd.read_phasemap(fileList[0])

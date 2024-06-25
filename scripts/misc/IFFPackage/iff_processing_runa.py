@@ -55,17 +55,18 @@ def process(tn, register = False):
     ampVector, modesVector, template,indexList, registrationActs, shuffle = getAcqPar(tn)
 
     regMat, modesMat = findTriggerStartFrame(tn)
-    actImgList = registrationRedux(regMat, template)
-    modesMatReorg = modesReorganization(modesMat)
+    actImgList = registrationRedux(regMat, infoR[3])
+    modesMatReorg = _modesReorganization(modesMat)
+    ampVectorReorg = _ampReorganization(ampVector)
   
-    iffRedux(modesMatReorg)
+    iffRedux(modesMatReorg, tn, ampVectorReorg, modesVector, template, shuffle)
     if register is not False:
         dx = findFrameOffset(actImgList, actlist)
     else:
         dx = register
     createCube(tn, dx)
 
-def iffRedux(fileMat, ampVect, modeList, template, shuffle=0):
+def iffRedux(fileMat, tn, ampVect, modeList, template, shuffle=0):
     """
     Parameters
     ----------
@@ -82,11 +83,11 @@ def iffRedux(fileMat, ampVect, modeList, template, shuffle=0):
     nframes= len(template)
     if shuffle != 0:
         nframes = shuffle*3
-    for i in range(0, nmodes-1):
+    for i in range(0, nmodes):
         img = pushPullRedux(fileMat[i,:], template, shuffle)
         img = img / (2*ampVect[i])
         img_name = os.path.join(fold, 'mode_{:04d}.fits'.format(modeList[i]))
-        rd.save_phasemap(img_name, norm_image)
+        rd.save_phasemap(img_name, img)
 
 def registrationRedux(fileMat, template):
     """ 
@@ -102,7 +103,7 @@ def registrationRedux(fileMat, template):
     """
     nAct = (fileMat.shape)[0]
     imglist = []
-    for i in range(0, nAct-1):
+    for i in range(0, nAct):
         img = pushPullRedux(fileMat[i,:], template)
         imglist.append(img)
     return imglist
@@ -149,7 +150,8 @@ def pushPullRedux(fileVec, template, shuffle=0):
 
     """
     image_list = []
-    for l in range(0, template.shape[0]-1):
+    template = np.array(template)
+    for l in range(0, template.shape[0]):
         ima = rd.read_phasemap(fileVec[l])
         image_list.append(ima)
     image = np.zeros((ima.shape[0], ima.shape[1]))
@@ -160,7 +162,7 @@ def pushPullRedux(fileVec, template, shuffle=0):
             if x==1:
                 master_mask = master_mask2add
             else:
-                master_mask = np.na.mask_or(master_mask, master_mask2add)
+                master_mask = np.ma.mask_or(master_mask, master_mask2add)
             image += opd2add
     else:
         print('Shuffle option')
@@ -368,7 +370,7 @@ def _sortFunc4D(elem):
     return iis
 
 
-def _ampReorganization():
+def _ampReorganization(amp):
     """
     
 
@@ -378,10 +380,10 @@ def _ampReorganization():
         DESCRIPTION.
 
     """
-    indexList = ifa.getIndexingList()
-    return indexList
+    #indexList = ifa.getIndexingList()
+    return amp
 
-def _indexReorganization():
+def _modesReorganization(mMat):
     """
     
 
@@ -391,5 +393,5 @@ def _indexReorganization():
         DESCRIPTION.
 
     """
-    amps = ifa.getAmplitude()
-    return amps
+    #amps = ifa.getAmplitude()
+    return mMat
