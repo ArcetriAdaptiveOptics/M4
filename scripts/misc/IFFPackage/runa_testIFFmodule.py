@@ -53,10 +53,25 @@ tm = ifc.createTimedCmdHistory(mlist,1e-7)
 #### test processing
 from scripts.misc.IFFPackage import iff_processing_runa as ifp
 from m4.configuration import config_folder_names as fn
+from importlib import reload
 tn = '20160516_114916'
 
 infoT, infoR, infoIF = ifp.getAcqInfo(tn)
 ampVector, modesVector, template,indexList, registrationActs, shuffle=ifp.getAcqPar(tn)
 filelist=ifp.getFileList(tn)
+regMat, modesMat = ifp.findTriggerStartFrame(tn)
+actImgList = ifp.registrationRedux(regMat, [1,-1])
 
+#used to debug the trigger
+    img0 = rd.read_phasemap(fileList[0])
+    go = 1
+    i = 0
+    #repeat from here
+    i = i+1
+    img1 = rd.read_phasemap(fileList[i])
+    rr2check = zern.removeZernike(img1-img0,[1,2,3]).std()
+    imshow(zern.removeZernike(img1-img0,[1,2,3]))
+    print(i)
+    print(rr2check)
+    print(rr2check > triggAmp/3)
 

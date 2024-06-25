@@ -55,7 +55,7 @@ def process(tn, register = False):
     ampVector, modesVector, template,indexList, registrationActs, shuffle = getAcqPar(tn)
 
     regMat, modesMat = findTriggerStartFrame(tn)
-    actImgList = registrationRedux(regMat)
+    actImgList = registrationRedux(regMat, template)
     modesMatReorg = modesReorganization(modesMat)
   
     iffRedux(modesMatReorg)
@@ -100,10 +100,10 @@ def registrationRedux(fileMat, template):
     None.
 
     """
-    nAct = shape(fileMat)[0]
+    nAct = (fileMat.shape)[0]
     imglist = []
     for i in range(0, nAct-1):
-        img = pushPullRedux(fileMat[i,:])
+        img = pushPullRedux(fileMat[i,:], template)
         imglist.append(img)
     return imglist
 
@@ -289,13 +289,19 @@ def findTriggerStartFrame(tn, amplitude=None):
             img0 = img1
     
     print('Trigger frame found at position:' + str(i))
-    regFrameNames = fileList[i+1:i+1+nRact*nPPR+1]
-    regMat = reshape(regFrameNames,(nRact,nPPR))
-    ifFuncFirst = i+1+nRact*nPPR+1+nIfzeros  #to be checked!!!
-    ifFramenames = fileList[ifFuncFirst:ifFuncFirst+nmodes*nPP+1]
-    if len(ifFramenames) != len(fileList[ifFuncFirst:]):
+    firstReg = i+1+nRzeros
+    regFrameNames = fileList[firstReg:firstReg+nRact*nPPR]
+    regMat = np.reshape(regFrameNames,(nRact,nPPR))
+    #ifFuncFirst = i+1+nRact*nPPR+1+nIfzeros  #to be checked!!!
+    firstIFF = firstReg+nRact*nPPR+nIfzeros
+    ifFramenames = fileList[firstIFF:firstIFF+nmodes*nPP+1]
+    if len(ifFramenames) != len(fileList[firstIFF:]):
         print('Warning! Too much files in folder')
-    ifMat = reshape(ifFramenames,(nmodes,nPP))
+    ifMat = np.reshape(ifFramenames,(nmodes,nPP))
+    print('Registration file matrix:')
+    print(regMat.shape)
+    print('IFFunc file matrix:')
+    print(ifMat.shape)
 
     return regMat, ifMat #imgMode0 = ifMat[0,:]
 
