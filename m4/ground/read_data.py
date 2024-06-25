@@ -72,6 +72,7 @@ def readFits_data(fits_file_path):
     '''
     hduList = pyfits.open(fits_file_path)
     obj = hduList[0].data
+    hduList.close()
     return obj
 
 def readFits_maskedImage(fits_file_path):
@@ -87,6 +88,7 @@ def readFits_maskedImage(fits_file_path):
     '''
     hduList = pyfits.open(fits_file_path)
     masked_array = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
+    hduList.close()
     return masked_array
 
 def readFitsSlimImage(fits_file_path):
@@ -104,6 +106,7 @@ def readFitsSlimImage(fits_file_path):
     data = hduList[0].data
     mask = np.invert(np.isfinite(data))
     immagine = np.ma.masked_array(data, mask=mask)
+    hduList.close()
     return immagine
 ###
 

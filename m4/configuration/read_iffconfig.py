@@ -21,8 +21,8 @@ templateName    = 'template'
 modalBaseName   = 'modalBase'
 
 def getConfig(key, bpath=cfoldname):
-    '''
-    Reads the configuration file for the IFF acquisition. \
+    """
+    Reads the configuration file for the IFF acquisition.
     The key passed is the block of information retrieved
 
     Parameters
@@ -33,22 +33,19 @@ def getConfig(key, bpath=cfoldname):
             - 'REGISTRATION'
             - 'IFFUNC'
     bpath : str, OPTIONAL
-        Base path of the file to read. Default points to the Configuration root\
+        Base path of the file to read. Default points to the Configuration root
         folder
             
     Returns
     -------
-    nzeros : int
-        Number of zero columns that preceed the trigger mode
-    modeId : ArrayLike
-        Mode(s) to be applied
-    modeAmp : float
-        Amplitude of the applied mode(s)
-    template : int | ArrayLike
-        Template of the mode(s) to apply
-    modalBase : str
-        String identifier for the modal base to use
-    '''
+    info : dict
+        A dictionary containing all the configuration file's info:
+            - nzeros
+            - modeId
+            - modeAmp 
+            - template
+            - modalBase 
+    """
     fname = os.path.join(bpath, iff_configFile)
     config.read(fname)
     cc = config[key]
@@ -57,7 +54,13 @@ def getConfig(key, bpath=cfoldname):
     modeAmp     = float(cc[modeAmpName])
     modalBase   = cc[modalBaseName]
     template    = np.array(json.loads(cc[templateName]))
-    return nzeros, modeId, modeAmp, template, modalBase
+    info = {'zeros': nzeros,
+            'modes': modeId,
+            'amplitude': modeAmp,
+            'template': template,
+            'modalBase': modalBase
+        }
+    return info
 
 def getNActs_fromConf(bpath=cfoldname):
     """

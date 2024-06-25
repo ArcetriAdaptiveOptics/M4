@@ -78,3 +78,27 @@ for i in range(len(modesList)):
     rd.save_phasemap(img_name, norm_image)
 ##################
 ifp.createCube(tn)
+
+
+##!!!
+
+def rename4D(tn):
+    fold = os.path.join(imgFold, tn)
+    files = os.listdir(fold)
+    for file in files:
+        if file.endswith('.4D'):
+            num_str = file.split('.')[0]
+            if num_str.isdigit():
+                num = int(num_str)
+                new_name = f"{num:04d}.4D"
+                old_file = os.path.join(fold, file)
+                new_file = os.path.join(fold, new_name)
+                os.rename(old_file, new_file)
+
+def create_sample_files(tn, number):
+    directory = os.path.join(imgFold, tn)
+    for i in range(0, number):
+        file_name = f"{i}.4D"
+        file_path = os.path.join(directory, file_name)
+        with open(file_path, 'w') as f:
+            f.write(f"Sample content for file {file_name}")
