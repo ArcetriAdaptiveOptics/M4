@@ -276,8 +276,25 @@ class I4d6110(BaseInterferometer):
         
         shutil.move(os.path.join(Interferometer.PRODUCE_FOLDER_NAME_M4OTT_PC, folder_name),
                     fold_name.OPD_IMAGES_ROOT_FOLDER)
+        self._rename4D(folder_name)
         if Sound.PLAY is True:
             playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH,'produce-completed.mp3'))
+            
+    def _rename4D(self, folder):
+        """
+        Renames the produced 'x.4D' files into '000x.4D'
+        """
+        fold = os.path.join(fold_name.OPD_IMAGES_ROOT_FOLDER, folder)
+        files = os.listdir(fold)
+        for file in files:
+            if file.endswith('.4D'):
+                num_str = file.split('.')[0]
+                if num_str.isdigit():
+                    num = int(num_str)
+                    new_name = f"{num:05d}.4D"
+                    old_file = os.path.join(fold, file)
+                    new_file = os.path.join(fold, new_name)
+                    os.rename(old_file, new_file)
 
     def getCameraSettings(self):
         '''

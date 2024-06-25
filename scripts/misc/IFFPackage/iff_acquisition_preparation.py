@@ -1,23 +1,13 @@
-# '''
-# NOTA:
-#     la classe ha la creazione/lettura della base modale e i metodi per farci le storie temporali
-#     la classe è replicata, ereditando i metodi, e aggiornando la crezione della base modale secondo cosa richiesto
-#     esempio: istanzio la classe con la base modale che voglio e la classe si è ereditata i metodi della classe base
-# '''
-'''
+"""
 Author(s):
     - P. Ferraiuolo
 
 Written in June 2024
-'''
-# '''
-# WARNING!!! al lthe elements relative to a cmdHistory (trigger, padding, etc), shall be act x frames (e.g. 892 x 200 commands)
-
-# '''
+"""
 import os
 import numpy as np
-from astropy.io import fits as pyfits
 from m4.configuration import read_iffconfig
+from m4.ground import read_data as rd
 from m4.configuration import config_folder_names as fn
 
 iffold = fn.IFFUNCTIONS_ROOT_FOLDER
@@ -52,6 +42,7 @@ class IFFCapturePreparation():
         self._cmdMatrix         = None
         self._indexingList      = None
         self._modesAmp          = None
+        self._template          = None
         # Matrices
         self.timedCmdHistory    = None
         self.cmdMatHistory      = None
@@ -97,8 +88,27 @@ class IFFCapturePreparation():
         timing = read_iffconfig.getTiming()
         timedCmdHist = np.repeat(cmdHistory, timing, axis=1) 
         self.timedCmdHistory = timedCmdHist
-        # !!! save options??
         return timedCmdHist
+    
+    def getInfoToSave(self):
+        """
+        Return the data to save as fits files, arranged in a dictionary
+
+        Returns
+        -------
+        info : dict
+            Dictionary containing all the vectors and matrices needed
+
+        """
+        info = {'cmdMatrix': self._cmdMatrix,
+                'modesList': self._modesList,
+                'ampVector': self._modesAmp,
+                'indexList': self._indexingList,
+                'template' : self._template,
+                'shuffle'  : 'To be implemented'
+            }
+        return info
+        
 
     def createCmdMatrixHistory(self, mlist, modesAmp=None, template=None, shuffle=False):
         """
@@ -122,7 +132,7 @@ class IFFCapturePreparation():
             _,_,_, template,_ = read_iffconfig.getConfig('IFFUNC')
         if modesAmp is None:
             _,_,modesAmp,_,_ = read_iffconfig.getConfig('IFFUNC')
-            
+        self._template = template
         nModes = self._cmdMatrix.shape[1]
         n_push_pull = len(template)
         if np.size(modesAmp)==1:
@@ -165,10 +175,8 @@ class IFFCapturePreparation():
         '''
         self._createRegistrationPattern()
         self._createTriggerPadding()
-
         aux_cmdHistory = np.hstack((self.triggPadCmdHist, self.regPadCmdHist))
         self.auxCmdHistory = aux_cmdHistory
-
         return aux_cmdHistory
 
     def _createRegistrationPattern(self):
@@ -269,8 +277,7 @@ class IFFCapturePreparation():
         print('Reading modal base from tracknum: '+tracknum)
         modalBaseFileName = 'Standard modal base file name' # !!! RE-DEFINE THIS 
         mbfile = os.path.join(fn.MODALBASE_ROOT_FOLDER, tracknum, modalBaseFileName)
-        with pyfits.open(mbfile) as hdul:
-            cmdBase = hdul[0].data
+        cmdBase = rd.readFits_data(mbfile)
         return cmdBase
 
     def _createZonalMat(self):
@@ -303,27 +310,3 @@ class IFFCapturePreparation():
         cmdBase = hadm[1:self._NActs+1, 1:self._NActs+1] #to remove the piston mode. check if it is ok !!!!!
         print('Removed 1st column of Hadamard matrix, or piston mode')
         return cmdBase
-    
-    def getIndexingList(self):
-        """
-        
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
-        """
-        return self._indexingList
-    
-    def getAmplitude(self):
-        """
-        
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
-        """
-        return self._modesAmp

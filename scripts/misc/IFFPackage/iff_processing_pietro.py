@@ -54,11 +54,12 @@ def process(tn, register = False):
         dx = findFrameOffset(tn, actImgList, registrationActs)
     else:
         dx = register
-    createCube(tn)
+    saveCube(tn)
     
-def createCube(tn):
+def saveCube(tn):
     """
-    
+    Creates and save a cube from the fits files contained in the tn folder, 
+    along with the command matrix and the modes vector fits.
 
     Parameters
     ----------
@@ -77,10 +78,15 @@ def createCube(tn):
         image = rd.readFits_maskedImage(imgfits)
         cube_list.append(image)
     cube = np.ma.dstack(cube_list)
-    path = os.path.join(fn.INTMAT_ROOT_FOLDER, tn)
-    save_name = os.path.join(path, 'IMCube.fits')
-    rd.save_phasemap(save_name, cube, isCube=True)
-    print("Cube saved in '{}'".format(path))
+    # Saving the cube
+    cube_path = os.path.join(intMatFold, tn, 'IMCube.fits')
+    rd.save_phasemap(cube_path, cube, isCube=True)
+    # Copying the cmdMatrix and the ModesVector into the INTMAT Folder
+    cmat = rd.readFits_data(os.path.join(ifFold, tn, 'cmdMatrix.fits'))
+    mvec = rd.readFits_data(os.path.join(ifFold, tn, 'modesvector.fits'))
+    rd.save_phasemap(os.path.join(intMatFold, tn, 'cmdMatrix.fits'), cmat)
+    rd.save_phasemap(os.path.join(intMatFold, tn, 'modesVector.fits'), mvec)
+    print("Cube saved in '{}'".format(cube_path))
 
 def stackCubes(tnlist):
     """
@@ -96,7 +102,7 @@ def stackCubes(tnlist):
     TYPE
         DESCRIPTION.
 
-    """    
+    """
     new_tn = timestamp.Timestamp.now()
     cubelist = []
     matrixList = []
@@ -119,24 +125,19 @@ def stackCubes(tnlist):
     rd.save_phasemap(save_cmat, stacked_cmat)
     rd.save_phasemap(save_mvec, stacked_mvec)
     print("Stacked cube and matrices saved in {}".format(new_tn))
-        
+
 # def iffRedux(tn):
 #     """
 #     Processes 4D images to produce FITS images
-    
 #     This function retrieves the 4D images acquired and pre-processed from the
 #     interferometer, applies the differential algorythm, and produces a fits image
 #     for each measured mode.
-
 #     Parameters
 #     ----------
 #     tn : str 
 #         Tracking number in the OPDImages folder where the acquired data is stored
-
 #     Returns
 #     -------
-    
-
 #     """
 #     _,modesList,_,template,_  = read_iffconfig.getConfig('IFFUNC')
 #     nPushPull = len(template)
@@ -176,10 +177,22 @@ def stackCubes(tnlist):
 
 def iffRedux(tn, fileMat, ampVect, modeList, template, shuffle=0):
     """
+    
+
     Parameters
     ----------
-    fileMat : string, matrix
-        is already reorganized for the shuffle, if requested
+    tn : TYPE
+        DESCRIPTION.
+    fileMat : TYPE
+        DESCRIPTION.
+    ampVect : TYPE
+        DESCRIPTION.
+    modeList : TYPE
+        DESCRIPTION.
+    template : TYPE
+        DESCRIPTION.
+    shuffle : TYPE, optional
+        DESCRIPTION. The default is 0.
 
     Returns
     -------
@@ -253,7 +266,7 @@ def pushPullRedux(fileVec, template, shuffle=0):
     return image
 
 def registrationRedux(fileMat, template):
-    """ 
+    """
     Parameters
     ----------
     regFrames : TYPE
@@ -296,58 +309,58 @@ def findFrameOffset(tn, imglist, actlist):
     dp = xy - frameCenter
     return dp
 
-def getTriggerAndRegFrame(tn, amplitude=None):
-    """
-    This function identifies the triggering frame and the registration frames in
-    the data frame sequence.
+# !!! Deprecated - divided into the three functions below
+# def getTriggerAndRegFrame(tn, amplitude=None):
+#     """
+#     This function identifies the triggering frame and the registration frames in
+#     the data frame sequence.
 
-    Parameters
-    ----------
-    tn : str / list
-        Tracking number of the folder containing the images.
-    amplitude: float, optional
-        Amplitude of the trigger command applied. If no value is passed, it will
-        be loaded from the 'iffconfig.ini' configuration file.
+#     Parameters
+#     ----------
+#     tn : str / list
+#         Tracking number of the folder containing the images.
+#     amplitude: float, optional
+#         Amplitude of the trigger command applied. If no value is passed, it will
+#         be loaded from the 'iffconfig.ini' configuration file.
 
-    Returns
-    -------
-    trigFrame : int
-        Index of the frame containing the trigger. The subsequent frame (triggerId + 1) 
-        is the first 'useful' frame in the time history.
-    regFrames : int | ArrayLike
-        List containing the first and last indices of the registration frames. 
-        The subsequent frame is the start of the IFF acquisition commanded matrix
-        history.
-    """
-    infoT = read_iffconfig.getConfig('TRIGGER')
-    infoR = read_iffconfig.getConfig('REGISTRATION')
-    infoIF= read_iffconfig.getConfig('IFFUNC')
-    timing = read_iffconfig.getTiming()
-    if amplitude is not None:
-        infoT['amplitude'] = amplitude
-    fileList = _getFileList(tn)
-    global regEnd
-    img0 = rd.read_phasemap(fileList[0])
-    go = 0
-    i = 1
-    while go !=0:
-        if go > infoT['zeros']:
-            raise RuntimeError('Heading Zeros exceeded, error!!')
-        img1 = rd.read_phasemap(fileList[i])
-        rr2check = zern.removeZernike(img1-img0,[1,2,3]).std()
-        if rr2check > infoT['amplitude']/3:
-            go=0
-        else:
-            i+=1
-            img0 = img1
-    trigFrame = i
-    regStart  = trigFrame + infoR['zeros']*timing +1
-    regEnd    = regStart + len(infoR['modes'])*len(infoR['template'])*timing
-    regList   = fileList[regStart:regEnd]
-    regMat    = np.reshape(regList, (len(infoR['modes']), len(infoR['template'])))
-    iffList   = fileList[regEnd+infoIF['zeros']:]
-    iffMat    = np.reshape(iffList, (len(infoIF['modes']), len(infoIF['template'])))
-    return regMat, iffMat
+#     Returns
+#     -------
+#     trigFrame : int
+#         Index of the frame containing the trigger. The subsequent frame (triggerId + 1) 
+#         is the first 'useful' frame in the time history.
+#     regFrames : int | ArrayLike
+#         List containing the first and last indices of the registration frames. 
+#         The subsequent frame is the start of the IFF acquisition commanded matrix
+#         history.
+#     """
+#     infoT = read_iffconfig.getConfig('TRIGGER')
+#     infoR = read_iffconfig.getConfig('REGISTRATION')
+#     infoIF= read_iffconfig.getConfig('IFFUNC')
+#     timing = read_iffconfig.getTiming()
+#     if amplitude is not None:
+#         infoT['amplitude'] = amplitude
+#     fileList = _getFileList(tn)
+#     img0 = rd.read_phasemap(fileList[0])
+#     go = 0
+#     i = 1
+#     while go !=0:
+#         if go > infoT['zeros']:
+#             raise RuntimeError('Heading Zeros exceeded, error!!')
+#         img1 = rd.read_phasemap(fileList[i])
+#         rr2check = zern.removeZernike(img1-img0,[1,2,3]).std()
+#         if rr2check > infoT['amplitude']/3:
+#             go=0
+#         else:
+#             i+=1
+#             img0 = img1
+#     trigFrame = i
+#     regStart  = trigFrame + infoR['zeros']*timing +1
+#     regEnd    = regStart + len(infoR['modes'])*len(infoR['template'])*timing
+#     regList   = fileList[regStart:regEnd]
+#     regMat    = np.reshape(regList, (len(infoR['modes']), len(infoR['template'])))
+#     iffList   = fileList[regEnd+infoIF['zeros']:]
+#     iffMat    = np.reshape(iffList, (len(infoIF['modes']), len(infoIF['template'])))
+#     return regMat, iffMat
 
 def getTriggerFrame(tn, amplitude=None):
     infoT, _, _ = _getAcqInfo()
