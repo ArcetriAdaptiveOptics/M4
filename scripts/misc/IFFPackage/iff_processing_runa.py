@@ -14,6 +14,7 @@ import glob
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.ground import timestamp
+from m4.ground import zernike as zern
 from m4.configuration import read_iffconfig
 from m4.mini_OTT import timehistory as th
 from m4.ground import read_data as rd

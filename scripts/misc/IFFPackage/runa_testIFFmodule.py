@@ -57,4 +57,6 @@ tn = '20160516_114916'
 
 infoT, infoR, infoIF = ifp.getAcqInfo(tn)
 ampVector, modesVector, template,indexList, registrationActs, shuffle=ifp.getAcqPar(tn)
+filelist=ifp.getFileList(tn)
+
 
