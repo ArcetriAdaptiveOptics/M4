@@ -3,18 +3,19 @@ Authors
   - C. Selmi: written in 2019
 '''
 
-import os
+# import os
 import logging
-import h5py
-from astropy.io import fits as pyfits
+# import h5py
+# from astropy.io import fits as pyfits
 import numpy as np
-from m4.ground import read_data
-from m4.ground.read_data import InterferometerConverter
-from m4.utils.influence_functions_maker import IFFunctionsMaker
+# from m4.ground import read_data
+# from m4.ground.read_data import InterferometerConverter
+# from m4.utils.influence_functions_maker import IFFunctionsMaker
 from m4.utils.roi import ROI
-from m4.utils.image_reducer import TipTiltDetrend
-from m4.configuration import config_folder_names as fold_name
+# from m4.utils.image_reducer import TipTiltDetrend
+# from m4.configuration import config_folder_names as fold_name
 import matplotlib.pyplot as plt
+from m4.analyzers.analyzer_iffunctions import AnalyzerIFF
 
 
 class ComputeReconstructor():
@@ -32,11 +33,35 @@ class ComputeReconstructor():
         an.setRec() = rec.getReconstructor()
     '''
 
-    def __init__(self, analyzer_iff_obj):
+    def __init__(self, AnalyzerIFF_obj: AnalyzerIFF):
         """The constructor """
         self._logger = logging.getLogger('COMPUTE_REC:')
-        self._cube = analyzer_iff_obj.getCube()
+        self._intMat = AnalyzerIFF_obj.getInteractionMatrix()
         self._analysisMask = None
+        self._intMat_U = None
+        self._intMat_S = None
+        self._intMat_Vt = None
+        self._threshold = None
+        self._filtered_sv = None
+
+    def run(self, Interactive=False, sv_threshold=None):
+        self._intMat_U, self._intMat_S, self._intMat_Vt = np.linalg.svd(
+            self._intMat)
+        if Interactive:
+            self._threshold = self.make_interactive_plot(self._intMat_S)
+        else:
+            if sv_threshold is None:
+                self._threshold = {'y': np.finfo(np.float32).eps, 'x':
+                                   np.argmin(np.abs(self._intMat_S -
+                                                    np.finfo(np.float32).eps))}
+            else:
+                self._threshold = {'y': sv_threshold, 'x':
+                                   np.argmin(np.abs(self._intMat_S -
+                                                    sv_threshold))}
+        sv_threshold = np.zeros_like(self._intMat_S)
+        sv_threshold[self._threshold['x']:] = 0
+        self._filtered_sv = sv_threshold
+        return self._intMat_Vt.T @ np.diag(sv_threshold) @ self._intMat_U.T
 
     @staticmethod
     def loadReconstructorFromFolder(tt):
@@ -74,14 +99,14 @@ class ComputeReconstructor():
         ax.set_xlabel('Mode number')
         ax.set_ylabel('Singular value')
         ax.grid()
-        ax.autoscale(tight=True)
+        ax.autoscale(tight=False)
         ax.set_ylim([min(singular_values), max(singular_values)])
         ax.title.set_text('Singular values')
         # if current_threshold is None:
         threshold = dict()
 
-        threshold['y'] = 0.01  # np.finfo(np.float32).eps
-        threshold['x'] = 5 % len(singular_values)
+        threshold['y'] = np.finfo(np.float32).eps  # 0.01
+        threshold['x'] = 0  # 5 % len(singular_values)
         ax.axhline(threshold['y'], color='g',
                    linestyle='-', linewidth=1)
         ax.axvline(threshold['x'],  color='g',
@@ -98,7 +123,7 @@ class ComputeReconstructor():
                 ax.loglog(modelist, singular_values, 'b-o')
                 ax.plot(modelist[singular_values < threshold['y']],
                         singular_values[singular_values < threshold['y']], 'r-x')
-                ax.autoscale(tight=True)
+                ax.autoscale(tight=False)
                 ax.set_xlabel('Mode number')
                 ax.set_ylabel('Singular value')
                 ax.grid()
@@ -112,7 +137,7 @@ class ComputeReconstructor():
                 x_mouse, y_mouse = event.xdata, event.ydata
                 ax.axhline(y_mouse, color='r',
                            linestyle='-', linewidth=1)
-                ax.axvline(x_mouse,  color='r',
+                ax.axvline(np.argmin(np.abs(singular_values - y_mouse)),  color='r',
                            linestyle='-', linewidth=1)
                 ax.figure.canvas.draw()
                 print(f"Current threshold: X = {
@@ -128,15 +153,15 @@ class ComputeReconstructor():
         def record_click(event):
             if event.inaxes and event.dblclick:
                 x_click, y_click = event.xdata, event.ydata
-                threshold['x'] = x_click
                 threshold['y'] = y_click
+                threshold['x'] = np.argmin(np.abs(singular_values - y_click))
                 ax.axhline(threshold['x'], color='g',
                            linestyle='-', linewidth=1)
                 ax.axvline(threshold['y'],  color='g',
                            linestyle='-', linewidth=1)
                 print(f"New eigenvalues threshold: X = {
                       x_click:.2f}, Y = {y_click:.2f}")
-                return x_click, y_click
+                return threshold['x'], threshold['y']
 
         # Connettere la funzione all'evento di click del tasto sinistro
         fig.canvas.mpl_connect('button_press_event',
@@ -144,21 +169,3 @@ class ComputeReconstructor():
 
         # Visualizzare il grafico
         plt.show()
-
-
-if __name__ == '__main__':
-
-    import random
-    import unittest
-    import mock
-    # generate sample data
-    random.seed(0)
-    random_matrix = [
-        [random.random() for i in range(100)] for j in range(1000)]
-    random_matrix_dp = np.linalg.inv(
-        np.array(random_matrix).T @ np.array(random_matrix))
-    us, s, vsT = np.linalg.svd(random_matrix_dp)
-
-    print(s)
-    th1, th2 = ComputeReconstructor.make_interactive_plot(s)
-    print(th1, th2)
