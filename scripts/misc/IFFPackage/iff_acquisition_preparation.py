@@ -9,7 +9,6 @@ import numpy as np
 from m4.configuration import read_iffconfig
 from m4.ground import read_data as rd
 from m4.configuration import config_folder_names as fn
-
 iffold = fn.IFFUNCTIONS_ROOT_FOLDER
 
 class IFFCapturePreparation():
@@ -49,14 +48,6 @@ class IFFCapturePreparation():
         self.auxCmdHistory      = None
         self.triggPadCmdHist    = None
         self.regPadCmdHist      = None
-
-    # def initDM_test(self): #used only for debug
-    #     dmFold = os.path.join(fn.OPT_DATA_FOLDER,'test')
-    #     cmdMatFile =  os.path.join(dmFold,'ff_v_matrix.fits')
-    #     hdu = pyfits.open(cmdMatFile)
-    #     cmdMat = hdu[0].data
-    #     nActs = np.shape(cmdMat)[0]
-    #     return cmdMat, nActs
 
     def createTimedCmdHistory(self,  modesList=None, modesAmp=None, template=None, shuffle=False): 
         """
@@ -110,7 +101,7 @@ class IFFCapturePreparation():
         return info
         
 
-    def createCmdMatrixHistory(self, mlist, modesAmp=None, template=None, shuffle=False):
+    def createCmdMatrixHistory(self, mlist=None, modesAmp=None, template=None, shuffle=False):
         """
         Creates the command matrix history for the IFF acquisition.
 
@@ -128,11 +119,12 @@ class IFFCapturePreparation():
         cmd_matrixHistory : float | ArrayLike
             Command matrix history to be applied, with the correct push-pull application, following the desired template.
         """
-        if template is None:
-            _,_,_, template,_ = read_iffconfig.getConfig('IFFUNC')
-        if modesAmp is None:
-            _,_,modesAmp,_,_ = read_iffconfig.getConfig('IFFUNC')
+        infoIF = read_iffconfig.getConfig('IFFUNC')
+        mlist = mlist if mlist is not None else infoIF.get('modes')
+        modesAmp = modesAmp if modesAmp is not None else infoIF.get('amplitude')
+        template = template if template is not None else infoIF.get('template')        
         self._template = template
+        self._createCmdMatrix(mlist)
         nModes = self._cmdMatrix.shape[1]
         n_push_pull = len(template)
         if np.size(modesAmp)==1:
@@ -148,10 +140,11 @@ class IFFCapturePreparation():
             for i in modesList:
                 cmd_matrix.T[k] = self._cmdMatrix[i]
                 k += 1
-            self._indexingList = np.array(modesList)
+            self._indexingList = np.arange(0, len(modesList), 1)
         else:
             cmd_matrix = self._cmdMatrix
             modesList = self._modesList
+            self._indexingList = np.arange(0, len(modesList), 1)
         n_frame = len(self._modesList) * n_push_pull
         cmd_matrixHistory = np.zeros((self._NActs, n_frame))
         for j in range(n_push_pull):
@@ -173,8 +166,8 @@ class IFFCapturePreparation():
         aus_cmdHistory : float | ArrayLike
 
         '''
-        self._createRegistrationPattern()
         self._createTriggerPadding()
+        self._createRegistrationPattern()
         aux_cmdHistory = np.hstack((self.triggPadCmdHist, self.regPadCmdHist))
         self.auxCmdHistory = aux_cmdHistory
         return aux_cmdHistory
@@ -191,20 +184,17 @@ class IFFCapturePreparation():
             Registration pattern command history
 
         """
-        nZeros, regId, regAmp, regTemp,mbase = read_iffconfig.getConfig('REGISTRATION')
-        self._updateModalBase(mbase)    
-        zeroScheme = np.zeros((self._NActs, nZeros))
-        regScheme = np.zeros((self._NActs, len(regTemp)*len(regId)))
-
+        infoR = read_iffconfig.getConfig('REGISTRATION')
+        self._updateModalBase(infoR['modalBase'])    
+        zeroScheme = np.zeros((self._NActs, infoR['zeros']))
+        regScheme = np.zeros((self._NActs, len(infoR['template'])*len(infoR['modes'])))
         k=0
-        for i in regId:
-            for t in range(len(regTemp)):
-                regScheme[i,k] = regAmp*regTemp[t]
+        for i in infoR['modes']:
+            for t in range(len(infoR['template'])):
+                regScheme[i,k] = infoR['amplitude']*infoR['template'][t]
                 k+=1
-
         regHist = np.hstack((zeroScheme, regScheme))
         self.regPadCmdHist = regHist
-
         return regHist
 
     def _createTriggerPadding(self):
@@ -217,12 +207,11 @@ class IFFCapturePreparation():
         -------
         triggHist : float | ArrayLike
             Trigger padding command history
-
         """
-        nZeros, trigId, trigAmp, _, mbase= read_iffconfig.getConfig('TRIGGER')
-        self._updateModalBase(mbase)
-        zeroScheme = np.zeros((self._NActs, nZeros))
-        trigMode = self._modalBase[:,trigId]*trigAmp
+        infoT = read_iffconfig.getConfig('TRIGGER')
+        self._updateModalBase(infoT['modalBase'])
+        zeroScheme = np.zeros((self._NActs, infoT['zeros']))
+        trigMode = self._modalBase[:,infoT['modes']]*infoT['amplitude']
         triggHist = np.hstack((zeroScheme, trigMode))
         self.triggPadCmdHist = triggHist
         return triggHist
@@ -232,7 +221,8 @@ class IFFCapturePreparation():
         Cuts the modal base according the given modes list
         '''
         if self.modalBaseId is None:
-            _,_,_,_,baseId = read_iffconfig.getConfig('IFFUNC')
+            infoIF = read_iffconfig.getConfig('IFFUNC')
+            baseId = infoIF['modalBase']
         else:
             baseId = self.modalBaseId
         self._updateModalBase(baseId)
@@ -240,10 +230,19 @@ class IFFCapturePreparation():
         return self._cmdMatrix
 
     def _updateModalBase(self, mbasename: str = None):
-        '''
-        Redefines the command matrix to be used ma dice marco di buttare
-        '''
-        print(mbasename)
+        """
+        Updates the used modal base
+
+        Parameters
+        ----------
+        mbasename : str, optional
+            DESCRIPTION. The default is None.
+
+        Returns
+        -------
+        None.
+
+        """
         if (mbasename is None) or (mbasename == 'mirror'):
             print('Using mirror modes')
             self._modalBase = self.mirrorModes
@@ -306,7 +305,7 @@ class IFFCapturePreparation():
         from scipy.linalg import hadamard
         import math
         numb = math.ceil(math.log(self._NActs,2))
-        hadm = hadamard(2**numb)  #here we suppose that the HADAMARD matrix is used only to measure SEGMENT IFF (which makes sense)
-        cmdBase = hadm[1:self._NActs+1, 1:self._NActs+1] #to remove the piston mode. check if it is ok !!!!!
-        print('Removed 1st column of Hadamard matrix, or piston mode')
+        hadm = hadamard(2**numb)  # 892, 1 segment
+        cmdBase = hadm[1:self._NActs+1, 1:self._NActs+1]
+        #print('Removed 1st column of Hadamard matrix, or piston mode')
         return cmdBase

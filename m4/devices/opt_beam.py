@@ -330,12 +330,13 @@ class AngleRotator:
 
     def rotateBy(self, rel_deg) -> float:
         '''
-        Rotates the parabola, from the current angular position, by a desired amount
+        Rotates the parabola, from the current angular position, by a desired 
+        amount counter-clockwise
 
         Parameters
         ---------------
         rel_deg : float
-            Change in degrees of the current angular position
+            Relative change, in degrees, of the current angular position
 
         Returns
         ---------------
