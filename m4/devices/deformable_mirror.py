@@ -2,12 +2,13 @@
 Authors
   - C. Selmi: written in ?
 '''
+import os
 import logging
 import numpy as np
 from m4.devices.base_deformable_mirror import BaseDeformableMirror
 from m4.configuration import config_folder_names as fn
 from astropy.io import fits as pyfits
-import os
+
 #put the imports from Mic Library
 
 #here we define the M4 class. 
@@ -23,11 +24,9 @@ class M4AU():
 
     def __init__(self):
         print('Initializing the M4AU with configuration: '+fn.DM_CONFIGURATION_ID)
-        self.nActs      = self._initNActuators()
+        self.nActs       = self._initNActuators()
         self.mirrorModes = self._initMirrorModes()
-        
-        #self._nActs       =
-        self.actCoord    = self._initActCoord
+        self.actCoord    = self._initActCoord()
 
     def _initNActuators(self):
         fname = os.path.join(dmConf,nActFile)
@@ -48,7 +47,7 @@ class M4AU():
             mirrorModes = hdu[0].data
         else:
             print('Initializing analytical modal base (identity, or zonal matrix')
-            mirrorModes = np.eyes(self.nActs)
+            mirrorModes = np.eye(self.nActs)
         #nActs = np.shape(cmdMat)[0]
         return mirrorModes
     

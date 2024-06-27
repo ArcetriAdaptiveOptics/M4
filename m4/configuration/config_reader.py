@@ -295,14 +295,13 @@ class configuration_path():
             return self._conf['parabola_remapped_folder']
         else:
             return os.path.join(self.OPT_DATA_FOLDER, 'ParabolaRemapped')
+        
     @property
     def INTMAT_ROOT_FOLDER(self):
         if 'intmat_root_folder' in self._conf.keys():
             return self._conf['intmat_root_folder']
         else:
             return os.path.join(self.OPT_DATA_FOLDER, 'INTMatrices')
-
-
 
     @property
     def DM_CONFIGURATION_ID(self):

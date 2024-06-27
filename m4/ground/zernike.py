@@ -29,6 +29,14 @@ from m4.ground import geo
 import math
 fac = math.factorial
 
+
+def removeZernike(ima, modes=np.array([1, 2, 3, 4])):
+
+    coeff, mat = zernikeFit(ima, modes)
+    surf = zernikeSurface(ima, coeff, mat)
+    new_ima = ima - surf
+    return new_ima
+
 def zernikeFit(img, zernike_index_vector, qpupil=True):
     '''
     Parameters

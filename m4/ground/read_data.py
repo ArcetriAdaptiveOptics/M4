@@ -29,8 +29,11 @@ def read_phasemap(file_path):
         image = readFits_maskedImage(file_path)
     elif ext=='4D':
         image = InterferometerConverter.fromPhaseCam6110(file_path)
+    elif ext=='4Ds':
+        image = readFits_maskedImage(file_path)
     elif ext=='h5':
         image = InterferometerConverter.fromPhaseCam4020(file_path)
+
     return image
 
 def save_phasemap(filename, masked_image,isCube=False):
@@ -69,6 +72,7 @@ def readFits_data(fits_file_path):
     '''
     hduList = pyfits.open(fits_file_path)
     obj = hduList[0].data
+    hduList.close()
     return obj
 
 def readFits_maskedImage(fits_file_path):
@@ -84,6 +88,7 @@ def readFits_maskedImage(fits_file_path):
     '''
     hduList = pyfits.open(fits_file_path)
     masked_array = np.ma.masked_array(hduList[0].data, mask=hduList[1].data.astype(bool))
+    hduList.close()
     return masked_array
 
 def readFitsSlimImage(fits_file_path):
@@ -101,6 +106,7 @@ def readFitsSlimImage(fits_file_path):
     data = hduList[0].data
     mask = np.invert(np.isfinite(data))
     immagine = np.ma.masked_array(data, mask=mask)
+    hduList.close()
     return immagine
 ###
 

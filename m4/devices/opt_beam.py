@@ -33,8 +33,8 @@ class Parabola:
         try:
             with open(conf, 'r') as file:
                 config = yaml.safe_load(file)
-                if ('simulated_parSlider' in config) == False:
-                    raise KeyError(f"Parameter not found")
+                if 'simulated_parSlider' in config is False:
+                    raise KeyError("Parameter not found")
                 self._config = config['simulated_parSlider']
         except Exception as e:
             raise e            
@@ -43,9 +43,9 @@ class Parabola:
         '''
         Converts the given position with relative to M4 Center. Pos is in meters
         '''
-        if get==False:
+        if get is False:
             return (pos + OttParameters.PAR_SLIDER_KIN_OFFSET*1000)
-        elif get==True: 
+        else: 
             return (pos - OttParameters.PAR_SLIDER_KIN_OFFSET*1000)
 
     def trussGetPosition(self) -> float:
@@ -58,7 +58,7 @@ class Parabola:
             Current position of the parabola slider, in meters
         '''
         self._pos = self._slider.getPosition()
-        if self._config == False:
+        if self._config is False:
             current_pos = self._conversion(self._pos, get=True)
         else:
             current_pos = self._pos
@@ -80,7 +80,7 @@ class Parabola:
         '''
         pos_in_mm = pos_in_m * 1000
 
-        if self._config == False:
+        if self._config is False:
             opcua_pos = self._conversion(pos_in_mm, get=False)
         else: 
             opcua_pos = pos_in_mm
@@ -164,8 +164,8 @@ class ReferenceMirror:
         try:
             with open(conf, 'r') as file:
                 config = yaml.safe_load(file)
-                if ('simulated_rmSlider' in config) == False:
-                    raise KeyError(f"Parameter not found")
+                if ('simulated_rmSlider' in config) is False:
+                    raise KeyError("Parameter not found")
                 self._config = config['simulated_rmSlider']
         except Exception as e:
             raise e
@@ -174,9 +174,9 @@ class ReferenceMirror:
         '''
         Converts the given position with relative to M4 Center. Pos is in meters
         '''
-        if get==False:
+        if get is False:
             return (pos + OttParameters.RM_SLIDER_KIN_OFFSET*1000)
-        elif get==True: 
+        else: 
             return (pos - OttParameters.RM_SLIDER_KIN_OFFSET*1000)
 
     def rmGetPosition(self) -> float:
@@ -189,7 +189,7 @@ class ReferenceMirror:
             Current position of the reference mirror slider, in meters
         '''
         self._pos = self._slider.getPosition()
-        if self._config == False:
+        if self._config is False:
             current_pos = self._conversion(self._pos, get=True)
         else: 
             current_pos = self._pos
@@ -211,7 +211,7 @@ class ReferenceMirror:
         '''
         pos_in_mm = pos_in_m * 1000
 
-        if self._config == False:
+        if self._config is False:
             opcua_pos = self._conversion(pos_in_mm, get=False)
         else:
             opcua_pos = pos_in_mm
@@ -285,6 +285,7 @@ class ReferenceMirror:
         return self._rm.getPosition()[3:5]
 
 class AngleRotator:
+
     def __init__(self, ott, conf):
         '''The Constructor'''
         self._rotator = ott.angleRotator
@@ -293,8 +294,7 @@ class AngleRotator:
             with open(conf, 'r') as file:
                 self._config = yaml.safe_load(file)
         except Exception as e:
-            print(f"Error loading configuration file: {e}")
-            self._config = {}
+            raise e
 
     def getPosition(self) -> float:
         '''
@@ -330,12 +330,13 @@ class AngleRotator:
 
     def rotateBy(self, rel_deg) -> float:
         '''
-        Rotates the parabola, from the current angular position, by a desired amount
+        Rotates the parabola, from the current angular position, by a desired 
+        amount counter-clockwise
 
         Parameters
         ---------------
         rel_deg : float
-            Change in degrees of the current angular position
+            Relative change, in degrees, of the current angular position
 
         Returns
         ---------------
