@@ -30,7 +30,7 @@ class ComputeReconstructor():
         fileName = os.path.join(".../IFFunctions", tt)
         an = AnalyzerIFF.loadInfoFromTtFolder(fileName)
         rec = ComputeReconstructor(an)
-        an.setRec() = rec.getReconstructor()
+-------------------        an.setRec() = rec.getReconstructor()       -------------------
     '''
 
     def __init__(self, AnalyzerIFF_obj: AnalyzerIFF):
@@ -58,7 +58,7 @@ class ComputeReconstructor():
                 self._threshold = {'y': sv_threshold, 'x':
                                    np.argmin(np.abs(self._intMat_S -
                                                     sv_threshold))}
-        sv_threshold = np.zeros_like(self._intMat_S)
+        sv_threshold = self._intMat_S.copy()
         sv_threshold[self._threshold['x']:] = 0
         self._filtered_sv = sv_threshold
         return self._intMat_Vt.T @ np.diag(sv_threshold) @ self._intMat_U.T
@@ -169,3 +169,88 @@ class ComputeReconstructor():
 
         # Visualizzare il grafico
         plt.show()
+
+    def make_interactive_plot_bokeh(singular_values, current_threshold=None):
+
+        # still to be debugged
+        from bokeh.plotting import figure, show
+        from bokeh.models import ColumnDataSource
+        from bokeh.models.tools import HoverTool
+        from bokeh.layouts import column
+        from bokeh.events import DoubleTap
+        from bokeh.io import curdoc
+        from bokeh.models import Span
+        from bokeh.models import CustomJS
+
+        # Create the plot
+        fig = figure(title='Singular values', x_axis_label='Mode number',
+                     y_axis_label='Singular value', tools='pan,box_zoom,reset,save')
+        modelist = np.arange(len(singular_values))
+        fig.line(modelist, singular_values, line_width=2)
+        fig.circle(modelist, singular_values, fill_color="white", size=8)
+        fig.grid.grid_line_alpha = 0.3
+        fig.title.text_font_size = '16pt'
+        fig.xaxis.axis_label_text_font_size = "14pt"
+        fig.yaxis.axis_label_text_font_size = "14pt"
+        fig.xaxis.major_label_text_font_size = "12pt"
+        fig.yaxis.major_label_text_font_size = "12pt"
+
+        # Add a threshold line
+        threshold = dict()
+        threshold['y'] = np.finfo(np.float32).eps  # 0.01
+        threshold['x'] = 0  # 5 % len(singular_values)
+        fig.line([0, len(singular_values)], [threshold['y'], threshold['y']],
+                 line_color='green', line_width=2, line_dash='dashed')
+        fig.line([threshold['x'], threshold['x']], [0, max(singular_values)],
+                 line_color='green', line_width=2, line_dash='dashed')
+        fig.line(modelist[singular_values < threshold['y']],
+                 singular_values[singular_values < threshold['y']], line_color='red', line_width=2)
+
+        # Function to update the position of the red cross
+        def update_crosshair(event):
+            if event.x and event.y:
+                x_mouse, y_mouse = event.x, event.y
+                threshold['y'] = y_mouse
+                threshold['x'] = np.argmin(np.abs(singular_values - y_mouse))
+                fig.line([0, len(singular_values)], [threshold['y'], threshold['y']],
+                         line_color='green', line_width=2, line_dash='dashed')
+                fig.line([threshold['x'], threshold['x']], [0, max(singular_values)],
+                         line_color='green', line_width=2, line_dash='dashed')
+                fig.line(modelist[singular_values < threshold['y']],
+                         singular_values[singular_values < threshold['y']], line_color='red', line_width=2)
+                print(f"Current threshold: X = {
+                      threshold['x']:.2f}, Y = {threshold['y']:.5f}")
+
+        # Connect the function to the mouse movement event
+        fig.on_event(DoubleTap, update_crosshair)
+
+        # Function to record the coordinates of the click
+        def record_click(event):
+            if event.x and event.y:
+                x_click, y_click = event.x, event.y
+                threshold['y'] = y_click
+                threshold['x'] = np.argmin(np.abs(singular_values - y_click))
+                fig.line([0, len(singular_values)], [threshold['y'], threshold['y']],
+                         line_color='green', line_width=2, line_dash='dashed')
+                fig.line([threshold['x'], threshold['x']], [0, max(singular_values)],
+                         line_color='green', line_width=2, line_dash='dashed')
+                print(f"New eigenvalues threshold: X = {
+                      x_click:.2f}, Y = {y_click:.2f}")
+                return threshold['x'], threshold['y']
+
+        # Connect the function to the left button click event
+        fig.on_event(DoubleTap, record_click)
+
+        # Show the plot
+        show(fig)
+
+        return threshold['x'], threshold['y']
+
+
+# if __name__ == "__main__":
+#    import random
+#    random.seed(0)
+#    mat = np.array([
+#        [random.random() for i in range(100)] for j in range(100)])
+#    sqmat = mat @ mat.T
+#    rec = ComputeReconstructor.make_interactive_plot_bokeh(sqmat)
