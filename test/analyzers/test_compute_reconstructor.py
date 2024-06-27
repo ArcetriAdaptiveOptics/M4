@@ -14,23 +14,31 @@ class TestComputeReconstructor(unittest.TestCase):
 
     def setUp(self):
         random.seed(0)
-        random_matrix = [[random.random() for i in range(100)]
-                         for j in range(100)]
-        self._random_matrix_dp = np.linalg.inv(
-            np.array(random_matrix).T @ np.array(random_matrix)
-        )
+        self._intMatCube = []
+        for k in range(50):
+            random_matrix = [[random.random() for i in range(100)]
+                             for j in range(100)]
+            x, y = np.meshgrid(np.arange(100)-50+3*np.random.random(),
+                               np.arange(100)-50+3*np.random.random())
+            mask = (x**2 + y**2) > 25**2
+            self._intMatCube.append(
+                np.ma.masked_array(random_matrix, mask=mask))
+        # self._intMatCube = np.array(self._intMatCube)
+        self._intMatCube = np.ma.dstack(self._intMatCube)
 
-    @mock.patch("m4.analyzers.analyzer_iffunctions.AnalyzerIFF")
-    @mock.patch("matplotlib.pyplot")
-    @mock.patch("matplotlib.pyplot.show")
-    def test_compute_reconstructor(self, m_analyzer, m_plot, m_show):
-        m_analyzer.getInteractionMatrix.return_value = self._random_matrix_dp
-        m_plot.return_value = {'y': 1, 'x': 1}
-        rec = ComputeReconstructor(m_analyzer)
-        _ = rec.run(Interactive=False)
-        _ = rec.run(Interactive=False, sv_threshold=3.9e-2)
+    def test_compute_reconstructor(self):
+        self._cr = ComputeReconstructor(self._intMatCube)
+        _ = self._cr.run(Interactive=False)
+        _ = self._cr.run(Interactive=False, sv_threshold=11)
         np.testing.assert_array_almost_equal_nulp(
-            rec._filtered_sv[-7:], np.zeros(7))
+            self._cr._filtered_sv[-11:], np.zeros(11))
+        # _ = self._cr.run(Interactive=True)
+
+    @mock.patch("astropy.io.fits")
+    def test_load_reconstructor(self, m_fits):
+        m_fits.open.return_value = self._intMatCube
+        tn = "20220101_000000"
+        self._cr = ComputeReconstructor.loadIntMatFromFolder(tn)
 
     def tearDown(self):
         self._random_matrix_dp = None
