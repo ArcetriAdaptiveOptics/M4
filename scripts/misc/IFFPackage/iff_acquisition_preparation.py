@@ -42,6 +42,7 @@ class IFFCapturePreparation():
         self._indexingList      = None
         self._modesAmp          = None
         self._template          = None
+        self._shuffle           = 0
         # Matrices
         self.timedCmdHistory    = None
         self.cmdMatHistory      = None
@@ -96,7 +97,7 @@ class IFFCapturePreparation():
                 'ampVector': self._modesAmp,
                 'indexList': self._indexingList,
                 'template' : self._template,
-                'shuffle'  : 'To be implemented'
+                'shuffle'  : self._shuffle
             }
         return info
         
@@ -132,7 +133,8 @@ class IFFCapturePreparation():
         self._createCmdMatrix(mlist)
         self._modesList = mlist
         self._modesAmp  = modesAmp
-        if shuffle:
+        if shuffle is not False:
+            self._shuffle = shuffle
             cmd_matrix = np.zeros((self._cmdMatrix.shape[0], self._cmdMatrix.shape[1]))
             modesList = np.copy(self._modesList)
             np.random.shuffle(modesList)

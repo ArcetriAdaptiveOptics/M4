@@ -8,6 +8,8 @@ Module containing functions to process the data acquired for IFF measurements.
 """
 import os
 import numpy as np
+import configparser
+config = configparser.ConfigParser()
 from m4.ground import timestamp
 from m4.configuration import read_iffconfig
 from m4.ground import read_data as rd
@@ -106,29 +108,22 @@ def stackCubes(tnlist):
     stacked_cube : masked_array
         Final cube, stacked along the 3th axis.
     """
-    new_tn = timestamp.Timestamp.now()
-    stacked_cube_fold = os.path.join(fn.INTMAT_ROOT_FOLDER, new_tn)
+    new_tn              = timestamp.Timestamp.now()
+    stacked_cube_fold   = os.path.join(fn.INTMAT_ROOT_FOLDER, new_tn)
     os.mkdir(stacked_cube_fold)
-    cubelist = []
-    matrixList = []
-    modesVectList = []
-    for tn in tnlist:
-        fold = os.path.join(intMatFold, tn)
-        cube_name = os.path.join(fold, 'IMCube.fits')
-        matrix_name = os.path.join(fold, 'cmdMatrix.fits')
-        modesVec_name = os.path.join(fold, 'modesVector.fits')
-        cubelist.append(rd.readFits_data(cube_name))
-        matrixList.append(rd.readFits_data(matrix_name))
-        modesVectList.append(rd.readFits_data(modesVec_name))
-    stacked_cube = np.ma.dstack(cubelist)
-    stacked_cmat = np.dstack(matrixList)
-    stacked_mvec = np.dstack(modesVectList)
-    save_cube = os.path.join(stacked_cube_fold, 'IMCube.fits')
-    save_cmat = os.path.join(stacked_cube_fold, 'cmdMatrix.fits')
-    save_mvec = os.path.join(stacked_cube_fold, 'modesVector.fits')
+    cube_parameters     = _getCubeList(tnlist)
+    flag                = _checkStackedCubes(tnlist)
+    stacked_cube        = np.ma.dstack(cube_parameters[0])
+    stacked_cmat        = np.dstack(cube_parameters[1])
+    stacked_mvec        = np.dstack(cube_parameters[2])
+    save_cube           = os.path.join(stacked_cube_fold, 'IMCube.fits')
+    save_cmat           = os.path.join(stacked_cube_fold, 'cmdMatrix.fits')
+    save_mvec           = os.path.join(stacked_cube_fold, 'modesVector.fits')
     rd.save_phasemap(save_cube, stacked_cube, isCube=True)
     pyfits.writeto(save_cmat, stacked_cmat)
     pyfits.writeto(save_mvec, stacked_mvec)
+    with open(os.path.join(stacked_cube_fold, 'flag.txt'), 'w', encoding='UTF-8') as file:
+        flag.write(file)
     print(f"Stacked cube and matrices saved in {new_tn}")
 
 def iffRedux(tn, fileMat, ampVect, modeList, template, shuffle=0):
@@ -371,6 +366,20 @@ def getIffFileMatrix(tn):
                              (len(infoIF['modes']), len(infoIF['template'])))
     return iffMat
 
+def _getCubeList(tnlist):
+    cubeList = []
+    matrixList = []
+    modesVectList = []
+    for tn in tnlist:
+        fold = os.path.join(intMatFold, tn)
+        cube_name = os.path.join(fold, 'IMCube.fits')
+        matrix_name = os.path.join(fold, 'cmdMatrix.fits')
+        modesVec_name = os.path.join(fold, 'modesVector.fits')
+        cubeList.append(rd.readFits_data(cube_name))
+        matrixList.append(rd.readFits_data(matrix_name))
+        modesVectList.append(rd.readFits_data(modesVec_name))
+    return cubeList, matrixList, modesVectList
+
 def _getFileList(tn, fold=None):
     """
     Returns the file list of a given tracking number datapath.
@@ -427,7 +436,7 @@ def _getAcqPar(tn):
     modesVector      = rd.readFits_data(os.path.join(base, modesVecFile))
     indexList        = rd.readFits_data(os.path.join(base, indexListFile))
     registrationActs = rd.readFits_data(os.path.join(base, regisActFile))
-    with open(os.path.join(base, shuffleFile), 'r') as shf:
+    with open(os.path.join(base, shuffleFile), 'r', encoding='UTF-8') as shf:
         shuffle = int(shf.read())
     return ampVector, modesVector, template,indexList, registrationActs,shuffle
 
@@ -448,6 +457,73 @@ def _getAcqInfo():
     infoR = read_iffconfig.getConfig('REGISTRATION')
     infoIF = read_iffconfig.getConfig('IFFUNC')
     return infoT, infoR, infoIF
+
+def _checkStackedCubes(tnlist):
+    _,_,modesVectList = _getCubeList(tnlist)
+    nmodes = len(modesVectList[0])
+    nvects = len(modesVectList)
+    for i in range(nvects):
+        for j in range(i + 1, nvects):
+            common_modes = set(modesVectList[i]).intersection(modesVectList[j])
+    c_nmodes = len(common_modes)
+    if c_nmodes in range(1,nmodes):
+        flag = __shared_modes(tnlist,modesVectList)
+    elif c_nmodes==nmodes:
+        flag = __averaged(tnlist,modesVectList)
+    else:
+        flag = __stacked(tnlist,modesVectList)
+    return flag
+
+def __stacked(tnlist,modesVectList):
+    c_type = 'Sequentially stacked cubes'
+    text=''
+    for i in range(len(tnlist)):
+        text += f"""{tnlist[i]}, modes {list(modesVectList[i])} \\
+           """
+    flag = {
+        'Flag': {
+            'Cube type': c_type,
+            'Source cubes': text,
+            }
+        }
+    config['Flag'] = {}
+    for key,value in flag['Flag'].items():
+        config['Flag'][key] = value
+    return config
+    
+def __averaged(tnlist,modesVectList):
+    c_type = 'Mean of cubes'
+    text=''
+    for i in range(len(tnlist)):
+        text += f"""{tnlist[i]}, modes {list(modesVectList[i])} \\
+           """
+    flag = {
+        'Flag': {
+            'Cube type': c_type,
+            'Source cubes': text,
+            }
+        }
+    config['Flag'] = {}
+    for key,value in flag['Flag'].items():
+        config['Flag'][key] = value
+    return config
+
+def __shared_modes(tnlist,modesVectList):
+    c_type = '!!!Warning: repeated modes in stacked cube'
+    text=''
+    for i in range(len(tnlist)):
+        text += f"""{tnlist[i]}, modes {list(modesVectList[i])} \\
+           """
+    flag = {
+        'Flag': {
+            'Cube type': c_type,
+            'Source cubes': text,
+            }
+        }
+    config['Flag'] = {}
+    for key,value in flag['Flag'].items():
+        config['Flag'][key] = value
+    return config
 
 # def _ampReorganization(ampVector):
 #     pass

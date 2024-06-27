@@ -1,5 +1,4 @@
 # Test IFF Package Pietro
-#run '/home/pietrof/git/M4/m4/analysis_imports.py'
 import os
 from m4.devices import deformable_mirror as dfm
 from astropy.io import fits
@@ -13,9 +12,12 @@ from m4.utils import image_registration_lib as iml
 roi = ROI()
 m4 = dfm.M4AU()
 ifa= ifa.IFFCapturePreparation(dfm.M4AU())
-
-# ciclo per creare dati simulati (pyott -i)
-# Position the segment
+opd_fold = fn.OPD_IMAGES_ROOT_FOLDER
+iff_fold = fn.IFFUNCTIONS_ROOT_FOLDER
+tn = '20160516_114916'
+tn2= '20160516_114917'
+#______Data_Simulation_________________________________________________________
+# Position correctly the segment
 truss.moveTrussBy(0.500)
 angrot.rotateBy(-30)
 dm.setZerosToSegActs()
@@ -23,18 +25,13 @@ figure(); imshow(interf.acquire_phasemap()); colorbar()
 # Create and run the timed command matrix history
 ifa._updateModalBase('mirror')
 t           = ifa._createTriggerPadding()
-tcmdh       = ifa.createTimedCmdHistory(); imshow(tcmdh);colorbar()
-cmdM        = ifa._cmdMatrix
-ampVect     = ifa._modesAmp
-indexList   = ifa._indexingList
-modesVect   = ifa._modesList
-template    = ifa._template
+tcmdh       = ifa.createTimedCmdHistory() #;imshow(tcmdh);colorbar()
+iff_par     = ifa.getInfoToSave()
 regActs     = read_iffconfig.getConfig(('REGISTRATION'))['modes']
 images = []
 for column in tcmdh.T:
     dm.setActsCommand(column, rel=False)
     images.append(interf.acquire_phasemap())
-    #dm.setZerosToSegActs()
 masked_images = []
 for i in range(len(images)):
     mask = roi.roiGenerator(images[i])[9]
@@ -49,45 +46,45 @@ for i in range(len(images)):
     plt.title(f"image_{i:04d}")
 #-------------------------
 ####
-# Saving the data simulated data 2 and stack cubes
-tn  = '20160516_114916'
-tn2 = '20160516_114916-2'
-# Save
-fold = os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn2)
-ifFold = os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn2)
-if os.path.exists(fold) is False:
-    os.mkdir(fold)
-if os.path.exists(ifFold) is False:
-    os.mkdir(ifFold)
+# Save. This should happen when the timed_cmd_history is sent and the acquisi-
+# tion starts, so that a tn is created
+if os.path.exists(opd_fold) is False:
+    os.mkdir(opd_fold)
+if os.path.exists(iff_fold) is False:
+    os.mkdir(iff_fold)
 for i in range(len(masked_images)):
-    name = os.path.join(fold, f"img_{i:04d}.fits")
+    name = os.path.join(opd_fold, f"img_{i:04d}.fits")
     rd.save_phasemap(name, masked_images[i])
-fits.writeto(os.path.join(ifFold, 'cmdMatrix.fits'), cmdM)
-fits.writeto(os.path.join(ifFold, 'ampVector.fits'), ampVect)
-fits.writeto(os.path.join(ifFold, 'indexList.fits'), indexList)
-fits.writeto(os.path.join(ifFold, 'modesVector.fits'), modesVect)
-fits.writeto(os.path.join(ifFold, 'Template.fits'), template)
-fits.writeto(os.path.join(ifFold, 'registrationActs.fits'), regActs)
-with open(os.path.join(ifFold, 'shuffle.dat'), 'w') as file:
-    file.write('0')
-# Processing
+fits.writeto(os.path.join(iff_fold, 'cmdMatrix.fits'), iff_par['cmdMatrix'])
+fits.writeto(os.path.join(iff_fold, 'ampVector.fits'), iff_par['ampVector'])
+fits.writeto(os.path.join(iff_fold, 'indexList.fits'), iff_par['indexList'])
+fits.writeto(os.path.join(iff_fold, 'modesVector.fits'), iff_par['modesList'])
+fits.writeto(os.path.join(iff_fold, 'Template.fits'), iff_par['template'])
+fits.writeto(os.path.join(iff_fold, 'registrationActs.fits'), regActs)
+with open(os.path.join(iff_fold, 'shuffle.dat'), 'w') as file:
+    file.write(str(iff_par['shuffle']))
+#______________________________________________________________________________
+# Processing tn
+ampVect,modesList,template,_,_,_ = ifp._getAcqPar(tn)
+trigF                   = ifp.getTriggerFrame(tn)
+regEnd, regMat          = ifp.getRegFileMatrix(tn)
+iffMat                  = ifp.getIffFileMatrix(tn)
+regImgList              = ifp.registrationRedux(regMat)
+ifp.iffRedux(tn, iffMat, ampVect, modesList, template)
+ifp.saveCube(tn)
+# Processing tn2
 ampVect,modesList,template,_,_,_ = ifp._getAcqPar(tn2)
 trigF                   = ifp.getTriggerFrame(tn2)
 regEnd, regMat          = ifp.getRegFileMatrix(tn2)
 iffMat                  = ifp.getIffFileMatrix(tn2)
 regImgList              = ifp.registrationRedux(regMat)
 ifp.iffRedux(tn2, iffMat, ampVect, modesList, template)
-# cube save
-
-# cubes stack
-tn = '20160516_114916'
-tn2 = '20160516_114916 (Copy)'
-ifp.saveCube(tn)
 ifp.saveCube(tn2)
-ifp.stackCubes([tn,tn2])
 
-#_Old_Data_Check_______________________________________________________________
-tn  = '20160516_114916'
+tnlist = [tn,tn2]
+ifp.stackCubes(tnlist)
+
+#_Data_Check_______________________________________________________________
 fold = os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn)
 filelist = ifp._getFileList(tn)
 for file in filelist:
@@ -96,8 +93,51 @@ for file in filelist:
     plt.colorbar()
 
 #!!!___________________________________________________________________________
+nmodes = len(modesVectList[0])
+for i in range(nmodes):
+    for j in range(i + 1, nmodes):
+        common_modes = set(modesVectList[i]).intersection(modesVectList[j])
+c_nmodes = len(common_modes)
+if c_nmodes==0:
+    c_type = 'Sequentially stacked cubes'
+    text=''
+    for i in range(len(tnlist)):
+        text += f"""{tnlist[i]}, modes {list(modesVectList[i])} \
+"""
+    flag = {
+        'Flag': {
+            'Cube type': c_type,
+            'Source cubes': text,
+            }
+        }
+elif c_nmodes>0 and c_nmodes<nmodes:
+    c_type = '!!!Warning: repeated modes in stacked cube'
+    text=''
+    for i in range(len(tnlist)):
+        text += f"""{tnlist[i]}, modes {list(modesVectList[i])} \
+"""
+    flag = {
+        'Flag': {
+            'Cube type': c_type,
+            'Source cubes': text,
+            }
+        }
+elif c_nmodes==nmodes:
+    c_type = 'Mean of cubes'
+    text=''
+    for i in range(len(tnlist)):
+        text += f"""{tnlist[i]}, modes {list(modesVectList[i])} \
+"""
+    flag = {
+        'Flag': {
+            'Cube type': c_type,
+            'Source cubes': text,
+            }
+        }
+    
+#!!!___________________________________________________________________________
 def rename4D(tn):
-    fold = os.path.join(imgFold, tn)
+    fold = os.path.join(opd_fold, tn)
     files = os.listdir(fold)
     for file in files:
         if file.endswith('.4D'):
@@ -110,7 +150,7 @@ def rename4D(tn):
                 os.rename(old_file, new_file)
 
 def create_sample_files(tn, number):
-    directory = os.path.join(imgFold, tn)
+    directory = os.path.join(opd_fold, tn)
     for i in range(0, number):
         file_name = f"{i}.4D"
         file_path = os.path.join(directory, file_name)
