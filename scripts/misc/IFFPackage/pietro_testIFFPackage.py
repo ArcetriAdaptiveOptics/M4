@@ -4,7 +4,7 @@ import os
 from m4.devices import deformable_mirror as dfm
 from astropy.io import fits
 from scripts.misc.IFFPackage import iff_acquisition_preparation as ifa
-from scripts.misc.IFFPackage import iff_processing_pietro as ifp
+from scripts.misc.IFFPackage import iff_processing as ifp
 from m4.configuration import config_folder_names as fn
 from m4.ground import read_data as rd
 from m4.configuration import read_iffconfig
@@ -21,7 +21,7 @@ angrot.rotateBy(-30)
 dm.setZerosToSegActs()
 figure(); imshow(interf.acquire_phasemap()); colorbar()
 # Create and run the timed command matrix history
-ifa._updateModalBase('hadamard')
+ifa._updateModalBase('mirror')
 t           = ifa._createTriggerPadding()
 tcmdh       = ifa.createTimedCmdHistory(); imshow(tcmdh);colorbar()
 cmdM        = ifa._cmdMatrix
@@ -32,7 +32,7 @@ template    = ifa._template
 regActs     = read_iffconfig.getConfig(('REGISTRATION'))['modes']
 images = []
 for column in tcmdh.T:
-    dm.setActsCommand(column)
+    dm.setActsCommand(column, rel=False)
     images.append(interf.acquire_phasemap())
     #dm.setZerosToSegActs()
 masked_images = []

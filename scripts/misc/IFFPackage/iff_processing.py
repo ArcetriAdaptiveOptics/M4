@@ -27,32 +27,32 @@ shuffleFile    = 'shuffle.dat'
 indexListFile  = 'indexList.fits'
 coordfile      = '' #!!! Da definire?
 
-# def process(tn, register = False):
-#     """
-#     High level function with processes the data contained in the given tracking
-#     number OPDimages folder, performing the differential algorythm and saving 
-#     the final cube.
+def process(tn, register = False):
+    """
+    High level function with processes the data contained in the given tracking
+    number OPDimages folder, performing the differential algorythm and saving 
+    the final cube.
 
-#     Parameters
-#     ----------
-#     tn : str
-#         Tracking number of the data in the OPDImages folder.
-#     register : int, optional
-#         Parameter which enables the registration option. The default is False.
-#     """
-#     infoT, infoR, infoIF = _getAcqInfo()
-#     ampVector, modesVector, template, indexList, registrationActs, shuffle = _getAcqPar(tn)
-#     _, regMat = getRegFileMatrix(tn)
-#     modesMat = getIffFileMatrix(tn)
-#     # regMat, modesMat = findTriggerStartFrame(tn)
-#     actImgList = registrationRedux(regMat, template)
-#     modesMatReorg = _modesReorganization(modesMat) # ???
-#     iffRedux(tn, modesMatReorg, ampVector, modesVector, template, shuffle)
-#     if register is not False:
-#         dx = findFrameOffset(tn, actImgList, registrationActs)
-#     else:
-#         dx = register
-#     saveCube(tn, dx)
+    Parameters
+    ----------
+    tn : str
+        Tracking number of the data in the OPDImages folder.
+    register : int, optional
+        Parameter which enables the registration option. The default is False.
+    """
+    infoT, infoR, infoIF = _getAcqInfo()
+    ampVector, modesVector, template, indexList, registrationActs, shuffle = _getAcqPar(tn)
+    _, regMat = getRegFileMatrix(tn)
+    modesMat = getIffFileMatrix(tn)
+    # regMat, modesMat = findTriggerStartFrame(tn)
+    actImgList = registrationRedux(regMat, template)
+    modesMatReorg = _modesReorganization(modesMat) # ???
+    iffRedux(tn, modesMatReorg, ampVector, modesVector, template, shuffle)
+    if register is not False:
+        dx = findFrameOffset(tn, actImgList, registrationActs)
+    else:
+        dx = register
+    saveCube(tn, dx)
     
 def saveCube(tn, register=False):
     """
