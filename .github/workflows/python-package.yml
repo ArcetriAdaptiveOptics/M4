@@ -12,10 +12,6 @@ on:
     branches: [ master ]
   schedule:
     - cron: "1 1 * * *"
-env:
-  # Setting an environment variable with the value of a configuration variable
-  # env_var: ${{ vars.ENV_CONTEXT_VAR }}
-  PYOTTCONF: ${{github.env}} # \m4\configuration\testConfig.yaml
 jobs:
   build:
     #runs-on: ubuntu-latest
@@ -24,6 +20,8 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python-version: [ "3.9.13", "3.10.12", "3.12.2"]
+    env:
+        PYOTTCONF: ${{github.env}} # \m4\configuration\testConfig.yaml
     steps:
     - name: "test Env Variables"
       run: echo "$PYOTTCONF"
