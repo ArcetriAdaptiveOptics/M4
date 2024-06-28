@@ -13,7 +13,9 @@ on:
   schedule:
     - cron: "1 1 * * *"
 env:
-  PYOTTCONF: ${{ github.worflow_ref }}\m4\configuration\testConfig.yaml
+  # Setting an environment variable with the value of a configuration variable
+  env_var: ${{ vars.ENV_CONTEXT_VAR }}
+  PYOTTCONF: $GITHUB_WORKFLOW_REF\m4\configuration\testConfig.yaml
 jobs:
   build:
     #runs-on: ubuntu-latest
