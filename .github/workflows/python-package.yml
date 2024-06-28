@@ -15,7 +15,7 @@ on:
 env:
   # Setting an environment variable with the value of a configuration variable
   # env_var: ${{ vars.ENV_CONTEXT_VAR }}
-  PYOTTCONF: ${{github.workflow.ref}}\m4\configuration\testConfig.yaml
+  PYOTTCONF: ${{GITHUB_WORKFLOW_REF}}\m4\configuration\testConfig.yaml
 jobs:
   build:
     #runs-on: ubuntu-latest
