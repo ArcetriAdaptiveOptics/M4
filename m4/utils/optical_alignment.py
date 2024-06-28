@@ -465,7 +465,7 @@ class OpticalAlignment:
         imgout = imgout - surf
         return imgout
 
-    ### M4 ###
+    # M4 ###
     # va riscritta
     def _reorgCmdForM4(self, cmd):
         dofIndex = OttParameters.M4_DOF

@@ -49,6 +49,9 @@ class AnalyzerIFF():
         self._template = None
         self._h5Folder = None
         self._tt_cmdH = None
+        self._intMat_U = None
+        self._intMat_S = None
+        self._intMat_Vt = None
 
     def _ttData(self):
         """ Allow to obtain the tracking number from the path """
