@@ -12,6 +12,8 @@ on:
     branches: [ master ]
   schedule:
     - cron: "1 1 * * *"
+env:
+  PYOTTCONF: ${{ github.worflow_ref }}\m4\configuration\testConfig.yaml
 jobs:
   build:
     #runs-on: ubuntu-latest
@@ -21,6 +23,8 @@ jobs:
         os: [ubuntu-latest]
         python-version: [ "3.9.13", "3.10.12", "3.12.2"]
     steps:
+    - name: "test Env Variables"
+      run: echo "$PYOTTCONF"
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
