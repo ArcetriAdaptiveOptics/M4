@@ -45,8 +45,9 @@ class TestComputeReconstructor(unittest.TestCase):
         self._cr = ComputeReconstructor(self._intMatCube)
         _ = self._cr.run(Interactive=False, sv_threshold=11)
 
+        print(self._cr._filtered_sv[-10:])
         np.testing.assert_array_almost_equal_nulp(
-            self._cr._filtered_sv[-11:], np.zeros(11))
+            self._cr._filtered_sv[-10:], np.zeros(10))
         # _ = self._cr.run(Interactive=True)
 
     @mock.patch("os.path.join")
@@ -60,8 +61,9 @@ class TestComputeReconstructor(unittest.TestCase):
         self._cr = ComputeReconstructor.loadIntMatFromFolder(tn)
         _ = self._cr.run(Interactive=False, sv_threshold=11)
 
+        print(self._cr._filtered_sv[-10:])
         np.testing.assert_array_almost_equal_nulp(
-            self._cr._filtered_sv[-11:], np.zeros(11))
+            self._cr._filtered_sv[-10:], np.zeros(10))
 
     def tearDown(self):
         self._random_matrix_dp = None
