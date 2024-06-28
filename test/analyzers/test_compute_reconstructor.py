@@ -10,6 +10,18 @@ import random
 import unittest
 
 
+class fake_hdu():
+
+    def __init__(self, data):
+        self.data = data
+
+    def __getitem__(self, key):
+        return self
+
+    def close(self):
+        pass
+
+
 class TestComputeReconstructor(unittest.TestCase):
 
     def setUp(self):
@@ -29,16 +41,27 @@ class TestComputeReconstructor(unittest.TestCase):
     def test_compute_reconstructor(self):
         self._cr = ComputeReconstructor(self._intMatCube)
         _ = self._cr.run(Interactive=False)
+
+        self._cr = ComputeReconstructor(self._intMatCube)
         _ = self._cr.run(Interactive=False, sv_threshold=11)
+
         np.testing.assert_array_almost_equal_nulp(
             self._cr._filtered_sv[-11:], np.zeros(11))
         # _ = self._cr.run(Interactive=True)
 
-    @mock.patch("astropy.io.fits")
-    def test_load_reconstructor(self, m_fits):
-        m_fits.open.return_value = self._intMatCube
+    @mock.patch("os.path.join")
+    @mock.patch("astropy.io.fits.open")
+    def test_load_reconstructor(self, m_fits, m_join):
+        m_join.return_value = "20220101_000000"
+        m_fits.side_effect =\
+            [fake_hdu(self._intMatCube.copy()), fake_hdu(
+                self._intMatCube.copy())]  # finire questo test!
         tn = "20220101_000000"
         self._cr = ComputeReconstructor.loadIntMatFromFolder(tn)
+        _ = self._cr.run(Interactive=False, sv_threshold=11)
+
+        np.testing.assert_array_almost_equal_nulp(
+            self._cr._filtered_sv[-11:], np.zeros(11))
 
     def tearDown(self):
         self._random_matrix_dp = None

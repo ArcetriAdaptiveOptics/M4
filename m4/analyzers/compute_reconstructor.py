@@ -98,7 +98,7 @@ class ComputeReconstructor:
         """
         # load cube from file
         try:
-            intmat_fullpath = os.path(
+            intmat_fullpath = os.path.join(
                 os.path.join(intMatFold, tn), "IMCube.fits")
             hdu = pyfits.open(intmat_fullpath)
             _intMatCube = hdu[0].data
