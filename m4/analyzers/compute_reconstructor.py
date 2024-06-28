@@ -30,7 +30,7 @@ class ComputeReconstructor:
 
     OR
 
-        cr = ComputeReconstructor(interation_matrix_cube) 
+        cr = ComputeReconstructor(interation_matrix_cube)
         rec = cr.run(Interactive=True)
 
         where the interaction_matrix_cube is a masked_array dstack of
@@ -224,8 +224,8 @@ class ComputeReconstructor:
                 ax.axvline(threshold["y"], color="g",
                            linestyle="-", linewidth=1)
                 print(
-                    f"New eigenvalues threshold: X = {
-                        x_click:.2f}, Y = {y_click:.2f}"
+                    f"New eigenvalues threshold: X = {x_click:.2f}, \
+                            Y = {y_click:.2f}"
                 )
                 return threshold["x"], threshold["y"]
 
