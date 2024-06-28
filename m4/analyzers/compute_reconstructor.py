@@ -202,8 +202,8 @@ class ComputeReconstructor:
                 )
                 ax.figure.canvas.draw()
                 print(
-                    f"Current threshold: X = \
-                        {threshold['x']:.2f}, Y = {threshold['y']:.5f}"
+                    f"Current threshold: X = {threshold['x']:.2f}, \
+                        Y = {threshold['y']:.5f}"
                 )
 
         # Connettere la funzione all'evento di movimento del mouse
