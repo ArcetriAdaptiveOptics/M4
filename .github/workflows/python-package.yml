@@ -24,7 +24,9 @@ jobs:
         PYOTTCONF: ${{github.env}} # \m4\configuration\testConfig.yaml
     steps:
     - name: "test Env Variables"
-      run: echo "$PYOTTCONF"
+      run: |
+        echo "$PYOTTCONF"
+        echo  ${{github.env}} 
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
