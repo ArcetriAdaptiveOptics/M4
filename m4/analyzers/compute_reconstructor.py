@@ -201,10 +201,10 @@ class ComputeReconstructor:
                     linewidth=1,
                 )
                 ax.figure.canvas.draw()
-                print(
-                    f"Current threshold: X = {threshold['x']:.2f}, \
-                        Y = {threshold['y']:.5f}"
-                )
+                # print(
+                #    f"Current threshold: X = {threshold['x']:.2f}, \
+                #        Y = {threshold['y']:.5f}"
+                # )
 
         # Connettere la funzione all'evento di movimento del mouse
         ax.add_artist(ax.patch)
@@ -223,10 +223,10 @@ class ComputeReconstructor:
                            linestyle="-", linewidth=1)
                 ax.axvline(threshold["y"], color="g",
                            linestyle="-", linewidth=1)
-                print(
-                    f"New eigenvalues threshold: X = {x_click:.2f}, \
-                            Y = {y_click:.2f}"
-                )
+                # print(
+                #    f"New eigenvalues threshold: X = {x_click:.2f}, \
+                #            Y = {y_click:.2f}"
+                # )
                 return threshold["x"], threshold["y"]
 
         # Connettere la funzione all'evento di click del tasto sinistro
