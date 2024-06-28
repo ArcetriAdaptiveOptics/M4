@@ -65,4 +65,5 @@ class TestComputeReconstructor(unittest.TestCase):
 
     def tearDown(self):
         self._random_matrix_dp = None
+        self._cr = None
         pass
