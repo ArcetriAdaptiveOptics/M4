@@ -2,7 +2,7 @@
 import os
 from m4.devices import deformable_mirror as dfm
 from astropy.io import fits
-from m4.iffutils import iff_acquisition_preparation as ifa
+from m4.dmutils import iff_acquisition_preparation as ifa
 from scripts.misc.IFFPackage import iff_processing as ifp
 from m4.configuration import config_folder_names as fn
 from m4.ground import read_data as rd
@@ -11,7 +11,7 @@ from m4.utils.roi import ROI
 from m4.utils import image_registration_lib as iml
 roi = ROI()
 m4 = dfm.M4AU()
-ifa= ifa.IFFCapturePreparation(dfm.M4AU())
+ifa= ifa.IFFCapturePreparation(m4)
 opd_fold = fn.OPD_IMAGES_ROOT_FOLDER
 iff_fold = fn.IFFUNCTIONS_ROOT_FOLDER
 tn = '20160516_114916'
@@ -92,49 +92,6 @@ for file in filelist:
     plt.imshow(rd.read_phasemap(file))
     plt.colorbar()
 
-#!!!___________________________________________________________________________
-nmodes = len(modesVectList[0])
-for i in range(nmodes):
-    for j in range(i + 1, nmodes):
-        common_modes = set(modesVectList[i]).intersection(modesVectList[j])
-c_nmodes = len(common_modes)
-if c_nmodes==0:
-    c_type = 'Sequentially stacked cubes'
-    text=''
-    for i in range(len(tnlist)):
-        text += f"""{tnlist[i]}, modes {list(modesVectList[i])} \
-"""
-    flag = {
-        'Flag': {
-            'Cube type': c_type,
-            'Source cubes': text,
-            }
-        }
-elif c_nmodes>0 and c_nmodes<nmodes:
-    c_type = '!!!Warning: repeated modes in stacked cube'
-    text=''
-    for i in range(len(tnlist)):
-        text += f"""{tnlist[i]}, modes {list(modesVectList[i])} \
-"""
-    flag = {
-        'Flag': {
-            'Cube type': c_type,
-            'Source cubes': text,
-            }
-        }
-elif c_nmodes==nmodes:
-    c_type = 'Mean of cubes'
-    text=''
-    for i in range(len(tnlist)):
-        text += f"""{tnlist[i]}, modes {list(modesVectList[i])} \
-"""
-    flag = {
-        'Flag': {
-            'Cube type': c_type,
-            'Source cubes': text,
-            }
-        }
-    
 #!!!___________________________________________________________________________
 def rename4D(tn):
     fold = os.path.join(opd_fold, tn)

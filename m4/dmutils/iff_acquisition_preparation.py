@@ -49,29 +49,31 @@ class IFFCapturePreparation():
         self.auxCmdHistory      = None
         self.triggPadCmdHist    = None
         self.regPadCmdHist      = None
+        
+    def createTimedCmdHistory(self,  modesList=None, modesAmp=None, template=None, shuffle=False):
 
-    def createTimedCmdHistory(self,  modesList=None, modesAmp=None, template=None, shuffle=False): 
         """
         Function that creates the final timed command history to be applied
 
         Parameters
         ----------
         modesList : int | ArrayLike
-            List of selected modes to use. Default is None, that means all modes of the base command matrix are used.
-
+            List of selected modes to use. Default is None, that means all modes
+            of the base command matrix are used.
         modesAmp : float
-            Amplitude of the modes. Default is None, that means the value is loaded from the 'iffconfig.ini' file
-
+            Amplitude of the modes. Default is None, that means the value is 
+            loaded from the 'iffconfig.ini' file
         template : int | ArrayLike
-            Template for the push-pull measures. List of 1 and -1. Default is None, which means the template is loaded from the 'iffcongig.ini' file.
-
+            Template for the push-pull measures. List of 1 and -1. Default is 
+            None, which means the template is loaded from the 'iffcongig.ini' file.
         shuffle : boolean
             Decide wether to shuffle or not the modes order. Default is False
 
         Returns
         -------
         timedCmdHist : float | ArrayLike
-            Final timed command history, including the trigger padding, the registration pattern and the command matrix history.
+            Final timed command history, including the trigger padding, the 
+            registration pattern and the command matrix history.
         """
         self._modesList = modesList
         self.createCmdMatrixHistory(modesList, modesAmp, template, shuffle)
@@ -81,8 +83,8 @@ class IFFCapturePreparation():
         timedCmdHist = np.repeat(cmdHistory, timing, axis=1) 
         self.timedCmdHistory = timedCmdHist
         return timedCmdHist
-    
     def getInfoToSave(self):
+
         """
         Return the data to save as fits files, arranged in a dictionary
 
@@ -100,25 +102,28 @@ class IFFCapturePreparation():
                 'shuffle'  : self._shuffle
             }
         return info
-        
-
     def createCmdMatrixHistory(self, mlist=None, modesAmp=None, template=None, shuffle=False):
+
         """
         Creates the command matrix history for the IFF acquisition.
 
         Parameters
         ----------
         modesAmp : float
-            Amplitude of the modes to be commanded. If no argument is passed, it will be loaded from the configuration file iffConfig.ini
+            Amplitude of the modes to be commanded. If no argument is passed, 
+            it will be loaded from the configuration file iffConfig.ini
         template : int | ArrayLike
-            Template for the push-pull application of the modes. If no argument is passed, it will be loaded from the configuration file iffConfig.ini
+            Template for the push-pull application of the modes. If no argument
+            is passed, it will be loaded from the configuration file iffConfig.ini
         shuffle : boolean
-            Decides to wether shuffle or not the order in which the modes are applied. Default is False
+            Decides to wether shuffle or not the order in which the modes are 
+            applied. Default is False
 
         Returns
         -------
         cmd_matrixHistory : float | ArrayLike
-            Command matrix history to be applied, with the correct push-pull application, following the desired template.
+            Command matrix history to be applied, with the correct push-pull 
+            application, following the desired template.
         """
         infoIF = read_iffconfig.getConfig('IFFUNC')
         mlist = mlist if mlist is not None else infoIF.get('modes')
@@ -155,13 +160,13 @@ class IFFCapturePreparation():
                 cmd_matrixHistory.T[k] = cmd_matrix[:,i]*template[j]*modesAmp[i]
         self.cmdMatHistory = cmd_matrixHistory
         return cmd_matrixHistory
-
     def createAuxCmdHistory(self):
+
         '''
-        Creates the initial part of the final command history matrix that will\
-        be passed to M4. This includes the Trigger Frame, the first frame to have\
-        a non-zero command, and the Padding Frame, two frames with high rms, useful\
-        for setting a start to the real acquisition.
+        Creates the initial part of the final command history matrix that will
+        be passed to M4. This includes the Trigger Frame, the first frame to 
+        have a non-zero command, and the Padding Frame, two frames with high 
+        rms, useful for setting a start to the real acquisition.
 
         Result
         ------
@@ -173,11 +178,11 @@ class IFFCapturePreparation():
         aux_cmdHistory = np.hstack((self.triggPadCmdHist, self.regPadCmdHist))
         self.auxCmdHistory = aux_cmdHistory
         return aux_cmdHistory
-
     def _createRegistrationPattern(self):
+
         """
-        Creates the registration pattern to apply after the triggering and before\
-        the commands to apply for the IFF acquisition. The information about number\
+        Creates the registration pattern to apply after the triggering and before
+        the commands to apply for the IFF acquisition. The information about number
         of zeros, mode(s) and amplitude are read from the 'iffconfig.ini' file.
 
         Returns
@@ -198,11 +203,11 @@ class IFFCapturePreparation():
         regHist = np.hstack((zeroScheme, regScheme))
         self.regPadCmdHist = regHist
         return regHist
-
     def _createTriggerPadding(self):
+
         """
-        Function that creates the trigger padding scheme to apply before the \
-        registration padding scheme. The information about number of zeros, \
+        Function that creates the trigger padding scheme to apply before the 
+        registration padding scheme. The information about number of zeros, 
         mode(s) and amplitude are read from the 'iffconfig.ini' file.
 
         Returns
@@ -217,8 +222,8 @@ class IFFCapturePreparation():
         triggHist = np.hstack((zeroScheme, trigMode))
         self.triggPadCmdHist = triggHist
         return triggHist
-
     def _createCmdMatrix(self, mlist):
+
         '''
         Cuts the modal base according the given modes list
         '''
@@ -230,8 +235,8 @@ class IFFCapturePreparation():
         self._updateModalBase(baseId)
         self._cmdMatrix = self._modalBase[:,mlist] 
         return self._cmdMatrix
-
     def _updateModalBase(self, mbasename: str = None):
+
         """
         Updates the used modal base
 
@@ -258,9 +263,8 @@ class IFFCapturePreparation():
         else:
             print('Using user-defined modes')
             self._modalBase = self._createUserMat(mbasename) #this is expected to be a tracknum
-            
-
     def _createUserMat(self, tracknum: str = None):
+
         """
         
 
@@ -280,8 +284,8 @@ class IFFCapturePreparation():
         mbfile = os.path.join(fn.MODALBASE_ROOT_FOLDER, tracknum, modalBaseFileName)
         cmdBase = rd.readFits_data(mbfile)
         return cmdBase
-
     def _createZonalMat(self):
+
         """
         
 
@@ -293,7 +297,6 @@ class IFFCapturePreparation():
         """
         cmdBase = np.eye(self._NActs)
         return cmdBase
-
     def _createHadamardMat(self):
         """
         
