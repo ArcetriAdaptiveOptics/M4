@@ -46,7 +46,8 @@ class UploadCommand(Command):
             pass
 
         self.status('Building Source and Wheel (universal) distribution…')
-        os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
+        os.system(
+            '{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
 
         self.status('Uploading the package to PyPI via Twine…')
         os.system('twine upload dist/*')
@@ -74,6 +75,7 @@ setup(name=NAME,
                 'm4.configuration',
                 'm4.data',
                 'm4.devices',
+                'm4.dmutils',
                 'm4.ground',
                 'm4.gui',
                 'm4.mini_OTT',
@@ -104,7 +106,7 @@ setup(name=NAME,
           'm4': ['data/*'],
       },
       include_package_data=True,
-            entry_points={
+      entry_points={
           'gui_scripts': [
               'ott_geometry=m4.ground.GUI:main',
           ],

@@ -8,7 +8,7 @@ from importlib import reload
 #maybe the save shall be operated somewhere else
 
 from m4.devices import deformable_mirror as dm
-from scripts.misc.IFFPackage import iff_acquisition_preparation as ifa
+from m4.iffutils import iff_acquisition_preparation as ifa
 m4u = dm.M4AU()
 
 ifc=ifa.IFFCapturePreparation(m4u)

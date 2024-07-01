@@ -2,7 +2,7 @@
 import os
 from m4.devices import deformable_mirror as dfm
 from astropy.io import fits
-from scripts.misc.IFFPackage import iff_acquisition_preparation as ifa
+from m4.iffutils import iff_acquisition_preparation as ifa
 from scripts.misc.IFFPackage import iff_processing as ifp
 from m4.configuration import config_folder_names as fn
 from m4.ground import read_data as rd
