@@ -56,8 +56,8 @@ from m4.configuration import config_folder_names as fn
 from importlib import reload
 tn = '20160516_114916'
 
-infoT, infoR, infoIF = ifp.getAcqInfo(tn)
-ampVector, modesVector, template,indexList, registrationActs, shuffle=ifp.getAcqPar(tn)
+infoT, infoR, infoIF = ifp._getAcqInfo(tn)
+ampVector, modesVector, template,indexList, registrationActs, shuffle=ifp._getAcqPar(tn)
 filelist=ifp.getFileList(tn)
 regMat, modesMat = ifp.findTriggerStartFrame(tn)
 actImgList = ifp.registrationRedux(regMat, [1,-1])
