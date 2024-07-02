@@ -1,8 +1,16 @@
 """
 Author(s):
-    - P. Ferraiuolo
-
+----------
+    - Pietro Ferraiuolo
+    
 Written in June 2024
+
+Description
+-----------
+This module contains the IFFCapturePreparation class, a class which serves as a
+preparator for the Influence Function acquisition by M4, creating the timed com
+mand matrix history that will be ultimately used.
+More information on its use can be found on the class documentation.
 """
 import os
 import numpy as np
@@ -13,21 +21,67 @@ iffold = fn.IFFUNCTIONS_ROOT_FOLDER
 
 class IFFCapturePreparation():
     """
-    Class for the preparation for the Influence Function Acquisition
-
+    Class containing all the functions necessary to create the final timed
+    command matrix history to be executed by M4
+    
+    Import and Initialization
+    -------------------------
+    Import the module and initialize the class with a deformable mirror object
+    
+    >>> from m4.dmutils.iff_acquisition_preparation import IFFCapturePreparation
+    >>> from m4.devices import deformable_mirror as dm
+    >>> m4u = dm.M4AU()
+    >>> ifa = IFFCapturePreparation(m4u)
+    
     Methods
     -------
-    _getCmdMatrix
+    createTimedCmdHistory
+    
+        Creates the final timed command matrix history. Takes 4 positional optional 
+        arguments, which will be read from a configuration file if not passed
+        
+    createCmdMatrixhistory
 
-    _createTriggerPadding
-
-    _createRegistrationPattern
+        Takes the modal base loaded into the class (which can be updated using 
+        the sub-method _updateModalBase) and returns the wanted command matrix
+        with the dedired modes and amplitudes, which can be either passed on as 
+        arguments or read automatically from a configuration file.
+        
+        >>> # As example, wanting to update the modal base using a zonal one
+        >>> ifa._updateModalBase('zonal')
+        'Using zonal modes'
 
     createAuxCmdHistory
 
-    createCmdMatrixHistory
+        Creates the auxiliary command matrix to attach to the command matrix
+        history. This auxiliary matrix comprehends the trigger padding and the 
+        registration padding schemes. the parameters on how to create these 
+        schemes is written in a configuration file.
 
-    createTimedCmdHistory
+    getInfoToSave
+
+        A function that returns a dictionary containing all the useful information
+        to save, such as the command matrix used, the used mode list, the indexing
+        the amplitudes, the used tamplate and the shuffle option.
+        
+    Notes
+    -----
+    In order for the module to work properly, the tower initialization must be 
+    run, so that the folder names configuration file is populated. 
+    From the IPython console
+    
+    >>> run '/path/to/m4/initOTT.py'
+    >>> from m4.dmutils import iff_acquisition_preparation
+    
+    At this point you can either use the dm instance already present in the ran
+    file, most likely making the IFFCapturePreparation class to use a FakeDM to
+    initialize (might not work), or define a second dm instance
+    
+    >>> from m4.devices import deformable_mirror as dfm
+    >>> ifa = iff_acquisition_preparation.IFFCapturePreparation(dfm.M4AU())
+    
+    Upon developing the deformable_mirror module, the initialization issue will
+    be addressed.
     """
     def __init__(self, dm):
         '''The Constructor'''
@@ -75,6 +129,7 @@ class IFFCapturePreparation():
             Final timed command history, including the trigger padding, the 
             registration pattern and the command matrix history.
         """
+        self._updateModalBase(mbasename=None)
         self._modesList = modesList
         self.createCmdMatrixHistory(modesList, modesAmp, template, shuffle)
         self.createAuxCmdHistory()
@@ -83,8 +138,8 @@ class IFFCapturePreparation():
         timedCmdHist = np.repeat(cmdHistory, timing, axis=1) 
         self.timedCmdHistory = timedCmdHist
         return timedCmdHist
-    def getInfoToSave(self):
 
+    def getInfoToSave(self):
         """
         Return the data to save as fits files, arranged in a dictionary
 
@@ -92,7 +147,6 @@ class IFFCapturePreparation():
         -------
         info : dict
             Dictionary containing all the vectors and matrices needed
-
         """
         info = {'cmdMatrix': self._cmdMatrix,
                 'modesList': self._modesList,
@@ -102,6 +156,7 @@ class IFFCapturePreparation():
                 'shuffle'  : self._shuffle
             }
         return info
+
     def createCmdMatrixHistory(self, mlist=None, modesAmp=None, template=None, shuffle=False):
 
         """
@@ -160,6 +215,7 @@ class IFFCapturePreparation():
                 cmd_matrixHistory.T[k] = cmd_matrix[:,i]*template[j]*modesAmp[i]
         self.cmdMatHistory = cmd_matrixHistory
         return cmd_matrixHistory
+
     def createAuxCmdHistory(self):
 
         '''
@@ -178,6 +234,7 @@ class IFFCapturePreparation():
         aux_cmdHistory = np.hstack((self.triggPadCmdHist, self.regPadCmdHist))
         self.auxCmdHistory = aux_cmdHistory
         return aux_cmdHistory
+
     def _createRegistrationPattern(self):
 
         """
@@ -203,6 +260,7 @@ class IFFCapturePreparation():
         regHist = np.hstack((zeroScheme, regScheme))
         self.regPadCmdHist = regHist
         return regHist
+
     def _createTriggerPadding(self):
 
         """
@@ -222,6 +280,7 @@ class IFFCapturePreparation():
         triggHist = np.hstack((zeroScheme, trigMode))
         self.triggPadCmdHist = triggHist
         return triggHist
+
     def _createCmdMatrix(self, mlist):
 
         '''
@@ -235,6 +294,7 @@ class IFFCapturePreparation():
         self._updateModalBase(baseId)
         self._cmdMatrix = self._modalBase[:,mlist] 
         return self._cmdMatrix
+
     def _updateModalBase(self, mbasename: str = None):
 
         """
@@ -252,17 +312,21 @@ class IFFCapturePreparation():
         """
         if (mbasename is None) or (mbasename == 'mirror'):
             print('Using mirror modes')
+            self.modalBaseId = mbasename
             self._modalBase = self.mirrorModes
         elif mbasename == 'zonal':
             print('Using zonal modes')
+            self.modalBaseId = mbasename
             self._modalBase = self._createZonalMat()
         elif mbasename == 'hadamard':
             print('Using Hadamard modes')
+            self.modalBaseId = mbasename
             self._modalBase = self._createHadamardMat()
-            #implement here other options, or they can be read by file as below
         else:
             print('Using user-defined modes')
+            self.modalBaseId = mbasename
             self._modalBase = self._createUserMat(mbasename) #this is expected to be a tracknum
+            
     def _createUserMat(self, tracknum: str = None):
 
         """
@@ -284,6 +348,7 @@ class IFFCapturePreparation():
         mbfile = os.path.join(fn.MODALBASE_ROOT_FOLDER, tracknum, modalBaseFileName)
         cmdBase = rd.readFits_data(mbfile)
         return cmdBase
+
     def _createZonalMat(self):
 
         """
@@ -297,6 +362,7 @@ class IFFCapturePreparation():
         """
         cmdBase = np.eye(self._NActs)
         return cmdBase
+
     def _createHadamardMat(self):
         """
         

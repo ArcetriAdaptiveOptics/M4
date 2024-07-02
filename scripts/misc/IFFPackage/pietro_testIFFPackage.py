@@ -1,9 +1,11 @@
 # Test IFF Package Pietro
+run '/home/pietrof/git/M4/m4/initOTT.py'
+import numpy as np
 import os
 from m4.devices import deformable_mirror as dfm
 from astropy.io import fits
 from m4.dmutils import iff_acquisition_preparation as ifa
-from scripts.misc.IFFPackage import iff_processing as ifp
+from m4.dmutils import iff_processing as ifp
 from m4.configuration import config_folder_names as fn
 from m4.ground import read_data as rd
 from m4.configuration import read_iffconfig
@@ -46,8 +48,8 @@ for i in range(len(images)):
     plt.title(f"image_{i:04d}")
 #-------------------------
 ####
-# Save. This should happen when the timed_cmd_history is sent and the acquisi-
-# tion starts, so that a tn is created
+# Save. This should happen when the timed_cmd_history is sent and the acquisit-
+# ion starts, so that a tn is created
 if os.path.exists(opd_fold) is False:
     os.mkdir(opd_fold)
 if os.path.exists(iff_fold) is False:
@@ -84,7 +86,7 @@ ifp.saveCube(tn2)
 tnlist = [tn,tn2]
 ifp.stackCubes(tnlist)
 
-#_Data_Check_______________________________________________________________
+#_Data_Check___________________________________________________________________
 fold = os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn)
 filelist = ifp._getFileList(tn)
 for file in filelist:
@@ -92,6 +94,8 @@ for file in filelist:
     plt.imshow(rd.read_phasemap(file))
     plt.colorbar()
 
+
+np.zeros()
 #!!!___________________________________________________________________________
 def rename4D(tn):
     fold = os.path.join(opd_fold, tn)
