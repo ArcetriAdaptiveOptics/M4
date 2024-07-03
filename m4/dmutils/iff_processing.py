@@ -49,15 +49,17 @@ Stacekd cube and matrices saved in '.../m4/data/M4Data/OPTData/INTMatrices/'new_
 """
 import os
 import configparser
+import numpy as np
+from astropy.io import fits as pyfits
 from m4.ground import timestamp
 from m4.configuration import read_iffconfig
 from m4.ground import read_data as rd
-from m4.configuration import config_folder_names as fn
+from m4.configuration import update_folder_paths as ufp
 from m4.ground import zernike as zern
+from m4.utils import osutils
 from scripts.misc.IFFPackage import actuator_identification_lib as fa #FIXME
-from astropy.io import fits as pyfits
-import numpy as np
 config = configparser.ConfigParser()
+fn = ufp.folders
 imgFold     = fn.OPD_IMAGES_ROOT_FOLDER
 ifFold      = fn.IFFUNCTIONS_ROOT_FOLDER
 intMatFold  = fn.INTMAT_ROOT_FOLDER
@@ -115,7 +117,7 @@ def saveCube(tn, register : bool = False):
     cube : masked_array
         Data cube of the images, with shape (npx, npx, nmodes).
     """
-    filelist = _getFileList(tn, fold=ifFold)
+    filelist = osutils.getFileList(tn, fold=ifFold)
     filelist = [file for file in filelist if 'mode_' in file]
     cube_list = []
     for imgfits in filelist:
@@ -339,7 +341,7 @@ def getTriggerFrame(tn, amplitude=None):
     infoT, _, _ = _getAcqInfo()
     if amplitude is not None:
         infoT['amplitude'] = amplitude
-    fileList = _getFileList(tn)
+    fileList = osutils.getFileList(tn)
     img0 = rd.read_phasemap(fileList[0])
     go = i = 1
     while go !=0:
@@ -375,7 +377,7 @@ def getRegFileMatrix(tn):
         A matrix of images in string format, containing the registration frames.
         It has shape (registration_modes, n_push_pull).
     """
-    fileList    = _getFileList(tn)
+    fileList    = osutils.getFileList(tn)
     _, infoR, _ = _getAcqInfo()
     timing      = read_iffconfig.getTiming()
     trigFrame   = getTriggerFrame(tn)
@@ -401,7 +403,7 @@ def getIffFileMatrix(tn):
         IFF acquisition, that is all the modes with each push-pull realization.
         It has shape (modes, n_push_pull)
     """
-    fileList    = _getFileList(tn)
+    fileList    = osutils.getFileList(tn)
     _,_,infoIF  = _getAcqInfo()
     regEnd, _   = getRegFileMatrix(tn)
     iffList     = fileList[regEnd+infoIF['zeros']:]
@@ -422,31 +424,6 @@ def _getCubeList(tnlist):
         matrixList.append(rd.readFits_data(matrix_name))
         modesVectList.append(rd.readFits_data(modesVec_name))
     return cubeList, matrixList, modesVectList
-
-def _getFileList(tn, fold=None):
-    """
-    Returns the file list of a given tracking number datapath.
-
-    Parameters
-    ----------
-    tn : str
-        Tracking number of the data in the OPDImages folder.
-    fold : str, optional
-        Folder in which searching for the tracking number. If None, the default
-        folder is OPD_IMAGES_ROOT_FOLDER.
-
-    Returns
-    -------
-    fl : list
-        List of sorted files inside the folder.
-    """
-    if fold is None:
-        fl = sorted([os.path.join(imgFold, (tn+'/'+image)) \
-                     for image in os.listdir(os.path.join(imgFold, tn))])
-    else:
-        fl = sorted([os.path.join(fold, (tn+'/'+image)) \
-                     for image in os.listdir(os.path.join(fold, tn))])
-    return fl
 
 def _getAcqPar(tn):
     """

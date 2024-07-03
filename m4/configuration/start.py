@@ -1,15 +1,28 @@
-'''
-Authors
-  - C. Selmi: written in 2020
-              modified in 2022
-
-HOW TO USE IT::
-    from m4.configuration import start
-    ott, interf, dm = start.create_ott(config_file_path)
-'''
+"""
+Author(s)
+---------
+    - Chiara Selmi: written in 2020
+                    modified in 2022
+    - Pietro Ferraiuolo: modified in 2024
+Description
+-----------
+Module which creates and/or connects to the tower objects, that are:
+    - Accelerometers
+    - Angle Rotator
+    - M4's Exapode
+    - Parabola (with parabola slider)
+    - Reference Mirror (with reference mirror slider)
+    - Temperature Sensors
+    - Interferometer
+    - Deformable Mirror
+    
+How to Use it
+-------------
+    >>> from m4.configuration import start
+    >>> ott, interf, dm = start.create_ott(config_file_path)
+"""
 import os
 from m4.configuration.create_ott import OTT
-from m4.configuration.config_reader import configuration_path
 from m4.devices.opc_ua_controller import OpcUaController
 from m4.ott_sim.fake_parabola_slider import FakeParabolaSlider
 from m4.ott_sim.fake_reference_mirror_slider import FakeReferenceMirrorSlider
@@ -31,29 +44,24 @@ from m4.devices.temperature_sensors import OpcUaTemperatureSensors
 from m4.devices.accelerometers import ZmqAccelerometers
 from m4.devices.interferometer import I4d6110
 
-from m4.configuration.config_uploader import config_rewriter
+from m4.configuration import update_folder_paths as ufp
 from m4.configuration.ott_parameters import Sound
 import playsound
 
-def create_ott(config_file_name='/home/m4/git/M4/m4/configuration/myConfig.yaml'):
-    ''' Function for the ott creation
-
-    Parameters
-    ---------
-    config_file_name: string
-        configuration path to use
+def create_ott():
+    """ 
+    This function creates and initialize the OTT, creating all the devices, fak
+    e or real, accordingly to what specified in the configuration file.
 
     Returns
     -------
     ott: object
-        tower
+        The Optical Test Tower, comprehensive of the Parabola, the Reference mi
+        rror and the Deformable Mirror.
     interf: object
-        interferometer
-    '''
-    conf_obj = configuration_path(config_file_name)
-    cr = config_rewriter(conf_obj)
-    cr.upload()
-
+        The interferometer with which acquire the data.
+    """
+    conf_obj = ufp.folders
     if conf_obj.simulated_accelerometers is True:
         accelerometers = FakeAccelerometers()
     else:

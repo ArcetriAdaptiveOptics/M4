@@ -14,7 +14,7 @@ d shell.
 
 High-Level Use
 --------------
---> truss: 
+--> par: 
     Parabola slider with respect to optical axis.
 
         trussGetPosition():
@@ -172,24 +172,22 @@ import time
 import numpy as np
 from matplotlib import pyplot as plt
 from astropy.io import fits as pyfits
-#from m4.misc import par_meas as pp
 from m4.configuration import config_folder_names as fn
 from m4.ground import read_data as rd
 from m4.mini_OTT import timehistory as th
 from m4.ground import zernike as zern
 from m4.mini_OTT.measurements import Measurements
 from m4 import main
-from m4.configuration import start
+from m4.configuration.start import create_ott
 from m4.devices.i4d import I4D
 from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
 from m4.configuration.ott_parameters import Interferometer
 from m4 import noise
 
-conf = os.environ["PYOTTCONF"]
-ott, interf, dm = start.create_ott(conf)
-truss = Parabola(ott, conf) # could name 'optical_beam'
-flat = ReferenceMirror(ott, conf)
-angrot = AngleRotator(ott, conf)
+ott, interf, dm = create_ott()
+par = Parabola(ott)
+flat = ReferenceMirror(ott)
+angrot = AngleRotator(ott)
 meas = Measurements(ott, interf)
 phcamfocus = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
 
@@ -198,13 +196,13 @@ print(f'Base data path is: {fn.BASE_PATH}')
 print('')
 print('           |X|_____ _____|X|')
 print('           |X|           |X|')
-print('           |X|_____--___<|X|')
+print('   O.T.T.  |X|_____--___<|X|')
 print('           |X|    |\  /| |X|')
 print('     __    |X|    |_\/_| |X|')
 print('    |  |   |X|    | /\ | |X|')
 print('    |  |   |X|    |/  \| |X|')
 print(' ___|__|___|X|____ ---- _|X|_____')
-print("\n Type help() for information on the available operations")
+print("\nType help() for information on the available operations")
 
 def help():
     INIT = [
@@ -226,7 +224,7 @@ The OTT is initialized.
 
 HIGH-LEVEL USAGE:
 
---> truss : parabola slider with respect to optical axis.
+--> par : parabola slider with respect to optical axis.
 
     Available functions:
 

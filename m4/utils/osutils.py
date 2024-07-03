@@ -53,9 +53,9 @@ def getFileList(tn, fold=None, key:str=None):
 
     Returns
     -------
-    fl : list
+    fl : list os str
         List of sorted files inside the folder.
-        
+
     Examples
     --------
     Here are some examples regarding the use of the 'key' argument. Let's say w
@@ -102,20 +102,27 @@ def getFileList(tn, fold=None, key:str=None):
 
 def tnRange(tn0, tn1):
     """
-    
+    Returnsthe list of tracking numbers between tn0 and tn1, within the same fo
+    lder, if they both exist in it.
 
     Parameters
     ----------
-    tn0 : TYPE
-        DESCRIPTION.
-    tn1 : TYPE
-        DESCRIPTION.
+    tn0 : str
+        Starting tracking number.
+    tn1 : str
+        Finish tracking number.
 
     Returns
     -------
-    tnMat : TYPE
-        DESCRIPTION.
+    tnMat : list of str
+        A list or a matrix of tracking number in between the start and finish 
+        ones.
 
+    Raises
+    ------
+    Exception
+        An exception is raised if the two tracking numbers are not found in the
+        same folder
     """
     tn0_fold = findTracknum(tn0)
     tn1_fold = findTracknum(tn1)

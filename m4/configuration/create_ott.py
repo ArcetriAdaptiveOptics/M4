@@ -1,7 +1,8 @@
-'''
-Authors
-  - C. Selmi: written in 2020
-'''
+"""
+Author(s)
+---------
+    - Chiara Selmi: written in 2020
+"""
 
 class OTT():
 
