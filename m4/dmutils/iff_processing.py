@@ -54,7 +54,7 @@ from m4.configuration import read_iffconfig
 from m4.ground import read_data as rd
 from m4.configuration import config_folder_names as fn
 from m4.ground import zernike as zern
-# from scripts.misc.IFFPackage import actuator_identification_lib as fa #FIXME
+from scripts.misc.IFFPackage import actuator_identification_lib as fa #FIXME
 from astropy.io import fits as pyfits
 import numpy as np
 config = configparser.ConfigParser()

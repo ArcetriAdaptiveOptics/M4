@@ -1,34 +1,214 @@
-import numpy as np
+"""
+Author(s):
+----------
+        - Marco Xompero
+        - Chiara Selmi
+
+Desctiption
+===========
+Initialization script that sets up the interactive python shell to work with th
+e OTT, allowing the user for the control of the Parabola, the Reference Mirror 
+and the M4 deformable mirror.
+All the subsequent information can be accessed through help() in the initialize
+d shell.
+
+High-Level Use
+--------------
+--> truss: 
+    Parabola slider with respect to optical axis.
+
+        trussGetPosition():
+            Get current position of the parabola slider.
+
+        moveTrussTo(pos_in_m):
+            Move parabola slider to desired position.
+
+        moveTrussBy(change_in_m):
+            Change the current position of the parabola slider by the desired q
+            uantity.
+
+        parabolaPiston(intensity):
+            Change piston position of the desired quantity, from the starting p
+            osition. Takes the 3th coordinate of the full 6D coordinates array 
+            as imput.
+            Example 
+                >>> coord = np.array([0,0,x,-,-,0] --> intensity = x
+
+        parabolaTipTilt(tt):
+            Change the tip and tilt of the parabola of the desired quantity, fr
+            om the starting position. Takes the 4th and 5th coordinates of the 
+            full 6D coordinate array as imput.
+            Example 
+                >>> coord = np.array([0,0,-,x,y,0]) --> tt = np.array([x,y])
+
+--> angrot:
+    Angle rotator class.
+
+        getPosition():
+            Returns the current angolar position of the parabola.
+
+        setPosition(absolute_deg):
+            Rotates the parabola of the desired angular quantity.
+
+        rotateBy(rel_deg):
+            Rotate the parabola from the current position of the desired angle.
+
+
+-->  rm:
+    Reference mirror slider with respect to optical axis.
+
+        rmGetPosition():
+            Get current position of the reference mirror slider.
+
+        moveRmTo(pos_in_m):
+            Move reference mirror slider to desired position.
+
+        moveRmBy(change_in_m):
+            Change the current position of the reference mirror slider by the d
+            esired quanty.
+
+        rmPiston(intensity):
+            Change the current piston position of the desiredamount. Takes the 
+            3th coordinate of the full 6D coordinate array as imput.
+            Example
+                >>> coord = np.array([0,0,x,-,-,0]) --> intensity = x
+
+        rmTipTilt(tt):
+            Change the current tip and tilt position of the parabola by the des
+            ired quantity. Takes the 4th and 5th coordinates of the full 6D coo
+            rdinate array as imput.
+            Example
+                >>> coord = np.array([0,0,-,x,y,0]) --> tt = np.array([x,y])
+
+
+--> interf:
+    Class controlling the interferometer, containing all the commands documente
+    d by 4D.
+
+        acquire_phasemap(n_frames=1, delay=0):
+            Acquisition of n_frames images with a delay between one another.
+
+        save_phasemapr(location, file_name, masked_ima):
+            Save the acquired phasemap masked_ima into a fits file into the giv
+            en location
+
+        capture(numberOfFrames, folder_name=None):
+            Function for burst acquisition of numberOfFrames images, to be save
+            d into folder_name. If no folder name is given, a tracking number i
+            s generated and added at the standard capture folder for the 4D.
+
+        produce(folder_name):
+            Function for burst conversion of raw files into .4D files. This inc
+            ludes transferring the data from the interferometer WS to the tower
+            WS in the OPDimages folder.
+
+        getCameraSettings():
+            Reads the camera setting from the 4D configuration file of the inte
+            rferometer.
+
+        getFrameRate():
+            Gets the frame rate of the interferometer from the 4D configuration
+            file.
+
+        intoFullFrame(img):
+            Takes the cropped acquisition and returns it into the full 2048x2048
+            interferometer frame, after reading the cropping parameters.
+
+
+--> dm:
+    Class which contains the information and the functions to control the defor
+    mable mirror
+
+        setActsCommand(command, rel=True):
+            Set the given command array to the dm actuators. If rel=True, then 
+            relative commands are applied, else absolute.
+
+        getActsCommand():
+            Gets the current commands applied to the actuators.
+
+        getNActs():
+            Gets the number of actuators of the dm.
+
+        setIncreaseToSegActs(inc, rel=False):
+            Applies a piston command to all actuators.
+
+        setZeroToSegActs():
+            Resets the piston position for all actuators.
+
+        setRandomCommandToSegActs(amp, rel=False):
+            Generates a set of random distribution of piston between 0 and amp.
+
+Low-Level Use
+-------------
+Functions that talk directly to the OPCUA, thus relative to its reference frame.
+
+    ott.parabolaSlider :
+        getPosition()
+        
+        setPosition(pos)
+
+    ott.parabola:
+        getPosition()
+        
+        setPosition(coords)
+
+    ott.referenceMirrorSlider:
+        getPosition()
+        
+        setPosition(pos)
+
+    ott.referenceMirror:
+        getPosition()
+        
+        setPosition(coords)
+
+    ott.angleRotator:
+        getPosition()
+        
+        setPosition(deg)
+"""
 import os
+import time
+import numpy as np
 from matplotlib import pyplot as plt
+from astropy.io import fits as pyfits
 #from m4.misc import par_meas as pp
-from m4.ground import read_data as rr
+from m4.configuration import config_folder_names as fn
+from m4.ground import read_data as rd
 from m4.mini_OTT import timehistory as th
 from m4.ground import zernike as zern
 from m4.mini_OTT.measurements import Measurements
 from m4 import main
-from astropy.io import fits as pyfits
 from m4.configuration import start
 from m4.devices.i4d import I4D
 from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
 from m4.configuration.ott_parameters import Interferometer
 from m4 import noise
-import time
 
 conf = os.environ["PYOTTCONF"]
-#conf = os.path.join(os.path.expanduser('~'), 'git/M4/m4/configuration','myConfig.yaml')
 ott, interf, dm = start.create_ott(conf)
 truss = Parabola(ott, conf) # could name 'optical_beam'
 flat = ReferenceMirror(ott, conf)
 angrot = AngleRotator(ott, conf)
-meas = Measurements(ott,interf)
+meas = Measurements(ott, interf)
 phcamfocus = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
 
+print('Using the Python console for data analysis.')
+print(f'Base data path is: {fn.BASE_PATH}')
+print('')
+print('           |X|_____ _____|X|')
+print('           |X|           |X|')
+print('           |X|_____--___<|X|')
+print('           |X|    |\  /| |X|')
+print('     __    |X|    |_\/_| |X|')
+print('    |  |   |X|    | /\ | |X|')
+print('    |  |   |X|    |/  \| |X|')
+print(' ___|__|___|X|____ ---- _|X|_____')
 print("\n Type help() for information on the available operations")
 
 def help():
     INIT = [
-            "OTT  DOCUMENTATION",
+            "      OTT  DOCUMENTATION",
             "",
             "     M       M         44",
             "     M M   M M        4 4",
@@ -123,7 +303,7 @@ HIGH-LEVEL USAGE:
 
         getNActs() : Gets the number of actuators of the dm.
 
-        setIncreaseTOSegActs(inc, rel=False) : Applies a piston command to all actuators.
+        setIncreaseToSegActs(inc, rel=False) : Applies a piston command to all actuators.
 
         setZeroToSegActs() : Resets the piston position for all actuators.
 
@@ -159,4 +339,3 @@ Classes that talk directly to the OPCUA, thus relative to its reference frame.
         print(line)
 
     print(TEXT)
-

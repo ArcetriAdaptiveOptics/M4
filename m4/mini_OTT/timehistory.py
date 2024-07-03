@@ -4,9 +4,7 @@ import numpy as np
 import jdcal
 from astropy.io import fits as pyfits
 from m4.ground import read_data
-from m4.configuration import start_onlydata
-
-start_onlydata.create_conf_paths(os.environ["PYOTTCONF"])
+from m4.configuration import update_folder_paths
 from m4.configuration import config_folder_names as foldname
 from m4.ground import zernike
 from m4.ground import geo
@@ -113,7 +111,7 @@ def fileList(tn, fold=None, name=None):
     """
     if fold is not None:
         if name is None:
-            raise
+            raise Exception
         tn = ""
         addfold = "/"
         # name = '*.4D'

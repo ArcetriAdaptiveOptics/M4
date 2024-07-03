@@ -105,7 +105,6 @@ def create_ott(config_file_name='/home/m4/git/M4/m4/configuration/myConfig.yaml'
     else:
         dm = None
 
-
     ott = OTT(parabola_slider, reference_mirror_slider, angle_rotator,
               parab, reference_mirror, m4, temperature_sensor, accelerometers)
 

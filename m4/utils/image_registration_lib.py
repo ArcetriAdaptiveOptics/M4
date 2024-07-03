@@ -39,8 +39,8 @@ def getMarkers(tn,flip=False, diam=24, thr=0.2):
         imaf = pa.rawMarkersPos(img)
         c0 = pa.filterMarkersPos(imaf, (1-thr)*npix, (1+thr)*npix)
         if j == 0:
-                nmark = np.shape(c0)[1]
-                pos = np.zeros([2,nmark,nf])
+            nmark = np.shape(c0)[1]
+            pos = np.zeros([2,nmark,nf])
         pos[:,:,j]=c0
     pos = np.average(pos,2)
     return pos
