@@ -145,3 +145,19 @@ def tnRange(tn0, tn1):
                 id1 = tn_folds.index(tn1)
                 tnMat.append([os.path.join(fold, tn) for tn in tn_folds[id0:id1+1]])
     return tnMat
+
+def _rename4D(self, folder):
+    """
+    Renames the produced 'x.4D' files into '0000x.4D'
+    """
+    fold = os.path.join(opdimg, folder)
+    files = os.listdir(fold)
+    for file in files:
+        if file.endswith('.4D'):
+            num_str = file.split('.')[0]
+            if num_str.isdigit():
+                num = int(num_str)
+                new_name = f"{num:05d}.4D"
+                old_file = os.path.join(fold, file)
+                new_file = os.path.join(fold, new_name)
+                os.rename(old_file, new_file)
