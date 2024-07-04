@@ -72,7 +72,7 @@ def getFileList(tn, fold=None, key:str=None):
          '.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/mode_0003.fits',
          '.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/modesVector.fits']
         
-    Let's suppose we want only the list of mode fits files.
+    Let's suppose we want only the list of 'mode_000x.fits' files:
     
         >>> getFileList(tn, fold=fold, key='mode_')
         ['.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/mode_0000.fits',
@@ -80,8 +80,8 @@ def getFileList(tn, fold=None, key:str=None):
          '.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/mode_0002.fits',
          '.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/mode_0003.fits']
     
-    It was necessary, in this case, to include the underscore to not include th
-    e 'modesVector.fits' file in the list
+    It was necessary, in this case, to include the underscore to exclude the
+    'modesVector.fits' file from the list
     """
     if fold is None:
         fl = sorted([os.path.join(opdimg, (tn+'/'+image)) \
@@ -149,6 +149,11 @@ def tnRange(tn0, tn1):
 def rename4D(folder):
     """
     Renames the produced 'x.4D' files into '0000x.4D'
+    
+    Parameters
+    ----------
+    folder : str
+        The folder where the 4D data is stored.
     """
     fold = os.path.join(opdimg, folder)
     files = os.listdir(fold)
