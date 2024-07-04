@@ -75,11 +75,11 @@ class TestOpticalAlignment(unittest.TestCase):
         self._cal = OpticalCalibration.loadCalibrationObjectFromFits(tt_cal)
         self.assertIsInstance(self._cal, OpticalCalibration)
 
-        self._ott, self._interf, self._dm = create_ott(
-            os.path.join(
-                self.testDataRootDir(), "base", "Configurations", "testConf.yaml"
-            )
-        )
+        self._ott, self._interf, self._dm = create_ott()
+            #os.path.join(
+             #   self.testDataRootDir(), "base", "Configurations", "testConf.yaml"
+            #)
+        #)
 
         self.assertIsInstance(self._ott, ottobj)
         self.assertIsInstance(self._interf, FakeInterferometer)
@@ -120,11 +120,11 @@ class TestOpticalAlignment(unittest.TestCase):
         mock_header,
         mock_cal,
     ):
-        self._ott, self._interf, self._dm = create_ott(
-            os.path.join(
-                self.testDataRootDir(), "base", "Configurations", "testConf.yaml"
-            )
-        )
+        self._ott, self._interf, self._dm = create_ott()
+        #     os.path.join(
+        #         self.testDataRootDir(), "base", "Configurations", "testConf.yaml"
+        #     )
+        # )
         tt_cal = "20220309_142454.fits"
         self._align = OpticalAlignment(tt_cal, self._ott, FakeInterferometer())
         self._align.opt_aligner(

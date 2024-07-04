@@ -21,8 +21,8 @@ class TestCalc(unittest.TestCase):
     @mock.patch('numpy.load', autospec=True)
     def createDM(self,  mock_rd, mock_load):
         from m4.configuration.start import create_ott
-        ott, interf, dm = create_ott(os.path.join(testDataRootDir(), 'base',
-                                              'Configurations', 'testConf.yaml'))
+        ott, interf, dm = create_ott()#os.path.join(testDataRootDir(), 'base',
+                                     #         'Configurations', 'testConf.yaml'))
         return dm
 
     def readConfigData(self):

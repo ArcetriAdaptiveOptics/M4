@@ -18,7 +18,7 @@ class TestStart(unittest.TestCase):
     @mock.patch('numpy.load', autospec=True)
     def testCreationWithSimulatedDevices(self, mock_rd, mock_load):
         #aFakeConfig.simulated = 1
-        ott, interf, dm = create_ott(os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf.yaml'))
+        ott, interf, dm = create_ott()#os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf.yaml'))
         self.assertIsInstance(ott.parabolaSlider, FakeParabolaSlider)
         self.assertIsInstance(interf, FakeInterferometer)
 
@@ -26,4 +26,4 @@ class TestStart(unittest.TestCase):
     @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
     @mock.patch('numpy.load', autospec=True)
     def testCreationWhitFakePathInYaml(self, mock_rd, mock_load):
-        ott, interf, dm = create_ott(os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf2.yaml'))
+        ott, interf, dm = create_ott()#os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf2.yaml'))
