@@ -146,7 +146,7 @@ def tnRange(tn0, tn1):
                 tnMat.append([os.path.join(fold, tn) for tn in tn_folds[id0:id1+1]])
     return tnMat
 
-def _rename4D(self, folder):
+def rename4D(folder):
     """
     Renames the produced 'x.4D' files into '0000x.4D'
     """
