@@ -16,7 +16,7 @@ Once the ott object has been created:
     >>> ott, interf, dm = create_ott()
 
     >>> from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
-    >>> truss   = Parabola(ott, conf)
+    >>> par     = Parabola(ott, conf)
     >>> flat    = ReferenceMirror(ott, conf)
     >>> angrot  = AngleRotator(ott, conf)
 """
@@ -27,7 +27,30 @@ config = ufp.folders
 
 class Parabola:
     """
+    Class for moving the parabola slider, i.e. the Truss, with respect to M4's 
+    optical center, and to command the parabola itself, with piston, tip and ti
+    lt.
     
+    Methods
+    =======
+    Truss Methods
+    -------------
+    trussGetPosition():
+        Gets the current position, in meters, of the Truss, relative to M4'
+        s optical center.
+    moveTrussTo(pos_in_m):
+        Sets the position of the Truss at the desired location.
+    moveTrussBy(change_in_m):
+        Move the Truss by a relative amount from the current position.
+    Parabola Methods
+    ----------------
+    parabolaPiston(intensity):
+        Applies a piston mode to the parabola.
+    parabolaTipTilt(tt):
+        Applies tip and tilt to the parabola.
+        
+    More information on the specific functions uses can be found in the functio
+    ns documentation.
     """
     def __init__(self, ott):
         """The Constructor"""
@@ -45,20 +68,23 @@ class Parabola:
 
     def _conversion(self, pos: float, get=False) -> float:
         """
-        
+        Internal function which handles the offsets beetween M4's optical centr
+        e and the OPCUA reference frame.
 
         Parameters
         ----------
         pos : float
-            DESCRIPTION.
-        get : TYPE, optional
-            DESCRIPTION. The default is False.
+            Input, end-user, position (in meters).
+        get : boolean, optional
+            Option which handles the cases of conversion for the ''getPosition(
+            )'' function and the ''setPosition()'' one. The default is False, t
+            hat is for the ''setPosition()''.
 
         Returns
         -------
-        float
-            DESCRIPTION.
-
+        new_pos : float
+            Position scaled for offsets and converted to millimiters, to be pas
+            sed to the OPCUA.
         """
         if get is False:
             new_pos = pos + OttParameters.PAR_SLIDER_KIN_OFFSET*1000
@@ -68,13 +94,13 @@ class Parabola:
 
     def trussGetPosition(self) -> float:
         """
-        
+        Returns the current position, in metrs, of the Truss (parabola slider) 
+        relative to M4's centre.
 
         Returns
         -------
         current_pos : float
-            DESCRIPTION.
-
+            Current Truss position, in meters.
         """
         self._pos = self._slider.getPosition()
         if self._config is False:
@@ -86,18 +112,18 @@ class Parabola:
 
     def moveTrussTo(self, pos_in_m: float) -> float:
         """
-        
+        Moves the Truss to a specifide position, in meters, along the slider's
+        range
 
         Parameters
         ----------
         pos_in_m : float
-            DESCRIPTION.
+            Position to be reached along the parabola slider, in meters.
 
         Returns
         -------
-        float
-            DESCRIPTION.
-
+        current_pos : float
+            The current position of the Truss in meters.
         """
         pos_in_mm = pos_in_m * 1000
 
@@ -112,17 +138,18 @@ class Parabola:
 
     def moveTrussBy(self, change_in_m: float) -> float:
         """
-        Moves the parabola slider by the specified amount in meters
+        Moves the Truss along the parabola slider range, by the specified amoun
+        t,from the current position.
 
         Parameters
         ----------
         change_in_m : float
-            Change in meters of the position to apply
+            Truss position shift from current position, in meters.
 
         Returns
         -------
         current_pos : float
-            Current position, in meters, of the parabola slider
+            The current position of the Truss in meters.
         """
         old_pos = self._slider.getPosition()
         new_pos = old_pos + change_in_m*1000
@@ -133,7 +160,7 @@ class Parabola:
     def parabolaPiston(self, intensity):
         """
         Applies a relative piston command to the parabola. For absolute positio
-        n movements, refer to ott.parabola.
+        n movements, refer to ''ott.parabola''.
 
         Parameters
         ---------------
@@ -178,7 +205,32 @@ class Parabola:
 
 class ReferenceMirror:
     """
+    Class for moving the reference mirror slider with respect to M4's optical 
+    center, and to command the reference mirror itself, with piston, tip and ti
+    lt.
     
+    Methods
+    =======
+    RM Slider Methods
+    -----------------
+    rmGetPosition():
+        Gets the current position, in meters, of the reference mirror slider, r
+        elative to M4's optical center.
+    moveRmTo(pos_in_m):
+        Sets the position of the reference mirror slider at the desired locatio
+        n.
+    moveRmBy(change_in_m):
+        Move the reference mirror slider by a relative amount from the current 
+        position.
+    Reference Mirror Methods
+    ------------------------
+    rmPiston(intensity):
+        Applies a piston mode to the reference mirror.
+    rmTipTilt(tt):
+        Applies tip and tilt to the reference mirror.
+        
+    More information on the specific functions uses can be found in the functio
+    ns documentation.
     """
     def __init__(self, ott):
         """"The Constructor"""
@@ -195,19 +247,23 @@ class ReferenceMirror:
 
     def _conversion(self, pos: float, get=False) -> float:
         """
-        
+        Internal function which handles the offsets beetween M4's optical centr
+        e and the OPCUA reference frame.
 
         Parameters
         ----------
         pos : float
-            DESCRIPTION.
-        get : TYPE, optional
-            DESCRIPTION. The default is False.
+            Input, end-user, position (in meters).
+        get : boolean, optional
+            Option which handles the cases of conversion for the ''getPosition(
+            )'' function and the ''setPosition()'' one. The default is False, t
+            hat is for the ''setPosition()''.
 
         Returns
         -------
-        float
-            DESCRIPTION.
+        new_pos : float
+            Position scaled for offsets and converted to millimiters, to be pas
+            sed to the OPCUA.
         """
         if get is False:
             new_pos = pos + OttParameters.RM_SLIDER_KIN_OFFSET*1000
@@ -217,12 +273,12 @@ class ReferenceMirror:
 
     def rmGetPosition(self) -> float:
         """
-        Returns the current position in meters of the reference mirror slider
+        Returns the current position, in meters, of the reference mirror slider.
 
         Returns
         -------
         current_pos : float
-            Current position of the reference mirror slider, in meters
+            Current position of the reference mirror slider, in meters.
         """
         self._pos = self._slider.getPosition()
         if self._config is False:
@@ -234,18 +290,20 @@ class ReferenceMirror:
 
     def moveRmTo(self, pos_in_m: float) -> float:
         """
-        Moves the reference mirror slider to a given coordinate in meters
+        Moves the reference mirror slider to a given position in the reference
+        mirror slider's range.
 
         Parameters
         ----------
         pos_in_m : float
-            Position, in meters, where to move the reference mirror
+            Position to be reached along the reference mirror slider's range, i
+            n meters.
 
         Returns
         -------
         current_pos : float
-            The current position in meters of the reference mirror relative to 
-            M4's center
+            The current position, in meters, of the reference mirror relative t
+            o M4's center.
         """
         pos_in_mm = pos_in_m * 1000
         if self._config is False:
@@ -258,17 +316,18 @@ class ReferenceMirror:
 
     def moveRmBy(self, change_in_m: float) -> float:
         """
-        Moves the reference mirror slider by the specified amount in meters
+        Moves the reference mirror slider from the current position by the spec
+        ified amount, in meters.
 
         Parameters
         ----------
         change_in_m : float
-            Change in meters of the position to apply
+            Reference mirror slider shift from current position, in meters.
 
         Returns
         -------
         current_pos : float
-            Current position, in meters, of the reference mirror slider
+            Current position, in meters, of the reference mirror slider.
         """
         old_pos = self._slider.getPosition()
         new_pos = old_pos + change_in_m*1000
@@ -325,7 +384,21 @@ class ReferenceMirror:
 
 class AngleRotator:
     """
+    Class for the control of the exapode angle rotator.
     
+    Methods
+    -------
+    getPosition():
+        Gets the current angular position relative to a set zero position where
+        the segment 1 is bottom left # to be checked
+    setPosition(absolute_deg):
+        Rotate the exapode to reach the desired angular position.
+    rotateBy(rel_deg):
+        Rotates the exapode, in the counter-clockwise direction, by a specific
+        amount
+        
+    More information on the specific functions uses can be found in the functio
+    ns documentation.
     """
     def __init__(self, ott):
         """"The Constructor"""
@@ -370,7 +443,7 @@ class AngleRotator:
 
     def rotateBy(self, rel_deg) -> float:
         """
-        Rotates the parabola, from the current angular position, by a desired 
+        Rotates the exapode, from the current angular position, by a desired 
         amount counter-clockwise
 
         Parameters

@@ -10,6 +10,7 @@ machine OS.
 """
 import os
 from m4.configuration import config_folder_names as fn
+from m4.ground.read_4DConfSettingFile import ConfSettingReader
 
 optdata = fn.OPT_DATA_FOLDER
 opdimg = fn.OPD_IMAGES_ROOT_FOLDER
@@ -80,15 +81,15 @@ def getFileList(tn, fold=None, key:str=None):
          '.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/mode_0002.fits',
          '.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/mode_0003.fits']
     
-    It was necessary, in this case, to include the underscore to exclude the
-    'modesVector.fits' file from the list
+    Notice that, in this specific case, it was necessary to include the undersc
+    ore after 'mode' to exclude the 'modesVector.fits' file from the list.
     """
     if fold is None:
-        fl = sorted([os.path.join(opdimg, (tn+'/'+image)) \
-                     for image in os.listdir(os.path.join(opdimg, tn))])
+        fl = sorted([os.path.join(opdimg, (tn+'/'+file)) \
+                     for file in os.listdir(os.path.join(opdimg, tn))])
     else:
-        fl = sorted([os.path.join(fold, (tn+'/'+image)) \
-                     for image in os.listdir(os.path.join(fold, tn))])
+        fl = sorted([os.path.join(fold, (tn+'/'+file)) \
+                     for file in os.listdir(os.path.join(fold, tn))])
     if key is not None:
         try:
             selected_list = []
@@ -102,8 +103,8 @@ def getFileList(tn, fold=None, key:str=None):
 
 def tnRange(tn0, tn1):
     """
-    Returnsthe list of tracking numbers between tn0 and tn1, within the same fo
-    lder, if they both exist in it.
+    Returns the list of tracking numbers between tn0 and tn1, within the same f
+    older, if they both exist in it.
 
     Parameters
     ----------
@@ -166,3 +167,51 @@ def rename4D(folder):
                 old_file = os.path.join(fold, file)
                 new_file = os.path.join(fold, new_name)
                 os.rename(old_file, new_file)
+
+def getConf4DSettingsPath(tn):
+    """
+    Returns the path of the '4DSettings.ini' camera configuration file.
+
+    Parameters
+    ----------
+    tn : str
+        The tracking number of the configuration to search.
+
+    Returns
+    -------
+    config : str
+        Complete file path of the configuration file.
+    """
+    path = getFileList(tn, key='4DSetting')
+    return path
+
+def getCameraSettings(tn):
+    """
+    Return a dictionary with all the camera settings loaded from the '4DSetting.ini'
+    file
+
+    Parameters
+    ----------
+    tn : str
+        Tracking number where to search the camera configuration file.
+
+    Returns
+    -------
+    camera_settings : dict
+        Dictionary with the useful camera parameters at the moment of acquisition.
+        These are:
+            width (px) : The camera width in pixel scale
+            height (px) : The camera height in pixel scale
+            x-offset : The offset of the camera in the x (width) axis
+            y-offset : The offset of the camera in the y (height) axis
+            frame rate : The frame rate of acquisition of the camera
+    """
+    conf_path = getConf4DSettingsPath(tn)[0]
+    setting_reader = ConfSettingReader(conf_path)
+    camera_settings = {}
+    camera_settings['width (px)'] = setting_reader.getImageWidhtInPixels()
+    camera_settings['height (px)'] = setting_reader.getImageHeightInPixels()
+    camera_settings['x-offset'] = setting_reader.getOffsetX()
+    camera_settings['y-offset'] = setting_reader.getOffsetY()
+    camera_settings['frame rate'] = setting_reader.getFrameRate()
+    return camera_settings
