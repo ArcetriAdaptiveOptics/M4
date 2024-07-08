@@ -20,13 +20,18 @@ actCoordFile    = 'ActuatorCoordinates.fits'
 nActFile        = 'nActuators.dat'
 dmConf = os.path.join(fn.MIRROR_FOLDER,fn.DM_CONFIGURATION_ID)
 
-class M4AU():
+class ():  #ereditare BaseDeformableMirror
 
     def __init__(self):
         print('Initializing the M4AU with configuration: '+fn.DM_CONFIGURATION_ID)
         self.nActs       = self._initNActuators()
         self.mirrorModes = self._initMirrorModes()
         self.actCoord    = self._initActCoord()
+        self.workingActs = self._initWorkingActs()
+
+    def nActuators(self):
+        return self.nActs
+
 
     def _initNActuators(self):
         fname = os.path.join(dmConf,nActFile)
@@ -39,6 +44,21 @@ class M4AU():
         '''
         Creation of the mirror modes variable
 
+        '''
+        fname = os.path.join(dmConf,mirrorModesFile)
+        if os.path.exists(fname):
+            print('Initializing mirror modes from data: nact x nmodes')
+            hdu = pyfits.open( fname)
+            mirrorModes = hdu[0].data
+        else:
+            print('Initializing analytical modal base (identity, or zonal matrix')
+            mirrorModes = np.eye(self.nActs)
+        #nActs = np.shape(cmdMat)[0]
+        return mirrorModes
+
+    def _initWorkingActs(self):
+        '''
+        Reading the list of working actuators
         '''
         fname = os.path.join(dmConf,mirrorModesFile)
         if os.path.exists(fname):
@@ -65,39 +85,54 @@ class M4AU():
         #conffolder = os.path.join(basef,tn)
         #return conffolder
 
-def mirrorCommand(cmd, segment=None):
-    """
-    Function for the user-level application of commands to the mirror
-    Parameters
-    ----------------
-    cmd: float | list, array
-        command to be applied [m], differential wrt the current bias command. may be full command (5000+) or single segment command (892)
-    segment: int
-        id of the segment to apply a given command
-    Returns
-    -------
-    """
-    print('Command applied')
+    def get_shape(self):
+        #micLibrary.get_position()
+        shape = 3
+        return shape
+        
 
-def uploadCmdHist(cmdHist, timeInfo=None):
-    """
-    This function ...
-    Parameters
-    ----------------
-    Returns
-    -------
-    """
-    print('Command history uploaded')
+    def get_force(self):
+        '''
+        '''
+        #micLibrary.getForce()
+        force = 3
+        return force
 
-def runCmdHist():
-    """
-    This function ...
-    Parameters
-    ----------------
-    Returns
-    -------
-    """
-    print('Command history running...')
+
+    def set_shape(self, cmd):#cmd, segment=None):
+        """
+        Function for the user-level application of commands to the mirror
+        Parameters
+        ----------------
+        cmd: float | list, array
+            command to be applied [m], differential wrt the current bias command. may be full command (5000+) or single segment command (892)
+        segment: int
+            id of the segment to apply a given command
+        Returns
+        -------
+        """
+        #micLibrary.mirrorCommand(cmd)
+        print('Command applied')
+
+    def uploadCmdHist(cmdHist, timeInfo=None):
+        """
+        This function ...
+        Parameters
+        ----------------
+        Returns
+        -------
+        """
+        print('Command history uploaded')
+
+    def runCmdHist():
+        """
+        This function ...
+        Parameters
+        ----------------
+        Returns
+        -------
+        """
+        print('Command history running...')
 
 
 
