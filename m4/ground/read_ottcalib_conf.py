@@ -1,24 +1,21 @@
-import numpy as np
 import configparser
 import json
-from m4.mini_OTT import timehistory as th
-import itertools
-#config=configparser.ConfigParser()
-basepath = th.foldname.OPT_DATA_FOLDER
-fold = 'OTTCalibConf/'
-parname = 'PAR'
+from m4.configuration import config_folder_names as foldname
+basepath = foldname.OPT_DATA_FOLDER
+fold             = 'OTTCalibConf/'
+parname          = 'PAR'
 ncgh_tn_marker   = 'cgh_tn_marker'
 ncgh_tn_img      = 'cgh_tn_img'
 ntnpar           = 'tnpar'
 nmark_cgh_list   = 'mark_cgh_list'
 nf0              = 'f0'
 nf1              = 'f1'
-
-ottname         = 'OTT'
+ottname          = 'OTT'
 nott_tn_marker   = 'ott_tn_marker'
 nott_tn_img      = 'ott_tn_img'
 nmark_ott_list   = 'mark_ott_list'
 npx_ott          = 'px_ott'
+
 def _get_nparray(key1,key2):
     data = list(json.loads(key1[key2]))
     pp=[]
@@ -28,10 +25,9 @@ def _get_nparray(key1,key2):
         else:
             for jj in ii:
                 pp.append(jj)
-
     #return np.array(pp)
     return data
-    
+
 def gimmetheconf(tn):
     '''
     Parameters
@@ -76,8 +72,3 @@ def gimmetheconf(tn):
     #    ott_tn_marker.append( ott_tn_marker2)
     
     return cgh_tn_marker,cgh_tn_img,tnpar,mark_cgh_list,f0,f1,ott_tn_marker,ott_tn_img,mark_ott_list,px_ott
-
-
-
-
-

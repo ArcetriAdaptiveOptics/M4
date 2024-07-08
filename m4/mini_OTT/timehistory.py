@@ -2,17 +2,15 @@ import os
 import glob
 import numpy as np
 import jdcal
-from astropy.io import fits as pyfits
-from m4.ground import read_data
-from m4.configuration import update_folder_paths
-from m4.configuration import config_folder_names as foldname
-from m4.ground import zernike
-from m4.ground import geo
-from m4.ground.read_data import InterferometerConverter
 from matplotlib.pyplot import *
 import psutil
 import scipy.fft
 import scipy.stats as stats
+from astropy.io import fits as pyfits
+from m4.configuration import update_folder_paths as ufp
+foldname = ufp.folders
+from m4.ground import zernike, geo, read_data
+from m4.ground.read_data import InterferometerConverter
 
 ic = InterferometerConverter()
 # a= foldname.BASE_PATH+'M4Data/OPTData/'  #'/mnt/data/M4/Data/M4Data/OPTData/'

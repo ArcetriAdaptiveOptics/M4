@@ -1,4 +1,6 @@
 import numpy as np
+import os
+import shutil
 from matplotlib.pyplot import *
 from m4.mini_OTT import timehistory as th
 from m4.utils.parabola_identification import ParabolaActivities
@@ -14,8 +16,6 @@ from scipy.ndimage.interpolation import shift
 from m4.ground.timestamp import Timestamp
 from m4.ground import read_ottcalib_conf
 from arte.utils import rebin
-import os
-import shutil
 
 def crop_frame(imgin):
     cir = geo.qpupil(-1*imgin.mask+1)
@@ -526,4 +526,3 @@ def compSlopXY2(img,px, rfact, thr=None):
     #sli = np.ma.masked_array(sli, slm < 2)
     #sli = np.ma.masked_array(slid,(-1*slim+1))
     return sli
-
