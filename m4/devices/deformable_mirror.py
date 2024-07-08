@@ -18,12 +18,13 @@ mirrorModesFile = 'ff_v_matrix.fits'
 ffFile          = 'ff_matrix.fits'
 actCoordFile    = 'ActuatorCoordinates.fits'
 nActFile        = 'nActuators.dat'
-dmConf = os.path.join(fn.MIRROR_FOLDER,fn.DM_CONFIGURATION_ID)
+dmConf = os.path.join(fn.MIRROR_FOLDER,tracknum)
 
-class ():  #ereditare BaseDeformableMirror
+class AdOpticaDM(tracknum):  #ereditare BaseDeformableMirror
 
     def __init__(self):
         print('Initializing the M4AU with configuration: '+fn.DM_CONFIGURATION_ID)
+        self.dmConf           = os.path.join(fn.MIRROR_FOLDER,tracknum)
         self.nActs       = self._initNActuators()
         self.mirrorModes = self._initMirrorModes()
         self.actCoord    = self._initActCoord()
@@ -34,7 +35,7 @@ class ():  #ereditare BaseDeformableMirror
 
 
     def _initNActuators(self):
-        fname = os.path.join(dmConf,nActFile)
+        fname = os.path.join(self.dmConf,nActFile)
         f = open(fname,'r')
         nact = int(f.read())
         f.close
@@ -45,7 +46,7 @@ class ():  #ereditare BaseDeformableMirror
         Creation of the mirror modes variable
 
         '''
-        fname = os.path.join(dmConf,mirrorModesFile)
+        fname = os.path.join(self.dmConf,mirrorModesFile)
         if os.path.exists(fname):
             print('Initializing mirror modes from data: nact x nmodes')
             hdu = pyfits.open( fname)
@@ -60,7 +61,7 @@ class ():  #ereditare BaseDeformableMirror
         '''
         Reading the list of working actuators
         '''
-        fname = os.path.join(dmConf,mirrorModesFile)
+        fname = os.path.join(self.dmConf,mirrorModesFile)
         if os.path.exists(fname):
             print('Initializing mirror modes from data: nact x nmodes')
             hdu = pyfits.open( fname)
@@ -75,7 +76,7 @@ class ():  #ereditare BaseDeformableMirror
         '''
         Reading the actuators coordinate from file
         '''
-        fname = os.path.join(dmConf,actCoordFile)
+        fname = os.path.join(self.dmConf,actCoordFile)
         hdu = pyfits.open(fname)
         actCoord = hdu[0].data
         #nActs = np.shape(cmdMat)[0]
