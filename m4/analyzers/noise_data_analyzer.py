@@ -5,11 +5,11 @@ Authors
 
 import os
 import logging
-import glob
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
 from m4.configuration import config_folder_names as fold_name
+from m4.utils import osutils as osu
 from m4.configuration.ott_parameters import Interferometer
 from m4.ground.read_data import InterferometerConverter
 from m4.analyzers.analyzer_iffunctions import AnalyzerIFF
@@ -544,18 +544,40 @@ class Noise:
         tt = np.array(tt_list)
         return tt
 
-    def _createOrdListFromFilePath(self, data_file_path):
+    # def _createOrdListFromFilePath(self, data_file_path):
 
-        #        lista = glob.glob(os.path.join(data_file_path,'*.h5'))
-        #        if len(lista)==0:
-        #            lista = glob.glob(os.path.join(data_file_path,'*.fits'))
-        #            if len(lista)==0:
-        #                lista = glob.glob(os.path.join(data_file_path,'*.4D'))
-        #        lista.sort()
-        # da controllare ordinamento nel caso di file .4D
-        lista = th.fileList(None, fold=data_file_path, name="*.h5")
+    #     #        lista = glob.glob(os.path.join(data_file_path,'*.h5'))
+    #     #        if len(lista)==0:
+    #     #            lista = glob.glob(os.path.join(data_file_path,'*.fits'))
+    #     #            if len(lista)==0:
+    #     #                lista = glob.glob(os.path.join(data_file_path,'*.4D'))
+    #     #        lista.sort()
+    #     # da controllare ordinamento nel caso di file .4D
+    #     lista = th.fileList(None, fold=data_file_path, name="*.h5")
+    #     if len(lista) == 0:
+    #         lista = th.fileList(None, fold=data_file_path, name="*.4D")
+    #         if len(lista) == 0:
+    #             lista = th.fileList(None, fold=data_file_path, name="20*.fits")
+    #     return lista
+
+    def _createOrdListFromFilePath(self, data_file_path):
+        """
+        Returns an ordered list of file inside the input path.
+
+        Parameters
+        ----------
+        data_file_path : str
+            File path of the data.
+
+        Returns
+        -------
+        lista : list of str
+            List of data obtained through the file path.
+
+        """
+        lista = osu.getFileList('', fold=data_file_path, key=".h5")
         if len(lista) == 0:
-            lista = th.fileList(None, fold=data_file_path, name="*.4D")
+            lista = osu.getFileList('', fold=data_file_path, key=".4D")
             if len(lista) == 0:
-                lista = th.fileList(None, fold=data_file_path, name="20*.fits")
+                lista = osu.getFileList('', fold=data_file_path, key=".fits")
         return lista

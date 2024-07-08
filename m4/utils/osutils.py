@@ -12,8 +12,8 @@ import os
 from m4.configuration import config_folder_names as fn
 from m4.ground.read_4DConfSettingFile import ConfSettingReader
 
-optdata = fn.OPT_DATA_FOLDER
-opdimg = fn.OPD_IMAGES_ROOT_FOLDER
+OPTDATA = fn.OPT_DATA_FOLDER
+OPDIMG = fn.OPD_IMAGES_ROOT_FOLDER
 
 def findTracknum(tn):
     """
@@ -32,8 +32,8 @@ def findTracknum(tn):
         tracking number is present.
     """
     tn_path = []
-    for fold in os.listdir(optdata):
-        search_fold = os.path.join(optdata, fold)
+    for fold in os.listdir(OPTDATA):
+        search_fold = os.path.join(OPTDATA, fold)
         if tn in os.listdir(search_fold):
             tn_path.append(fold)
     return tn_path
@@ -85,8 +85,8 @@ def getFileList(tn, fold=None, key:str=None):
     ore after 'mode' to exclude the 'modesVector.fits' file from the list.
     """
     if fold is None:
-        fl = sorted([os.path.join(opdimg, (tn+'/'+file)) \
-                     for file in os.listdir(os.path.join(opdimg, tn))])
+        fl = sorted([os.path.join(OPDIMG, (tn+'/'+file)) \
+                     for file in os.listdir(os.path.join(OPDIMG, tn))])
     else:
         fl = sorted([os.path.join(fold, (tn+'/'+file)) \
                      for file in os.listdir(os.path.join(fold, tn))])
@@ -96,8 +96,8 @@ def getFileList(tn, fold=None, key:str=None):
             for file in fl:
                 if key in file:
                     selected_list.append(file)
-        except TypeError:
-            raise TypeError("'key' argument must be a string")
+        except TypeError as err:
+            raise TypeError("'key' argument must be a string") from err
         fl = selected_list
     return fl
 
@@ -129,18 +129,18 @@ def tnRange(tn0, tn1):
     tn1_fold = findTracknum(tn1)
     if len(tn0_fold)==1 and len(tn1_fold)==1:
         if tn0_fold[0]==tn1_fold[0]:
-            fold = os.path.join(optdata, tn0_fold[0])
+            fold = os.path.join(OPTDATA, tn0_fold[0])
             tn_folds = sorted(os.listdir(fold))
             id0 = tn_folds.index(tn0)
             id1 = tn_folds.index(tn1)
             tnMat = [os.path.join(fold, tn) for tn in tn_folds[id0:id1+1]]
         else:
-            raise Exception("The tracking numbers are in different foldes")
+            raise FileNotFoundError("The tracking numbers are in different foldes")
     else:
         tnMat = []
         for ff in tn0_fold:
             if ff in tn1_fold:
-                fold = os.path.join(optdata, ff)
+                fold = os.path.join(OPTDATA, ff)
                 tn_folds = sorted(os.listdir(fold))
                 id0 = tn_folds.index(tn0)
                 id1 = tn_folds.index(tn1)
@@ -156,7 +156,7 @@ def rename4D(folder):
     folder : str
         The folder where the 4D data is stored.
     """
-    fold = os.path.join(opdimg, folder)
+    fold = os.path.join(OPDIMG, folder)
     files = os.listdir(fold)
     for file in files:
         if file.endswith('.4D'):
@@ -167,23 +167,6 @@ def rename4D(folder):
                 old_file = os.path.join(fold, file)
                 new_file = os.path.join(fold, new_name)
                 os.rename(old_file, new_file)
-
-def getConf4DSettingsPath(tn):
-    """
-    Returns the path of the '4DSettings.ini' camera configuration file.
-
-    Parameters
-    ----------
-    tn : str
-        The tracking number of the configuration to search.
-
-    Returns
-    -------
-    config : str
-        Complete file path of the configuration file.
-    """
-    path = getFileList(tn, key='4DSetting')
-    return path
 
 def getCameraSettings(tn):
     """
@@ -205,6 +188,7 @@ def getCameraSettings(tn):
             x-offset : The offset of the camera in the x (width) axis
             y-offset : The offset of the camera in the y (height) axis
             frame rate : The frame rate of acquisition of the camera
+            pixel format : The format of the interferometer pixels
     """
     conf_path = getConf4DSettingsPath(tn)[0]
     setting_reader = ConfSettingReader(conf_path)
@@ -214,4 +198,22 @@ def getCameraSettings(tn):
     camera_settings['x-offset'] = setting_reader.getOffsetX()
     camera_settings['y-offset'] = setting_reader.getOffsetY()
     camera_settings['frame rate'] = setting_reader.getFrameRate()
+    camera_settings['pixel format'] = setting_reader.getPixelFormat()
     return camera_settings
+
+def getConf4DSettingsPath(tn):
+    """
+    Returns the path of the '4DSettings.ini' camera configuration file.
+
+    Parameters
+    ----------
+    tn : str
+        The tracking number of the configuration to search.
+
+    Returns
+    -------
+    config : str
+        Complete file path of the configuration file.
+    """
+    path = getFileList(tn, key='4DSetting')
+    return path

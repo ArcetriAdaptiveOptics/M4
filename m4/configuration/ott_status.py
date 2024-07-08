@@ -1,11 +1,14 @@
 import numpy as np
 import configparser
 import json
-from m4.mini_OTT import timehistory as th
-basepath = th.foldname.OPT_DATA_FOLDER
+from m4.configuration import update_folder_paths
+from m4.utils import osutils as osu
+foldname = update_folder_paths.folders
+basepath = foldname.OPT_DATA_FOLDER
 statusfilename ='OTTStatus.ini'
+
 def read(tn):
-    fold = th.findTracknum(tn)
+    fold = osu.findTracknum(tn)
     f2read = basepath+'/'+fold+'/'+tn+'/'+statusfilename
     config=configparser.ConfigParser()
     print(f2read)
@@ -20,9 +23,8 @@ def read(tn):
     ang= float(pp['ROT_ANGLE'])
     return ps, rs, ang, par, rm, m4
 
-
 def save(basepath, ott):
-    f=open(basepath+'/'+statusfilename,'w')
+    f = open(basepath+'/'+statusfilename,'w')
     f.write('[OTT]\n')
     par = ott.parabola.getPosition()
     rm = ott.referenceMirror.getPosition()
