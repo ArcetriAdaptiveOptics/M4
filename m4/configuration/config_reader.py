@@ -108,6 +108,13 @@ class configuration_path():
 
 ### FOLD_NAME ###
     @property
+    def OTT_CALIB_CONF_FOLDER(self):
+        if 'ott_calib_conf_folder' in self._conf.keys():
+            return self._conf['ott_calib_conf_folder']
+        else:
+            return os.path.join(self.OPT_DATA_FOLDER, 'OTTCalibConf')
+
+    @property
     def OPD_IMAGES_ROOT_FOLDER(self):
         if 'opd_images_root_folder' in self._conf.keys():
             return self._conf['opd_images_root_folder']

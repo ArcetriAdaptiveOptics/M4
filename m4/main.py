@@ -14,7 +14,6 @@ Functions for tower alignment
 - :func:`align_M4`
 
 """
-
 import os
 import numpy as np
 from matplotlib import pyplot as plt
@@ -27,8 +26,6 @@ from m4.configuration.ott_parameters import Sound
 from m4.ground import geo
 
 # print("sono io")
-
-
 def start_log(logging_level=20):
     """
     Parameters

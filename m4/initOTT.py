@@ -172,27 +172,23 @@ import time
 import numpy as np
 from matplotlib import pyplot as plt
 from astropy.io import fits as pyfits
-from m4.configuration import config_folder_names as fn
-from m4.ground import read_data as rd
-from m4.mini_OTT import timehistory as th
-from m4.ground import zernike as zern
-from m4.mini_OTT.measurements import Measurements
-from m4 import main
+from m4.configuration import update_folder_paths as ufp
+from m4.ground import read_data as rd, zernike as zern
+from m4.mini_OTT import timehistory as th, measurements
+from m4 import main, noise
 from m4.configuration.start import create_ott
 from m4.devices.i4d import I4D
 from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
 from m4.configuration.ott_parameters import Interferometer
-from m4 import noise
-
+fn = ufp.folders
 ott, interf, dm = create_ott()
 par = Parabola(ott)
 flat = ReferenceMirror(ott)
 angrot = AngleRotator(ott)
-meas = Measurements(ott, interf)
+meas = measurements.Measurements(ott, interf)
 phcamfocus = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
 
-print('Using the Python console for data analysis.')
-print(f'Base data path is: {fn.BASE_PATH}')
+print("\nUsing the IPython console for OTT operations.")
 print('')
 print('           |X|_____ _____|X|')
 print('           |X|           |X|')
@@ -204,7 +200,21 @@ print('    |  |   |X|    |/  \| |X|')
 print(' ___|__|___|X|____ ---- _|X|_____')
 print("\nType help() for information on the available operations")
 
-def help():
+def help(arg = None):
+    """
+    Prints the documentation
+
+    Parameters
+    ----------
+    arg : str, optional
+        The specified oject you want info about, without the need to go search
+        it into the full documentation. If not argument is given, the full documentation
+        will be printed
+
+    Returns
+    -------
+    The documentation.
+    """
     INIT = [
             "      OTT  DOCUMENTATION",
             "",
@@ -218,8 +228,10 @@ def help():
             "     M       M          4",
             ]
 
-
-    TEXT = """
+    if arg=='par':
+        TEXT=''
+    else:
+        TEXT = """
 The OTT is initialized.
 
 HIGH-LEVEL USAGE:

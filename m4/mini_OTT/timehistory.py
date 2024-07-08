@@ -12,6 +12,7 @@ foldname = ufp.folders
 from m4.ground import zernike, geo, read_data
 from m4.ground.read_data import InterferometerConverter
 
+
 ic = InterferometerConverter()
 # a= foldname.BASE_PATH+'M4Data/OPTData/'  #'/mnt/data/M4/Data/M4Data/OPTData/'
 a = foldname.OPT_DATA_FOLDER + "/"
@@ -88,12 +89,10 @@ def findTracknum(tn):
                 result = i
                 return result
 
-
 def _sortFunc4D(elem):
     iid = os.path.basename(elem)[:-3]
     iis = "%5.5i" % int(iid)
     return iis
-
 
 def fileList(tn, fold=None, name=None):
     """
@@ -232,9 +231,8 @@ def averageFrames(first, last, fileList, thresh=None, fsel=None):
 
     return aveimg
 
-
 def saveAverage(tn, id0=0, id1=None):
-    fold = findTracknum(tn)
+    fold = th.findTracknum(tn)
     fname = foldname.OPT_DATA_FOLDER + "/" + fold + "/" + tn + "/average.fits"
     print(fname)
     # check file esiste

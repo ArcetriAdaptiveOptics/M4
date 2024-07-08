@@ -20,7 +20,7 @@ tn = '20160516_114916'
 tn2= '20160516_114917'
 #______Data_Simulation_________________________________________________________
 # Position correctly the segment
-truss.moveTrussBy(0.500)
+par.moveTrussBy(0.500)
 angrot.rotateBy(-30)
 dm.setZerosToSegActs()
 figure(); imshow(interf.acquire_phasemap()); colorbar()

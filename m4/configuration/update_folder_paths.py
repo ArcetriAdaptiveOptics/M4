@@ -28,3 +28,4 @@ except KeyError:
 folders        = configuration_path(config_file_name)
 cr             = config_rewriter(folders)
 cr.upload()
+print(f"Folder tree updated.\nBase path is '{folders.BASE_PATH}'")
