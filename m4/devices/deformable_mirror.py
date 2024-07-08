@@ -18,11 +18,10 @@ mirrorModesFile = 'ff_v_matrix.fits'
 ffFile          = 'ff_matrix.fits'
 actCoordFile    = 'ActuatorCoordinates.fits'
 nActFile        = 'nActuators.dat'
-dmConf = os.path.join(fn.MIRROR_FOLDER,tracknum)
 
-class AdOpticaDM(tracknum):  #ereditare BaseDeformableMirror
+class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror
 
-    def __init__(self):
+    def __init__(self,tracknum):
         print('Initializing the M4AU with configuration: '+fn.DM_CONFIGURATION_ID)
         self.dmConf           = os.path.join(fn.MIRROR_FOLDER,tracknum)
         self.nActs       = self._initNActuators()
