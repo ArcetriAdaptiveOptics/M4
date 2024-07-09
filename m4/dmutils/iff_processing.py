@@ -51,13 +51,10 @@ import os
 import configparser
 import numpy as np
 from astropy.io import fits as pyfits
-from m4.ground import timestamp
-from m4.configuration import read_iffconfig
-from m4.ground import read_data as rd
-from m4.configuration import update_folder_paths as ufp
-from m4.ground import zernike as zern
-from m4.utils import osutils
-from scripts.misc.IFFPackage import actuator_identification_lib as fa #FIXME
+from m4.configuration import read_iffconfig, update_folder_paths as ufp
+from m4.ground import read_data as rd, zernike as zern, timestamp
+from m4.utils import osutils as osu
+from scripts.misc.IFFPackage import actuator_identification_lib as fa
 config = configparser.ConfigParser()
 fn = ufp.folders
 imgFold     = fn.OPD_IMAGES_ROOT_FOLDER
@@ -117,15 +114,8 @@ def saveCube(tn, register : bool = False):
     cube : masked_array
         Data cube of the images, with shape (npx, npx, nmodes).
     """
-    filelist = osutils.getFileList(tn, fold=ifFold)
-    filelist = [file for file in filelist if 'mode_' in file]
-    cube_list = []
-    for imgfits in filelist:
-        image = rd.readFits_maskedImage(imgfits)
-        if register is not False:
-            image= np.roll(image, register)
-        cube_list.append(image)
-    cube = np.ma.dstack(cube_list)
+    filelist = osu.getFileList(tn, fold=ifFold, key="mode_")
+    cube = osu.createCube(filelist, register=register)
     # Saving the cube
     new_fold = os.path.join(intMatFold, tn)
     os.mkdir(new_fold)
@@ -137,6 +127,7 @@ def saveCube(tn, register : bool = False):
     pyfits.writeto(os.path.join(intMatFold, tn, 'cmdMatrix.fits'), cmat)
     pyfits.writeto(os.path.join(intMatFold, tn, 'modesVector.fits'), mvec)
     print(f"Cube saved in '{cube_path}'")
+    print(f"Shape: {cube.shape}")
     return cube
 
 def stackCubes(tnlist):
@@ -341,7 +332,7 @@ def getTriggerFrame(tn, amplitude=None):
     infoT, _, _ = _getAcqInfo()
     if amplitude is not None:
         infoT['amplitude'] = amplitude
-    fileList = osutils.getFileList(tn)
+    fileList = osu.getFileList(tn)
     img0 = rd.read_phasemap(fileList[0])
     go = i = 1
     while go !=0:
@@ -377,7 +368,7 @@ def getRegFileMatrix(tn):
         A matrix of images in string format, containing the registration frames.
         It has shape (registration_modes, n_push_pull).
     """
-    fileList    = osutils.getFileList(tn)
+    fileList    = osu.getFileList(tn)
     _, infoR, _ = _getAcqInfo()
     timing      = read_iffconfig.getTiming()
     trigFrame   = getTriggerFrame(tn)
@@ -403,7 +394,7 @@ def getIffFileMatrix(tn):
         IFF acquisition, that is all the modes with each push-pull realization.
         It has shape (modes, n_push_pull)
     """
-    fileList    = osutils.getFileList(tn)
+    fileList    = osu.getFileList(tn)
     _,_,infoIF  = _getAcqInfo()
     regEnd, _   = getRegFileMatrix(tn)
     iffList     = fileList[regEnd+infoIF['zeros']:]

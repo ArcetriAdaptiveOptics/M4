@@ -1,20 +1,27 @@
-'''
-Authors
-  - C. Selmi: written in 2021
-'''
+"""
+Author(s)
+    - Chiara Selmi: written in 2021
+
+Description
+-----------
+This module contains the class for rewriting the ''config_folder_names.py'' file
+which contains the fixed paths. It is only needed inside the ''update_folder_paths'' 
+module.
+"""
 from m4.configuration import config_folder_names as config
 
 class config_rewriter():
-    ''' Class used to rewrite the file containing fixed paths
-    '''
-
+    """
+    This class is used to rewrite the file containing the fixed paths.
+    """    
     def __init__(self, conf_obj):
-        ''' The constructur '''
+        """The constructor"""
         self.cc = conf_obj
 
     def upload(self):
-        ''' Function for set the global path
-        '''
+        """
+        This function sets the global paths
+        """
         config.simulated_interf                 = self.cc.simulated_interf
         config.simulated_dm                     = self.cc.simulated_dm
         config.simulated_accelerometers         = self.cc.simulated_accelerometers

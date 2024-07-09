@@ -1,6 +1,5 @@
 #!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
-
 """
 @file zernike.py
 @brief Zernike generation library
@@ -21,14 +20,10 @@ HOW TO USE IT::
     coeff, mat = zernike.zernikeFit(img, zernike_index_vector)
     surf_image = zernike.zernikeSurface(img, coef, mat)
 """
-
-### Libraries
-
 import numpy as np
 from m4.ground import geo
 import math
 fac = math.factorial
-
 
 def removeZernike(ima, modes=np.array([1, 2, 3, 4])):
 

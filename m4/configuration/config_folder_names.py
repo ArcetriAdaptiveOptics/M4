@@ -16,7 +16,10 @@ this module.
 
 Example
 -------
->>> from m4.configuration import 
+>>> from m4.configuration import update_folder_paths
+>>> from m4.configuration import config_folder_names as fn
+>>> fn.BASE_PATH
+'.../M4/m4/data'
 """
 mirror_conf = '20170430'
 optical_conf = '20150730'

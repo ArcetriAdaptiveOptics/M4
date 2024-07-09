@@ -9,6 +9,8 @@ Utils module, containing all the useful interaction between the software and the
 machine OS.
 """
 import os
+import numpy as np
+from m4.ground import read_data as rd
 from m4.configuration import config_folder_names as fn
 from m4.ground.read_4DConfSettingFile import ConfSettingReader
 
@@ -217,3 +219,29 @@ def getConf4DSettingsPath(tn):
     """
     path = getFileList(tn, key='4DSetting')
     return path
+
+def createCube(filelist, register:bool=False):
+    """
+    Creates a cube of images from an images file list
+
+    Parameters
+    ----------
+    filelist : list of str
+        List of file paths to the images/frames to be stacked into a cube.
+    register : bool, optional
+        If True, the registration algorithm is performed on the images before s
+        tacking them into the cube. Default is False.
+
+    Returns
+    -------
+    cube : ndarray
+        Data cube containing the images/frames stacked.
+    """
+    cube_list = []
+    for imgfits in filelist:
+        image = rd.readFits_maskedImage(imgfits)
+        if register is not False:
+            image= np.roll(image, register)
+        cube_list.append(image)
+    cube = np.ma.dstack(cube_list)
+    return cube
