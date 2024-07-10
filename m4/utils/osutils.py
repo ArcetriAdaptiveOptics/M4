@@ -17,28 +17,33 @@ from m4.ground.read_4DConfSettingFile import ConfSettingReader
 OPTDATA = fn.OPT_DATA_FOLDER
 OPDIMG = fn.OPD_IMAGES_ROOT_FOLDER
 
-def findTracknum(tn):
+def findTracknum(tn, complete_path:bool=False):
     """
-    Search for the tracking number given in input within all the data path subf
-    olders
+    Search for the tracking number given in input within all the data path subfolders.
 
     Parameters
     ----------
     tn : str
         Tracking number to be searched.
+    complete_path : bool, optional
+        Option for wheter to return the list of full paths to the folders which
+        contain the tracking number or only their names.
 
     Returns
     -------
     tn_path : list of str
         List containing all the folders (within the OPTData path) in which the 
-        tracking number is present.
+        tracking number is present, sorted in alphabetical order.
     """
     tn_path = []
     for fold in os.listdir(OPTDATA):
         search_fold = os.path.join(OPTDATA, fold)
         if tn in os.listdir(search_fold):
-            tn_path.append(fold)
-    return tn_path
+            if complete_path:
+                tn_path.append(search_fold)    
+            else:
+                tn_path.append(fold)
+    return sorted(tn_path)
 
 def getFileList(tn, fold=None, key:str=None):
     """
@@ -220,7 +225,7 @@ def getConf4DSettingsPath(tn):
     path = getFileList(tn, key='4DSetting')
     return path
 
-def createCube(filelist, register:bool=False):
+def createCube(filelist, register=False):
     """
     Creates a cube of images from an images file list
 
@@ -228,9 +233,10 @@ def createCube(filelist, register:bool=False):
     ----------
     filelist : list of str
         List of file paths to the images/frames to be stacked into a cube.
-    register : bool, optional
-        If True, the registration algorithm is performed on the images before s
-        tacking them into the cube. Default is False.
+    register : int or tuple, optional
+        If not False, and int or a tuple of int must be passed as value, and 
+        the registration algorithm is performed on the images before stacking them
+        into the cube. Default is False.
 
     Returns
     -------

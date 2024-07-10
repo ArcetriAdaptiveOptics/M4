@@ -70,7 +70,7 @@ shuffleFile    = 'shuffle.dat'
 indexListFile  = 'indexList.fits'
 coordfile      = '' #TODO
 
-def process(tn, register = False):
+def process(tn, register:bool=False, save_cube:bool=False):
     """
     High level function with processes the data contained in the given tracking
     number OPDimages folder, performing the differential algorithm and saving 
@@ -80,22 +80,23 @@ def process(tn, register = False):
     ----------
     tn : str
         Tracking number of the data in the OPDImages folder.
-    register : int, optional
+    register : bool, optional
         Parameter which enables the registration option. The default is False.
     """
     ampVector,modesVector,template,_,registrationActs,shuffle = _getAcqPar(tn)
     _,regMat = getRegFileMatrix(tn)
     modesMat = getIffFileMatrix(tn)
-    actImgList = registrationRedux(regMat, template)
+    # actImgList = registrationRedux(regMat, template) #FIXME
     modesMatReorg = _modesReorganization(modesMat)
     iffRedux(tn, modesMatReorg, ampVector, modesVector, template, shuffle)
-    if register is not False:
+    if register:
         dx = findFrameOffset(tn, actImgList, registrationActs)
     else:
         dx = register
-    saveCube(tn, dx)
+    if save_cube:
+        saveCube(tn, dx)
 
-def saveCube(tn, register : bool = False):
+def saveCube(tn, register=False):
     """
     Creates and save a cube from the fits files contained in the tn folder, 
     along with the command matrix and the modes vector fits.
@@ -105,9 +106,10 @@ def saveCube(tn, register : bool = False):
     tn : str
         Tracking number of the IFFunctions data folder from which create the cu
         be.
-    registar : boolean
-        If True, the registration algorithm is performed on the images before s
-        tacking them into the cube. Default is False.
+    register : int or tuple, optional
+        If not False, and int or a tuple of int must be passed as value, and 
+        the registration algorithm is performed on the images before stacking them
+        into the cube. Default is False.
         
     Returns
     -------
@@ -150,9 +152,11 @@ def stackCubes(tnlist):
     os.mkdir(stacked_cube_fold)
     cube_parameters     = _getCubeList(tnlist)
     flag                = _checkStackedCubes(tnlist)
+    # Stacking the cube and the matrices
     stacked_cube        = np.ma.dstack(cube_parameters[0])
     stacked_cmat        = np.dstack(cube_parameters[1])
     stacked_mvec        = np.dstack(cube_parameters[2])
+    # Saving everithing to a new file into a new tn
     save_cube           = os.path.join(stacked_cube_fold, 'IMCube.fits')
     save_cmat           = os.path.join(stacked_cube_fold, 'cmdMatrix.fits')
     save_mvec           = os.path.join(stacked_cube_fold, 'modesVector.fits')
@@ -224,8 +228,8 @@ def pushPullRedux(fileVec, template, shuffle=0):
     """
     image_list = []
     template = np.array(template)
-    for l in range(0, template.shape[0]):
-        ima = rd.read_phasemap(fileVec[l])
+    for i in range(0, template.shape[0]):
+        ima = rd.read_phasemap(fileVec[i])
         image_list.append(ima)
     image = np.zeros((ima.shape[0], ima.shape[1]))
     if shuffle == 0:
