@@ -49,8 +49,12 @@ class SurfaceMeasure():
         return self.overview['TN']
 
     @property
+    def timestamp(self):
+        return self._timestamp
+
+    @property
     def n_meas(self):
-        return self.overview['N_MEAS']
+        return int(self.overview['N_MEAS'])
 
     def save(self, filepath):
         # os.makedirs(os.path.dirname(filepath), exist_ok=True)
