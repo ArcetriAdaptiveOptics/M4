@@ -174,7 +174,8 @@ from matplotlib import pyplot as plt
 from astropy.io import fits as pyfits
 from m4.configuration import update_folder_paths as ufp
 from m4.ground import read_data as rd, zernike as zern
-from m4.mini_OTT import timehistory as th, measurements
+from m4.analyzers import timehistory as th
+from m4.mini_OTT import measurements
 from m4 import main, noise
 from m4.configuration.start import create_ott
 from m4.devices.i4d import I4D

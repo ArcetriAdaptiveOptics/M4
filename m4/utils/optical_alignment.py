@@ -344,7 +344,7 @@ class OpticalAlignment:
         # modRB20231026 to implement aux mask fitting. the following lines 
         # replace the previous one
         # from m4.utils import image_registration_lib as imgreg
-        # from m4.mini_OTT import timehistory as th
+        # from m4.analyzers import timehistory as th
         # img = th.frame2ottFrame(new_image,[580,20])
         tnpar = "20240521_161525"  
         # '20231016_124531'
@@ -479,4 +479,3 @@ class OpticalAlignment:
         vector = np.array([m4_position, m4_command])
         fits_file_name = os.path.join(dove, name)
         pyfits.writeto(fits_file_name, vector)
-

@@ -2,20 +2,17 @@
 #%run /home/m4/git/M4/m4/misc/initOTT.py
 import numpy as np
 import os
+import time
+from astropy.io import fits as pyfits
 #from matplotlib import pyplot as plt
 from m4.misc import par_meas as pp
-from m4.ground import read_data as rr
-from m4.mini_OTT import timehistory as th
-from m4.ground import zernike as zern
+from m4.analyzers import timehistory as th
+from m4.ground import zernike as zern, geo, read_data as rr
 from m4.mini_OTT.measurements import Measurements
-from m4 import main
-from astropy.io import fits as pyfits
+from m4 import main, noise
 from m4.configuration import start
 from m4.devices.i4d import I4D
 from m4.configuration.ott_parameters import Interferometer
-from m4 import noise
-from m4.ground import geo
-import time
 conf='/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
 ott, interf, dm = start.create_ott(conf)
 meas = Measurements(ott,interf)
@@ -145,7 +142,3 @@ aveimg = th.averageFrames(0,999, fl)
 fname = th.foldname.OPD_SERIES_ROOT_FOLDER+'/'+tnott+ '/average.fits'
 pyfits.writeto(fname, aveimg.data)
 pyfits.append(fname, aveimg.mask.astype(np.uint8))
-
-
-
-

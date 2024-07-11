@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from m4.ground import read_data as rr
-from m4.mini_OTT import timehistory as th
+from m4.analyzers import timehistory as th
 from m4.ground import zernike as zern
 from m4.mini_OTT.measurements import Measurements
 from m4 import main

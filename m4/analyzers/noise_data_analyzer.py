@@ -15,8 +15,6 @@ from m4.ground.read_data import InterferometerConverter
 from m4.analyzers.analyzer_iffunctions import AnalyzerIFF
 from m4.ground import zernike
 from m4.ground import read_data
-from m4.mini_OTT import timehistory as th
-
 
 class Noise:
     """
@@ -444,10 +442,10 @@ class Noise:
                     # k = i * dist * 2
                     # name = 'img_%04d' %k
                     # file_name = os.path.join(data_file_path, name)
-                    image_k = image = read_data.read_phasemap(lista[k])
+                    image_k = read_data.read_phasemap(lista[k])
                     # name = 'img_%04d' %(k+dist)
                     # file_name = os.path.join(data_file_path, name)
-                    image_dist = image = read_data.read_phasemap(lista[k + dist])
+                    image_dist = read_data.read_phasemap(lista[k + dist])
                 else:
                     image_k = read_data.readFits_maskedImage(lista[k])
                     image_dist = read_data.readFits_maskedImage(lista[k + dist])

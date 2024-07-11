@@ -7,7 +7,7 @@ L. Oggioni
 '''
 
 from m4.configuration import start
-from m4.mini_OTT import timehistory as th
+from m4.analyzers import timehistory as th
 from m4.ground import zernike
 from m4.ground import timestamp
 import time as tt
