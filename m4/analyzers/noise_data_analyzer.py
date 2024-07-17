@@ -351,7 +351,7 @@ class Noise:
 
         sy, sx = img.shape
 
-        vec = img[0 : int(sx / 2) + 1, int(sy / 2)]
+        vec = img[0: int(sx / 2) + 1, int(sy / 2)]
         for posiz in np.arange(int(sx / 2), 0, -1):
             val = vec[posiz]
             if ~np.isnan(val):
@@ -376,7 +376,7 @@ class Noise:
 
         return (bin_edges[1:] - (bin_edges[1] - bin_edges[0])) * pixsc, stf
 
-    def analysis_whit_structure_function(
+    def analysis_with_structure_function(
         self, data_file_path, tau_vector, h5_or_fits=None, nzern=None
     ):
         """
@@ -447,14 +447,17 @@ class Noise:
                     image_k = image = read_data.read_phasemap(lista[k])
                     # name = 'img_%04d' %(k+dist)
                     # file_name = os.path.join(data_file_path, name)
-                    image_dist = image = read_data.read_phasemap(lista[k + dist])
+                    image_dist = image = read_data.read_phasemap(
+                        lista[k + dist])
                 else:
                     image_k = read_data.readFits_maskedImage(lista[k])
-                    image_dist = read_data.readFits_maskedImage(lista[k + dist])
+                    image_dist = read_data.readFits_maskedImage(
+                        lista[k + dist])
 
                 image_diff = image_k - image_dist
                 zernike_coeff_array, mat = zernike.zernikeFit(image_diff, zv)
-                sur = zernike.zernikeSurface(image_diff, zernike_coeff_array, mat)
+                sur = zernike.zernikeSurface(
+                    image_diff, zernike_coeff_array, mat)
                 image_ttr = image_diff - sur
                 quad = np.sqrt(
                     zernike_coeff_array[0] ** 2 + zernike_coeff_array[1] ** 2
@@ -503,7 +506,8 @@ class Noise:
             # name = 'img_%04d' %j
             # file_name = os.path.join(data_file_path, name)
             image = image = read_data.read_phasemap(lista[j])
-            zernike_coeff_array, mat = zernike.zernikeFit(image, np.array([2, 3]))
+            zernike_coeff_array, mat = zernike.zernikeFit(
+                image, np.array([2, 3]))
             sur = zernike.zernikeSurface(image, zernike_coeff_array, mat)
             image_ttr = image - sur
             mean = image_ttr.mean()

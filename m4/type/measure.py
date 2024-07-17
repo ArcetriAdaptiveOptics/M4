@@ -1,6 +1,7 @@
 from astropy.io import fits
 from arte.utils.snapshotable import Snapshotable
 from m4.ground.read_data import read_phasemap
+from m4.ground.timestamp import Timestamp
 import datetime
 from matplotlib import pyplot as plt
 import functools
@@ -20,6 +21,7 @@ class SurfaceMeasure():
         self._overview = overview
         self._timestamp = datetime.datetime.strptime(
             overview['TN'], '%Y%m%d_%H%M%S')
+        self._timestamp = Timestamp.fromString(overview['TN']).datetime
 
     def __repr__(self):
         return pprint.PrettyPrinter().pformat(self.overview)
