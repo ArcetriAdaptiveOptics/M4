@@ -72,4 +72,5 @@ PARABOLA_CGH_FOLDER                 = None
 PARABOLA_REMAPPED_FOLDER            = None
 INTMAT_ROOT_FOLDER                  = None
 DM_CONFIGURATION_ID                 = None
+MARKERS_ROOT_FOLDER                 = None
 MONITORING_ROOT_FOLDER              = None
