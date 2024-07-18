@@ -65,7 +65,7 @@ class OpticalAlignment:
         delay,
         zernike_to_be_corrected=None,
         dof_command_id=None,
-        subapOffsets=False,
+        subapOffsets=None,
     ):
         """
         Parameters
@@ -453,8 +453,8 @@ class OpticalAlignment:
 
     def _load_registeredPar(self, tn, zlist=[1, 2, 3, 4]):
         # fold=th.foldname.PARABOLA_REMAPPED_FOLDER+'/'+tn+'/'
-        name = fold_name.PARABOLA_REMAPPED_FOLDER + ...
-        "/" + tn + "/" + "par_remapped.fits"
+        name = fold_name.PARABOLA_REMAPPED_FOLDER +\
+                  "/" + tn + "/" + "par_remapped.fits"
         print("Loading registered Par " + name)
         hdu = pyfits.open(name)
         img = hdu[0].data

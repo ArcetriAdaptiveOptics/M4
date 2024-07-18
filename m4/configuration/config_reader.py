@@ -447,7 +447,7 @@ class configuration_path():
         if 'markers_root_folder' in self._conf.keys():
             return str(self._conf['markers_root_folder'])
         else:
-            path = os.path.join(self.OPD_DATA_FOLDER, 'Markers')
+            path = os.path.join(self.OPT_DATA_FOLDER, 'Markers')
             if os.path.exists(path) is False:
                 os.mkdir(path)
             return path        

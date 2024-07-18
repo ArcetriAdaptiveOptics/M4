@@ -281,6 +281,9 @@ class I4d6110(BaseInterferometer):
         if Sound.PLAY is True:
             playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH,'produce-completed.mp3'))
 
+    def loadConfiguration(self, conffile):
+        self._i4d.loadConfiguration(conffile)
+
     def getCameraSettings(self):
         '''
         Return 
@@ -327,7 +330,7 @@ class I4d6110(BaseInterferometer):
         off = (self.getCameraSettings())[2: 4]
         off = np.flip(off)
         nfullpix = np.array([2048, 2048])
-        fullimg = np.zeros(nfullpix)
+        fullimg = np.full(nfullpix, np.nan)  #was   np.zeros(nfullpix)
         fullmask = np.ones(nfullpix)
         offx = off[0]
         offy = off[1]

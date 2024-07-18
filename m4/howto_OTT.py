@@ -56,6 +56,7 @@ tnc = '20230720_185546'
 tnc = '20230720_192515'
 tnc = '20231027_095920' #!! with global modes, 20 frames, large amplitudes
 tnc = '20231027_131458' #global modes, high SNR
+tnc = '20240521_120211'
 # Alignment
 #   - Definition of what and who
 # alignment of focus

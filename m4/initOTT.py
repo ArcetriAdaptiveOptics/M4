@@ -265,7 +265,7 @@ HIGH-LEVEL USAGE:
         rotateBy(rel_deg) : Rotate the parabola from the current position of the desired angle.
 
     -------------------
--->  rm : Reference mirror slider with respect to optical axis.
+-->  flat : Reference mirror slider with respect to optical axis.
 
     Available functions:
 

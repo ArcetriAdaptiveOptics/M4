@@ -1,3 +1,4 @@
+import numpy as np
 import os
 from m4.ground import read_data
 from m4.ground.timestamp import Timestamp
@@ -13,9 +14,9 @@ pa = ParabolaActivities()
 phasemapname = 'surfMap.fits'
 fringesname  = 'fringesImage.fits'
 markcentername = 'markerCenter.ini'
-markersPath = os.path.append(foldname.basepath,foldname.MARKERS_ROOT_FOLDER)
+markersPath = os.path.join(foldname.BASE_PATH,foldname.MARKERS_ROOT_FOLDER)
 #modificare interferometer per aggiungere loadConfiguration
-markersConfig = '20240608_negativeMarkersMask50mm.mask' #negative mask (pass inside marker area)
+markersConfig = 'D:/config/20240608_negativeMarkersMask50mm.ini' #negative mask (pass inside marker area)
 markersDiam  = 10
 mlist0 = [2,3,4]
 mlist1 = [0,1,5,6,8] #removed the act out of symmetry, or the fitEllipse will find an ellipse
@@ -32,17 +33,17 @@ def acquireMarkersData(interf):
         tracking number where data are saved
     """
     tn = Timestamp.now()
-    fold = os.path.append(markersPath, tn)
+    fold = os.path.join(markersPath, tn)
     interf.loadConfiguration(markersConfig) #such markersConfig is negative, i.e. mask outside the markers
     q   = interf.acquire_phasemap()  #this is requested since the detector image has no processing to add the mask
     q   = interf.intoFullFrame(q)
     ima = interf.acquire_detector()
     imamask = np.ones(ima.shape)
-    imamask[ima <2*ima.mean()]=0
+    imamask[ima <0.5*np.nanmean(ima)]=0   #was 2x
     ima = np.ma.masked_array(ima, -1*imamask+1)
     #ima = np.ma.masked_array(ima, q.mask) #to be deleted
     ima = interf.intoFullFrame(ima)
-    
+    os.mkdir(fold)    
     interf.save_phasemap(fold,phasemapname,q)
     interf.save_phasemap(fold, fringesname, ima)
     print(tn)
@@ -61,11 +62,11 @@ def getParCenter(tn=None):
         parabola center (center of markers pattern)
     """
     if tn is None:
-        z = sort(os.listdir(markersPath))[-1]
+        z = sorted(os.listdir(markersPath))[-1]
         tn = z
         print('Using the last Tracknum: '+tn)
 
-    filename = os.path.append(markersPath, tn, markcentername)
+    filename = os.path.join(markersPath, tn, markcentername)
     config.read(filename)
     cc = config['PARABOLA']
     parCenter = np.array(cc['center'])
@@ -82,8 +83,8 @@ def loadMarkersData(tn):
     img: masked array
         detector image
     """
-    imgname = os.path.append(markersPath, tn,fringesname)
-    img     = read_data.readFits_data(imgname)
+    imgname = os.path.join(markersPath, tn,fringesname)
+    img = read_data.read_phasemap(imgname)  #img     = read_data.readFits_data(imgname)
     return img
 
 def findMarkers(img):
@@ -105,7 +106,7 @@ def findMarkers(img):
     mpos = np.array([pos[1,:],pos[0,:]])
     return mpos
 
-def findMarkerOrigin(pos):
+def findMarkersOrigin(pos):
     """
     This function finds the center of the markers pattern to allow identify the PAR position in the frame
     Parameters
@@ -120,19 +121,21 @@ def findMarkerOrigin(pos):
 
     c0, axs0, r0 = pa._fitEllipse(pos[0,mlist1],pos[1,mlist1])  #we use just the outer ring and swap coord
     c0 = np.real(c0)
+    return c0
 
-def measureMarkerPos(tn=None):
+def measureMarkerPos(tn=None, interf=None):
     if tn is None:
         tn = acquireMarkersData(interf)
 
     img = loadMarkersData(tn)
-    pos = findMarkersOrigin(img)
-    fname = 
-    f.open(fname,'w')
-    f.write('[PARABOLA]')
-    data = 'center  = ['+str(c0[0])+','+str(c0[1])+']'
-    f.write(data)
-    f.close
+    pos = findMarkers(img)
+    c0  = findMarkersOrigin(pos)
+    fname = os.path.join(markersPath, tn, markcentername)
+    fl=open(fname,'w')
+    fl.write('[PARABOLA]'+ '\n')
+    data = "center  = [{:.2f},{:.2f}]".format(c0[0], c0[1])
+    fl.write(data)
+    fl.close()
 
 def maskDetectorImage(img):
     """
