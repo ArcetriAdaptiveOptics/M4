@@ -10,9 +10,9 @@ from m4.utils import image_registration_lib as imgreg
 from m4.utils.parabola_identification import ParabolaActivities
 pa = ParabolaActivities()
 
-phasemapname = ''
-fringesname  = ''
-markcentername = ''
+phasemapname = 'surfMap.fits'
+fringesname  = 'fringesImage.fits'
+markcentername = 'markerCenter.ini'
 markersPath = os.path.append(foldname.basepath,foldname.MARKERS_ROOT_FOLDER)
 #modificare interferometer per aggiungere loadConfiguration
 markersConfig = '20240608_negativeMarkersMask50mm.mask' #negative mask (pass inside marker area)
