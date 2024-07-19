@@ -65,8 +65,8 @@ class OpticalAlignment:
         delay,
         zernike_to_be_corrected=None,
         dof_command_id=None,
-        tnPar = None
-        subapOffsets=None,
+        tnPar = None,
+        subapOffsets=None
     ):
         """
         Parameters
@@ -351,7 +351,7 @@ class OpticalAlignment:
             #tnpar = "20240521_161525"  
             par = self._load_registeredPar(tnPar)
             img = new_image - 2 * par
-            print("Using global modes fitting, TNPar: " + tnpar)
+            print("Using global modes fitting, TNPar: " + tnPar)
 
             # par = imgreg.load_registeredPar(tnpar)
             cir = geo.qpupil(-1 * par.mask + 1)
