@@ -57,6 +57,7 @@ tnc = '20230720_192515'
 tnc = '20231027_095920' #!! with global modes, 20 frames, large amplitudes
 tnc = '20231027_131458' #global modes, high SNR
 tnc = '20240521_120211'
+tnPar = '20240521_161525'
 # Alignment
 #   - Definition of what and who
 # alignment of focus
@@ -68,7 +69,7 @@ zern2corrf = np.array([0,1,3,4]) ; dofidf = np.array([1,2,3,4])# TipTilt, Coma,P
 #zern2corrf = np.array([3,4]);dofidf = np.array([1,2,3,4])# Coma, ParTip, ParTilt, RmTip, RmTilt  !!wrong, not working
 
 #   - Alignment
-tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf, dofidf, n_frames=1, doit=True)
+tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf, dofidf, n_frames=1, doit=True, tnPar)
 
 # Measurements
 #   - WFE and Zernike

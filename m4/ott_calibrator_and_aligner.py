@@ -63,7 +63,7 @@ class OttCalibAndAlign():
         return self._tt
 
     def par_and_rm_aligner(self, move, tt_cal, n_images, delay,
-                      zernike_to_be_corrected=None, dof_command_id=None):
+                      zernike_to_be_corrected=None, dof_command_id=None, tnPar=tnPar):
         """
         Parameters
         ----------
@@ -96,7 +96,7 @@ class OttCalibAndAlign():
         aliner = OpticalAlignment(tt_cal, self._ott, self._interf)
         par_cmd, rm_cmd, dove = aliner.opt_aligner(n_images, delay,
                                                    zernike_to_be_corrected,
-                                                   dof_command_id)
+                                                   dof_command_id, tnPar)
         if move is True:
             pos_par = self._ott.parabola.getPosition()
             self._ott.parabola.setPosition(pos_par + par_cmd)
@@ -120,7 +120,11 @@ class OttCalibAndAlign():
         file.write('\n')
         if move == 0:
             dof_command_id = -1
-        file.write('DoF & Zern2Corr.          %s %s \n ************\n' % (dof_command_id, zernike_to_be_corrected))
+        if tnPar is None:
+            tnParstring = 'PAR not subtracted'
+        else:
+            tnParstring = tnPar
+        file.write('TNPar, DoF & Zern2Corr.        %s  %s %s \n ************\n' % (tnParstring, dof_command_id, zernike_to_be_corrected))
         file.close()
 
 

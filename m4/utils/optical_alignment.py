@@ -65,6 +65,7 @@ class OpticalAlignment:
         delay,
         zernike_to_be_corrected=None,
         dof_command_id=None,
+        tnPar = None
         subapOffsets=None,
     ):
         """
@@ -139,7 +140,7 @@ class OpticalAlignment:
 
         if self._who == "PAR + RM":
             cmd, self._zernikeVectorSelected, total_zernike_vector = (
-                self._commandGenerator(img)
+                self._commandGenerator(img, tnPar)
             )
             self.par_command, self.rm_command = self._reorgCmdForParAndRm(
                 cmd, dof_command_id
@@ -295,7 +296,7 @@ class OpticalAlignment:
         par_command, rm_command = self._reorgCmdForParAndRm(cmd, commandId)
         return par_command, rm_command
 
-    def _commandGenerator(self, img):
+    def _commandGenerator(self, img, tnPar):
         """
         args:
             img: numpy array
@@ -311,7 +312,7 @@ class OpticalAlignment:
                 total_zernike_vector
         """
         tout = self._zernikeCoeffCalculator(
-            img
+            img, tnPar
         )
         total_zernike_vector, zernike_vector_selected = tout
         print("zernike:")
@@ -322,7 +323,7 @@ class OpticalAlignment:
         print(cmd)
         return cmd, zernike_vector_selected, total_zernike_vector
 
-    def _zernikeCoeffCalculator(self, img):
+    def _zernikeCoeffCalculator(self, img, tnPar):
         """
         Returns:
                 final_coef = zernike coeff on the image
@@ -346,20 +347,21 @@ class OpticalAlignment:
         # from m4.utils import image_registration_lib as imgreg
         # from m4.analyzers import timehistory as th
         # img = th.frame2ottFrame(new_image,[580,20])
-        tnpar = "20240521_161525"  
-        # '20231016_124531'
-        par = self._load_registeredPar(tnpar)
-        img = new_image - 2 * par
-        print("Using global modes fitting, TNPar: " + tnpar)
+        if tnPar is not None:  #modRB 20240719 to implement the tnPAR parameter
+            #tnpar = "20240521_161525"  
+            par = self._load_registeredPar(tnPar)
+            img = new_image - 2 * par
+            print("Using global modes fitting, TNPar: " + tnpar)
 
-        # par = imgreg.load_registeredPar(tnpar)
-        cir = geo.qpupil(-1 * par.mask + 1)
-        mm = geo.draw_mask(par.data * 0, cir[0], 
-                           cir[1], 1.44 / 0.00076 / 2, out=0)
-        # img = img-2*par !!!! removing the PAR twice!!noooooooo
-        print("Removing the PAR shape")
-        coef, mat = zernike.zernikeFitAuxmask(img, mm, np.arange(10) + 1)
-
+            # par = imgreg.load_registeredPar(tnpar)
+            cir = geo.qpupil(-1 * par.mask + 1)
+            mm = geo.draw_mask(par.data * 0, cir[0], 
+                               cir[1], 1.44 / 0.00076 / 2, out=0)
+            # img = img-2*par !!!! removing the PAR twice!!noooooooo
+            print("Removing the PAR shape")
+            coef, mat = zernike.zernikeFitAuxmask(img, mm, np.arange(10) + 1)
+        else:
+            coef, mat = zernike.zernikeFit(img, np.arange(10) + 1)
         # end of modRB
         z = np.array([1, 2, 3, 6, 7])
         all_final_coef = coef[z]
@@ -373,7 +375,7 @@ class OpticalAlignment:
                     self._intMatModesVector[i]]
         return all_final_coef, final_coef_selected
 
-    def getZernikeWhitAlignerObjectOptions(self, img):
+    def getZernikeWhitAlignerObjectOptions(self, img, tnPar):
         """
         Returns
         -------
@@ -382,7 +384,7 @@ class OpticalAlignment:
         final_coef_selected: numpy array
             zernike selected using intMatModesVector (zernike2control)
         """
-        all_final_coef, final_coef_selected = self._zernikeCoeffCalculator(img)
+        all_final_coef, final_coef_selected = self._zernikeCoeffCalculator(img, tnPar)
         return all_final_coef, final_coef_selected
 
     def _saveData(self, dove, par_position, rm_position):
