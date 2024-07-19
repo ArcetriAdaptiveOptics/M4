@@ -433,6 +433,7 @@ class configuration_path():
                 os.mkdir(path)
             return path
 
+    @property
     def MONITORING_ROOT_FOLDER(self):
         if 'monitoring_root_folder' in self._conf.keys():
             return str(self._conf['monitoring_root_folder'])
