@@ -98,29 +98,22 @@ f"""{tn}    res1    res2    res3    res4    res5"""
 
 #______________________________________________________________________________
 gui = Gui(
-    [     _      ,  _  ,  _  ,  _  ,  _  ,         'RESULTS'       ,  'res1'  , 'res2'  , 'res3' , 'res4' , 'res5' ],
-    [ M('plot1') , ___ , ___ , ___ , ___ ,             _           ,     _    ,    _    ,   _    ,    _   ,    _   ],
-    [    III     , III , III , III , III ,             _           ,  'res1'  , 'res2'  , 'res3' , 'res4' , 'res5' ],
-    [    III     , III , III , III , III ,    'CAMERA SETTINGS'    ,  'freq'  , 'Width' ,'heigth', 'x-off', 'y-off'],
-    [    III     , III , III , III , III ,             _           ,  'freq'  , 'Width' ,'heigth', 'x-off', 'y-off'],
-    [    III     , III , III , III , III ,             _           ,     _    ,    _    ,   _    ,    _   ,    _   ],
-    [ M('plot2') , ___ , ___ , ___ , ___ , 'Acquisition Parameters',     _    ,    _    ,   _    ,    _   ,    _   ],
-    [    III     , III , III , III , III ,          'SLOW'         ,'N Frames','__frm__',   _    ,    _   ,    _   ],
-    [    III     , III , III , III , III ,             _           ,'Delay'   ,'__dly__',   _    ,    _   ,    _   ],
-    [    III     , III , III , III , III ,          'FAST'         ,'Duration','__sec__',   _    ,    _   ,    _   ],
-    [    III     , III , III , III , III ,             _           ,     _    ,    _    ,   _    ,    _   ,    _   ],
-    [    III     , III , III , III , III ,         ['start']       , ['stop'] ,    _    ,   _    ,    _   ,    _   ],
+    [ M('plot1') ,   ___  ,   ___   ,   ___  ,  M('plot2') ,   ___  ,   ___  ,   ___  ],
+    [    III     ,   III  ,   III   ,   III  ,     III     ,   III  ,   III  ,   III  ],
+    [    III     ,   III  ,   III   ,   III  ,     III     ,   III  ,   III  ,   III  ],
+    [    III     ,   III  ,   III   ,   III  ,     III     ,   III  ,   III  ,   III  ],
+    [ 'RESULTS'  , 'res1' , 'res2'  , 'res3' ,   'res4'    , 'res5' , 'res6' , 'res7' ],
+    [     _      ,    _   ,['start'],    _   ,      _      ,['stop'],    _   ,    _   ],
     )
-gui.column_stretch([0,1,1,1,1,1,1,1,1,1,1])
-gui.row_stretch([1,1,1,1,1,1,1,0,1,1,1])
 
 def start(gui, *args):
-    gui.freq = 20.0
-
+    gui.res1 = "freq = 20.0"
+    plot1(gui)
+    plot2(gui)
     return
 
 def stop(gui, *args):
-    gui.freq = 0.0
+    gui.res1 = 'res1'
     return
 
 def plot1(gui, *args):
@@ -132,27 +125,13 @@ def plot2(gui, *args):
     gui.plot2 = np.cos(t)
 
 gui.events(
-    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-    [ plot1  ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-    [ plot2  ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-    [   _    ,   _   ,   _   ,   _   ,   _   , start ,  stop ,   _   ,   _   ,   _   ,   _   ],
+    [ plot1  ,   _   ,   _   ,   _   , plot2 ,   _   ,   _   ,   _   ],
+    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+    [   _    ,   _   , start ,   _   ,   _   , stop  ,   _   ,   _   ],
     )
-
-
-
-
-
-
-
-
 
 
 
