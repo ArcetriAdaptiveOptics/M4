@@ -92,10 +92,10 @@ def getFileList(tn, fold=None, key:str=None):
     ore after 'mode' to exclude the 'modesVector.fits' file from the list.
     """
     if fold is None:
-        fl = sorted([os.path.join(OPDIMG, (tn+'/'+file)) \
+        fl = sorted([os.path.join(OPDIMG, tn, file) \
                      for file in os.listdir(os.path.join(OPDIMG, tn))])
     else:
-        fl = sorted([os.path.join(fold, (tn+'/'+file)) \
+        fl = sorted([os.path.join(fold, tn, file) \
                      for file in os.listdir(os.path.join(fold, tn))])
     if key is not None:
         try:

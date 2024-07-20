@@ -7,10 +7,8 @@ Description
 -----------
 """
 import time, schedule, threading, os, shutil, numpy as np
-#import tkinter as tk # GUI
-import matplotlib.pyplot as plt
-from m4.noise import _curvFit, _createTemplateList
-from m4.analyzers.noise_data_analyzer import Noise
+from guietta import Gui, _, ___, III, M
+from m4 import noise
 from m4.ground.timestamp import Timestamp
 from m4.configuration import update_folder_paths as ufp
 ts = Timestamp()
@@ -21,10 +19,13 @@ class SystemMonitoring():
     """
     def __init__(self, interferometer, timing=1):
         """The Constructor"""
-        self._log       = os.path.join(fn.MONITORING_ROOT_FOLDER, 'MonitorLog.txt')
+        self._llog      = os.path.join(fn.MONITORING_ROOT_FOLDER, 'Monitor_CompleteLog.txt')
+        self._slog      = os.path.join(fn.MONITORING_ROOT_FOLDER, 'Monitor_ShortLog.txt')
         self._timing    = timing
+        self.template   = np.array([3]) #,11,25,37,51])
         self.delay      = 3
-        self.n          = Noise()
+        self.n_frames   = 4
+        # self.n          = Noise()
         self.interf     = interferometer
         self.cam_info   = None
         self.freq       = 20.0 #Hz - Gets updated every measure
@@ -40,62 +41,16 @@ class SystemMonitoring():
         stop_run_continuous.set()
 
     def _convectionNoiseMonitoring(self):
-        tau_vector = np.arange(1, 400, 1/55) #??? how to decide
-        rms, quad, n_meas = self.n.analysis_whit_structure_function(
-                                               self.fast_data_path, tau_vector)
-        rms_nm = rms * 1e9
-        x = tau_vector * (1 / self.freq)
-        param = [5, 0.5, 32]
-        try:
-            pp, fit = _curvFit(param, x, rms_nm)
-            decorr_time = 1 / pp[0] + pp[1]
-        except:
-            pp = np.array([0, 0, rms[-1] * 1e9])
-            decorr_time = -1
-            fit = rms_nm.copy() * 0
-        plt.figure()
-        plt.plot(x, rms_nm, "-o", label="Measured data")
-        plt.plot(x, fit, "-", label="Curve fit")
-        plt.plot([x[0], x[-1]], [pp[2], pp[2]], "--r", linewidth=3,
-                                                     label=f"{pp[2]:.2f} [nm]")
-        plt.grid()
-        plt.xlabel("Time [s]")
-        plt.ylabel("RMS [nm]")
-        plt.legend()
-        plt.show()
-        out_parameters = [pp[2], rms_nm, decorr_time]
+        tau_vector = np.arange(1, 40, 2) #??? Test on real data
+        out_parameters = noise.convection_noise(self.fast_data_path, tau_vector,
+                                                freq=self.freq, show=False)
         return out_parameters
 
     def _vibrationNoiseMonitoring(self):
-        tidy_or_shuffle = 0
-        numbers_array = np.array([3,11,25,37,51]) #template
-        template_list = _createTemplateList(numbers_array) #??? should work
-        tt_list = []
-        for temp in template_list:
-            tt = self.n.noise_analysis_from_hdf5_folder(self.slow_data_path,
-                                                        temp, tidy_or_shuffle)
-            time.sleep(1)
-            tt_list.append(tt)
-        rms_medio,quad_medio,n_temp,ptv_medio = self.n.different_template_analyzer(tt_list)
-        # 1
-        plt.figure()
-        plt.plot(n_temp, rms_medio*1e9, "-o")
-        plt.xlabel("n_temp")
-        plt.ylabel("RMS [nm]")
-        plt.grid()
-        # 2
-        plt.figure()
-        plt.plot(n_temp, quad_medio * 1e9, "-o")
-        plt.xlabel("n_temp")
-        plt.ylabel("TipTilt [nm]")
-        plt.grid()
-        # 3
-        plt.figure()
-        plt.plot(n_temp, ptv_medio*1e9, "-o")
-        plt.xlabel("n_temp")
-        plt.ylabel("Piston [nm]")
-        plt.grid()
-        out_parameters = [rms_medio, quad_medio, ptv_medio]
+        tos = 0
+        numbers_array = self.template
+        out_parameters = noise.noise_vibrations(self.slow_data_path, numbers_array,
+                                                tidy_or_shuffle=tos, show=False)
         return out_parameters
 
     def _fast_acquisition(self):
@@ -105,12 +60,13 @@ class SystemMonitoring():
         print("Fast acquisition completed.")
 
     def _slow_acquisition(self):
-        n_frames = 4
+        n_frames = self.n_frames
         tn = ts.now()
         self.slow_data_path = os.path.join(fn.OPD_SERIES_ROOT_FOLDER, tn)
+        os.mkdir(self.slow_data_path)
         for i in range(n_frames):
             img = self.interf.acquire_phasemap()
-            self.inter.save_phasemap(self.slow_data_path, ts.now()+'.fits', img)
+            self.interf.save_phasemap(self.slow_data_path, ts.now()+'.fits', img)
             time.sleep(self.delay)
         print("Slow acquisition completed.")
 
@@ -123,29 +79,72 @@ class SystemMonitoring():
             shutil.rmtree(path)
 
     def __write_log_message(self):
-        log_msg = \
+        tn = ts.now()
+        long_msg = \
 f"""#______________________________________________________________________________
-{ts.now()}
+{tn}
 [Diagnosis]
 res1 = () ; res2 = () ; res3 = () ; res4 = ()
 [Camera Settings]
 FrameRate = {self.freq:.1f} ; Width = {self.cam_info[0]}px ; Height={self.cam_info[1]}px
 x-offset = {self.cam_info[2]}px ; y-offset={self.cam_info[3]}px
 """
-        with open(self._log, 'a', encoding='utf-8') as log:
-            log.write(log_msg)
+        short_msg = \
+f"""{tn}    res1    res2    res3    res4    res5"""
+        with open(self._llog, 'a', encoding='utf-8') as log:
+            log.write(long_msg)
+        with open(self._slog, 'a', encoding='utf-8') as log:
+            log.write(short_msg)
 
 #______________________________________________________________________________
-def _run_continuously(self):
-    cease_continuous_run = threading.Event()
+gui = Gui(
+    [ M('plot1') ,   ___  ,   ___   ,   ___  ,  M('plot2') ,   ___  ,   ___  ,   ___  ],
+    [    III     ,   III  ,   III   ,   III  ,     III     ,   III  ,   III  ,   III  ],
+    [    III     ,   III  ,   III   ,   III  ,     III     ,   III  ,   III  ,   III  ],
+    [    III     ,   III  ,   III   ,   III  ,     III     ,   III  ,   III  ,   III  ],
+    [ 'RESULTS'  , 'res1' , 'res2'  , 'res3' ,   'res4'    , 'res5' , 'res6' , 'res7' ],
+    [     _      ,    _   ,['start'],    _   ,      _      ,['stop'],    _   ,    _   ],
+    )
 
-    class ScheduleThread(threading.Thread):
-        @classmethod
-        def run(cls):
-            while not cease_continuous_run.is_set():
-                schedule.run_pending()
-                time.sleep(self._timing)
+def start(gui, *args):
+    gui.res1 = "freq = 20.0"
+    plot1(gui)
+    plot2(gui)
+    return
 
-    continuous_thread = ScheduleThread()
-    continuous_thread.start()
-    return cease_continuous_run
+def stop(gui, *args):
+    gui.res1 = 'res1'
+    return
+
+def plot1(gui, *args):
+    t = np.linspace(1, 10, 1000)
+    gui.plot1 = np.sin(t)
+
+def plot2(gui, *args):
+    t = np.linspace(1, 10, 1000)
+    gui.plot2 = np.cos(t)
+
+gui.events(
+    [ plot1  ,   _   ,   _   ,   _   , plot2 ,   _   ,   _   ,   _   ],
+    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+    [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+    [   _    ,   _   , start ,   _   ,   _   , stop  ,   _   ,   _   ],
+    )
+
+
+
+# def _run_continuously(self):
+#     cease_continuous_run = threading.Event()
+
+#     class ScheduleThread(threading.Thread):
+#         @classmethod
+#         def run(cls):
+#             while not cease_continuous_run.is_set():
+#                 schedule.run_pending()
+#                 time.sleep(self._timing)
+
+#     continuous_thread = ScheduleThread()
+#     continuous_thread.start()
+#     return cease_continuous_run

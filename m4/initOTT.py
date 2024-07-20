@@ -182,6 +182,7 @@ from m4.configuration.start import create_ott
 from m4.devices.i4d import I4D
 from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
 from m4.configuration.ott_parameters import Interferometer
+from m4.utils import osutils as osu
 fn = ufp.folders
 ott, interf, dm = create_ott()
 par = Parabola(ott)
