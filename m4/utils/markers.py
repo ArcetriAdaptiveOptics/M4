@@ -126,7 +126,7 @@ def findMarkersOrigin(pos):
 def measureMarkerPos(tn=None, interf=None):
     if tn is None:
         tn = acquireMarkersData(interf)
-
+    print(tn)
     img = loadMarkersData(tn)
     pos = findMarkers(img)
     c0  = findMarkersOrigin(pos)
@@ -134,8 +134,10 @@ def measureMarkerPos(tn=None, interf=None):
     fl=open(fname,'w')
     fl.write('[PARABOLA]'+ '\n')
     data = "center  = [{:.2f},{:.2f}]".format(c0[0], c0[1])
+    print(data)
     fl.write(data)
     fl.close()
+    return c0
 
 def maskDetectorImage(img):
     """

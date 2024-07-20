@@ -1,6 +1,10 @@
-from m4.configuration import userconfig as myconf
-from m4 import main
 import numpy as np
+from m4.configuration import userconfig as myconf
+from m4 import main, noise
+from m4.configuration import update_folder_paths as ufp
+from m4.utils import markers as mrk
+fn = ufp.folders
+
 
 class OTTScripts:
     """
@@ -82,3 +86,24 @@ class OTTScripts:
 
     def shiftAndTrackTruss(self):
         pass
+
+
+    def acquireNoise(self):
+        self._interf.loadConfiguration(myconf.phasecam_noiseconfig)
+        tn = self._interf.capture(myconf.noise_nframes)
+        self._interf.produce(tn)
+        self._interf.loadConfiguration(myconf.phasecam_baseconfig)
+        dfpath = fn.OPD_IMAGES_ROOT_FOLDER+'/'+tn+'/'
+        noise.convection_noise(dfpath, myconf.noise_tau_vector)
+        noise.noise_vibrations(dfpath,myconf.noise.difftemplate)
+        return tn
+
+    def acquireTimeAverage(self, nframes, delay=2):
+        tn = meas.opticalMonitoring(nframes, delay)
+        return tn
+
+    def acquireCurrentFootprint(self):
+        c0 = mrk.measureMarkerPos(None, self._interf)
+        return c0
+
+
