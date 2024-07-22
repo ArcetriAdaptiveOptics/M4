@@ -2,7 +2,7 @@
 phasecam_markerconfig =  'D:/config/20240608_negativeMarkersMask50mm.4Dini'
 phasecam_alignmentconfig = 'D:/config/alignmentConf-noMask-dataFill-lowModThr.4Dini'
 phasecam_noiseconfig = 'D:/config/20240608_negativeMarkersMask50mm.4Dini'
-phasecam_monitorconfig = 'D:/config/20240608_negativeMarkersMask50mm.4Dini'
+phasecam_monitorconfig = 'D:/config/20240722_monitoringZoomRmCenter_Quarter.4Dini'
 phasecam_baseconfig = 'D:/config/20240719_2000x2000_RMCenter.4Dini'
 
 #Parabola registration
