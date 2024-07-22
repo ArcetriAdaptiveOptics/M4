@@ -58,6 +58,7 @@ class SystemMonitoring():
         self.interf.produce(tn)
         self.fast_data_path = os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn)
         print("Fast acquisition completed.")
+        print(self.fast_data_path) # Debugging only
 
     def _slow_acquisition(self):
         n_frames = self.n_frames
@@ -69,6 +70,7 @@ class SystemMonitoring():
             self.interf.save_phasemap(self.slow_data_path, ts.now()+'.fits', img)
             time.sleep(self.delay)
         print("Slow acquisition completed.")
+        print(self.slow_data_path) # Debugging only
 
     def __update_interf_settings(self):
         self.freq = self.interf.getFrameRate()
@@ -117,11 +119,11 @@ def stop(gui, *args):
     return
 
 def plot1(gui, *args):
-    t = np.linspace(1, 10, 1000)
+    t = np.linspace(0, 2*np.pi, 1000)
     gui.plot1 = np.sin(t)
 
 def plot2(gui, *args):
-    t = np.linspace(1, 10, 1000)
+    t = np.linspace(0, 2*np.pi, 1000)
     gui.plot2 = np.cos(t)
 
 gui.events(
@@ -132,8 +134,6 @@ gui.events(
     [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
     [   _    ,   _   , start ,   _   ,   _   , stop  ,   _   ,   _   ],
     )
-
-
 
 # def _run_continuously(self):
 #     cease_continuous_run = threading.Event()

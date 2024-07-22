@@ -35,9 +35,9 @@ class Runner:
             tower object
         """
         self.ott    = ott
-        self.truss  = Parabola(ott, conf)
-        self.rm     = ReferenceMirror(ott, conf)
-        self.angrot = AngleRotator(ott, conf)
+        self.truss  = Parabola(ott)
+        self.rm     = ReferenceMirror(ott)
+        self.angrot = AngleRotator(ott)
 
     def _setUp(self):
 
@@ -201,9 +201,7 @@ class Runner:
 
 def main():
     from m4.configuration import start
-    import os
-    conf = os.environ["PYOTTCONF"]
-    ott, interf, dm = start.create_ott(conf)
+    ott, interf, dm = start.create_ott()
 
     runner = Runner(ott)
     sys.exit(runner.run())
