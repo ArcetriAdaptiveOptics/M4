@@ -80,7 +80,7 @@ class SystemMonitoring():
             # gui.res8 = f"Elapsed Time: {end-init:.2f} seconds'"
         def start(gui, *args):
             #init = time.time()
-            gui.execute_in_background(self.monitoring, args=(gui,), callback=show_results)
+            gui.execute_in_background(self.monitoring, args=(lambda x: gui.widgets['progress'].setValue(x),), callback=show_results)
             # gui.res1 = f"Slow mean rms: {self.slow_results[0]*1e9:.1f}nm"
             # gui.res2 = f"Slow std: {self.slow_results[1]*1e9:.1f}nm"
             # gui.res3 = "OK"
@@ -136,7 +136,7 @@ class SystemMonitoring():
             ax.grid()
             ax.legend()
             ax.figure.canvas.draw()
-        
+
         gui.events(
             [ plot1  ,   _   ,   _   , plot2 ,   _   ,   _   , plot3 ,   _   ,   _   ],
             [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
@@ -150,7 +150,7 @@ class SystemMonitoring():
 
         gui.run()
 
-    def monitoring(self, gui=None):
+    def monitoring(self, progress=None):
         """
         Monitoring task for the OTT. It performs two types of acquisitions, a
         'fast acquisition' which does a 'capture' of images at the current
@@ -162,23 +162,23 @@ class SystemMonitoring():
         anymore.
         """
         self.__update_interf_settings()
-        if gui:
-            gui.progress = 10
+        if progress:
+            progress(10)
         self._fast_acquisition()
-        if gui:
-            gui.progress = 30
+        if progress:
+            progress(30)
         self._slow_acquisition()
-        if gui:
-            gui.progress = 50
+        if progress:
+            progress(50)
         self._slow_analysis()
         self._fast_analysis()
-        if gui:
-            gui.progress = 80
+        if progress:
+            progress(80)
         self.__write_log_message()
         self.__clear_data_folder(self.slow_data_path)
         self.__clear_data_folder(self.fast_data_path)
-        if gui:
-            gui.progress = 100
+        if progress:
+            progress(100)
 #        self.__load_default_config() # da fare alla fine del monitoring, non della funzione
 
     def _fast_analysis(self):
