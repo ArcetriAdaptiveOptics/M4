@@ -50,6 +50,91 @@ class SystemMonitoring():
         self.__load_monitor_config()
         self.__update_interf_settings()
 
+    # class GUI():
+    #     def __init__(self):
+    #         self.gui = Gui(
+    #             [ M('plot1')  ,     ___   ,     ___     ,  M('plot2')  ,   ___    ,    ___   ,  M('plot3') ,   ___   ,   ___  ],
+    #             [    III      ,     III   ,     III     ,     III      ,   III    ,    III   ,     III     ,   III   ,   III  ],
+    #             [    III      ,     III   ,     III     ,     III      ,   III    ,    III   ,     III     ,   III   ,   III  ],
+    #             [ 'RESULTS'   ,   'res1'  ,   'res2'    ,    'res3'    ,  'res4'  ,  'res5'  ,    'res6'   , 'res7'  , 'res8' ],
+    #             ['CAMERA INFO','Frequency','Frame Width','Frame Height','X-Offset','Y-Offset',      _      ,    _    ,    _   ],
+    #             [     _       ,     _     ,  ['start']  ,      _       ,    _     , ['stop'] ,      _      ,    _    ,    _   ],
+    #             )
+    #         self.gui.events(
+    #             [ plot1  ,   _   ,   _   , plot2 ,   _   ,   _   , plot3 ,   _   ,   _   ],
+    #             [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+    #             [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+    #             [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+    #             [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+    #             [   _    ,   _   , start ,   _   ,   _   , stop  ,   _   ,   _   ,   _   ],
+    #             )
+    # 
+    # 
+    #     def start(gui, *args):
+    #         init = time.time()
+    #         monitoring()
+    #         gui.res1 = f"Slow mean rms: {self.slow_results[0]*1e9:.1f}nm"
+    #         gui.res2 = f"Slow std: {self.slow_results[1]*1e9:.1f}nm"
+    #         gui.res3 = "OK"
+    #         gui.res4 = "Ok"
+    #         gui.res5 = "Ok"
+    #         gui.res6 = "Ok"
+    #         gui.res7 = "Ok"
+    #         gui.Frequency  = f"Frequency:  {self.freq:.1f}Hz"
+    #         gui.FrameWidth = f"Frame Width: {self.cam_info[0]:d}px"
+    #         gui.FrameHeight= f"Frame Height: {self.cam_info[1]:d}px"
+    #         gui.XOffset    = f"X-Offset: {self.cam_info[2]:d}px"
+    #         gui.YOffset    = f"Y-Offset: {self.cam_info[3]:d}px"
+    #         plot1(gui)
+    #         plot2(gui)
+    #         plot3(gui)
+    #         end = time.time()
+    #         gui.res8 = f"Elapsed Time: {end-init:.2f} seconds'"
+    # 
+    #     def stop(gui, *args):
+    #         gui.close()
+    # 
+    #     def plot1(gui, *args):
+    #         ax = gui.plot1.ax
+    #         ax.clear()
+    #         ax.set_title('RMS')
+    #         ax.set_xlabel('Frames per Template')
+    #         ax.set_ylabel('Root Mean Square [nm]')
+    #         ax.plot(self.fast_results['vn']['ntemp'], self.fast_results['vn']['rms'], '-o', c='black')
+    #         ax.grid()
+    #         ax.figure.canvas.draw()
+    #     
+    #     def plot2(gui, *args):
+    #         ax = gui.plot2.ax
+    #         ax.clear()
+    #         ax.set_title('Tip-Tilt Quadratic Residual')
+    #         ax.set_xlabel('Frames per Template')
+    #         ax.set_ylabel('Tip - Tilt [nm]')
+    #         ax.plot(self.fast_results['vn']['ntemp'], self.fast_results['vn']['tt'], '-o', c='black')
+    #         ax.grid()
+    #         ax.figure.canvas.draw()
+    #     
+    #     def plot3(gui, *args):
+    #         ax = gui.plot3.ax
+    #         ax.clear()
+    #         ax.set_title('Decorrelation Noise Fit')
+    #         ax.set_xlabel('Time [s]')
+    #         ax.set_ylabel('Root Mean Square [nm]')
+    #         ax.plot(self.fast_results['cn']['x'], self.fast_results['cn']['rms']*1e9, '-o',\
+    #                 c='black', label='Measurements')
+    #         x = self.fast_results['cn']['x']
+    #         pp = self.fast_results['cn']['pp']
+    #         ax.plot([x[0], x[-1]],[pp, pp], "--", linewidth=3, color='red', \
+    #                 label=f"{pp:.2f} [nm]")
+    #         ax.plot(x, self.fast_results['cn']['fit'])
+    #         ax.grid()
+    #         ax.legend()
+    #         ax.figure.canvas.draw()
+    # 
+    # def rungui(self):
+    #     monitor = self.GUI()
+    #     monitor.gui.run()
+
     def monitoring(self):
         """
         Monitoring task for the OTT. It performs two types of acquisitions, a 
@@ -69,7 +154,7 @@ class SystemMonitoring():
         self.__write_log_message()
         self.__clear_data_folder(self.slow_data_path)
         self.__clear_data_folder(self.fast_data_path)
-        self.__load_default_config() # da fare alla fine del monitoring, non della funzione
+#        self.__load_default_config() # da fare alla fine del monitoring, non della funzione
 
     def _fast_analysis(self):
         """
@@ -102,7 +187,7 @@ class SystemMonitoring():
         par1 = noise.noise_vibrations(self.fast_data_path, numbers_array,
                                                 tidy_or_shuffle=tos, show=False)
         par2 = noise.convection_noise(self.fast_data_path, tau_vector,
-                                                freq=self.freq, show=True)
+                                                freq=self.freq, show=False)
         keys1 = ['rms', 'tt', 'ntemp', 'ptv']
         keys2 = ['rms', 'tt', 'nmeas', 'pp', 'x', 'fit']
         keys3 = ['vn', 'cn']
@@ -195,7 +280,7 @@ class SystemMonitoring():
         """
         self.interf.loadConfiguration(uc.phasecam_baseconfig)
 
-    def __write_log_message(self, results):
+    def __write_log_message(self):
         """
         Function which writes both the complete and the short monitoring log files.
         """
@@ -230,8 +315,6 @@ f"""{tn}    {self.slow_results[0]*1e9:.2f}nm    {self.slow_results[1]*1e9:.2f}nm
 # =============================================================================
 # Debugging of the GUI and relative applications
 # =============================================================================
-from scripts.misc.monitoring.monitor import SystemMonitoring
-mm = SystemMonitoring(interf)
 
 gui = Gui(
     [ M('plot1')  ,     ___   ,     ___     ,  M('plot2')  ,   ___    ,    ___   ,  M('plot3') ,   ___   ,   ___  ],
@@ -239,7 +322,7 @@ gui = Gui(
     [    III      ,     III   ,     III     ,     III      ,   III    ,    III   ,     III     ,   III   ,   III  ],
     [ 'RESULTS'   ,   'res1'  ,   'res2'    ,    'res3'    ,  'res4'  ,  'res5'  ,    'res6'   , 'res7'  , 'res8' ],
     ['CAMERA INFO','Frequency','Frame Width','Frame Height','X-Offset','Y-Offset',      _      ,    _    ,    _   ],
-    [     _       ,     _     ,  ['start']  ,      _       ,    _     , ['stop'] ,      _      ,    _    ,    _   ],
+    [     _       ,     _     ,  ['start']  ,      _       ,    _     , ['stop'] ,      _      ,    _    ,['close']],
     )
 
 def start(gui, *args):
@@ -261,9 +344,12 @@ def start(gui, *args):
     plot2(gui)
     plot3(gui)
     end = time.time()
-    gui.res8 = f"Elapsed Time: {end-init:.2f} seconds'"
+    gui.res8 = f"Elapsed Time: {end-init:.1f}s"
 
 def stop(gui, *args):
+    pass
+
+def close(gui, *args):
     gui.close()
     
 def plot1(gui, *args):
@@ -277,7 +363,7 @@ def plot1(gui, *args):
     ax.figure.canvas.draw()
 
 def plot2(gui, *args):
-    ax = gui.plot1.ax
+    ax = gui.plot2.ax
     ax.clear()
     ax.set_title('Tip-Tilt Quadratic Residual')
     ax.set_xlabel('Frames per Template')
@@ -287,18 +373,18 @@ def plot2(gui, *args):
     ax.figure.canvas.draw()
     
 def plot3(gui, *args):
-    ax = gui.plot1.ax
+    ax = gui.plot3.ax
     ax.clear()
     ax.set_title('Decorrelation Noise Fit')
     ax.set_xlabel('Time [s]')
     ax.set_ylabel('Root Mean Square [nm]')
     ax.plot(mm.fast_results['cn']['x'], mm.fast_results['cn']['rms']*1e9, '-o',\
             c='black', label='Measurements')
-    ax.plot([mm.fast_results['cn']['x'][0], mm.fast_results['cn']['x'][-1]], \
-            [mm.fast_results['cn']['pp'][2], mm.fast_results['cn']['pp'][2]], \
-            "--r", linewidth=3, color='red', \
-            label=f"{mm.fast_results['cn']['pp'][2]:.2f} [nm]")
-    ax.plot(mm.fast_results['cn']['x'], mm.fast_results['cn']['fit'])
+    x = mm.fast_results['cn']['x']
+    pp = mm.fast_results['cn']['pp']
+    ax.plot([x[0], x[-1]],[pp, pp], "--", linewidth=3, color='red', \
+            label=f"{pp:.2f} [nm]")
+    ax.plot(x, mm.fast_results['cn']['fit'])
     ax.grid()
     ax.legend()
     ax.figure.canvas.draw()
@@ -309,7 +395,7 @@ gui.events(
     [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
     [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
     [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-    [   _    ,   _   , start ,   _   ,   _   , stop  ,   _   ,   _   ,   _   ],
+    [   _    ,   _   , start ,   _   ,   _   , stop  ,   _   ,   _   , close ],
     )
 
 # def _run_continuously(self):
