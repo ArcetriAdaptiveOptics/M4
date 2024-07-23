@@ -8,7 +8,7 @@ Description
 """
 import time, os, shutil, numpy as np #schedule, threading
 from matplotlib import pyplot as plt
-from guietta import Gui, _, ___, III, M
+from guietta import Gui, _, ___, III, M, G, P
 from m4 import noise
 from m4.configuration import update_folder_paths as ufp
 from m4.configuration import userconfig as uc
@@ -55,14 +55,12 @@ class SystemMonitoring():
             [ M('plot1')  ,     ___   ,     ___     ,  M('plot2')  ,   ___    ,    ___   ,  M('plot3') ,   ___   ,   ___  ],
             [    III      ,     III   ,     III     ,     III      ,   III    ,    III   ,     III     ,   III   ,   III  ],
             [    III      ,     III   ,     III     ,     III      ,   III    ,    III   ,     III     ,   III   ,   III  ],
+            [    III      ,     III   ,     III     ,     III      ,   III    ,    III   ,     III     ,   III   ,   III  ],
             [ 'RESULTS'   ,   'res1'  ,   'res2'    ,    'res3'    ,  'res4'  ,  'res5'  ,    'res6'   , 'res7'  , 'res8' ],
-            ['CAMERA INFO','Frequency','Frame Width','Frame Height','X-Offset','Y-Offset',      _      ,    _    ,    _   ],
+            ['CAMERA INFO','Frequency','Frame Width','Frame Height','X-Offset','Y-Offset',   P('progress')  ,    _    ,    _   ],
             [     _       ,     _     ,  ['start']  ,      _       ,    _     , ['stop'] ,      _      ,    _    ,['close']],
             )
-
-        def start(gui, *args):
-            init = time.time()
-            self.monitoring()
+        def show_results(gui, *args):
             gui.res1 = f"Slow mean rms: {self.slow_results[0]*1e9:.1f}nm"
             gui.res2 = f"Slow std: {self.slow_results[1]*1e9:.1f}nm"
             gui.res3 = "OK"
@@ -78,8 +76,28 @@ class SystemMonitoring():
             plot1(gui)
             plot2(gui)
             plot3(gui)
-            end = time.time()
-            gui.res8 = f"Elapsed Time: {end-init:.2f} seconds'"
+            #end = time.time()
+            # gui.res8 = f"Elapsed Time: {end-init:.2f} seconds'"
+        def start(gui, *args):
+            #init = time.time()
+            gui.execute_in_background(self.monitoring, args=(gui,), callback=show_results)
+            # gui.res1 = f"Slow mean rms: {self.slow_results[0]*1e9:.1f}nm"
+            # gui.res2 = f"Slow std: {self.slow_results[1]*1e9:.1f}nm"
+            # gui.res3 = "OK"
+            # gui.res4 = "Ok"
+            # gui.res5 = "Ok"
+            # gui.res6 = "Ok"
+            # gui.res7 = "Ok"
+            # gui.Frequency  = f"Frequency:  {self.freq:.1f}Hz"
+            # gui.FrameWidth = f"Frame Width: {self.cam_info[0]:d}px"
+            # gui.FrameHeight= f"Frame Height: {self.cam_info[1]:d}px"
+            # gui.XOffset    = f"X-Offset: {self.cam_info[2]:d}px"
+            # gui.YOffset    = f"Y-Offset: {self.cam_info[3]:d}px"
+            # plot1(gui)
+            # plot2(gui)
+            # plot3(gui)
+            # end = time.time()
+            # gui.res8 = f"Elapsed Time: {end-init:.2f} seconds'"
         def stop(gui, *args):
             pass
         def close(gui, *args):
@@ -125,12 +143,14 @@ class SystemMonitoring():
             [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
             [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
             [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
+            [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
             [   _    ,   _   , start ,   _   ,   _   , stop  ,   _   ,   _   , close ],
             )
+        gui.title('OTT Monitoring')
 
         gui.run()
 
-    def monitoring(self):
+    def monitoring(self, gui=None):
         """
         Monitoring task for the OTT. It performs two types of acquisitions, a
         'fast acquisition' which does a 'capture' of images at the current
@@ -142,13 +162,23 @@ class SystemMonitoring():
         anymore.
         """
         self.__update_interf_settings()
+        if gui:
+            gui.progress = 10
         self._fast_acquisition()
+        if gui:
+            gui.progress = 30
         self._slow_acquisition()
+        if gui:
+            gui.progress = 50
         self._slow_analysis()
         self._fast_analysis()
+        if gui:
+            gui.progress = 80
         self.__write_log_message()
         self.__clear_data_folder(self.slow_data_path)
         self.__clear_data_folder(self.fast_data_path)
+        if gui:
+            gui.progress = 100
 #        self.__load_default_config() # da fare alla fine del monitoring, non della funzione
 
     def _fast_analysis(self):
