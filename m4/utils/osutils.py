@@ -45,7 +45,7 @@ def findTracknum(tn, complete_path:bool=False):
                 tn_path.append(fold)
     return sorted(tn_path)
 
-def getFileList(tn, fold=None, key:str=None):
+def getFileList(tn=None, fold=None, key:str=None):
     """
     Returns the file list of a given tracking number datapath.
 
@@ -91,12 +91,20 @@ def getFileList(tn, fold=None, key:str=None):
     Notice that, in this specific case, it was necessary to include the undersc
     ore after 'mode' to exclude the 'modesVector.fits' file from the list.
     """
-    if fold is None:
-        fl = sorted([os.path.join(OPDIMG, tn, file) \
-                     for file in os.listdir(os.path.join(OPDIMG, tn))])
+    if tn is None:
+        if fold is None:
+            fl = sorted([os.path.join(OPDIMG, file) \
+                         for file in os.listdir(os.path.join(OPDIMG, tn))])
+        else:
+            fl = sorted([os.path.join(fold, file) \
+                         for file in os.listdir(os.path.join(fold, tn))])
     else:
-        fl = sorted([os.path.join(fold, tn, file) \
-                     for file in os.listdir(os.path.join(fold, tn))])
+        if fold is None:
+            fl = sorted([os.path.join(OPDIMG, tn, file) \
+                         for file in os.listdir(os.path.join(OPDIMG, tn))])
+        else:
+            fl = sorted([os.path.join(fold, tn, file) \
+                         for file in os.listdir(os.path.join(fold, tn))])
     if key is not None:
         try:
             selected_list = []

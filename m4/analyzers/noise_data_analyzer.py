@@ -433,7 +433,7 @@ class Noise:
         quad_med_list = []
         for j in range(tau_vector.shape[0]):
             dist = tau_vector[j]
-            print(dist)
+            # print(dist)
             rms_list = []
             quad_list = []
             for i in range(i_max):

@@ -191,7 +191,7 @@ class AnalyzerIFF():
                                                    self._nPushPull)
         cube_all_act = []
         for i in range(self._actsVector.shape[0]):
-            print(i)
+            # print(i)
             for k in range(self._nPushPull):
                 p = self._nPushPull * i + k
                 n = where[p]

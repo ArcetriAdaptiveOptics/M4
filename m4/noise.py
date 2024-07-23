@@ -248,7 +248,7 @@ def convection_noise(data_file_path, tau_vector, freq=Interferometer.BURST_FREQ,
             if os.path.isfile(name):
                 os.remove(name)
             plt.savefig(name)
-        return [rms, quad, n_meas], [pp[2], decorr_time]
+        return [rms, quad, n_meas, pp[2], x, fit]
     else:
         time_diff = _time_for_plot(data_file_path)
         x = tau_vector * time_diff
