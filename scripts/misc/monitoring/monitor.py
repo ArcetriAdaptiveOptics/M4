@@ -59,17 +59,17 @@ class SystemMonitoring():
             [    III      ,     III   , III ,       III        , III ],
             )
         results_gui = Gui(
-            [    'res1'   , 'numero' ,  'nm'  ],
-            [    'res2'   , 'numero' ,  'nm'  ],
+            [  'Slow Mean RMS' , 'res1' ,  'nm'  ],
+            [    'Slow STD'    , 'res2' ,  'nm'  ],
             [    'res3'   , 'numero' , 'unit1'],
             [    'res4'   , 'numero' , 'unit2'],
             )
         camera_gui = Gui(
-            [   'Frequency'  , 'numer1' , 'Hz' ],
-            [  'Frame Width' , 'numer2' , 'px' ],
-            [ 'Frame Height' , 'numer3' , 'px' ],
-            [   'X-Offset'   , 'numer4' , 'px' ],
-            [   'Y-Offset'   , 'numer5' , 'px' ],
+            [   'Frequency'  , 'cam1' , 'Hz' ],
+            [  'Frame Width' , 'cam2' , 'px' ],
+            [ 'Frame Height' , 'cam3' , 'px' ],
+            [   'X-Offset'   , 'cam4' , 'px' ],
+            [   'Y-Offset'   , 'cam5' , 'px' ],
             )
         control_gui = Gui(
             [ P('progress') ,    ___     ,    ___   ],
@@ -78,29 +78,30 @@ class SystemMonitoring():
         gui.RESULTS     = results_gui
         gui.CAMERAINFO  = camera_gui
         gui.CONTROL     = control_gui
-        def show_results(gui, *args):
-            gui.res1 = f"Slow mean rms: {self.slow_results[0]*1e9:.1f}nm"
-            gui.res2 = f"Slow std: {self.slow_results[1]*1e9:.1f}nm"
-            gui.res3 = "OK"
-            gui.res4 = "Ok"
-            gui.res5 = "Ok"
-            gui.res6 = "Ok"
-            gui.Frequency  = f"Frequency:  {self.freq:.1f}Hz"
-            gui.FrameWidth = f"Frame Width: {self.cam_info[0]:d}px"
-            gui.FrameHeight= f"Frame Height: {self.cam_info[1]:d}px"
-            gui.XOffset    = f"X-Offset: {self.cam_info[2]:d}px"
-            gui.YOffset    = f"Y-Offset: {self.cam_info[3]:d}px"
-            plot1(gui)
-            plot2(gui)
-            plot3(gui)
+        control_gui.main_gui = gui
+        control_gui.results = results_gui
+        control_gui.camera = camera_gui
+        def show_results(sub_gui, *args):
+            sub_gui.results.res1 = f"{self.slow_results[0]*1e9:.1f}"
+            sub_gui.results.res2 = f"{self.slow_results[1]*1e9:.1f}"
+            sub_gui.results.res3 = "OK"
+            sub_gui.results.res4 = "Ok"
+            sub_gui.camera.cam1  = f"{self.freq:.1f}Hz"
+            sub_gui.camera.cam2  = f"{self.cam_info[0]:d}px"
+            sub_gui.camera.cam3  = f"{self.cam_info[1]:d}px"
+            sub_gui.camera.cam4  = f"{self.cam_info[2]:d}px"
+            sub_gui.camera.cam5  = f"{self.cam_info[3]:d}px"
+            plot1(sub_gui.main_gui)
+            plot2(sub_gui.main_gui)
+            plot3(sub_gui.main_gui)
         def start(gui, *args):
             gui.execute_in_background(self.monitoring,\
                         args=(lambda x: gui.widgets['progress'].setValue(x),),\
                         callback=show_results)
         def stop(gui, *args):
             pass
-        def close(gui, *args):
-            gui.close()
+        def close(sub_gui, *args):
+            sub_gui.main_gui.close()
         def plot1(gui, *args):
             ax = gui.plot1.ax
             ax.clear()
