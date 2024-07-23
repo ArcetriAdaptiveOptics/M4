@@ -7,7 +7,6 @@ Description
 -----------
 """
 import time, os, shutil, numpy as np #schedule, threading
-from matplotlib import pyplot as plt
 from guietta import Gui, _, ___, III, M, G, P
 from m4 import noise
 from m4.configuration import update_folder_paths as ufp
@@ -52,14 +51,33 @@ class SystemMonitoring():
 
     def rungui(self):
         gui = Gui(
-            [ M('plot1')  ,     ___   ,     ___     ,  M('plot2')  ,   ___    ,    ___   ,  M('plot3') ,   ___   ,   ___  ],
-            [    III      ,     III   ,     III     ,     III      ,   III    ,    III   ,     III     ,   III   ,   III  ],
-            [    III      ,     III   ,     III     ,     III      ,   III    ,    III   ,     III     ,   III   ,   III  ],
-            [    III      ,     III   ,     III     ,     III      ,   III    ,    III   ,     III     ,   III   ,   III  ],
-            [ 'RESULTS'   ,   'res1'  ,   'res2'    ,    'res3'    ,  'res4'  ,  'res5'  ,    'res6'   , 'res7'  , 'res8' ],
-            ['CAMERA INFO','Frequency','Frame Width','Frame Height','X-Offset','Y-Offset',   P('progress')  ,    _    ,    _   ],
-            [     _       ,     _     ,  ['start']  ,      _       ,    _     , ['stop'] ,      _      ,    _    ,['close']],
+            [ M('plot1')  ,     ___   , ___ ,   G('RESULTS')   , ___ ],
+            [    III      ,     III   , III ,       III        , III ],
+            [ M('plot2')  ,     ___   , ___ , G('CAMERA INFO') , ___ ],
+            [    III      ,     III   , III ,       III        , III ],
+            [ M('plot3')  ,     ___   , ___ ,   G('CONTROL')   , ___ ],
+            [    III      ,     III   , III ,       III        , III ],
             )
+        results_gui = Gui(
+            [    'res1'   , 'numero' ,  'nm'  ],
+            [    'res2'   , 'numero' ,  'nm'  ],
+            [    'res3'   , 'numero' , 'unit1'],
+            [    'res4'   , 'numero' , 'unit2'],
+            )
+        camera_gui = Gui(
+            [   'Frequency'  , 'numer1' , 'Hz' ],
+            [  'Frame Width' , 'numer2' , 'px' ],
+            [ 'Frame Height' , 'numer3' , 'px' ],
+            [   'X-Offset'   , 'numer4' , 'px' ],
+            [   'Y-Offset'   , 'numer5' , 'px' ],
+            )
+        control_gui = Gui(
+            [ P('progress') ,    ___     ,    ___   ],
+            [   ['start']   ,  ['stop']  , ['close']],
+            )
+        gui.RESULTS     = results_gui
+        gui.CAMERAINFO  = camera_gui
+        gui.CONTROL     = control_gui
         def show_results(gui, *args):
             gui.res1 = f"Slow mean rms: {self.slow_results[0]*1e9:.1f}nm"
             gui.res2 = f"Slow std: {self.slow_results[1]*1e9:.1f}nm"
@@ -67,7 +85,6 @@ class SystemMonitoring():
             gui.res4 = "Ok"
             gui.res5 = "Ok"
             gui.res6 = "Ok"
-            gui.res7 = "Ok"
             gui.Frequency  = f"Frequency:  {self.freq:.1f}Hz"
             gui.FrameWidth = f"Frame Width: {self.cam_info[0]:d}px"
             gui.FrameHeight= f"Frame Height: {self.cam_info[1]:d}px"
@@ -76,28 +93,10 @@ class SystemMonitoring():
             plot1(gui)
             plot2(gui)
             plot3(gui)
-            #end = time.time()
-            # gui.res8 = f"Elapsed Time: {end-init:.2f} seconds'"
         def start(gui, *args):
-            #init = time.time()
-            gui.execute_in_background(self.monitoring, args=(lambda x: gui.widgets['progress'].setValue(x),), callback=show_results)
-            # gui.res1 = f"Slow mean rms: {self.slow_results[0]*1e9:.1f}nm"
-            # gui.res2 = f"Slow std: {self.slow_results[1]*1e9:.1f}nm"
-            # gui.res3 = "OK"
-            # gui.res4 = "Ok"
-            # gui.res5 = "Ok"
-            # gui.res6 = "Ok"
-            # gui.res7 = "Ok"
-            # gui.Frequency  = f"Frequency:  {self.freq:.1f}Hz"
-            # gui.FrameWidth = f"Frame Width: {self.cam_info[0]:d}px"
-            # gui.FrameHeight= f"Frame Height: {self.cam_info[1]:d}px"
-            # gui.XOffset    = f"X-Offset: {self.cam_info[2]:d}px"
-            # gui.YOffset    = f"Y-Offset: {self.cam_info[3]:d}px"
-            # plot1(gui)
-            # plot2(gui)
-            # plot3(gui)
-            # end = time.time()
-            # gui.res8 = f"Elapsed Time: {end-init:.2f} seconds'"
+            gui.execute_in_background(self.monitoring,\
+                        args=(lambda x: gui.widgets['progress'].setValue(x),),\
+                        callback=show_results)
         def stop(gui, *args):
             pass
         def close(gui, *args):
@@ -138,16 +137,19 @@ class SystemMonitoring():
             ax.figure.canvas.draw()
 
         gui.events(
-            [ plot1  ,   _   ,   _   , plot2 ,   _   ,   _   , plot3 ,   _   ,   _   ],
-            [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-            [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-            [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-            [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-            [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-            [   _    ,   _   , start ,   _   ,   _   , stop  ,   _   ,   _   , close ],
+            [ plot1  ,   _   ,   _   ,   _   ,   _   ],
+            [   _    ,   _   ,   _   ,   _   ,   _   ],
+            [ plot2  ,   _   ,   _   ,   _   ,   _   ],
+            [   _    ,   _   ,   _   ,   _   ,   _   ],
+            [ plot3  ,   _   ,   _   ,   _   ,   _   ],
+            [   _    ,   _   ,   _   ,   _   ,   _   ],
+            )
+        control_gui.events(
+            [   _  ,   _  ,   _   ],
+            [ start, stop , close ],
             )
         gui.title('OTT Monitoring')
-
+        gui.window().resize(600, 800)
         gui.run()
 
     def monitoring(self, progress=None):
