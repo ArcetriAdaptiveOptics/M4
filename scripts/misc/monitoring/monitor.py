@@ -82,15 +82,15 @@ class SystemMonitoring():
         control_gui.results = results_gui
         control_gui.camera = camera_gui
         def show_results(sub_gui, *args):
-            sub_gui.results.res1 = f"{self.slow_results[0]*1e9:.1f}"
-            sub_gui.results.res2 = f"{self.slow_results[1]*1e9:.1f}"
+            sub_gui.results.res1 = f"{self.slow_results[0]*1e9:.2f}"
+            sub_gui.results.res2 = f"{self.slow_results[1]*1e9:.2f}"
             sub_gui.results.res3 = "OK"
             sub_gui.results.res4 = "Ok"
-            sub_gui.camera.cam1  = f"{self.freq:.1f}Hz"
-            sub_gui.camera.cam2  = f"{self.cam_info[0]:d}px"
-            sub_gui.camera.cam3  = f"{self.cam_info[1]:d}px"
-            sub_gui.camera.cam4  = f"{self.cam_info[2]:d}px"
-            sub_gui.camera.cam5  = f"{self.cam_info[3]:d}px"
+            sub_gui.camera.cam1  = f"{self.freq:.1f}"
+            sub_gui.camera.cam2  = f"{self.cam_info[0]:d}"
+            sub_gui.camera.cam3  = f"{self.cam_info[1]:d}"
+            sub_gui.camera.cam4  = f"{self.cam_info[2]:d}"
+            sub_gui.camera.cam5  = f"{self.cam_info[3]:d}"
             plot1(sub_gui.main_gui)
             plot2(sub_gui.main_gui)
             plot3(sub_gui.main_gui)
