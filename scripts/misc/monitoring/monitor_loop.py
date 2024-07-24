@@ -104,7 +104,7 @@ class SystemMonitoring():
         @execute_in_main_thread(gui)
         def _show_progress(percentage, text):
             control_gui.widgets['progress'].setValue(percentage)
-            #control_gui.widgets['message'].setText(text)
+            control_gui.widgets['message'].setText(text)
 
         def start(gui, *args):
             if not self.is_monitoring:
@@ -124,12 +124,13 @@ class SystemMonitoring():
             if self.monitoring_thread:
                 self.monitoring_thread.join()
             sub_gui.main_gui.close()
+            self.__load_default_config()
 
         def monitoring_loop(gui):
             while self.is_monitoring:
-                self._monitoring(progress=_show_progress)
+                self.monitoring(progress=_show_progress)
                 show_results()
-                time.sleep(5)
+                time.sleep(3.5)
 
         def plot1(gui, *args):
             ax = gui.plot1.ax
@@ -182,10 +183,10 @@ class SystemMonitoring():
             [ start, stop , close ],
             )
         gui.title('OTT Monitoring')
-        gui.window().resize(600, 800)
+        gui.window().resize(700, 800)
         gui.run()
 
-    def _monitoring(self, progress=None):
+    def monitoring(self, progress=None):
         """
         Monitoring task for the OTT. It performs two types of acquisitions, a
         'fast acquisition' which does a 'capture' of images at the current
@@ -197,26 +198,37 @@ class SystemMonitoring():
         anymore.
         """
         if progress:
-            progress(0)
+            progress(0, 'Restarting Acquisition')
+            time.sleep(0.25)
         self.__update_interf_settings()
         if progress:
-            progress(10)
+            progress(10, 'Interferometer information updated')
+            time.sleep(0.5)
+            progress(20, 'Fasta data acquisition started')
         self._fast_acquisition()
         if progress:
-            progress(30)
+            progress(30, "Fast data acquisition Completed\nInitiating Slow data acquisition")
         self._slow_acquisition()
         if progress:
-            progress(50)
+            progress(50, 'Slow data acquisition completed')
+            progress(55, 'Slow data analysis in progress...')
         self._slow_analysis()
+        if progress:
+            progress(60, 'Slow data analysis completed')
+            progress(65, 'Fast data analysis in progress...')
         self._fast_analysis()
         if progress:
-            progress(80)
+            progress(80, 'Fast data analysis completed')
         self.__write_log_message()
+        if progress:
+            progress(85, 'Log report written')
+            time.sleep(0.25)
         self.__clear_data_folder(self.slow_data_path)
         self.__clear_data_folder(self.fast_data_path)
         if progress:
-            progress(100)
-#        self.__load_default_config() # da fare alla fine del monitoring, non della funzione
+            progress(95, 'Data cleaning completed')
+            time.sleep(0.5)
+            progress(100, 'Monitoring loop completed')
 
     def _fast_analysis(self):
         """
@@ -334,6 +346,7 @@ class SystemMonitoring():
         configuration file, found in 'm4.configuration.userconfig'.
         """
         self.interf.loadConfiguration(uc.phasecam_monitorconfig)
+        print("Monitoring interferometer configuration loaded.")
 
     def __load_default_config(self):
         """
@@ -341,6 +354,7 @@ class SystemMonitoring():
         found in 'm4.configuration.userconfig'.
         """
         self.interf.loadConfiguration(uc.phasecam_baseconfig)
+        print("Default interferometer configuration loaded.")
 
     def __write_log_message(self):
         """
@@ -362,114 +376,3 @@ f"""{tn}    {self.slow_results[0]*1e9:.2f}nm    {self.slow_results[1]*1e9:.2f}nm
             log.write(long_msg)
         with open(self._slog, 'a', encoding='utf-8') as log:
             log.write(short_msg)
-
-
-
-
-
-
-
-
-
-
-
-#______________________________________________________________________________
-# =============================================================================
-# Debugging of the GUI and relative applications
-# =============================================================================
-
-# gui = Gui(
-#     [ M('plot1')  ,     ___   ,     ___     ,  M('plot2')  ,   ___    ,    ___   ,  M('plot3') ,   ___   ,   ___  ],
-#     [    III      ,     III   ,     III     ,     III      ,   III    ,    III   ,     III     ,   III   ,   III  ],
-#     [    III      ,     III   ,     III     ,     III      ,   III    ,    III   ,     III     ,   III   ,   III  ],
-#     [ 'RESULTS'   ,   'res1'  ,   'res2'    ,    'res3'    ,  'res4'  ,  'res5'  ,    'res6'   , 'res7'  , 'res8' ],
-#     ['CAMERA INFO','Frequency','Frame Width','Frame Height','X-Offset','Y-Offset',      _      ,    _    ,    _   ],
-#     [     _       ,     _     ,  ['start']  ,      _       ,    _     , ['stop'] ,      _      ,    _    ,['close']],
-#     )
-
-# def start(gui, *args):
-#     init = time.time()
-#     mm.monitoring()
-#     gui.res1 = f"Slow mean rms: {mm.slow_results[0]*1e9:.1f}nm"
-#     gui.res2 = f"Slow std: {mm.slow_results[1]*1e9:.1f}nm"
-#     gui.res3 = "OK"
-#     gui.res4 = "Ok"
-#     gui.res5 = "Ok"
-#     gui.res6 = "Ok"
-#     gui.res7 = "Ok"
-#     gui.Frequency  = f"Frequency:  {mm.freq:.1f}Hz"
-#     gui.FrameWidth = f"Frame Width: {mm.cam_info[0]:d}px"
-#     gui.FrameHeight= f"Frame Height: {mm.cam_info[1]:d}px"
-#     gui.XOffset    = f"X-Offset: {mm.cam_info[2]:d}px"
-#     gui.YOffset    = f"Y-Offset: {mm.cam_info[3]:d}px"
-#     plot1(gui)
-#     plot2(gui)
-#     plot3(gui)
-#     end = time.time()
-#     gui.res8 = f"Elapsed Time: {end-init:.1f}s"
-
-# def stop(gui, *args):
-#     pass
-
-# def close(gui, *args):
-#     gui.close()
-
-# def plot1(gui, *args):
-#     ax = gui.plot1.ax
-#     ax.clear()
-#     ax.set_title('RMS')
-#     ax.set_xlabel('Frames per Template')
-#     ax.set_ylabel('Root Mean Square [nm]')
-#     ax.plot(mm.fast_results['vn']['ntemp'], mm.fast_results['vn']['rms'], '-o', c='black')
-#     ax.grid()
-#     ax.figure.canvas.draw()
-
-# def plot2(gui, *args):
-#     ax = gui.plot2.ax
-#     ax.clear()
-#     ax.set_title('Tip-Tilt Quadratic Residual')
-#     ax.set_xlabel('Frames per Template')
-#     ax.set_ylabel('Tip - Tilt [nm]')
-#     ax.plot(mm.fast_results['vn']['ntemp'], mm.fast_results['vn']['tt'], '-o', c='black')
-#     ax.grid()
-#     ax.figure.canvas.draw()
-
-# def plot3(gui, *args):
-#     ax = gui.plot3.ax
-#     ax.clear()
-#     ax.set_title('Decorrelation Noise Fit')
-#     ax.set_xlabel('Time [s]')
-#     ax.set_ylabel('Root Mean Square [nm]')
-#     ax.plot(mm.fast_results['cn']['x'], mm.fast_results['cn']['rms']*1e9, '-o',\
-#             c='black', label='Measurements')
-#     x = mm.fast_results['cn']['x']
-#     pp = mm.fast_results['cn']['pp']
-#     ax.plot([x[0], x[-1]],[pp, pp], "--", linewidth=3, color='red', \
-#             label=f"{pp:.2f} [nm]")
-#     ax.plot(x, mm.fast_results['cn']['fit'])
-#     ax.grid()
-#     ax.legend()
-#     ax.figure.canvas.draw()
-
-# gui.events(
-#     [ plot1  ,   _   ,   _   , plot2 ,   _   ,   _   , plot3 ,   _   ,   _   ],
-#     [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-#     [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-#     [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-#     [   _    ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ,   _   ],
-#     [   _    ,   _   , start ,   _   ,   _   , stop  ,   _   ,   _   , close ],
-#     )
-
-# def _run_continuously(self):
-#     cease_continuous_run = threading.Event()
-
-#     class ScheduleThread(threading.Thread):
-#         @classmethod
-#         def run(cls):
-#             while not cease_continuous_run.is_set():
-#                 schedule.run_pending()
-#                 time.sleep(self._timing)
-
-#     continuous_thread = ScheduleThread()
-#     continuous_thread.start()
-#     return cease_continuous_run
