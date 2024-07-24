@@ -97,8 +97,12 @@ def findTracknum(tn, complete_path:bool=False):
     -------
     tn_path : list of str
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
         List containing all the folders (within the OPTData path) in which the 
+=======
+        List containing all the folders (within the OPTData path) in which the
+>>>>>>> Stashed changes
 =======
         List containing all the folders (within the OPTData path) in which the
 >>>>>>> Stashed changes
@@ -154,8 +158,13 @@ def getFileList(tn=None, fold=None, key:str=None):
     Examples
     --------
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Here are some examples regarding the use of the 'key' argument. Let's say w
     e need a list of files inside ''tn = '20160516_114916' '' in the IFFunction
+=======
+    Here are some examples regarding the use of the 'key' argument. Let's say we
+    need a list of files inside ''tn = '20160516_114916' '' in the IFFunction
+>>>>>>> Stashed changes
 =======
     Here are some examples regarding the use of the 'key' argument. Let's say we
     need a list of files inside ''tn = '20160516_114916' '' in the IFFunction
@@ -175,7 +184,11 @@ def getFileList(tn=None, fold=None, key:str=None):
     Let's suppose we want only the list of 'mode_000x.fits' files:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         >>> getFileList(tn, fold=fold, key='mode_')
+=======
+        >>> getFileList(tn, fold=iffold, key='mode_')
+>>>>>>> Stashed changes
 =======
         >>> getFileList(tn, fold=iffold, key='mode_')
 >>>>>>> Stashed changes
@@ -185,8 +198,13 @@ def getFileList(tn=None, fold=None, key:str=None):
          '.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/mode_0003.fits']
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Notice that, in this specific case, it was necessary to include the undersc
     ore after 'mode' to exclude the 'modesVector.fits' file from the list.
+=======
+    Notice that, in this specific case, it was necessary to include the underscore
+    after 'mode' to exclude the 'modesVector.fits' file from the list.
+>>>>>>> Stashed changes
 =======
     Notice that, in this specific case, it was necessary to include the underscore
     after 'mode' to exclude the 'modesVector.fits' file from the list.
@@ -202,10 +220,13 @@ def getFileList(tn=None, fold=None, key:str=None):
                          for file in os.listdir(os.path.join(OPDIMG, tn))])
         else:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             fl = sorted([os.path.join(fold, tn, file) \
                          for file in os.listdir(os.path.join(fold, tn))])
 
 =======
+=======
+>>>>>>> Stashed changes
             try:
                 for the_folds in findTracknum(tn, complete_path=True):
                     if fold in the_folds:
@@ -216,6 +237,9 @@ def getFileList(tn=None, fold=None, key:str=None):
                         raise Exception
             except Exception as exc:
                 raise FileNotFoundError(f"Invalid Path: no data found for '.../{fold}/{tn}'") from exc
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     if key is not None:
         try:
