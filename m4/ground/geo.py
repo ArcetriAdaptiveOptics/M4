@@ -195,7 +195,7 @@ def qpupil(mask, xx=None, yy=None, nocircle=0):
         maxv = max(yy[idx])
         minv = min(yy[idx])
         r2 = (maxv-minv)/2
-        y0 = r2 +minv
+        y0 = r2 + minv
         yy = yy - (minv+maxv)/2
         yy = yy/((maxv-minv)/2)
         r = np.mean([r1, r2])

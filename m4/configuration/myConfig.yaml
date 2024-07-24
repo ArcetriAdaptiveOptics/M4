@@ -1,4 +1,4 @@
-base_path: '/Users/marco/work/testdata'
+base_path: '/home/pietrof/git/M4/m4/data'
 simulated_interf: True
 simulated_dm: True
 simulated_accelerometers: True

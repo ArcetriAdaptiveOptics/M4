@@ -258,17 +258,11 @@ class Runner:
         self._setUp()
         self.gui.run()
 
-
 def main():
-    import os
     from m4.configuration import start
-
-    conf = os.environ['PYOTTCONF'] 
-    ott, interf, dm = start.create_ott(conf)
-
-    runner = Runner(ott)
+    ott, interf, dm = start.create_ott()
+    runner = Runner()
     sys.exit(runner.run())
-
 
 if __name__ == "__main__":
     main()

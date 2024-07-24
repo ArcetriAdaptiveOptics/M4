@@ -1,8 +1,11 @@
 """
 Author(s):
 ----------
+Written by:
         - Marco Xompero
         - Chiara Selmi
+Modified by
+        - Pietro Ferraiuolo, 2024
 
 Desctiption
 ===========

@@ -22,7 +22,7 @@ nActFile        = 'nActuators.dat'
 class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror
 
     def __init__(self,tracknum):
-        print('Initializing the M4AU with configuration: '+fn.DM_CONFIGURATION_ID)
+        print(f"Initializing the M4AU with configuration: '{os.path.join(fn.MIRROR_FOLDER,tracknum)}'")
         self.dmConf           = os.path.join(fn.MIRROR_FOLDER,tracknum)
         self.nActs       = self._initNActuators()
         self.mirrorModes = self._initMirrorModes()
@@ -47,11 +47,11 @@ class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror
         '''
         fname = os.path.join(self.dmConf,mirrorModesFile)
         if os.path.exists(fname):
-            print('Initializing mirror modes from data: nact x nmodes')
+            print('Initializing Mirror Modes')
             hdu = pyfits.open( fname)
             mirrorModes = hdu[0].data
         else:
-            print('Initializing analytical modal base (identity, or zonal matrix')
+            print('Initializing Analytical Modal Base')
             mirrorModes = np.eye(self.nActs)
         #nActs = np.shape(cmdMat)[0]
         return mirrorModes
@@ -62,11 +62,9 @@ class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror
         '''
         fname = os.path.join(self.dmConf,mirrorModesFile)
         if os.path.exists(fname):
-            print('Initializing mirror modes from data: nact x nmodes')
             hdu = pyfits.open( fname)
             mirrorModes = hdu[0].data
         else:
-            print('Initializing analytical modal base (identity, or zonal matrix')
             mirrorModes = np.eye(self.nActs)
         #nActs = np.shape(cmdMat)[0]
         return mirrorModes
@@ -133,8 +131,3 @@ class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror
         -------
         """
         print('Command history running...')
-
-
-
-
-

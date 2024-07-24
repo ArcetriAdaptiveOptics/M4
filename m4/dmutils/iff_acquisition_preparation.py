@@ -311,19 +311,19 @@ class IFFCapturePreparation():
 
         """
         if (mbasename is None) or (mbasename == 'mirror'):
-            print('Using mirror modes')
+            # print('Using mirror modes')
             self.modalBaseId = mbasename
             self._modalBase = self.mirrorModes
         elif mbasename == 'zonal':
-            print('Using zonal modes')
+            # print('Using zonal modes')
             self.modalBaseId = mbasename
             self._modalBase = self._createZonalMat()
         elif mbasename == 'hadamard':
-            print('Using Hadamard modes')
+            # print('Using Hadamard modes')
             self.modalBaseId = mbasename
             self._modalBase = self._createHadamardMat()
         else:
-            print('Using user-defined modes')
+            # print('Using user-defined modes')
             self.modalBaseId = mbasename
             self._modalBase = self._createUserMat(mbasename) #this is expected to be a tracknum
             

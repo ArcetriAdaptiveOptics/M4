@@ -96,8 +96,12 @@ def findTracknum(tn, complete_path:bool=False):
     Returns
     -------
     tn_path : list of str
+<<<<<<< Updated upstream
 
         List containing all the folders (within the OPTData path) in which the 
+=======
+        List containing all the folders (within the OPTData path) in which the
+>>>>>>> Stashed changes
         tracking number is present, sorted in alphabetical order.
 
     """
@@ -106,7 +110,7 @@ def findTracknum(tn, complete_path:bool=False):
         search_fold = os.path.join(OPTDATA, fold)
         if tn in os.listdir(search_fold):
             if complete_path:
-                tn_path.append(search_fold)    
+                tn_path.append(search_fold)
             else:
                 tn_path.append(fold)
     return sorted(tn_path)
@@ -115,7 +119,8 @@ def findTracknum(tn, complete_path:bool=False):
 def getFileList(tn=None, fold=None, key:str=None):
 
     """
-    Returns the file list of a given tracking number datapath.
+    Search for files in a given tracking number or complete path, sorts them and
+    puts them into a list.
 
     Parameters
     ----------
@@ -132,13 +137,32 @@ def getFileList(tn=None, fold=None, key:str=None):
     fl : list os str
         List of sorted files inside the folder.
 
+    How to Use it
+    -------------
+    If the complete path for the files to retrieve is available, then this function
+    should be called with the 'fold' argument set with the path, while 'tn' is
+    defaulted to None.
+
+    In any other case, the tn must be given: it will search for the tracking
+    number into the OPDImages folder, but if the search has to point another
+    folder, then the fold argument comes into play again. By passing both the
+    tn (with a tracking number) and the fold argument (with only the name of the
+    folder) then the search for files will be done for the tn found in the
+    specified folder. Hereafter there is an example, with the correct use of the
+    key argument too.
+
     Examples
     --------
+<<<<<<< Updated upstream
     Here are some examples regarding the use of the 'key' argument. Let's say w
     e need a list of files inside ''tn = '20160516_114916' '' in the IFFunction
+=======
+    Here are some examples regarding the use of the 'key' argument. Let's say we
+    need a list of files inside ''tn = '20160516_114916' '' in the IFFunction
+>>>>>>> Stashed changes
     s folder.
 
-        >>> iffold = '.../M4/m4/data/M4Data/OPTData/IFFunctions'
+        >>> iffold = 'IFFunctions'
         >>> tn = '20160516_114916'
         >>> getFileList(tn, fold=iffold)
         ['.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/cmdMatrix.fits',
@@ -150,14 +174,23 @@ def getFileList(tn=None, fold=None, key:str=None):
 
     Let's suppose we want only the list of 'mode_000x.fits' files:
 
+<<<<<<< Updated upstream
         >>> getFileList(tn, fold=fold, key='mode_')
+=======
+        >>> getFileList(tn, fold=iffold, key='mode_')
+>>>>>>> Stashed changes
         ['.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/mode_0000.fits',
          '.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/mode_0001.fits',
          '.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/mode_0002.fits',
          '.../M4/m4/data/M4Data/OPTData/IFFunctions/20160516_114916/mode_0003.fits']
 
+<<<<<<< Updated upstream
     Notice that, in this specific case, it was necessary to include the undersc
     ore after 'mode' to exclude the 'modesVector.fits' file from the list.
+=======
+    Notice that, in this specific case, it was necessary to include the underscore
+    after 'mode' to exclude the 'modesVector.fits' file from the list.
+>>>>>>> Stashed changes
     """
 
     if tn is None and fold is not None:
@@ -168,9 +201,22 @@ def getFileList(tn=None, fold=None, key:str=None):
             fl = sorted([os.path.join(OPDIMG, tn, file) \
                          for file in os.listdir(os.path.join(OPDIMG, tn))])
         else:
+<<<<<<< Updated upstream
             fl = sorted([os.path.join(fold, tn, file) \
                          for file in os.listdir(os.path.join(fold, tn))])
 
+=======
+            try:
+                for the_folds in findTracknum(tn, complete_path=True):
+                    if fold in the_folds:
+                        path = os.path.join(the_folds, tn)
+                        fl = sorted([os.path.join(path, file) \
+                                                 for file in os.listdir(path)])
+                    else: 
+                        raise Exception
+            except Exception as exc:
+                raise FileNotFoundError(f"Invalid Path: no data found for '.../{fold}/{tn}'") from exc
+>>>>>>> Stashed changes
     if key is not None:
         try:
             selected_list = []
@@ -185,8 +231,8 @@ def getFileList(tn=None, fold=None, key:str=None):
 
 def tnRange(tn0, tn1):
     """
-    Returns the list of tracking numbers between tn0 and tn1, within the same f
-    older, if they both exist in it.
+    Returns the list of tracking numbers between tn0 and tn1, within the same
+    folder, if they both exist in it.
 
     Parameters
     ----------
@@ -317,7 +363,7 @@ def createCube(filelist, register=False):
     filelist : list of str
         List of file paths to the images/frames to be stacked into a cube.
     register : int or tuple, optional
-        If not False, and int or a tuple of int must be passed as value, and 
+        If not False, and int or a tuple of int must be passed as value, and
         the registration algorithm is performed on the images before stacking them
         into the cube. Default is False.
 

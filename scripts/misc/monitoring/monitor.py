@@ -5,6 +5,22 @@ Author(s)
 
 Description
 -----------
+Monitoring application for the M4's Optical Test Tower, complete with GUI.
+
+How to Use it
+-------------
+To run the GUI, simply initialize the class and use the 'rungui()' method.
+We need an interferometer object initialized, which we will have if the initialization
+of the tower has ben executed:
+
+>>> from m4.gui.monitor import SystemMonitoring
+>>> mm = systemMonitoring(interf)
+Monitoring interferometer configuration loaded.
+>>> mm.rungui()
+
+Alternatively, to run a single sequence of monitoring, the method can be launched::
+    
+    >>> mm.monitoring()
 """
 import time, os, shutil, numpy as np, threading
 from matplotlib.pyplot import tight_layout
@@ -30,10 +46,18 @@ class SystemMonitoring():
 
     How to Use it
     -------------
+    To run a single monitoring event, simply use the 'monitoring' method
+    
     >>> from m4.gui.monitor import SystemMonitoring
     >>> # As we have initialized the interferometer device...
     >>> mm = SystemMonitoring(interf)
+    Monitoring interferometer configuration loaded.
     >>> mm.monitoring() # single loop operation
+    
+    As for the continuous loop monitoring, with integrated GUI, run the 'rungui'
+    method:
+    
+    >>> mm.rungui()
     """
     def __init__(self, interferometer):
         """The Constructor"""
@@ -54,6 +78,36 @@ class SystemMonitoring():
         self.monitoring_thread = None
 
     def rungui(self):
+        """
+        Method to run the Graphical User Interface of the monitoring app for the 
+        OTT.
+        
+        GUI Structure
+        =============
+        Plots : 
+            The left column is populated with the plots resulting from the data
+            analysis.
+        Results : 
+            A sub-gui at the top-right, labeled as 'RESULTS', is where data analysis
+            numerical results are shown.
+        Camera info : 
+            A sub-gui at the center-right, labeled as 'CAMERA INFO', contains the
+            information relative to the camera settings, such as frequency, frame
+            pixels and offsets.
+        Control : 
+            A sub-gui at the bottom-right, labeled as 'CONTROL', contains the 
+            live logging messages of the events, a progress bar showing the state
+            of the monitoring loop and three buttons:
+                start : A start monitoring button. Once pressed, the script will
+                    the looping event of monitoring
+                stop : A stop button, which will stop the script from going to 
+                    the next loop event.
+                    Note: if the monitoring script is still running when the 
+                    stop button is pressed, this will cause the GUI to freeze
+                    until the threads are done. Just wait until it finishes.
+                close: the close button, upload to the interferometer its default
+                    configuration and exit the program by closing the GUI.
+        """
         gui = Gui(
             [ M('plot1')  ,     ___   , ___ ,   G('RESULTS')   , ___ ],
             [    III      ,     III   , III ,       III        , III ],

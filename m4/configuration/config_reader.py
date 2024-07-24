@@ -71,6 +71,8 @@ class configuration_path():
         if 'base_path' in self._conf.keys():
             return self._conf['base_path']
         else:
+            # pyotconf = os.environ['PYOTTCONF']
+            # path = os.path.join(os.path.dirname(os.path.dirname(pyotconf)), 'data')
             return '/mnt/m4storage/Data'
 
     @property
