@@ -101,8 +101,7 @@ setup(name=NAME,
                         "pandas",
                         "playsound==1.2.2",
                         "jdcal",
-                        "matplotlib",
-                        'parametrized'
+                        "matplotlib"
                         ],
       package_data={
           'm4': ['data/*'],
