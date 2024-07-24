@@ -17,10 +17,10 @@ class testSurfaceMeasure(unittest.TestCase):
         with patch('m4.type.measure.read_phasemap') as mock_read_phasemap:
             mock_read_phasemap.return_value = np.ma.masked_array(
                 np.ones((100, 100)), mask=CircularMask((100, 100), 50).mask)
-            with patch('m4.type.measure.SurfaceMeasure._load_temperatures') as mock_load_temperatures:
+            with patch('m4.type.measure.SurfaceMeasure.load_temperatures') as mock_load_temperatures:
                 mock_load_temperatures.return_value = np.arange(
                     240).reshape(10, 24)
-                with patch('m4.type.measure.SurfaceMeasure._load_zernikes') as mock_load_zernikes:
+                with patch('m4.type.measure.SurfaceMeasure.load_zernikes') as mock_load_zernikes:
                     mock_load_zernikes.return_value = np.arange(
                         110).reshape(10, 11)
                     with patch('astropy.io.fits.getheader') as mock_getheader:
