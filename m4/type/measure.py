@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 import functools
 import pprint
 from pathlib import Path, PurePath
+from m4.utils.osutils import FileWalker
 
 
 class SurfaceMeasure():
@@ -76,12 +77,12 @@ class SurfaceMeasure():
         overview['TN'] = current_meas[0:15]
 
         imas = read_phasemap(str(filename))
-        tmp = SurfaceMeasure._load_temperatures(current_path)
+        tmp = SurfaceMeasure.load_temperatures(current_path)
         if tmp is not None:
             temperatures = tmp[overview['N_MEAS'], :]
         else:
             temperatures = None
-        tmp = SurfaceMeasure._load_zernikes(current_path)
+        tmp = SurfaceMeasure.load_zernikes(current_path)
         if tmp is not None:
             zernikes = tmp[overview['N_MEAS'], :]
         else:
@@ -91,9 +92,8 @@ class SurfaceMeasure():
 
     @functools.cache
     @staticmethod
-    def _load_temperatures(filepath):
+    def load_temperatures(filepath):
         tfile = Path(filepath, 'temperature.fits')
-        print(tfile)
         if Path.exists(tfile):
             with fits.open(tfile) as hdul:
                 return hdul[0].data
@@ -102,15 +102,10 @@ class SurfaceMeasure():
 
     @functools.cache
     @staticmethod
-    def _load_zernikes(filepath):
+    def load_zernikes(filepath):
         zfile = Path(filepath, 'zernike.fits')
         if Path.exists(zfile):
             with fits.open(zfile) as hdul:
                 return hdul[0].data
         else:
             return None
-
-    def imshow(self, **kwargs):
-        plt.imshow(self._surface, **kwargs)
-        plt.colorbar()
-        plt.show()
