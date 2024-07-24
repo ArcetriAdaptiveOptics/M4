@@ -7,7 +7,7 @@ Description
 -----------
 """
 import time, os, shutil, numpy as np, threading
-from guietta import Gui, _, ___, III, M, G, P
+from guietta import Gui, _, ___, III, M, G, P, execute_in_main_thread
 from m4 import noise
 from m4.configuration import update_folder_paths as ufp
 from m4.configuration import userconfig as uc
@@ -75,7 +75,7 @@ class SystemMonitoring():
             [   'Y-Offset'   , 'cam5' , 'px' ],
             )
         control_gui = Gui(
-            [       _       ,  'message' ,     _    ]
+            [       _       ,  'message' ,     _    ],
             [ P('progress') ,    ___     ,    ___   ],
             [   ['start']   ,  ['stop']  , ['close']],
             )
@@ -86,7 +86,7 @@ class SystemMonitoring():
         control_gui.results  = results_gui
         control_gui.camera   = camera_gui
 
-        @gui.execute_in_main_thread
+        @execute_in_main_thread(gui)
         def show_results():
             results_gui.res1 = f"{self.slow_results[0]*1e9:.2f}"
             results_gui.res2 = f"{self.slow_results[1]*1e9:.2f}"
@@ -101,10 +101,10 @@ class SystemMonitoring():
             plot2(gui)
             plot3(gui)
 
-        @gui.execute_in_main_thread
-        def _show_progress(percentage):
-            gui.widgets['progress'].setValue(percentage)
-            gui.widgets['']
+        @execute_in_main_thread(gui)
+        def _show_progress(percentage, text):
+            control_gui.widgets['progress'].setValue(percentage)
+            #control_gui.widgets['message'].setText(text)
 
         def start(gui, *args):
             if not self.is_monitoring:
@@ -178,6 +178,7 @@ class SystemMonitoring():
             )
         control_gui.events(
             [   _  ,   _  ,   _   ],
+            [   _  ,   _  ,   _   ],
             [ start, stop , close ],
             )
         gui.title('OTT Monitoring')
@@ -195,6 +196,8 @@ class SystemMonitoring():
         well as ultimately remove all the acquired data, as they are not usefull
         anymore.
         """
+        if progress:
+            progress(0)
         self.__update_interf_settings()
         if progress:
             progress(10)
