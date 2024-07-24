@@ -75,7 +75,7 @@ class SystemMonitoring():
             [   'Y-Offset'   , 'cam5' , 'px' ],
             )
         control_gui = Gui(
-            [       _       ,  'message' ,     _    ],
+            [   'message'   ,    ___     ,    ___   ],
             [ P('progress') ,    ___     ,    ___   ],
             [   ['start']   ,  ['stop']  , ['close']],
             )
@@ -183,7 +183,7 @@ class SystemMonitoring():
             [ start, stop , close ],
             )
         gui.title('OTT Monitoring')
-        gui.window().resize(700, 800)
+        gui.window().resize(750, 800)
         gui.run()
 
     def monitoring(self, progress=None):
