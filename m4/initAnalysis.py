@@ -7,10 +7,12 @@ Description
 -----------
 Script that initialize the ipython shell to be data analysis ready.
 """
-from m4.utils import osutils
+import os
+from m4 import noise
+from m4.utils import osutils as osu
 from m4.configuration import update_folder_paths as ufp
-from m4.mini_OTT import timehistory as th
-
+from m4.analyzers import timehistory as th
+fn = ufp.folders
 
 ###_____________________________________________________
 line = ["",

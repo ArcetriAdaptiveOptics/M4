@@ -179,8 +179,9 @@ def align_PARAndRM(
     zernike_to_be_corrected=None,
     dof_command_id=None,
     n_frames=None,
-    delay=None,
     doit=False,
+    tnPar = None,
+    delay = None
 ):
     """
     Parameters
@@ -212,7 +213,7 @@ def align_PARAndRM(
     move = doit
     c_a = OttCalibAndAlign(ott, interf)
     par_cmd, rm_cmd, dove = c_a.par_and_rm_aligner(
-        move, tt_calib, n_frames, delay, zernike_to_be_corrected, dof_command_id
+        move, tt_calib, n_frames, delay, zernike_to_be_corrected, dof_command_id, tnPar
     )
     tt_align = dove.split("/")[-1]
     print("Mixed par+rm commands")

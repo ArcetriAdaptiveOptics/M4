@@ -7,7 +7,7 @@ import glob
 import os
 import numpy as np
 from matplotlib import pyplot as plt
-from m4.mini_OTT import timehistory as th
+from m4.utils import osutils as osu
 from m4.ground import zernike
 
 class PistMeas():
@@ -54,7 +54,7 @@ class PistMeas():
         fl=self.fileList(tn,a)
         if Nmax>0 & Nmax<len(fl):
             fl=fl[0:Nmax]
-        imgcube = th.cubeFromList(fl)
+        imgcube = osu.createCube(fl)
         return imgcube
 
     def remZern_datacube(self,imgcube,modes=np.array([1,2,3,4])):
@@ -304,12 +304,14 @@ class PistMeas():
             name = '*.h5'
             addfold ='/hdf5/'
         else:
-            fold = th.findTracknum(tn)
+            folds = osu.findTracknum(tn)
             addfold = '/'
             name = '20*'
-            if fold == 'OPDImages':
-                addfold = '/hdf5/'
-                name = 'img*'
+            for folder in folds:
+                if folder == 'OPDImages':
+                    addfold = '/hdf5/'
+                    name = 'img*'
+                    fold = folder
         fold1 = fold+'/'+tn+addfold   #to be re-checked at OTT!!
         lsdir = sorted(glob.glob(fold1+name), key=lambda x: (os.path.basename(x).split('/')[-1].split('.')[0]))
         #lsdir = lsdir[0]

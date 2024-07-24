@@ -60,7 +60,6 @@ def findTrackingNumberPath(tt):
     if rootPath is None:
         raise OSError('No configuration has been loaded!')
     pattern = tt
-
     for root, dirs, files in os.walk(rootPath):
         for directory in fnmatch.filter(dirs, pattern):
             final_path = os.path.join(root, directory)

@@ -2,20 +2,17 @@
 #%run /home/m4/git/M4/m4/misc/initOTT.py
 import numpy as np
 import os
+import time
+from astropy.io import fits as pyfits
 #from matplotlib import pyplot as plt
 from m4.misc import par_meas as pp
-from m4.ground import read_data as rr
-from m4.mini_OTT import timehistory as th
-from m4.ground import zernike as zern
+from m4.analyzers import timehistory as th
+from m4.ground import zernike as zern, geo, read_data as rr
 from m4.mini_OTT.measurements import Measurements
-from m4 import main
-from astropy.io import fits as pyfits
+from m4 import main, noise
 from m4.configuration import start
 from m4.devices.i4d import I4D
 from m4.configuration.ott_parameters import Interferometer
-from m4 import noise
-from m4.ground import geo
-import time
 conf='/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
 ott, interf, dm = start.create_ott(conf)
 meas = Measurements(ott,interf)
@@ -59,6 +56,8 @@ tnc = '20230720_185546'
 tnc = '20230720_192515'
 tnc = '20231027_095920' #!! with global modes, 20 frames, large amplitudes
 tnc = '20231027_131458' #global modes, high SNR
+tnc = '20240521_120211'
+tnPar = '20240521_161525'
 # Alignment
 #   - Definition of what and who
 # alignment of focus
@@ -70,7 +69,7 @@ zern2corrf = np.array([0,1,3,4]) ; dofidf = np.array([1,2,3,4])# TipTilt, Coma,P
 #zern2corrf = np.array([3,4]);dofidf = np.array([1,2,3,4])# Coma, ParTip, ParTilt, RmTip, RmTilt  !!wrong, not working
 
 #   - Alignment
-tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf, dofidf, n_frames=1, doit=True)
+tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf, dofidf, n_frames=1, doit=True, tnPar)
 
 # Measurements
 #   - WFE and Zernike
@@ -145,7 +144,3 @@ aveimg = th.averageFrames(0,999, fl)
 fname = th.foldname.OPD_SERIES_ROOT_FOLDER+'/'+tnott+ '/average.fits'
 pyfits.writeto(fname, aveimg.data)
 pyfits.append(fname, aveimg.mask.astype(np.uint8))
-
-
-
-

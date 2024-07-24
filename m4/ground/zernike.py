@@ -26,10 +26,49 @@ import math
 fac = math.factorial
 
 def removeZernike(ima, modes=np.array([1, 2, 3, 4])):
+    """
+    
 
+    Parameters
+    ----------
+    ima : TYPE
+        DESCRIPTION.
+    modes : TYPE, optional
+        DESCRIPTION. The default is np.array([1, 2, 3, 4]).
+
+    Returns
+    -------
+    new_ima : TYPE
+        DESCRIPTION.
+
+    """
     coeff, mat = zernikeFit(ima, modes)
     surf = zernikeSurface(ima, coeff, mat)
     new_ima = ima - surf
+    return new_ima
+
+def removeZernikeAuxMask(img, mm, zlist):
+    """
+    
+
+    Parameters
+    ----------
+    img : TYPE
+        DESCRIPTION.
+    mm : TYPE
+        DESCRIPTION.
+    zlist : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    new_ima : TYPE
+        DESCRIPTION.
+
+    """
+    coef, mat = zernikeFitAuxmask(img, mm, zlist)
+    surf = zernikeSurface(img, coef, mat)
+    new_ima = np.ma.masked_array(img - surf, img.mask)
     return new_ima
 
 def zernikeFit(img, zernike_index_vector, qpupil=True):

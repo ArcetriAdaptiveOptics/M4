@@ -3,8 +3,6 @@ from m4.configuration import start
 from click.termui import pause
 #conf='G:\il mio Drive\Lavoro_brera\M4\LucaConfig.yaml'
 #ott, interf, dm = start.create_ott(conf)
-
-from m4.mini_OTT import timehistory as th
 import glob
 import os
 from m4.ground import zernike
@@ -13,7 +11,7 @@ from matplotlib import *
 import matplotlib
 import time
 import numpy as np
-
+from m4.utils import osutils as osu
 
 def main():
     a='G:/Il mio Drive/Lavoro_brera/PROGETTI/00_M4/Data'
@@ -28,7 +26,7 @@ def load_datacube(a='G:/Il mio Drive/Lavoro_brera/PROGETTI/M4/00_Data',tn='20210
     fl=fileList(tn,a)
     if Nmax>0 & Nmax<len(fl):
         fl=fl[0:Nmax]
-    imgcube = th.cubeFromList(fl)
+    imgcube = osu.createCube(fl)
     
     return imgcube
 
@@ -301,5 +299,3 @@ def removeZernike(ima, modes=np.array([1,2,3,4])):
 
 
 #ps = signal_unwrap_single(pist)
-
-

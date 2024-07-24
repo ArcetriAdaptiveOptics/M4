@@ -432,3 +432,23 @@ class configuration_path():
             if os.path.exists(path) is False:
                 os.mkdir(path)
             return path
+
+    @property
+    def MONITORING_ROOT_FOLDER(self):
+        if 'monitoring_root_folder' in self._conf.keys():
+            return str(self._conf['monitoring_root_folder'])
+        else:
+            path = os.path.join(self.OPT_DATA_FOLDER, 'MonitoringData')
+            if os.path.exists(path) is False:
+                os.mkdir(path)
+            return path
+
+    @property
+    def MARKERS_ROOT_FOLDER(self):
+        if 'markers_root_folder' in self._conf.keys():
+            return str(self._conf['markers_root_folder'])
+        else:
+            path = os.path.join(self.OPT_DATA_FOLDER, 'Markers')
+            if os.path.exists(path) is False:
+                os.mkdir(path)
+            return path        

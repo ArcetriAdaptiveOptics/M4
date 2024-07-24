@@ -63,7 +63,7 @@ class OttCalibAndAlign():
         return self._tt
 
     def par_and_rm_aligner(self, move, tt_cal, n_images, delay,
-                      zernike_to_be_corrected=None, dof_command_id=None):
+                      zernike_to_be_corrected=None, dof_command_id=None, tnPar=None):
         """
         Parameters
         ----------
@@ -96,7 +96,7 @@ class OttCalibAndAlign():
         aliner = OpticalAlignment(tt_cal, self._ott, self._interf)
         par_cmd, rm_cmd, dove = aliner.opt_aligner(n_images, delay,
                                                    zernike_to_be_corrected,
-                                                   dof_command_id)
+                                                   dof_command_id, tnPar)
         if move is True:
             pos_par = self._ott.parabola.getPosition()
             self._ott.parabola.setPosition(pos_par + par_cmd)
@@ -105,14 +105,14 @@ class OttCalibAndAlign():
         image = self._interf.acquire_phasemap(n_images, delay)
         image = self._interf.intoFullFrame(image)#modRB20231027 to implement fullFrame
         name = 'FinalImage.fits'
-        all_final_coef, final_coef_selected = aliner.getZernikeWhitAlignerObjectOptions(image)
-        self._alignmentLog(aliner, all_final_coef, dof_command_id, zernike_to_be_corrected, move)#mod
+        all_final_coef, final_coef_selected = aliner.getZernikeWhitAlignerObjectOptions(image,tnPar)
+        self._alignmentLog(aliner, all_final_coef, dof_command_id, zernike_to_be_corrected, move, tnPar)#mod
         self._logger.info('Zernike calculate on image after alignment =  %s', str(all_final_coef))
         self._logger.info('Dof command id used = %s', str(dof_command_id))
         self._interf.save_phasemap(dove, name, image)
         return par_cmd, rm_cmd, dove
 
-    def _alignmentLog(self, aligner, total_coef, dof_command_id, zernike_to_be_corrected, move):
+    def _alignmentLog(self, aligner, total_coef, dof_command_id, zernike_to_be_corrected, move, tnPar):
         fits_file_name = os.path.join(aligner._storageFolder(), 'AlignmentLog.txt')
         file = open(fits_file_name, 'a+')
         for i in range(total_coef.size):
@@ -120,7 +120,11 @@ class OttCalibAndAlign():
         file.write('\n')
         if move == 0:
             dof_command_id = -1
-        file.write('DoF & Zern2Corr.          %s %s \n ************\n' % (dof_command_id, zernike_to_be_corrected))
+        if tnPar is None:
+            tnParstring = 'PAR not subtracted'
+        else:
+            tnParstring = tnPar
+        file.write('TNPar, DoF & Zern2Corr.:  %s  %s %s \n ************\n' % (tnParstring, dof_command_id, zernike_to_be_corrected))
         file.close()
 
 

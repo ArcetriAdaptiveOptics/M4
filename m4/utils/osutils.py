@@ -20,7 +20,6 @@ from pathlib import Path
 OPTDATA = fn.OPT_DATA_FOLDER
 OPDIMG = fn.OPD_IMAGES_ROOT_FOLDER
 
-
 class FileWalker(AbstractFileNameWalker):
 
     def __init__(self, data_root_dir=OPTDATA):
@@ -80,31 +79,41 @@ class FileWalker(AbstractFileNameWalker):
 #        return sorted([tn for tn in tn_list if tn >= str(tn_start) and tn <= str(tn_stop)])
 
 
-def findTracknum(tn):
+
+def findTracknum(tn, complete_path:bool=False):
+
     """
-    Search for the tracking number given in input within all the data path subf
-    olders
+    Search for the tracking number given in input within all the data path subfolders.
 
     Parameters
     ----------
     tn : str
         Tracking number to be searched.
+    complete_path : bool, optional
+        Option for wheter to return the list of full paths to the folders which
+        contain the tracking number or only their names.
 
     Returns
     -------
     tn_path : list of str
-        List containing all the folders (within the OPTData path) in which the
-        tracking number is present.
+
+        List containing all the folders (within the OPTData path) in which the 
+        tracking number is present, sorted in alphabetical order.
+
     """
     tn_path = []
     for fold in os.listdir(OPTDATA):
         search_fold = os.path.join(OPTDATA, fold)
         if tn in os.listdir(search_fold):
-            tn_path.append(fold)
-    return tn_path
+            if complete_path:
+                tn_path.append(search_fold)    
+            else:
+                tn_path.append(fold)
+    return sorted(tn_path)
 
 
-def getFileList(tn, fold=None, key: str = None):
+def getFileList(tn=None, fold=None, key:str=None):
+
     """
     Returns the file list of a given tracking number datapath.
 
@@ -150,12 +159,18 @@ def getFileList(tn, fold=None, key: str = None):
     Notice that, in this specific case, it was necessary to include the undersc
     ore after 'mode' to exclude the 'modesVector.fits' file from the list.
     """
-    if fold is None:
-        fl = sorted([os.path.join(OPDIMG, (tn+'/'+file))
-                     for file in os.listdir(os.path.join(OPDIMG, tn))])
+
+    if tn is None and fold is not None:
+        fl = sorted([os.path.join(fold, file) \
+                     for file in os.listdir(fold)])
     else:
-        fl = sorted([os.path.join(fold, (tn+'/'+file))
-                     for file in os.listdir(os.path.join(fold, tn))])
+        if fold is None:
+            fl = sorted([os.path.join(OPDIMG, tn, file) \
+                         for file in os.listdir(os.path.join(OPDIMG, tn))])
+        else:
+            fl = sorted([os.path.join(fold, tn, file) \
+                         for file in os.listdir(os.path.join(fold, tn))])
+
     if key is not None:
         try:
             selected_list = []
@@ -291,7 +306,9 @@ def getConf4DSettingsPath(tn):
     return path
 
 
-def createCube(filelist, register: bool = False):
+
+def createCube(filelist, register=False):
+
     """
     Creates a cube of images from an images file list
 
@@ -299,9 +316,10 @@ def createCube(filelist, register: bool = False):
     ----------
     filelist : list of str
         List of file paths to the images/frames to be stacked into a cube.
-    register : bool, optional
-        If True, the registration algorithm is performed on the images before s
-        tacking them into the cube. Default is False.
+    register : int or tuple, optional
+        If not False, and int or a tuple of int must be passed as value, and 
+        the registration algorithm is performed on the images before stacking them
+        into the cube. Default is False.
 
     Returns
     -------

@@ -254,9 +254,8 @@ class OttImages():
     def ott_m4view(self, show=None):
         from m4.devices.opt_beam import Parabola, ReferenceMirror
         import os
-        conf        = os.environ['PYOTTCONF']
-        par         = Parabola(self._ott, conf)
-        rm          = ReferenceMirror(self._ott, conf)
+        par         = Parabola(self._ott)
+        rm          = ReferenceMirror(self._ott)
 
         m4          = self.m4pupil.copy()
         pixscale    = OttParameters.PIXEL_SCALE

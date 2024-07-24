@@ -70,4 +70,6 @@ class config_rewriter():
         config.PARABOLA_REMAPPED_FOLDER         = self.cc.PARABOLA_REMAPPED_FOLDER
         config.INTMAT_ROOT_FOLDER               = self.cc.INTMAT_ROOT_FOLDER
         config.DM_CONFIGURATION_ID              = self.cc.DM_CONFIGURATION_ID
+        config.MARKERS_ROOT_FOLDER              = self.cc.MARKERS_ROOT_FOLDER
+        config.MONITORING_ROOT_FOLDER           = self.cc.MONITORING_ROOT_FOLDER
         #config.POINTER_ALIGN_ROOT_FOLDER       = self.cc.POINTER_ALIGN_ROOT_FOLDER
