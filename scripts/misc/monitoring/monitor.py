@@ -7,6 +7,7 @@ Description
 -----------
 """
 import time, os, shutil, numpy as np, threading
+from matplotlib.pyplot import tight_layout
 from guietta import Gui, _, ___, III, M, G, P, execute_in_main_thread
 from m4 import noise
 from m4.configuration import update_folder_paths as ufp
@@ -64,8 +65,8 @@ class SystemMonitoring():
         results_gui = Gui(
             [  'Slow Mean RMS' , 'res1' ,  'nm'  ],
             [    'Slow STD'    , 'res2' ,  'nm'  ],
-            [    'res3'   , 'numero' , 'unit1'],
-            [    'res4'   , 'numero' , 'unit2'],
+            [      'res3'      , 'res3' , 'unit1'],
+            [      'res4'      , 'res4' , 'unit2'],
             )
         camera_gui = Gui(
             [   'Frequency'  , 'cam1' , 'Hz' ],
@@ -140,6 +141,7 @@ class SystemMonitoring():
             ax.set_ylabel('Root Mean Square [nm]')
             ax.plot(self.fast_results['vn']['ntemp'], self.fast_results['vn']['rms'], '-o', c='black')
             ax.grid()
+            ax.set_in_layout(tight_layout)
             ax.figure.canvas.draw()
 
         def plot2(gui, *args):
@@ -150,6 +152,7 @@ class SystemMonitoring():
             ax.set_ylabel('Tip - Tilt [nm]')
             ax.plot(self.fast_results['vn']['ntemp'], self.fast_results['vn']['tt'], '-o', c='black')
             ax.grid()
+            ax.set_in_layout(tight_layout)
             ax.figure.canvas.draw()
 
         def plot3(gui, *args):
@@ -166,7 +169,8 @@ class SystemMonitoring():
                     label=f"{pp:.2f} [nm]")
             ax.plot(x, self.fast_results['cn']['fit'])
             ax.grid()
-            ax.legend()
+            ax.legend(loc='best', fontsize='small')
+            ax.set_in_layout(tight_layout)
             ax.figure.canvas.draw()
 
         gui.events(
@@ -183,7 +187,7 @@ class SystemMonitoring():
             [ start, stop , close ],
             )
         gui.title('OTT Monitoring')
-        gui.window().resize(750, 800)
+        gui.window().resize(700, 800)
         gui.run()
 
     def monitoring(self, progress=None):
