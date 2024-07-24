@@ -139,6 +139,7 @@ def measureMarkerPos(tn=None, interf=None):
     fl.close()
     return c0
 
+'''
 def maskDetectorImage(img):
     """
     This function masks the detector image where the intensity is below a given threshold
@@ -157,7 +158,7 @@ def maskDetectorImage(img):
     ima = np.ma.masked_array(ima, -1*imamask+1)
     imgout = np.ma.masked_array(img, newmask)
     return imgout
-
+'''
 
 #how to find the M4 segment position in frame:
 # Sc: segment center, coordinate of the central actuator in segment (defined)
