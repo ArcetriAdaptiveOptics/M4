@@ -69,7 +69,7 @@ zern2corrf = np.array([0,1,3,4]) ; dofidf = np.array([1,2,3,4])# TipTilt, Coma,P
 #zern2corrf = np.array([3,4]);dofidf = np.array([1,2,3,4])# Coma, ParTip, ParTilt, RmTip, RmTilt  !!wrong, not working
 
 #   - Alignment
-tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf, dofidf, n_frames=1, doit=True, tnPar)
+tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf, dofidf, n_frames=1, doit=True, tnPar=tnPar)
 
 # Measurements
 #   - WFE and Zernike
@@ -108,7 +108,7 @@ cc, m=zern.zernikeFit(img, [1,2,3,4,5,6,7,8,9,10])
 print(cc[3])
 zern2corrf = np.array([2]) #focus
 dofidf = np.array([0])# parpist
-tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf, dofidf, n_frames=4, doit=True)
+tna = main.align_PARAndRM(ott, interf, tnc, zern2corrf, dofidf, n_frames=4, doit=True, )
 img=interf.acquire_phasemap(5)
 cc, m=zern.zernikeFit(img, [1,2,3,4,5,6,7,8,9,10])
 print(cc[3])
