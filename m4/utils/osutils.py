@@ -29,17 +29,14 @@ class FileWalker(AbstractFileNameWalker):
         if isinstance(tn, str):
             tn = Timestamp(tn)
         return Path(self._data_root_dir, tn)
-
     # def rsi_measure_path(self, tn):
     #    return self.snapshot_dir(tn) / 'imas.fits'
 
     def findTracknum(self, tn):
         tn_path = []
-
         for root, dirs, files in Path(self._data_root_dir).walk(on_error=print):
             found_tn_dirs = list(filter(lambda l: tn in l, dirs))
             found_tn_files = list(filter(lambda l: tn in l, files))
-
 #            if len(found_tn_files) > 0:
 #                # tn_path.append(str(root)[-15:])
 #                tn_path.append(root)
@@ -47,10 +44,8 @@ class FileWalker(AbstractFileNameWalker):
 #                tn_path.append(Path(root, found_tn_dirs[0]))
             if len(found_tn_files) > 0:
                 [tn_path.append(Path(root, ff)) for ff in found_tn_files]
-
             if len(found_tn_dirs) > 0:
                 [tn_path.append(Path(root, dd)) for dd in found_tn_dirs]
-
         return tn_path
 
     def find_tag_between_dates(self, tn_start, tn_stop):
@@ -58,27 +53,19 @@ class FileWalker(AbstractFileNameWalker):
             tn_start = tn_start.asNowString()
         if isinstance(tn_stop, Timestamp):
             tn_stop = tn_stop.asNowString()
-
         tn_path = []
         for root, dirs, files in Path(self._data_root_dir).walk(on_error=print):
-
             found_tn_dirs = list(
                 filter(lambda l: tn_stop >= l, filter(lambda l: tn_start <= l, dirs)))
             found_tn_files = list(
                 filter(lambda l: tn_stop >= l, filter(lambda l: tn_start <= l, files)))
-
             if len(found_tn_files) > 0:
                 [tn_path.append(Path(root, ff)) for ff in found_tn_files]
-
             if len(found_tn_dirs) > 0:
                 [tn_path.append(Path(root, dd)) for dd in found_tn_dirs]
-
         return sorted(tn_path, key=lambda l: str(l))
-
 #        tn_list = tnRange(tn_start.asNowString(), tn_stop.asNowString())
 #        return sorted([tn for tn in tn_list if tn >= str(tn_start) and tn <= str(tn_stop)])
-
-
 
 def findTracknum(tn, complete_path:bool=False):
 

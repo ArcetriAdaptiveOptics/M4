@@ -20,7 +20,7 @@ class OTTScripts:
 
     def __init__(self, ott, interf, dm):
         """The Constructor"""
-        print('Tell me, Master')
+#       print('Tell me, Master')
         self._ott = ott
         self._interf = interf
         self._dm = dm

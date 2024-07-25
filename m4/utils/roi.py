@@ -1,14 +1,13 @@
-'''
-Authors
-  - C. Selmi: written in 2019
-              rewritten in 2022
-'''
-
-import numpy as np
+"""
+Author(s)
+    - Chiara Selmi: written in 2019
+                    rewritten in 2022
+    - Pietro Ferraiuolo: modified in 2024
+"""
 import logging
+import numpy as np
 from skimage import measure
 from matplotlib import pyplot as plt
-
 
 class ROI():
     """
@@ -44,10 +43,10 @@ class ROI():
         '''
         self._logger.debug('Creation of roi list')
         labels = measure.label(np.invert(ima.mask))
-        #from scipy import ndimage as ndi
-        #labels = ndi.label(np.invert(ima.mask))[0]
-        #import skimage.morphology as skm
-        #pro= skm.watershed(ima, markers)
+#       from scipy import ndimage as ndi
+#       labels = ndi.label(np.invert(ima.mask))[0]
+#       import skimage.morphology as skm
+#       pro= skm.watershed(ima, markers)
         roiList = []
         for i in range(1, 13):
             maski = np.zeros(labels.shape, dtype=bool)
@@ -62,7 +61,6 @@ class ROI():
             plt.subplot(2, 2, i+1)
             plt.imshow(roiList[i])
             plt.title('roiList[%d]' %i)
-
 
     def automatical_roi_selection(self, image, segment_view, ref_mirror_in):
         '''
@@ -113,4 +111,145 @@ class ROI():
                 roi_seg5 = roiList[2]
                 segRoiList = [roi_seg0, roi_seg1, roi_seg2, roi_seg3, roi_seg4, roi_seg5]
                 return segRoiList
-        
+
+    def single_segment_mask(self, image, apply:bool=True):
+        """
+        Given an interferometer image of a selected, non-masked, M4's segment,
+        automatically masks the image so that only the pointed segment is visible.
+
+        Parameters
+        ----------
+        image : masked ndarray
+            Interferometer images of a segment, in which adjacent segments are
+            visible.
+        apply : bool, optional
+            DESCRIPTION. The default is True.
+
+        Returns
+        -------
+        img_out : masked ndarray
+            Input image masked so that only the principal segment is visible.
+        """
+        roilist = measure.label(np.invert(image.mask))
+        segments = self._find_big_segments_roi(roilist)
+        max_area = max([seg.area for seg in segments])
+        act_seg = segments[next(i for i, obj in enumerate(segments) \
+                                                      if obj.area == max_area)]
+        maski = np.zeros(roilist.shape, dtype=bool)
+        maski[np.where(roilist == act_seg.label)] = 1
+        final_roi = np.ma.mask_or(np.invert(maski), image.mask)
+        if apply:
+            out = np.ma.masked_array(data=image, mask=final_roi)
+        else:
+            out = final_roi
+        return out
+
+    def adjacent_segments_mask(self,image, apply:bool=True):
+        """
+        Given an interferometer image of a selected, non-masked, M4's segment,
+        automatically masks the image so that only the pointed segment and it's
+        two adjacent ones are visible.
+
+        Parameters
+        ----------
+        image : masked ndarray
+            Interferometer images of a segment, in which all segments in frame
+            are visible.
+        apply : bool, optional
+            DESCRIPTION. The default is True.
+
+        Returns
+        -------
+        img_out : masked ndarray
+            Input image masked so that only the three principal segments are
+            visible (the pointed one and its adjacents).
+        """
+        roilist = measure.label(np.invert(image.mask))
+        segments = self._find_big_segments_roi(roilist)
+        maski = mask1 = mask2 = mask3 = np.zeros(roilist.shape, dtype=bool)
+        mask1[(np.where(roilist == segments[0].label))] = 1
+        mask2[(np.where(roilist == segments[1].label))] = 1
+        mask3[(np.where(roilist == segments[2].label))] = 1
+        maski = np.ma.mask_or(np.ma.mask_or(mask1, mask2), mask3)
+        final_roi = np.ma.mask_or(np.invert(maski), image.mask)
+        if apply:
+            out = np.ma.masked_array(data=image, mask=final_roi)
+        else:
+            out = final_roi
+        return out
+
+    def only_segments_mask(self, image, apply:bool=True):
+        """
+
+
+        Parameters
+        ----------
+        image : TYPE
+            DESCRIPTION.
+        apply : bool, optional
+            DESCRIPTION. The default is True.
+
+        Returns
+        -------
+        img_out : TYPE
+            DESCRIPTION.
+
+        """
+        roilist = measure.label(np.invert(image.mask))
+        segments = self._find_all_segments_roi(roilist)
+        masks = [np.zeros(roilist.shape, dtype=bool)]
+        for i, seg in enumerate(segments):
+            mask = np.zeros(roilist.shape, dtype=bool)
+            mask[(np.where(roilist == seg.label))] = 1
+            masks.append(mask)
+        for i in range(1, len(masks)):
+            masks[0] = np.ma.mask_or(masks[0], masks[i])
+        final_roi = np.ma.mask_or(np.invert(masks[0]), image.mask)
+        if apply:
+            out = np.ma.masked_array(data=image, mask=final_roi)
+        else:
+            out = final_roi
+        return out
+
+    def _find_all_segments_roi(self, roilist):
+        """
+
+
+        Parameters
+        ----------
+        roilist : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        regions : TYPE
+            DESCRIPTION.
+
+        """
+        regions = measure.regionprops(roilist)
+        for i,region in enumerate(regions):
+            if region.area < 10000: #TODO - Find good criteria
+                regions.pop(i)
+        return regions
+
+    def _find_big_segments_roi(self, roilist):
+        """
+        Rturns a list of 'skimage.measure._regionprops.RegionProperties' corresponding
+        to the principal segments in view.
+
+        Parameters
+        ----------
+        roilist : skimage.labels
+            List of labels identifying all the ROIs found.
+
+        Returns
+        -------
+        segments : list
+            List containing the properties for the selected segments.
+        """
+        segments = []
+        regions = measure.regionprops(roilist)
+        for region in regions:
+            if region.area > 10000:
+                segments.append(region)
+        return segments

@@ -86,7 +86,7 @@ def process(tn, register:bool=False, save_cube:bool=False):
     ampVector,modesVector,template,_,registrationActs,shuffle = _getAcqPar(tn)
     _,regMat = getRegFileMatrix(tn)
     modesMat = getIffFileMatrix(tn)
-    # actImgList = registrationRedux(regMat, template) #FIXME
+    actImgList = registrationRedux(regMat, template) #FIXME
     modesMatReorg = _modesReorganization(modesMat)
     iffRedux(tn, modesMatReorg, ampVector, modesVector, template, shuffle)
     if register:
