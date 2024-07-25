@@ -190,7 +190,10 @@ class Noise:
         quad_tt = np.array(quad_list).mean()
         rms_mean = np.mean(rms_vector)
         ptv_mean = np.mean(ptv_vector)
-        return rms_mean, quad_tt, tilt, ptv_mean
+        tipvec  = np.array(coef_tip_list)
+        tiltvec = np.array(coef_tilt_list)
+        ttvec = np.array([tiltvec,tipvec])
+        return rms_mean, quad_tt, tilt, ptv_mean#,ttvec
 
     def spectrumAllData(self, data_file_path):
         """
