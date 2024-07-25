@@ -106,7 +106,7 @@ class OpticalCalibration:
         self._createCube(False)  # cubo non normalizzato
         cube = self.getCube()
         self._mask = self._findMask(cube)
-        self._intMat = self.getInteractionMatrix()
+        self._intMat = self.getInteractionMatrix(tnpar)
 
         self._saveCalibrationInfoAndResultsAsFits(dove)
 
@@ -555,7 +555,7 @@ class OpticalCalibration:
             self._fullIntMat.T[j] = coefList[j]
         return self._fullIntMat
 
-    def getInteractionMatrix(self, tnpar):
+    def getInteractionMatrix(self, tnpar=None):
         """
         Returns
         -------

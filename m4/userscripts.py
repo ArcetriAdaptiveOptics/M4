@@ -27,6 +27,7 @@ class OTTScripts:
         self._meas = measurements.Measurements(ott, interf)
 
     def alignTT(self, nframes, move=0, removePar=True):
+        self.config4D4Alignment()
         doit, tnPar = self._checkAlignmInfo(move, removePar)
         zern2corrf = np.array([0,1])
         dofidf = np.array([3,4])
@@ -53,15 +54,16 @@ class OTTScripts:
                                   myconf.alignmentCalibration_tn, zern2corrf,
                                   dofidf, nframes, doit, tnPar)
 
-    def calibrateAlignment(self, nPushPull = 2, n_frames=20):
+    def calibrateAlignment(self, nPushPull = 2, n_frames=20, removePar = True):
+        doit, tnPar = self._checkAlignmInfo(1, removePar)
         par_pist = myconf.alignCal_parPist
         par_tip, par_tilt = myconf.alignCal_parTip, myconf.alignCal_parTilt
         rm_tip, rm_tilt = myconf.alignCal_rmTip, myconf.alignCal_rmTilt
         command_amp_vector = np.array([par_pist, par_tip, par_tilt, rm_tip, rm_tilt])
-        print('Calibrating the OTT alignment, with the following command amplitudes')
+        print('Calibrating the OTT alignment, with the following command amplitudes and Parabola removal option:')
         print(command_amp_vector)
-        tnc = 'xxxx'
-        #tnc = main.calibrate_PARAndRM(self._ott, self._interf, command_amp_vector, nPushPull, n_frames, delay=0)
+        print(tnPar)
+        tnc = main.calibrate_PARAndRM(self._ott, self._interf, command_amp_vector, nPushPull, n_frames, delay=0, tnPar=tnPar)
         return tnc
 
     def config4D4Alignment(self):
