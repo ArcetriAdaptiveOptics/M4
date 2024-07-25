@@ -61,7 +61,7 @@ class OpticalCalibration:
         return fold_name.CALIBRATION_ROOT_FOLDER
 
     def measureAndAnalysisCalibrationMatrix(
-        self, who, command_amp_vector, n_push_pull, n_frames, delay
+        self, who, command_amp_vector, n_push_pull, n_frames, delay, tnpar
     ):
         """
         Parameters
@@ -498,7 +498,7 @@ class OpticalCalibration:
             self._createFullCube(False)  # lo crea sempre non normalizzato
         return self._fullCube
 
-    def _createInteractionMatrix(self, mask):
+    def _createInteractionMatrix(self, mask, tnpar):
         coefList = []
         self._cube = self.getCube()
         for i in range(self._cube.shape[2]):
@@ -510,18 +510,20 @@ class OpticalCalibration:
             from m4.ground import geo
 
             # img = self._interf.intoFullFrame(ima) this was removed since the frames are already saved in fullframe
-            tnpar = "20240521_161525"  # '20231016_124531'
-            print("Using global modes fitting, TNPar: " + tnpar)
-            # par = imgreg.load_registeredPar(tnpar)
-            par = self._load_registeredPar(tnpar)
+            ### now is passed! modRB 20240725 tnpar = "20240521_161525"  # '20231016_124531'
+            if tnpar is not None:
+                print("Using global modes fitting, TNPar: " + tnpar)
+                # par = imgreg.load_registeredPar(tnpar)
+                par = self._load_registeredPar(tnpar)
 
-            cir = geo.qpupil(-1 * par.mask + 1)
-            mm = geo.draw_mask(
-                par.data * 0, cir[0], cir[1], 1.44 / 0.00076 / 2, out=0)
-            coef, mat = zernike.zernikeFitAuxmask(
-                ima, mm, np.arange(10) + 1)  # was img
+                cir = geo.qpupil(-1 * par.mask + 1)
+                mm = geo.draw_mask(
+                    par.data * 0, cir[0], cir[1], 1.44 / 0.00076 / 2, out=0)
+                coef, mat = zernike.zernikeFitAuxmask(
+                    ima, mm, np.arange(10) + 1)  # was img
             # end modRB
-
+            else:
+                coef, mat = zernike.zernikeFit(ima, np.arange(10) + 1)
             # z= np.array([2,3,4,7,8])
             z = np.array([1, 2, 3, 6, 7])
             final_coef = np.zeros(z.shape[0])
@@ -553,7 +555,7 @@ class OpticalCalibration:
             self._fullIntMat.T[j] = coefList[j]
         return self._fullIntMat
 
-    def getInteractionMatrix(self):
+    def getInteractionMatrix(self, tnpar):
         """
         Returns
         -------
@@ -561,7 +563,7 @@ class OpticalCalibration:
                 interaction matrix
         """
         if self._intMat is None:
-            self._createInteractionMatrix(self._mask)
+            self._createInteractionMatrix(self._mask, tnpar)
         return self._intMat
 
     def _load_registeredPar(self, tn, zlist=[1, 2, 3, 4]):

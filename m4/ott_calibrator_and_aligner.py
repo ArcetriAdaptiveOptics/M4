@@ -36,7 +36,7 @@ class OttCalibAndAlign():
         self._tt = None
         self._roi = ROI()
 
-    def par_and_rm_calibrator(self, command_amp_vector, n_push_pull, n_frames, delay):
+    def par_and_rm_calibrator(self, command_amp_vector, n_push_pull, n_frames, delay, tnPar):
         '''Calibration of the optical tower
 
         Parameters
@@ -59,7 +59,7 @@ class OttCalibAndAlign():
         self._tt = self._cal.measureAndAnalysisCalibrationMatrix('PAR + RM',
                                                                  command_amp_vector,
                                                                  n_push_pull, n_frames,
-                                                                 delay)
+                                                                 delay, tnPar)
         return self._tt
 
     def par_and_rm_aligner(self, move, tt_cal, n_images, delay,

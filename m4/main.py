@@ -77,7 +77,7 @@ def showCommandMatrixBeforeCalibration(command_amp_vector):
 
 
 def calibrate_PARAndRM(
-    ott, interf, command_amp_vector, nPushPull, n_frames=None, delay=None
+    ott, interf, command_amp_vector, nPushPull, n_frames=None, delay=None,tnPar = None
 ):
     """
     Function to be used to calibrate parabola and reference mirror dof
@@ -116,7 +116,7 @@ def calibrate_PARAndRM(
         delay = 0
     c_a = OttCalibAndAlign(ott, interf)
     print("PAR + RM calibration")
-    tt_tower = c_a.par_and_rm_calibrator(command_amp_vector, nPushPull, n_frames, delay)
+    tt_tower = c_a.par_and_rm_calibrator(command_amp_vector, nPushPull, n_frames, delay, tnPar)
     return tt_tower
 
 
