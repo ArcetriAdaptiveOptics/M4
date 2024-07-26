@@ -326,13 +326,11 @@ class SystemMonitoring():
         keys3 = ['vn', 'cn']
         res1 = dict(zip(keys1, par1))
         res2 = dict(zip(keys2, par2))
-
-        #analysis of absolute TT
         tt = self._abs_tilt_analysis(self.fast_data_path)
         self.fast_tt = tt
-        plt.plot(tt[:,0],tt[:,1],'o')
-        plt.title('Fast Tilt')
-        plt.show()
+        # plt.plot(tt[:,0],tt[:,1],'o')
+        # plt.title('Fast Tilt')
+        # plt.show()
         self.fast_results = dict(zip(keys3,(res1,res2)))
 
     def _slow_analysis(self):
@@ -360,23 +358,35 @@ class SystemMonitoring():
         svec = np.array(slist)
         mean = np.mean(svec)
         std = np.std(svec)
-        self.slow_tt      = tt
-        plt.plot(tt[:,0],tt[:,1],'o')
-        plt.title('Fast Tilt')
-        plt.show()
-
+        self.slow_tt = tt
+        # plt.plot(tt[:,0],tt[:,1],'o')
+        # plt.title('Fast Tilt')
+        # plt.show()
         self.slow_results = [mean, std]
 
-    def _abs_tilt_analysis(self, thepath):
-        fl = osu.getFileList(fold=thepath)
+    def _abs_tilt_analysis(self, path):
+        """
+        
+
+        Parameters
+        ----------
+        path : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        tt : TYPE
+            DESCRIPTION.
+
+        """
+        fl = osu.getFileList(fold=path)
         nf = len(fl)
-        tt      = np.zeros([nf,2])
+        tt = np.zeros([nf,2])
         for i in range(0,nf):
             q = rd.read_phasemap(fl[i])
             coeff, mat = zern.zernikeFit(q,[1,2,3])
             tt[i,:] = coeff[1:]
         return tt
-
 
     def _fast_acquisition(self):
         """

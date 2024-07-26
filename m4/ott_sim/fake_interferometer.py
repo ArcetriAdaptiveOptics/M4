@@ -26,7 +26,7 @@ class FakeInterferometer(BaseInterferometer):
         self._ott = None
         self._dm = None
 
-    def acquire_phasemap(self, n_frames=1, delay=0, indet=True):
+    def acquire_phasemap(self, n_frames=1, delay=0, indet=False):
         '''
         Parameters
         ----------
@@ -65,7 +65,6 @@ class FakeInterferometer(BaseInterferometer):
         images = np.dstack(ima_list)
         ima = np.mean(images, 2)
         masked_ima = np.ma.masked_array(ima, mask=np.invert(mask.astype(bool)).T)
-
         return masked_ima
 
     def getCameraSettings(self):

@@ -41,7 +41,7 @@ class FakeM4DM(BaseDeformableMirror):
         self.vmat = read_data.readFits_data(os.path.join(conf.MIRROR_FOLDER,
                                                    conf.mirror_conf, 'ff_v_matrix.fits'))
 
-    def setActsCommand(self, command, rel=True):
+    def setActsCommand(self, command, rel=False):
         '''
         Paramenters
         -----------
@@ -76,17 +76,17 @@ class FakeM4DM(BaseDeformableMirror):
         '''
         return M4Parameters.N_ACT_SEG
 
-    def setIncreaseToSegActs(self, inc, rel=False):
+    def setIncreaseToSegActs(self, inc, rel=True):
         ''' comando di posizione a tutti i pistoni (old act_incr)
 
         Parameters
         ----------
-        inc: float [m]
+        inc: float 
             increase in meters
         rel: boolean
             relative increase (True) or absolute position (False)
         '''
-        inc = inc*1e6
+        inc = inc
         comm = np.ones(self.getNActs())*inc
         self.setActsCommand(comm, rel)
         return
@@ -113,7 +113,7 @@ class FakeM4DM(BaseDeformableMirror):
         rel: boolean
             relative increase (True) or absolute position (False)
         '''
-        ampiezza = ampiezza*1e6
+        ampiezza = ampiezza
         comm = np.random.rand(self.getNActs())*ampiezza
         self.setActsCommand(comm, rel)
         return
@@ -147,7 +147,6 @@ class FakeM4DM(BaseDeformableMirror):
         comm: numpy array
             vector multiplied
         '''
-
         command = command*self.CapsensGain
         return command
 
@@ -169,9 +168,7 @@ class FakeM4DM(BaseDeformableMirror):
         self.m4ima: numpy array
             m4 total image
         '''
-
         comm = self._applyCapsensGain(comm)
-
         if rel==True:
             self.m4ima.flat[self.ifidx] = self.m4ima.flat[self.ifidx]+np.matmul(np.transpose(self.ifmat), comm)
         elif rel==False:
