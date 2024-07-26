@@ -92,11 +92,13 @@ def findTracknum(tn, complete_path:bool=False):
         search_fold = os.path.join(OPTDATA, fold)
         if tn in os.listdir(search_fold):
             if complete_path:
-                tn_path.append(search_fold)
+                tn_path.append(os.path.join(search_fold, tn))
             else:
                 tn_path.append(fold)
-    return sorted(tn_path)
-
+    path_list = sorted(tn_path)
+    if len(path_list)==1:
+        path_list = path_list[0]
+    return path_list
 
 def getFileList(tn=None, fold=None, key:str=None):
 
@@ -171,9 +173,11 @@ def getFileList(tn=None, fold=None, key:str=None):
                          for file in os.listdir(os.path.join(OPDIMG, tn))])
         else:
             try:
-                for the_folds in findTracknum(tn, complete_path=True):
-                    if fold in the_folds:
-                        path = os.path.join(the_folds, tn)
+                paths = findTracknum(tn, complete_path=True)
+                if isinstance(paths, str):
+                    paths = [paths]
+                for path in paths:
+                    if fold in path.split('/')[-2]:
                         fl = sorted([os.path.join(path, file) \
                                                  for file in os.listdir(path)])
                     else: 
@@ -184,7 +188,7 @@ def getFileList(tn=None, fold=None, key:str=None):
         try:
             selected_list = []
             for file in fl:
-                if key in file:
+                if key in file.split('/')[-1]:
                     selected_list.append(file)
         except TypeError as err:
             raise TypeError("'key' argument must be a string") from err

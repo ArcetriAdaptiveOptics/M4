@@ -178,7 +178,7 @@ class ROI():
             out = final_roi
         return out
 
-    def only_segments_mask(self, image, apply:bool=True):
+    def all_segments_mask(self, image, apply:bool=True):
         """
 
 
