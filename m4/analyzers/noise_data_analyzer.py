@@ -581,9 +581,9 @@ class Noise:
             List of data obtained through the file path.
 
         """
-        lista = osu.getFileList('', fold=data_file_path, key=".h5")
+        lista = osu.getFileList(fold=data_file_path, key=".h5")
         if len(lista) == 0:
-            lista = osu.getFileList('', fold=data_file_path, key=".4D")
+            lista = osu.getFileList(fold=data_file_path, key=".4D")
             if len(lista) == 0:
-                lista = osu.getFileList('', fold=data_file_path, key=".fits")
+                lista = osu.getFileList(fold=data_file_path, key=".fits")
         return lista
