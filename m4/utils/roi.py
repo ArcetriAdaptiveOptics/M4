@@ -60,7 +60,7 @@ class ROI():
         for i in range(0,4):
             plt.subplot(2, 2, i+1)
             plt.imshow(roiList[i])
-            plt.title('roiList[%d]' %i)
+            plt.title(f"roiList[{i}]")
 
     def automatical_roi_selection(self, image, segment_view, ref_mirror_in):
         '''
@@ -83,13 +83,12 @@ class ROI():
                 roi_sx = roiList[0]
                 roi_c = roiList[2]
                 roi_rm = roiList[3]
-                return roi_dx, roi_sx, roi_c, roi_rm
             elif ref_mirror_in is False:
                 roi_dx = roiList[2]
                 roi_sx = roiList[1]
                 roi_c = roiList[3]
                 roi_rm = roiList[0]
-                return roi_dx, roi_sx, roi_c, roi_rm
+            return roi_dx, roi_sx, roi_c, roi_rm
 
         elif segment_view is False:
             if ref_mirror_in is True:
@@ -101,7 +100,6 @@ class ROI():
                 roi_seg5 = roiList[2]
                 segRoiList = [roi_seg0, roi_seg1, roi_seg2, roi_seg3, roi_seg4, roi_seg5]
                 roi_rm = roiList[4]
-                return segRoiList, roi_rm
             elif ref_mirror_in is False:
                 roi_seg0 = roiList[0]
                 roi_seg1 = roiList[1]
@@ -110,7 +108,8 @@ class ROI():
                 roi_seg4 = roiList[4]
                 roi_seg5 = roiList[2]
                 segRoiList = [roi_seg0, roi_seg1, roi_seg2, roi_seg3, roi_seg4, roi_seg5]
-                return segRoiList
+                roi_rm = None
+            return segRoiList, roi_rm
 
     def single_segment_mask(self, image, apply:bool=True):
         """

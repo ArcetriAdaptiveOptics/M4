@@ -19,11 +19,10 @@ Monitoring interferometer configuration loaded.
 >>> mm.rungui()
 
 Alternatively, to run a single sequence of monitoring, the method can be launched::
-    
+
     >>> mm.monitoring()
 """
-import time, os, shutil, numpy as np, threading
-from matplotlib import pyplot as plt
+import time, os, shutil, threading, numpy as np
 from matplotlib.pyplot import tight_layout
 from guietta import Gui, _, ___, III, M, G, P, execute_in_main_thread
 from m4 import noise
@@ -48,16 +47,16 @@ class SystemMonitoring():
     How to Use it
     -------------
     To run a single monitoring event, simply use the 'monitoring' method
-    
+
     >>> from m4.gui.monitor import SystemMonitoring
     >>> # As we have initialized the interferometer device...
     >>> mm = SystemMonitoring(interf)
     Monitoring interferometer configuration loaded.
     >>> mm.monitoring() # single loop operation
-    
+
     As for the continuous loop monitoring, with integrated GUI, run the 'rungui'
     method:
-    
+
     >>> mm.rungui()
     """
     def __init__(self, interferometer):
@@ -80,48 +79,48 @@ class SystemMonitoring():
 
     def rungui(self):
         """
-        Method to run the Graphical User Interface of the monitoring app for the 
+        Method to run the Graphical User Interface of the monitoring app for the
         OTT.
-        
+
         GUI Structure
         =============
-        Plots : 
+        Plots :
             The left column is populated with the plots resulting from the data
             analysis.
-        Results : 
+        Results :
             A sub-gui at the top-right, labeled as 'RESULTS', is where data analysis
             numerical results are shown.
-        Camera info : 
+        Camera info :
             A sub-gui at the center-right, labeled as 'CAMERA INFO', contains the
             information relative to the camera settings, such as frequency, frame
             pixels and offsets.
-        Control : 
-            A sub-gui at the bottom-right, labeled as 'CONTROL', contains the 
+        Control :
+            A sub-gui at the bottom-right, labeled as 'CONTROL', contains the
             live logging messages of the events, a progress bar showing the state
             of the monitoring loop and three buttons:
                 start : A start monitoring button. Once pressed, the script will
                     the looping event of monitoring
-                stop : A stop button, which will stop the script from going to 
+                stop : A stop button, which will stop the script from going to
                     the next loop event.
-                    Note: if the monitoring script is still running when the 
+                    Note: if the monitoring script is still running when the
                     stop button is pressed, this will cause the GUI to freeze
                     until the threads are done. Just wait until it finishes.
                 close: the close button, upload to the interferometer its default
                     configuration and exit the program by closing the GUI.
         """
         gui = Gui(
-            [ M('plot1')  ,     ___   , ___ ,   G('RESULTS')   , ___ ],
-            [    III      ,     III   , III ,       III        , III ],
-            [ M('plot2')  ,     ___   , ___ , G('CAMERA INFO') , ___ ],
-            [    III      ,     III   , III ,       III        , III ],
-            [ M('plot3')  ,     ___   , ___ ,   G('CONTROL')   , ___ ],
-            [    III      ,     III   , III ,       III        , III ],
+            [      _      ,     _    , M('plot1')  ,     ___   , ___ ,   G('RESULTS')   , ___ ],
+            [ M('plot1')  ,    ___   ,    III      ,     III   , III ,       III        , III ],
+            [    III      ,    III   , M('plot2')  ,     ___   , ___ , G('CAMERA INFO') , ___ ],
+            [ M('plot1')  ,    ___   ,    III      ,     III   , III ,       III        , III ],
+            [    III      ,    III   , M('plot3')  ,     ___   , ___ ,   G('CONTROL')   , ___ ],
+            [     _       ,     _    ,    III      ,     III   , III ,       III        , III ],
             )
         results_gui = Gui(
             [  'Slow Mean RMS' , 'res1' ,  'nm'  ],
             [    'Slow STD'    , 'res2' ,  'nm'  ],
-            [      'res3'      , 'res3' , 'unit1'],
-            [      'res4'      , 'res4' , 'unit2'],
+            [  'Fast TT rms'   , 'res3' ,  'nm'  ],
+            [  'Slow TT rms'   , 'res4' ,  'nm'  ],
             )
         camera_gui = Gui(
             [   'Frequency'  , 'cam1' , 'Hz' ],
@@ -146,8 +145,8 @@ class SystemMonitoring():
         def show_results():
             results_gui.res1 = f"{self.slow_results[0]*1e9:.2f}"
             results_gui.res2 = f"{self.slow_results[1]*1e9:.2f}"
-            results_gui.res3 = "OK"
-            results_gui.res4 = "Ok"
+            results_gui.res3 = f"{self.fast_tt[:,1].std()*1e9:.2f}"
+            results_gui.res4 = f"{self.slow_tt[:,1].std()*1e9:.2f}"
             camera_gui.cam1  = f"{self.freq:.1f}"
             camera_gui.cam2  = f"{self.cam_info[0]:d}"
             camera_gui.cam3  = f"{self.cam_info[1]:d}"
@@ -156,6 +155,8 @@ class SystemMonitoring():
             plot1(gui)
             plot2(gui)
             plot3(gui)
+            plot4(gui)
+            plot5(gui)
 
         @execute_in_main_thread(gui)
         def _show_progress(percentage, text):
@@ -182,7 +183,7 @@ class SystemMonitoring():
             sub_gui.main_gui.close()
             self.__load_default_config()
 
-        def monitoring_loop(gui):
+        def monitoring_loop():
             while self.is_monitoring:
                 self.monitoring(progress=_show_progress)
                 show_results()
@@ -228,13 +229,35 @@ class SystemMonitoring():
             ax.set_in_layout(tight_layout)
             ax.figure.canvas.draw()
 
+        def plot4(gui, *args):
+            ax = gui.plot4.ax
+            ax.clear()
+            ax.set_title('Fast Tip-Tilt')
+            ax.set_xlabel('')
+            ax.set_ylabel('Tip-Tilt [nm]')
+            ax.scatter(self.fast_tt[:,0],self.fast_tt[:,1],s=7.5)
+            ax.set_in_layout(tight_layout)
+            ax.set_xlim(-1e-6, 1e-6)
+            ax.figure.canvas.draw()
+
+        def plot5(gui,*args):
+            ax = gui.plot5.ax
+            ax.clear()
+            ax.set_title('Slow Tip-Tilt')
+            ax.set_xlabel('')
+            ax.set_ylabel('Tip-Tilt [nm]')
+            ax.scatter(self.slow_tt[:,0],self.slow_tt[:,1],s=7.5)
+            ax.set_in_layout(tight_layout)
+            # ax.set_xlim(-1e-6, 1e-6)
+            ax.figure.canvas.draw()
+
         gui.events(
-            [ plot1  ,   _   ,   _   ,   _   ,   _   ],
-            [   _    ,   _   ,   _   ,   _   ,   _   ],
-            [ plot2  ,   _   ,   _   ,   _   ,   _   ],
-            [   _    ,   _   ,   _   ,   _   ,   _   ],
-            [ plot3  ,   _   ,   _   ,   _   ,   _   ],
-            [   _    ,   _   ,   _   ,   _   ,   _   ],
+            [   _    ,   _   , plot1  ,   _   ,   _   ,   _   ,   _   ],
+            [ plot4  ,   _   ,   _    ,   _   ,   _   ,   _   ,   _   ],
+            [   _    ,   _   , plot2  ,   _   ,   _   ,   _   ,   _   ],
+            [ plot5  ,   _   ,   _    ,   _   ,   _   ,   _   ,   _   ],
+            [   _    ,   _   , plot3  ,   _   ,   _   ,   _   ,   _   ],
+            [   _    ,   _   ,    _   ,   _   ,   _   ,   _   ,   _   ],
             )
         control_gui.events(
             [   _  ,   _  ,   _   ],
@@ -242,7 +265,7 @@ class SystemMonitoring():
             [ start, stop , close ],
             )
         gui.title('OTT Monitoring')
-        gui.window().resize(700, 800)
+        gui.window().resize(1250, 950)
         gui.run()
 
     def monitoring(self, progress=None):
@@ -328,9 +351,6 @@ class SystemMonitoring():
         res2 = dict(zip(keys2, par2))
         tt = self._abs_tilt_analysis(self.fast_data_path)
         self.fast_tt = tt
-        # plt.plot(tt[:,0],tt[:,1],'o')
-        # plt.title('Fast Tilt')
-        # plt.show()
         self.fast_results = dict(zip(keys3,(res1,res2)))
 
     def _slow_analysis(self):
@@ -359,14 +379,11 @@ class SystemMonitoring():
         mean = np.mean(svec)
         std = np.std(svec)
         self.slow_tt = tt
-        # plt.plot(tt[:,0],tt[:,1],'o')
-        # plt.title('Fast Tilt')
-        # plt.show()
         self.slow_results = [mean, std]
 
     def _abs_tilt_analysis(self, path):
         """
-        
+
 
         Parameters
         ----------
@@ -384,7 +401,7 @@ class SystemMonitoring():
         tt = np.zeros([nf,2])
         for i in range(0,nf):
             q = rd.read_phasemap(fl[i])
-            coeff, mat = zern.zernikeFit(q,[1,2,3])
+            coeff,_ = zern.zernikeFit(q,[1,2,3])
             tt[i,:] = coeff[1:]
         return tt
 
@@ -408,10 +425,12 @@ class SystemMonitoring():
         tn = ts.now()
         self.slow_data_path = os.path.join(fn.OPD_SERIES_ROOT_FOLDER, tn)
         os.mkdir(self.slow_data_path)
-        for i in range(n_frames):
+        i=0
+        while i<(n_frames+1):
             img = self.interf.acquire_phasemap()
             self.interf.save_phasemap(self.slow_data_path, ts.now()+'.fits', img)
             time.sleep(self.delay)
+            i+=1
         print("Slow acquisition completed.")
 
     def __update_interf_settings(self):
@@ -469,3 +488,15 @@ f"""{tn}    {self.slow_results[0]*1e9:.2f}nm    {self.slow_results[1]*1e9:.2f}nm
             log.write(long_msg)
         with open(self._slog, 'a', encoding='utf-8') as log:
             log.write(short_msg)
+
+def main():
+    """
+    Application Launcher
+    """
+    from m4.configuration.start import create_ott
+    _,interf,_ = create_ott()
+    monitoring = SystemMonitoring(interf)
+    monitoring.rungui()
+
+if __name__=="__main__":
+    main()
