@@ -19,12 +19,24 @@ class Flattening:
     def __init__(self,tn, dm, interf):
         """The Constructor"""
         self._tn = tn
-        self._intMAt = _loadIntMat()
-        #self.dm = dm.AdOpticaDM()??
+        self._intMat = _loadIntMat()
+        #self.dm = dm.AdOpticaDM()?? no, non serve importare il DM
+        self._cmdMat = _loadCmdMat()
+        self._recMat  = None
+        self._shape2flat = None
+        self._flatOffset = None
+        self._cavityOffset = None
+        self._synthFlat = None
+        self._flatResidue = None
+        self._flatResult = None
+        self._flatteningModes = None
         pass
 
     def _loadIntMat(self):
         xxxreadIFF(_self.tn)
+        return intMat
+
+    def _cmdMat
 
     def _computeRec(self, nmodes, zernike2remove):
         pass
