@@ -23,6 +23,7 @@ class Flattening:
         #self.dm = dm.AdOpticaDM()?? no, non serve importare il DM
         self._cmdMat = _loadCmdMat()
         self._recMat  = None
+        self._frameCenter = None
         self._shape2flat = None
         self._flatOffset = None
         self._cavityOffset = None
@@ -33,12 +34,18 @@ class Flattening:
         pass
 
     def _loadIntMat(self):
-        xxxreadIFF(_self.tn)
-        return intMat
+        pass
 
-    def _cmdMat
+    def _loadCmdMat(self):
+        pass
+
+    def _loadFrameCenter(self):
+        pass
 
     def _computeRec(self, nmodes, zernike2remove):
         pass
 
-
+    def _registerShape(self, shape, ):
+        dp = iffp.findFrameOffset(tn,xxx)
+        #cannot work. we should create a dedicated function, not necessarily linked to IFF or flattening
+        pass
