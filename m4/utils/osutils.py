@@ -163,7 +163,6 @@ def getFileList(tn=None, fold=None, key:str=None):
     Notice that, in this specific case, it was necessary to include the undersc
     ore after 'mode' to exclude the 'modesVector.fits' file from the list.
     """
-
     if tn is None and fold is not None:
         fl = sorted([os.path.join(fold, file) \
                      for file in os.listdir(fold)])
