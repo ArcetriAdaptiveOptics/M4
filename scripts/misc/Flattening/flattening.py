@@ -49,3 +49,6 @@ class Flattening:
         dp = iffp.findFrameOffset(tn,xxx)
         #cannot work. we should create a dedicated function, not necessarily linked to IFF or flattening
         pass
+
+    def flatten(nmodes):
+        pass
