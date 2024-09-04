@@ -1,8 +1,8 @@
 """
-Authors
-  - C. Selmi: written in 2019
+Author(s):
+----------
+    - Chiara Selmi : written in 2019
 """
-
 import logging
 import os
 import numpy as np
@@ -10,12 +10,10 @@ import matplotlib.pyplot as plt
 from astropy.io import fits as pyfits
 from m4.configuration import config_folder_names as fn
 
-
 imgFold = fn.OPD_IMAGES_ROOT_FOLDER
 ifFold = fn.IFFUNCTIONS_ROOT_FOLDER
 intMatFold = fn.INTMAT_ROOT_FOLDER
 confFold = fn.CONFIGURATION_ROOT_FOLDER
-
 
 class ComputeReconstructor:
     """
@@ -105,7 +103,6 @@ class ComputeReconstructor:
             hdu.close()
         except Exception as e:
             raise e
-
         return ComputeReconstructor(interation_matrix_cube=_intMatCube, tn=tn)
 
     def _computeIntMat(self):

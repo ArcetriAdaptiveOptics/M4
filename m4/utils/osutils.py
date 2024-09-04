@@ -11,7 +11,7 @@ machine OS.
 import os
 import numpy as np
 from arte.dataelab.base_file_walker import AbstractFileNameWalker
-from m4.ground import read_data as rd
+from m4.ground import read_data as rd, zernike as zern
 from m4.ground.timestamp import Timestamp
 from m4.configuration import config_folder_names as fn
 from m4.ground.read_4DConfSettingFile import ConfSettingReader
@@ -167,22 +167,22 @@ def getFileList(tn=None, fold=None, key:str=None):
         fl = sorted([os.path.join(fold, file) \
                      for file in os.listdir(fold)])
     else:
-        if fold is None:
-            fl = sorted([os.path.join(OPDIMG, tn, file) \
-                         for file in os.listdir(os.path.join(OPDIMG, tn))])
-        else:
-            try:
-                paths = findTracknum(tn, complete_path=True)
-                if isinstance(paths, str):
-                    paths = [paths]
-                for path in paths:
-                    if fold in path.split('/')[-2]:
-                        fl = sorted([os.path.join(path, file) \
-                                                 for file in os.listdir(path)])
-                    else: 
-                        raise Exception
-            except Exception as exc:
-                raise FileNotFoundError(f"Invalid Path: no data found for '.../{fold}/{tn}'") from exc
+        try:
+            paths = findTracknum(tn, complete_path=True)
+            if isinstance(paths, str):
+                paths = [paths]
+            for path in paths:
+                if fold is None:
+                    fl = []                        
+                    fl.append(sorted([os.path.join(path, file) \
+                                             for file in os.listdir(path)]))
+                elif fold in path.split('/')[-2]:
+                    fl = sorted([os.path.join(path, file) \
+                                             for file in os.listdir(path)])
+                else:
+                    raise Exception
+        except Exception as exc:
+            raise FileNotFoundError(f"Invalid Path: no data found for tn '{tn}'") from exc
     if key is not None:
         try:
             selected_list = []
@@ -320,7 +320,6 @@ def getConf4DSettingsPath(tn):
 
 
 def createCube(filelist, register=False):
-
     """
     Creates a cube of images from an images file list
 
@@ -341,7 +340,7 @@ def createCube(filelist, register=False):
     cube_list = []
     for imgfits in filelist:
         image = rd.readFits_maskedImage(imgfits)
-        if register is not False:
+        if register:
             image = np.roll(image, register)
         cube_list.append(image)
     cube = np.ma.dstack(cube_list)

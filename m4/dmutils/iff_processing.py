@@ -47,7 +47,7 @@ Cube saved in '.../m4/data/M4Data/OPTData/INTMatrices/20160516_114917/IMcube.fit
 >>> ifp.stackCubes(tnlist)
 Stacekd cube and matrices saved in '.../m4/data/M4Data/OPTData/INTMatrices/'new_tn'/IMcube.fits'
 """
-import os
+import os, shutil
 import configparser
 import numpy as np
 from astropy.io import fits as pyfits
@@ -69,6 +69,9 @@ regisActFile   = 'registrationActs.fits'
 shuffleFile    = 'shuffle.dat'
 indexListFile  = 'indexList.fits'
 coordfile      = '' #TODO
+cmdMatFile     = 'cmdMatrix.fits'
+cubeFile       = 'IMCube.fits'
+flagFile       = 'flag.txt'
 
 def process(tn, register:bool=False, save_cube:bool=False):
     """
@@ -116,18 +119,21 @@ def saveCube(tn, register=False):
     cube : masked_array
         Data cube of the images, with shape (npx, npx, nmodes).
     """
-    filelist = osu.getFileList(tn, fold=ifFold, key="mode_")
+    old_fold = os.path.join(ifFold, tn)
+    filelist = osu.getFileList(fold=old_fold, key="mode_")
     cube = osu.createCube(filelist, register=register)
     # Saving the cube
     new_fold = os.path.join(intMatFold, tn)
     os.mkdir(new_fold)
-    cube_path = os.path.join(new_fold, 'IMCube.fits')
-    rd.save_phasemap(cube_path, cube, isCube=True)
+    cube_path = os.path.join(new_fold, cubeFile)
+    rd.save_phasemap(cube_path, cube)
     # Copying the cmdMatrix and the ModesVector into the INTMAT Folder
     cmat = rd.readFits_data(os.path.join(ifFold, tn, 'cmdMatrix.fits'))
     mvec = rd.readFits_data(os.path.join(ifFold, tn, 'modesVector.fits'))
     pyfits.writeto(os.path.join(intMatFold, tn, 'cmdMatrix.fits'), cmat)
     pyfits.writeto(os.path.join(intMatFold, tn, 'modesVector.fits'), mvec)
+    with open(os.path.join(intMatFold, tn, flagFile), 'w', encoding='utf-8') as f:
+        f.write(f"Cube created from '{old_fold}' data.\n \n \n")
     print(f"Cube saved in '{cube_path}'")
     print(f"Shape: {cube.shape}")
     return cube
@@ -157,15 +163,60 @@ def stackCubes(tnlist):
     stacked_cmat        = np.dstack(cube_parameters[1])
     stacked_mvec        = np.dstack(cube_parameters[2])
     # Saving everithing to a new file into a new tn
-    save_cube           = os.path.join(stacked_cube_fold, 'IMCube.fits')
+    save_cube           = os.path.join(stacked_cube_fold, cubeFile)
     save_cmat           = os.path.join(stacked_cube_fold, 'cmdMatrix.fits')
     save_mvec           = os.path.join(stacked_cube_fold, 'modesVector.fits')
-    rd.save_phasemap(save_cube, stacked_cube, isCube=True)
+    rd.save_phasemap(save_cube, stacked_cube)
     pyfits.writeto(save_cmat, stacked_cmat)
     pyfits.writeto(save_mvec, stacked_mvec)
-    with open(os.path.join(stacked_cube_fold, 'flag.txt'), 'w', encoding='UTF-8') as file:
+    with open(os.path.join(stacked_cube_fold, flagFile), 'w', encoding='UTF-8') as file:
         flag.write(file)
     print(f"Stacked cube and matrices saved in {new_tn}")
+    
+def filterZernikeCube(tn, zern_modes:list=None):
+    """
+    Function which filters out the desired zernike modes from a cube.
+
+    Parameters
+    ----------
+    tn : str
+        Tracking number of the cube to filter.
+    zern_modes : list, optional
+        List of zernike modes to filter out. The default is [1,2,3] 
+        (piston, tip and tilt).
+
+    Returns
+    -------
+    ffcube : masked array
+        Filtered cube.
+    """
+    new_tn = os.path.join(intMatFold, timestamp.Timestamp.now())
+    os.mkdir(new_tn)
+    oldCube = os.path.join(intMatFold, tn, cubeFile)
+    ocFlag  = os.path.join(intMatFold, tn, flagFile)
+    newCube = os.path.join(new_tn, cubeFile)
+    ocFlag  = os.path.join(intMatFold, tn, flagFile)
+    newFlag = os.path.join(new_tn, flagFile)
+    CmdMat = os.path.join(intMatFold, tn, cmdMatFile)
+    ModesVec = os.path.join(intMatFold, tn, modesVecFile)
+    shutil.copyfile(CmdMat, os.path.join(new_tn, cmdMatFile))
+    shutil.copyfile(ModesVec, os.path.join(new_tn, modesVecFile))
+    cube = rd.readFits_maskedImage(oldCube)
+    zern2filter = zern_modes if zern_modes is not None else [1,2,3]
+    fcube = []
+    for i in range(cube.shape[-1]):
+        filtered = zern.removeZernike(cube[:,:,i], zern2filter)
+        fcube.append(filtered)
+    ffcube = np.ma.dstack(fcube)
+    rd.save_phasemap(newCube, ffcube)
+    with open(ocFlag, 'r', encoding='utf-8') as oflag:
+        flag = oflag.readlines()
+    flag.pop(-1)
+    flag += f"Zernike modes filtered = {zern2filter}"
+    with open(newFlag, 'w', encoding='utf-8') as nflag:
+        nflag.writelines(flag)
+    print(f"Filtered cube saved at {new_tn}")
+    return ffcube
 
 def iffRedux(tn, fileMat, ampVect, modeList, template, shuffle=0):
     """
