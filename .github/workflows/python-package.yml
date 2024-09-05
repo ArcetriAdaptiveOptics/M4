@@ -23,7 +23,7 @@ jobs:
     steps:
     - name: "test Env Variables"
       run: |
-        echo  "PYOTTCONF=${{github.workspace}}/m4/configuration/myConfig.yaml" >> $GITHUB_ENV
+        echo  "PYOTTCONF=${{github.workspace}}/m4/configuration/labotConfig.yaml" >> $GITHUB_ENV
         echo "$PYOTTCONF"
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
