@@ -4,6 +4,7 @@ from m4 import main, noise
 from m4.configuration import update_folder_paths as ufp
 from m4.utils import markers as mrk
 from m4.mini_OTT import measurements
+from m4.analyzers import timehistory as th
 fn = ufp.folders
 
 class OTTScripts:
@@ -97,6 +98,11 @@ class OTTScripts:
         tn = self._meas.opticalMonitoring(nframes, delay)
         return tn
 
+    def analyzeTimeAverage(self, tn, zern2remove=[1,2,3]):
+        img = th.averageFrames(tn)
+        img = th.zernike.removeZernike(img, zern2remove)
+        return img
+
     def acquireCurrentFootprint(self):
         c0 = mrk.measureMarkerPos(None, self._interf)
         return c0
@@ -112,4 +118,16 @@ class OTTScripts:
         else:
             tnPar = None
         return doit, tnPar
-    
+
+    def prepareFlat(self, tniff):
+        #self._flat=flattening(tniff)
+        #return self._flat
+        pass
+
+    def flattening(self, tniff, nmodes, nframes,zern2remove=[1,2,3]):
+        #flat=flattening(tniff)
+        #tn = self.acquireTimeAverage(self, nframes)
+        #img = self.analyzeTimeAverage(self, tn, zern2remove)
+        #flatcmd = flat.(tniff, img, nmodes, zern2remove)
+        #dm.mirrorCommand(-flatcmd)
+        pass
