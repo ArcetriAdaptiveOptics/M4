@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits as pyfits
 from m4.configuration import config_folder_names as fn
+from m4.ground import read_data as rd
 
 imgFold = fn.OPD_IMAGES_ROOT_FOLDER
 ifFold = fn.IFFUNCTIONS_ROOT_FOLDER
@@ -35,38 +36,39 @@ class ComputeReconstructor:
         shape [pixels, pixels, n_images]
     """
 
-    def __init__(self, interation_matrix_cube=None, tn=None):
+    def __init__(self, interaction_matrix_cube=None, mask2intersect=None):
         """The constructor"""
         self._logger = logging.getLogger("COMPUTE_REC:")
-        self._intMatCube = interation_matrix_cube
+        self._intMatCube = interaction_matrix_cube
         self._intMat = None
+        self._cubeMask = self._intersectCubeMask(interaction_matrix_cube)
+        self._imgMask = self._mask2intersect(mask2intersect)
         self._analysisMask = None
         self._intMat_U = None
         self._intMat_S = None
         self._intMat_Vt = None
         self._threshold = None
         self._filtered_sv = None
-        self._tn = tn
-        if tn is not None:
-            self._logger.info(
-                "Loaded interaction matrix from TN  %s", self._tn)
+        self._tn = None
 
-        if self._intMatCube is not None:
-            analysis_mask = self._intMatCube[:, :, 0].mask
-            # compute logical "or" mask of all the images in the cube
-            for i in range(1, self._intMatCube.shape[2]):
-                analysis_mask = np.logical_or(
-                    analysis_mask, self._intMatCube[:, :, i].mask)
-
-            self.setAnalysisMask(analysis_mask)
-        else:
-            self.analysisMask = None
+        if (self._cubeMask, self._imgMask)!=(None,None):
+            self._setAnalysisMask()
+        # if self._tn is not None:
+        #     self._logger.info(
+        #         "Loaded interaction matrix from TN  %s", self._tn)
+        # if self._intMatCube is not None:
+        #     analysis_mask = self._intMatCube[:, :, 0].mask
+        #     # compute logical "or" mask of all the images in the cube
+        #     for i in range(1, self._intMatCube.shape[2]):
+        #         analysis_mask = np.logical_or(
+        #             analysis_mask, self._intMatCube[:, :, i].mask)
+        #     self.setAnalysisMask(analysis_mask)
+        # else:
+        #     self.analysisMask = None
 
     def run(self, Interactive=False, sv_threshold=None):
-
         self._logger.info("Computing reconstructor")
         self._computeIntMat()
-
         self._logger.info("Computing singular values")
         self._intMat_U, self._intMat_S, self._intMat_Vt = \
             np.linalg.svd(self._intMat, full_matrices=False)
@@ -89,28 +91,68 @@ class ComputeReconstructor:
         self._logger.info("Assembling reconstructor")
         return self._intMat_Vt.T @ np.diag(sv_threshold) @ self._intMat_U.T
 
-    @staticmethod
-    def loadIntMatFromFolder(tn):
+    def loadInteractionCube(self, intCube=None, tn=None):
         """
-        Creates the object using saved information about path measurements
+        Function intended as a reloader for the interaction matrix cube, to use
+        a different IFF for recontructor creation.
+
+        Parameters
+        ----------
+        intCube : ndarray, optional
+            The data cube itself.
+        tn : str, optional
+            The tracking number where to find the data cube. Default is None.
+
+        Returns
+        -------
         """
-        # load cube from file
-        try:
-            intmat_fullpath = os.path.join(
-                os.path.join(intMatFold, tn), "IMCube.fits")
-            hdu = pyfits.open(intmat_fullpath)
-            _intMatCube = hdu[0].data
-            hdu.close()
-        except Exception as e:
-            raise e
-        return ComputeReconstructor(interation_matrix_cube=_intMatCube, tn=tn)
+        if intCube is not None:
+            self._intMatCube = intCube
+        elif tn is not None:
+            cube_path = os.path.join(intMatFold, tn, 'IMCube.fits')
+            self._intMatCube = rd.read_phasemap(cube_path)
+        else: raise KeyError("No cube or tracking number was provided.")
+
+    def loadShape2Flat(self, img):
+        """
+        Function intended as a reloader for the image mask to intersect, in order
+        to create a new recontructor matrix.
+
+        Parameters
+        ----------
+        img : MaskedArray
+            The new image to compute the new recontructor.
+        """
+        self._shape2flat = img
+        self._imgMask = img.mask
+        return
+
+    # @staticmethod
+    # def loadIntMatFromFolder(tn):
+    #     """
+    #     Creates the object using saved information about path measurements
+    #     """
+    #     # load cube from file
+    #     try:
+    #         intmat_fullpath = os.path.join(
+    #             os.path.join(intMatFold, tn), "IMCube.fits")
+    #         hdu = pyfits.open(intmat_fullpath)
+    #         _intMatCube = hdu[0].data
+    #         hdu.close()
+    #     except Exception as e:
+    #         raise e
+    #     return ComputeReconstructor(interation_matrix_cube=_intMatCube, tn=tn)
 
     def _computeIntMat(self):
-        # compute the interaction matrix from the cube by selecting from each
-        #  masked arrey all the pixels given by the analysis mask
+        """
+        Subroutine which computes the interaction matrix and stores it in a 
+        class variable.
+        """
         self._logger.info(
             "Computing interaction matrix from cube of size %s", self._intMatCube.shape)
         try:
+            if self._analysisMask is None:
+                self._setAnalysisMask()
             self._intMat = np.array(
                 [
                     self._intMatCube[:, :, i][self._analysisMask == 0]
@@ -122,27 +164,62 @@ class ComputeReconstructor:
                 "Error in computing interaction matrix from cube:%s", e)
             raise e
 
-    def setAnalysisMask(self, analysis_mask):
-        """Set the analysis mask chosen
+    def _setAnalysisMask(self):
+        try:
+            analysisMask = np.logical_or(self._cubeMask, self._imgMask)
+        except self._imgMask is None:
+            print("Lack of image mask. No analysis mask has been set")
+            analysisMask = None
+        self._analysisMask = analysisMask
+
+    def _mask2intersect(self, img_or_mask):
+        """
+        Returns the mask from the input image or mask.
 
         Parameters
         ----------
-                analysis_mask: numpy array [pixels, pixels]
-        """
-        self._analysisMask = analysis_mask
+        img_or_mask : ndarray or MaskedArray
+            The image's mask or mask itself to use to compute the reconstructor.
 
-    def analysisMask(self):
-        """Set the analysis mask chosen
+        Returns
+        -------
+        mask : ndarray
+            The mask.
+        """
+        if img_or_mask is not None:
+            try:
+                mask = img_or_mask.mask
+            except AttributeError:
+                mask = img_or_mask
+        else: mask=None
+        return mask
+
+    def _intersectCubeMask(self, cube):
+        """
+
 
         Parameters
         ----------
-                analysis_mask: numpy array [pixels, pixels]
-        """
-        return self._analysisMask
+        cube : TYPE
+            DESCRIPTION.
 
+        Returns
+        -------
+        cube_mask : TYPE
+            DESCRIPTION.
+
+        """
+        mask = cube[:, :, 0].mask
+        # compute logical "or" mask of all the images in the cube
+        for i in range(1, cube.shape[2]):
+            cube_mask = np.logical_or(
+                mask, cube[:, :, i].mask)
+        return cube_mask
+
+
+#______________________________________________________________________________
     @staticmethod
     def make_interactive_plot(singular_values, current_threshold=None):
-
         # Creare il grafico
         fig, ax = plt.subplots()
         modelist = np.arange(len(singular_values))

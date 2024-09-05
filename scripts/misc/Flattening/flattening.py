@@ -8,12 +8,9 @@ Description
 """
 import os
 import numpy as np
-from m4.devices import deformable_mirror as dm
 from m4.dmutils import iff_processing as ifp
 from m4.ground import read_data as rd
-from m4.utils import osutils as osu
 from m4.analyzers import compute_reconstructor as crec
-#  ---- leggere flattening.py come possibile riferimento -----
 
 class Flattening:
     """
@@ -33,7 +30,7 @@ class Flattening:
         self._intMat        = self._loadIntMat()
         self._cmdMat        = self._loadCmdMat()
         self._rec           = crec.ComputeReconstructor(self._intMat)
-        self._recMat        = self._rec.run()
+        self._recMat        = None
         self._frameCenter   = None
         self._shape2flat    = None # Immagine acquisita o fornita, come? 
         self._flatOffset    = None
@@ -42,6 +39,11 @@ class Flattening:
         self._flatResidue   = None
         self._flatResult    = None
         self._flatteningModes = None
+
+    def load_image2shape(self, img):
+        self._shape2flat = img
+        self._rec.loadShape2Flat(img)
+        return
 
     def flatten(self, nmodes):
         pass
@@ -53,15 +55,15 @@ class Flattening:
         self._flatResult = flat_cmd
         return flat_cmd
 
-    def _loadIntMat(self):
+    def _loadIntCube(self):
         cube = os.path.join(self._path, ifp.cubeFile)
         with open(os.path.join(self._path, ifp.flagFile), 'r', encoding='utf-8') as f:
             flag = f.read()
-        if 'filtered' in flag:
-            intmat = rd.read_phasemap(cube)
+        if ' filtered ' in flag:
+            intCube = rd.read_phasemap(cube)
         else:
-            intmat = ifp.filterZernikeCube(self._tn)
-        return intmat
+            intCube = ifp.filterZernikeCube(self._tn)
+        return intCube
 
     def _loadCmdMat(self):
         cmdMat = rd.readFits_data(os.path.join(self._path, ifp.cmdMatFile))
@@ -75,8 +77,4 @@ class Flattening:
         xxx=None
         dp = ifp.findFrameOffset(self._tn,xxx)
         #cannot work. we should create a dedicated function, not necessarily linked to IFF or flattening
-        pass
-
-    def load_image2shape(self, img):
-        self._shape2flat = img
-        return
+        return dp

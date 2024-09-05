@@ -194,7 +194,6 @@ def getFileList(tn=None, fold=None, key:str=None):
         fl = selected_list
     return fl
 
-
 def tnRange(tn0, tn1):
     """
     Returns the list of tracking numbers between tn0 and tn1, within the same
@@ -243,7 +242,6 @@ def tnRange(tn0, tn1):
                              for tn in tn_folds[id0:id1+1]])
     return tnMat
 
-
 def rename4D(folder):
     """
     Renames the produced 'x.4D' files into '0000x.4D'
@@ -264,7 +262,6 @@ def rename4D(folder):
                 old_file = os.path.join(fold, file)
                 new_file = os.path.join(fold, new_name)
                 os.rename(old_file, new_file)
-
 
 def getCameraSettings(tn):
     """
@@ -316,8 +313,6 @@ def getConf4DSettingsPath(tn):
     """
     path = getFileList(tn, key='4DSetting')
     return path
-
-
 
 def createCube(filelist, register=False):
     """
