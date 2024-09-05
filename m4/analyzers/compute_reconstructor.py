@@ -7,7 +7,6 @@ import logging
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from astropy.io import fits as pyfits
 from m4.configuration import config_folder_names as fn
 from m4.ground import read_data as rd
 
@@ -35,7 +34,6 @@ class ComputeReconstructor:
         where the interaction_matrix_cube is a masked_array dstack of
         shape [pixels, pixels, n_images]
     """
-
     def __init__(self, interaction_matrix_cube=None, mask2intersect=None):
         """The constructor"""
         self._logger = logging.getLogger("COMPUTE_REC:")
@@ -67,6 +65,22 @@ class ComputeReconstructor:
         #     self.analysisMask = None
 
     def run(self, Interactive=False, sv_threshold=None):
+        """
+        Compute the reconstruction matrix from the interaction matrix and the image
+        to flatten.
+
+        Parameters
+        ----------
+        Interactive : TYPE, optional
+            DESCRIPTION. The default is False.
+        sv_threshold : TYPE, optional
+            DESCRIPTION. The default is None.
+
+        Returns
+        -------
+        recMat : ndarray
+            Reconstruction matrix.
+        """
         self._logger.info("Computing reconstructor")
         self._computeIntMat()
         self._logger.info("Computing singular values")
@@ -91,6 +105,20 @@ class ComputeReconstructor:
         self._logger.info("Assembling reconstructor")
         return self._intMat_Vt.T @ np.diag(sv_threshold) @ self._intMat_U.T
 
+    def loadShape2Flat(self, img):
+        """
+        Function intended as a reloader for the image mask to intersect, in order
+        to create a new recontructor matrix.
+
+        Parameters
+        ----------
+        img : MaskedArray
+            The new image to compute the new recontructor.
+        """
+        self._shape2flat = img
+        self._imgMask = img.mask
+        return
+
     def loadInteractionCube(self, intCube=None, tn=None):
         """
         Function intended as a reloader for the interaction matrix cube, to use
@@ -112,20 +140,6 @@ class ComputeReconstructor:
             cube_path = os.path.join(intMatFold, tn, 'IMCube.fits')
             self._intMatCube = rd.read_phasemap(cube_path)
         else: raise KeyError("No cube or tracking number was provided.")
-
-    def loadShape2Flat(self, img):
-        """
-        Function intended as a reloader for the image mask to intersect, in order
-        to create a new recontructor matrix.
-
-        Parameters
-        ----------
-        img : MaskedArray
-            The new image to compute the new recontructor.
-        """
-        self._shape2flat = img
-        self._imgMask = img.mask
-        return
 
     # @staticmethod
     # def loadIntMatFromFolder(tn):
@@ -165,6 +179,10 @@ class ComputeReconstructor:
             raise e
 
     def _setAnalysisMask(self):
+        """
+        Sets the analysis mask as the mask resulting from the 'logical_or' between
+        the cube mask and the image to flatten mask.
+        """
         try:
             analysisMask = np.logical_or(self._cubeMask, self._imgMask)
         except self._imgMask is None:
@@ -196,26 +214,23 @@ class ComputeReconstructor:
 
     def _intersectCubeMask(self, cube):
         """
-
+        creates the cube's mask by intersecating the masks of each frame.
 
         Parameters
         ----------
-        cube : TYPE
-            DESCRIPTION.
+        cube : ndarray
+            The data cube.
 
         Returns
         -------
-        cube_mask : TYPE
-            DESCRIPTION.
-
+        cube_mask : ndarray
+            the intersection mask for the cube.
         """
         mask = cube[:, :, 0].mask
-        # compute logical "or" mask of all the images in the cube
         for i in range(1, cube.shape[2]):
             cube_mask = np.logical_or(
                 mask, cube[:, :, i].mask)
         return cube_mask
-
 
 #______________________________________________________________________________
     @staticmethod
@@ -310,7 +325,6 @@ class ComputeReconstructor:
         # Visualizzare il grafico
         plt.show()
         return threshold
-
 
 # if __name__ == "__main__":
 #    import random

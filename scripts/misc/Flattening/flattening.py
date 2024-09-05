@@ -40,22 +40,43 @@ class Flattening:
         self._flatResult    = None
         self._flatteningModes = None
 
-    def load_image2shape(self, img):
-        self._shape2flat = img
-        self._rec.loadShape2Flat(img)
-        return
-
-    def flatten(self, nmodes):
-        pass
-
     def computeFlatCmd(self):
+        """
+        routine which computes the command to apply to flatten the input shape.
+
+        Returns
+        -------
+        flat_cmd : ndarray
+            Flat command.
+        """
         # Logica
         cmd_amp = -np.dot(self._recMat.flatten(), self._shape2flat.compressed())
         flat_cmd = np.dot(self._cmdMat, cmd_amp)
         self._flatResult = flat_cmd
         return flat_cmd
 
+    def load_image2shape(self, img, compute_rec:bool=True):
+        """
+        (Re)Loader for the image to flatten.
+
+        Parameters
+        ----------
+        img : MaskedArray
+            Image to flatten.
+        compute_rec : bool, optional
+            Wether to direclty compute the reconstructor with the imput image or
+            not. The default is True.
+        """
+        self._shape2flat = img
+        self._rec.loadShape2Flat(img)
+        if compute_rec:
+            print("Computing recontruction matrix...")
+            self._recMat = self._rec.run()
+
     def _loadIntCube(self):
+        """
+        Interaction cube loader
+        """
         cube = os.path.join(self._path, ifp.cubeFile)
         with open(os.path.join(self._path, ifp.flagFile), 'r', encoding='utf-8') as f:
             flag = f.read()
@@ -66,10 +87,28 @@ class Flattening:
         return intCube
 
     def _loadCmdMat(self):
+        """
+        Command matrix loader. It loads the saved command matrix of the loaded
+        cube.
+
+        Returns
+        -------
+        cmdMat : ndarray
+            Command matrix of the cube, saved in the tn path.
+        """
         cmdMat = rd.readFits_data(os.path.join(self._path, ifp.cmdMatFile))
         return cmdMat
 
     def _loadFrameCenter(self):
+        """
+        Center frame loader, useful for image registration.
+
+        Returns
+        -------
+        frame_center : TYPE
+            DESCRIPTION.
+
+        """
         frame_center = rd.readFits_data('data')
         return frame_center
 

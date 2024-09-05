@@ -11,12 +11,12 @@ machine OS.
 import os
 import numpy as np
 from arte.dataelab.base_file_walker import AbstractFileNameWalker
-from m4.ground import read_data as rd, zernike as zern
+from m4.ground import read_data as rd
 from m4.ground.timestamp import Timestamp
-from m4.configuration import config_folder_names as fn
+from m4.configuration import update_folder_paths as ufp
 from m4.ground.read_4DConfSettingFile import ConfSettingReader
 from pathlib import Path
-
+fn = ufp.folders
 OPTDATA = fn.OPT_DATA_FOLDER
 OPDIMG = fn.OPD_IMAGES_ROOT_FOLDER
 
@@ -192,6 +192,8 @@ def getFileList(tn=None, fold=None, key:str=None):
         except TypeError as err:
             raise TypeError("'key' argument must be a string") from err
         fl = selected_list
+    if len(fl)==1:
+        fl = fl[0]
     return fl
 
 def tnRange(tn0, tn1):

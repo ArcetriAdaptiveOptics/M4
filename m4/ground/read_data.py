@@ -20,7 +20,6 @@ from m4.type.modalAmplitude import ModalAmplitude
 from m4.type.modalBase import ModalBase
 from m4.type.modesVector import ModesVector
 
-
 def read_phasemap(file_path):
     ''' per leggere i tre formati di dati interferometrici
     '''
