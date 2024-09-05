@@ -134,3 +134,4 @@ dmypy.json
 .pyre/
 /howto.txt
 /todo.txt
+m4/configuration/myConfig.yaml
