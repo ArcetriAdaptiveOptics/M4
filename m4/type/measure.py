@@ -167,17 +167,22 @@ class SurfaceSequence():
                     self._root_dir = root_dir
                     self._filenames = list(
                         Path(root_dir).rglob('????????_??????.fits'))
+                    print("found  %d frames" % len(self._filenames))
                     tmp_tmp = SurfaceMeasure.load_temperatures(root_dir)
-                    self._temperature = pd.DataFrame(
-                        tmp_tmp.byteswap().newbyteorder('='))
+                    if tmp_tmp is not None:
+                        self._temperature = pd.DataFrame(
+                            tmp_tmp.byteswap().newbyteorder('='))
                     tmp_zn = SurfaceMeasure.load_zernikes(root_dir)
-                    self._zernike = pd.DataFrame(
-                        tmp_zn.byteswap().newbyteorder('='))
+                    if tmp_zn is not None:
+                        self._zernike = pd.DataFrame(
+                            tmp_zn.byteswap().newbyteorder('='))
+
                     self._tau_vector = np.array(list(map(lambda l: dt.strptime(
                         l.name[0:15], '%Y%m%d_%H%M%S'), self._filenames)))
                 else:
                     self._filenames += list(
                         Path(root_dir).rglob('????????_??????.fits'))
+                    print("found  %d frames" % len(self._filenames))
                     tmp_tmp = SurfaceMeasure.load_temperatures(root_dir)
                     self._temperature = pd.concat(
                         [self._temperature, pd.DataFrame(tmp_tmp.byteswap().newbyteorder('='))])
@@ -187,6 +192,7 @@ class SurfaceSequence():
                     self._tau_vector = np.concatenate(self._tau_vector, np.array(list(map(lambda l: dt.strptime(
                         str(l.name)[0:15], '%Y%m%d_%H%M%S'), self._filenames))))
             self._intersetion_mask = None
+            print("Sequence loaded with %d frames" % len(self))
 
     def __len__(self):
         return len(self._filenames)
@@ -215,19 +221,19 @@ class SurfaceSequence():
     def __str__(self):
         return self.__repr__()
 
-    @property
+    @ property
     def temperture(self):
         return self._temperture
 
-    @property
+    @ property
     def zernike(self):
         return self._zernike
 
-    @property
+    @ property
     def tau_vector(self):
         return self._tau_vector
 
-    @property
+    @ property
     def tau_vector_as_timestamp(self):
         return np.array(list(map(lambda l: dt.timestamp(l), self._tau_vector)))
 
@@ -246,7 +252,7 @@ class SurfaceSequence():
     def set_intersection_mask(self, mask):
         self._intersetion_mask = mask
 
-    @property
+    @ property
     def intersection_mask(self):
         return self._intersetion_mask
 

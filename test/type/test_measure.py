@@ -2,11 +2,17 @@ import unittest
 from unittest.mock import patch
 import numpy as np
 from arte.types.mask import CircularMask
-from m4.type.measure import SurfaceMeasure
+from m4.type.measure import SurfaceMeasure, SurfaceSequence
 import datetime
-
+from pathlib import Path
+import shutil
+import tempfile
+import os
+import astropy.io.fits as fits
 
 # write test main for Measure class using mock on read_phasemap, _load_temperatures and _load_zernikes and fits.getheader
+
+
 class testSurfaceMeasure(unittest.TestCase):
 
     def setUp(self):
@@ -35,3 +41,57 @@ class testSurfaceMeasure(unittest.TestCase):
         self.assertEqual(self.meas.shape, (100, 100))
         self.assertEqual(self.meas.timestamp, datetime.datetime.strptime(
             self.meas.tn, '%Y%m%d_%H%M%S'))
+
+
+class testSurfaceSequence(unittest.TestCase):
+    def setUp(self):
+        # creare un albero finto da qualche parte dinamicamente
+        self.tmp_path = Path(Path(tempfile.gettempdir()), 'tmp')
+        self.tn_path = Path(self.tmp_path, '20241226_000000')
+        os.makedirs(self.tn_path, exist_ok=True)
+        for i in range(1, 50):
+            header = fits.Header()
+            header['TN'] = '20241226_%04d00' % i
+            data = np.ma.masked_array(np.random.rand(
+                100, 100), mask=CircularMask((100, 100), 50).mask)
+            fits.writeto(Path(self.tn_path, header['TN'] + '.fits'),
+                         data.data, header, overwrite=True)
+            fits.append(Path(self.tn_path, header['TN'] + '.fits'),
+                        data.mask.astype(np.uint8), header, overwrite=True)
+
+        zt = np.random.rand(50, 11)
+        tt = np.random.rand(50, 24)
+        fits.writeto(Path(self.tn_path, 'temperature.fits'),
+                     tt,  overwrite=True)
+
+        fits.writeto(Path(self.tn_path, 'zernike.fits'),
+                     zt, overwrite=True)
+
+        # Path(tn_path, '20241226_020000.fits').touch()
+        # Path(tn_path, '20241226_030000.fits').touch()
+        # Path(tn_path, '20241226_040000.fits').touch()
+        # Path(tn_path, '20241226_050000.fits').touch()
+        # Path(tn_path, '20241226_060000.fits').touch()
+        # Path(tn_path, '20241226_070000.fits').touch()
+        # Path(tn_path, 'temperatures.fits').touch()
+        # Path(tn_path, 'zernikes.fits').touch()
+
+        print("Created sample tree into: ", self.tmp_path)
+
+    def test_load(self):
+
+        print(self.tn_path)
+        self.seq = SurfaceSequence(self.tn_path)
+        print("seq len %d" % len(self.seq))
+        print(self.seq[0])
+        self.assertEqual(self.seq[1].tn, '20241226_000200')
+        # seq2 = self.seq[1:4]
+
+        # time, stf = seq2.compute_fast_time_stf()
+
+    def tearDown(self):
+        print("Cleaning temporary tree")
+        try:
+            shutil.rmtree(self.tmp_path)
+        except Exception as e:
+            print("Temporary tree cleaned except for some files")
