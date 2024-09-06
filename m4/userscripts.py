@@ -125,9 +125,14 @@ class OTTScripts:
         pass
 
     def flattening(self, tniff, nmodes, nframes,zern2remove=[1,2,3]):
-        #flat=flattening(tniff)
+        #flatclass=flattening(tniff)
         #tn = self.acquireTimeAverage(self, nframes)
         #img = self.analyzeTimeAverage(self, tn, zern2remove)
-        #flatcmd = flat.(tniff, img, nmodes, zern2remove)
+        #flatcmd = flatclass.(tniff, img, nmodes, zern2remove)
+        #flatcmd is the ampl vector referred to the IFF cmdmatrix
+        #cmdMat2use = flatclass._cmdMat[:,0:nmodes]....
+
+        #command = cmdmat2use @ flatcmd
+        #now command is just nmodes. ---> fill the entire command vector???
         #dm.mirrorCommand(-flatcmd)
         pass

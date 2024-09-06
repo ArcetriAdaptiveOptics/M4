@@ -82,6 +82,9 @@ class Flattening:
         cmd_amp = -np.dot(self.shape2flat.compressed(), self._recMat)
         flat_cmd = np.dot(self._cmdMat, cmd_amp)
         self.flatCmd = flat_cmd
+        #qui impacchettare il flat cmd:
+        #cmdMat2use = flatclass._cmdMat[:,0:nmodes]....
+        #command = cmdmat2use @ flatcmd
         return flat_cmd
 
     def load_image2shape(self, img, compute_rec:bool=True):
