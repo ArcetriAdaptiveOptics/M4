@@ -1,5 +1,5 @@
 #base_path: 'D:/M4/'
-base_path: '/home/runner/work/M4/M4/m4/test/data'
+base_path: '/home/runner/work/M4/m4/test/data'
 simulated_interf: True
 simulated_dm: True
 simulated_accelerometers: True
