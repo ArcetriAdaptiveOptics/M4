@@ -15,7 +15,7 @@ from m4.ground import read_data as rd
 from m4.ground.timestamp import Timestamp
 from m4.configuration import update_folder_paths as ufp
 from m4.ground.read_4DConfSettingFile import ConfSettingReader
-from pathlib import Path
+from pathlib3x import Path
 fn = ufp.folders
 OPTDATA = fn.OPT_DATA_FOLDER
 OPDIMG = fn.OPD_IMAGES_ROOT_FOLDER

@@ -20,3 +20,4 @@ pandas
 playsound==1.2.2
 jdcal
 photutils
+pathlib3x
