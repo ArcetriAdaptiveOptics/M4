@@ -35,7 +35,8 @@ class FileWalker(AbstractFileNameWalker):
 
     def findTracknum(self, tn):
         tn_path = []
-        for root, dirs, files in Path(self._data_root_dir).walk(on_error=print):
+        # for root, dirs, files in Path(self._data_root_dir).walk(on_error=print):
+        for root, dirs, files in os.walk(self._data_root_dir):
             found_tn_dirs = list(filter(lambda l: tn in l, dirs))
             found_tn_files = list(filter(lambda l: tn in l, files))
 #            if len(found_tn_files) > 0:
