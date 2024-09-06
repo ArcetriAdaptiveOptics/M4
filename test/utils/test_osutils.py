@@ -5,7 +5,7 @@ Authors
 import unittest
 import os
 from m4.utils.osutils import FileWalker
-from pathlib import Path
+from pathlib3x import Path
 import tempfile
 import shutil
 
@@ -65,7 +65,7 @@ class testFileWalker(unittest.TestCase):
         pass
 
 
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 #    tf = testFileWalker()
 #    tf.setUp()
 #    tf.testFindTracknum()

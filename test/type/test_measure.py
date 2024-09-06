@@ -4,7 +4,7 @@ import numpy as np
 from arte.types.mask import CircularMask
 from m4.type.measure import SurfaceMeasure, SurfaceSequence
 import datetime
-from pathlib import Path
+from pathlib3x import Path
 import shutil
 import tempfile
 import os

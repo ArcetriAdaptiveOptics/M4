@@ -6,7 +6,7 @@ import datetime
 from matplotlib import pyplot as plt
 import functools
 import pprint
-from pathlib import Path, PurePath
+from pathlib3x import Path, PurePath
 import pandas as pd
 import numpy as np
 import copy
