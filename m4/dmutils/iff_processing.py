@@ -173,7 +173,7 @@ def stackCubes(tnlist):
         flag.write(file)
     print(f"Stacked cube and matrices saved in {new_tn}")
     
-def filterZernikeCube(tn, zern_modes:list=None):
+def filterZernikeCube(tn, zern_modes:list=None, save:bool=True):
     """
     Function which filters out the desired zernike modes from a cube.
 
@@ -199,8 +199,6 @@ def filterZernikeCube(tn, zern_modes:list=None):
     newFlag = os.path.join(new_tn, flagFile)
     CmdMat = os.path.join(intMatFold, tn, cmdMatFile)
     ModesVec = os.path.join(intMatFold, tn, modesVecFile)
-    shutil.copyfile(CmdMat, os.path.join(new_tn, cmdMatFile))
-    shutil.copyfile(ModesVec, os.path.join(new_tn, modesVecFile))
     cube = rd.readFits_maskedImage(oldCube)
     zern2filter = zern_modes if zern_modes is not None else [1,2,3]
     fcube = []
@@ -208,15 +206,18 @@ def filterZernikeCube(tn, zern_modes:list=None):
         filtered = zern.removeZernike(cube[:,:,i], zern2filter)
         fcube.append(filtered)
     ffcube = np.ma.dstack(fcube)
-    rd.save_phasemap(newCube, ffcube)
-    with open(ocFlag, 'r', encoding='utf-8') as oflag:
-        flag = oflag.readlines()
-    flag.pop(-1)
-    flag += f"Zernike modes filtered = {zern2filter}"
-    with open(newFlag, 'w', encoding='utf-8') as nflag:
-        nflag.writelines(flag)
-    print(f"Filtered cube saved at {new_tn}")
-    return ffcube
+    if save:
+        rd.save_phasemap(newCube, ffcube)
+        shutil.copyfile(CmdMat, os.path.join(new_tn, cmdMatFile))
+        shutil.copyfile(ModesVec, os.path.join(new_tn, modesVecFile))
+        with open(ocFlag, 'r', encoding='utf-8') as oflag:
+            flag = oflag.readlines()
+        flag.pop(-1)
+        flag += f"Zernike modes filtered = {zern2filter}"
+        with open(newFlag, 'w', encoding='utf-8') as nflag:
+            nflag.writelines(flag)
+        print(f"Filtered cube saved at {new_tn}")
+    return ffcube, new_tn.split('/')[-1]
 
 def iffRedux(tn, fileMat, ampVect, modeList, template, shuffle=0):
     """
@@ -391,11 +392,12 @@ def getTriggerFrame(tn, amplitude=None):
     img0 = rd.read_phasemap(fileList[0])
     go = i = 1
     while go !=0:
-        if go > infoT['zeros']:
-            raise RuntimeError('Heading Zeros exceeded, error!!')
+        thresh = infoT['amplitude']/3
         img1 = rd.read_phasemap(fileList[i])
         rr2check = zern.removeZernike(img1-img0,[1,2,3]).std()
-        if rr2check > infoT['amplitude']/3:
+        if go > infoT['zeros']:
+            raise RuntimeError(f"Frame {go}. Heading Zeros exceeded: std= {rr2check:.2e} < {thresh:.2e} =Amp/3")
+        if rr2check > thresh:
             go=0
         else:
             i+=1

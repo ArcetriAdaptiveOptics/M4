@@ -5,6 +5,30 @@ Author(s)
 
 Description
 -----------
+Module containing the class which computes the flattening command for a deformable
+mirror, given an imput shape and a (filtered) interaction cube.
+
+From the loaded tracking number (tn) the interaction cube will be loaded (and
+filtered, if it's not already) from which the interaction matrix will be computed.
+If an image to shape is provided on class instance, then the reconstructor will
+be automatically computed, while if not, the load_img2shape methos is available
+to upload a shape from which compute the reconstructor.
+
+How to Use it
+=============
+Instancing the class only with the tn of the interaction cube
+
+    >>> from m4.__ import flattening as flt
+    >>> tn = '20240906_110000' # example tn
+    >>> flat = flt.Flattening(tn)
+    >>> # say we have acquired an image
+    >>> img = interf.acquire_phasemap()
+    >>> flat.load_image2shape(img)
+    'Computing reconstruction matrix...'
+
+all is ready to compute the flat command, by simply running the method
+
+    >>> flatCmd = flat.computeFlatCmd()
 """
 import os
 import numpy as np
@@ -14,35 +38,40 @@ from m4.analyzers import compute_reconstructor as crec
 
 class Flattening:
     """
-    This class xxxxx
-
-    Methods
-    ======
-    loadIntMat
-    computeRecMat
-    flat
-    ...
+    Class which handles the flattening command computation
+    
+    Public Methods
+    -------
+    computeFlatCmd : 
+        Method which computes the flattening command to apply to a given shape,
+        which must be already in memory, through the class instancing or the 
+        load_img2shape method
+    
+    load_image2shape : 
+        method to (re)upload and image to shape in the class, after which the
+        reconstructor will be automatically computed for it.
     """
-    def __init__(self, tn):
+    def __init__(self, tn, img2flatten=None):
         """The Constructor"""
+        self.flatCmd        = None
+        self.shape2flat     = self.load_image2shape(img2flatten) \
+                                           if img2flatten is not None else None
         self._tn            = tn
         self._path          = os.path.join(ifp.intMatFold, self._tn)
-        self._intMat        = self._loadIntMat()
+        self._intCube       = self._loadIntCube()
         self._cmdMat        = self._loadCmdMat()
-        self._rec           = crec.ComputeReconstructor(self._intMat)
+        self._rec           = crec.ComputeReconstructor(self._intCube)
         self._recMat        = None
         self._frameCenter   = None
-        self._shape2flat    = None # Immagine acquisita o fornita, come? 
         self._flatOffset    = None
         self._cavityOffset  = None
         self._synthFlat     = None
         self._flatResidue   = None
-        self._flatResult    = None
         self._flatteningModes = None
 
     def computeFlatCmd(self):
         """
-        routine which computes the command to apply to flatten the input shape.
+        Compute the command to apply to flatten the input shape.
 
         Returns
         -------
@@ -50,9 +79,9 @@ class Flattening:
             Flat command.
         """
         # Logica
-        cmd_amp = -np.dot(self._recMat.flatten(), self._shape2flat.compressed())
+        cmd_amp = -np.dot(self.shape2flat.compressed(), self._recMat)
         flat_cmd = np.dot(self._cmdMat, cmd_amp)
-        self._flatResult = flat_cmd
+        self.flatCmd = flat_cmd
         return flat_cmd
 
     def load_image2shape(self, img, compute_rec:bool=True):
@@ -67,7 +96,7 @@ class Flattening:
             Wether to direclty compute the reconstructor with the imput image or
             not. The default is True.
         """
-        self._shape2flat = img
+        self.shape2flat = img
         self._rec.loadShape2Flat(img)
         if compute_rec:
             print("Computing recontruction matrix...")
@@ -77,13 +106,13 @@ class Flattening:
         """
         Interaction cube loader
         """
-        cube = os.path.join(self._path, ifp.cubeFile)
         with open(os.path.join(self._path, ifp.flagFile), 'r', encoding='utf-8') as f:
             flag = f.read()
         if ' filtered ' in flag:
-            intCube = rd.read_phasemap(cube)
+            intCube = rd.read_phasemap(os.path.join(self._path, ifp.cubeFile))
         else:
-            intCube = ifp.filterZernikeCube(self._tn)
+            intCube, new_tn = ifp.filterZernikeCube(self._tn)
+            self.__update_tn(new_tn)
         return intCube
 
     def _loadCmdMat(self):
@@ -117,3 +146,15 @@ class Flattening:
         dp = ifp.findFrameOffset(self._tn,xxx)
         #cannot work. we should create a dedicated function, not necessarily linked to IFF or flattening
         return dp
+
+    def __update_tn(self,tn):
+        """
+        Updates the tn and cube path if the tn is to change
+
+        Parameters
+        ----------
+        tn : str
+            New tracking number.
+        """
+        self._tn = tn
+        self._path = os.path.join(ifp.intMatFold, self._tn)

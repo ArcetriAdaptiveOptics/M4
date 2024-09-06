@@ -186,6 +186,7 @@ class IFFCapturePreparation():
         mlist = mlist if mlist is not None else infoIF.get('modes')
         modesAmp = modesAmp if modesAmp is not None else infoIF.get('amplitude')
         template = template if template is not None else infoIF.get('template')
+        zeroScheme = infoIF['zeros']
         self._template = template
         self._createCmdMatrix(mlist)
         nModes = self._cmdMatrix.shape[1]
@@ -210,10 +211,10 @@ class IFFCapturePreparation():
             modesList = self._modesList
             self._indexingList = np.arange(0, len(modesList), 1)
         n_frame = len(self._modesList) * n_push_pull
-        cmd_matrixHistory = np.zeros((self._NActs, n_frame))
+        cmd_matrixHistory = np.zeros((self._NActs, n_frame+zeroScheme))
         for j in range(n_push_pull):
             for i in range(nModes):
-                k = cmd_matrix.shape[1]*j + i
+                k = zeroScheme + cmd_matrix.shape[1]*j + i
                 cmd_matrixHistory.T[k] = cmd_matrix[:,i]*template[j]*modesAmp[i]
         self.cmdMatHistory = cmd_matrixHistory
         return cmd_matrixHistory

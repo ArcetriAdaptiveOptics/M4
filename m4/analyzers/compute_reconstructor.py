@@ -49,7 +49,7 @@ class ComputeReconstructor:
         self._filtered_sv = None
         self._tn = None
 
-        if (self._cubeMask, self._imgMask)!=(None,None):
+        if isinstance(self._cubeMask,np.ndarray) and isinstance(self._imgMask,np.ndarray):
             self._setAnalysisMask()
         # if self._tn is not None:
         #     self._logger.info(
