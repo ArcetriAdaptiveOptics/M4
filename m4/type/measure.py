@@ -94,7 +94,7 @@ class SurfaceMeasure():
 
         return SurfaceMeasure(imas, overview, temperatures, zernikes)
 
-    @functools.cache()
+    @functools.lru_cache(maxsize=None)
     @staticmethod
     def load_temperatures(filepath):
         tfile = Path(filepath, 'temperature.fits')
@@ -104,7 +104,7 @@ class SurfaceMeasure():
         else:
             return None
 
-    @functools.cache()
+    @functools.lru_cache(maxsize=None)
     @staticmethod
     def load_zernikes(filepath):
         zfile = Path(filepath, 'zernike.fits')
