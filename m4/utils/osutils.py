@@ -15,10 +15,11 @@ from m4.ground import read_data as rd
 from m4.ground.timestamp import Timestamp
 from m4.configuration import update_folder_paths as ufp
 from m4.ground.read_4DConfSettingFile import ConfSettingReader
-from pathlib3x import Path
+from pathlib import Path
 fn = ufp.folders
 OPTDATA = fn.OPT_DATA_FOLDER
 OPDIMG = fn.OPD_IMAGES_ROOT_FOLDER
+
 
 class FileWalker(AbstractFileNameWalker):
 
@@ -67,8 +68,8 @@ class FileWalker(AbstractFileNameWalker):
 #        tn_list = tnRange(tn_start.asNowString(), tn_stop.asNowString())
 #        return sorted([tn for tn in tn_list if tn >= str(tn_start) and tn <= str(tn_stop)])
 
-def findTracknum(tn, complete_path:bool=False):
 
+def findTracknum(tn, complete_path: bool = False):
     """
     Search for the tracking number given in input within all the data path subfolders.
 
@@ -96,12 +97,12 @@ def findTracknum(tn, complete_path:bool=False):
             else:
                 tn_path.append(fold)
     path_list = sorted(tn_path)
-    if len(path_list)==1:
+    if len(path_list) == 1:
         path_list = path_list[0]
     return path_list
 
-def getFileList(tn=None, fold=None, key:str=None):
 
+def getFileList(tn=None, fold=None, key: str = None):
     """
     Search for files in a given tracking number or complete path, sorts them and
     puts them into a list.
@@ -164,7 +165,7 @@ def getFileList(tn=None, fold=None, key:str=None):
     ore after 'mode' to exclude the 'modesVector.fits' file from the list.
     """
     if tn is None and fold is not None:
-        fl = sorted([os.path.join(fold, file) \
+        fl = sorted([os.path.join(fold, file)
                      for file in os.listdir(fold)])
     else:
         try:
@@ -173,16 +174,17 @@ def getFileList(tn=None, fold=None, key:str=None):
                 paths = [paths]
             for path in paths:
                 if fold is None:
-                    fl = []                        
-                    fl.append(sorted([os.path.join(path, file) \
-                                             for file in os.listdir(path)]))
+                    fl = []
+                    fl.append(sorted([os.path.join(path, file)
+                                      for file in os.listdir(path)]))
                 elif fold in path.split('/')[-2]:
-                    fl = sorted([os.path.join(path, file) \
-                                             for file in os.listdir(path)])
+                    fl = sorted([os.path.join(path, file)
+                                 for file in os.listdir(path)])
                 else:
                     raise Exception
         except Exception as exc:
-            raise FileNotFoundError(f"Invalid Path: no data found for tn '{tn}'") from exc
+            raise FileNotFoundError(
+                f"Invalid Path: no data found for tn '{tn}'") from exc
     if key is not None:
         try:
             selected_list = []
@@ -192,9 +194,10 @@ def getFileList(tn=None, fold=None, key:str=None):
         except TypeError as err:
             raise TypeError("'key' argument must be a string") from err
         fl = selected_list
-    if len(fl)==1:
+    if len(fl) == 1:
         fl = fl[0]
     return fl
+
 
 def tnRange(tn0, tn1):
     """
@@ -244,6 +247,7 @@ def tnRange(tn0, tn1):
                              for tn in tn_folds[id0:id1+1]])
     return tnMat
 
+
 def rename4D(folder):
     """
     Renames the produced 'x.4D' files into '0000x.4D'
@@ -264,6 +268,7 @@ def rename4D(folder):
                 old_file = os.path.join(fold, file)
                 new_file = os.path.join(fold, new_name)
                 os.rename(old_file, new_file)
+
 
 def getCameraSettings(tn):
     """
@@ -315,6 +320,7 @@ def getConf4DSettingsPath(tn):
     """
     path = getFileList(tn, key='4DSetting')
     return path
+
 
 def createCube(filelist, register=False):
     """

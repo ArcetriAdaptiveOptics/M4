@@ -5,7 +5,7 @@ Authors
 import unittest
 import os
 from m4.utils.osutils import FileWalker
-from pathlib3x import Path
+from pathlib import Path
 import tempfile
 import shutil
 

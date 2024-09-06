@@ -101,7 +101,6 @@ setup(name=NAME,
                         "pandas",
                         "playsound==1.2.2",
                         "jdcal",
-                        "pathlib3x",
                         "matplotlib"
                         ],
       package_data={
