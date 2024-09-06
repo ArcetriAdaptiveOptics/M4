@@ -44,9 +44,14 @@ class testFileWalker(unittest.TestCase):
 
         print("test find tracknum file 20241226_020000.fits")
         # print("Found tracknum %s" % fw.findTracknum('20241226_020000'))
-        self.assertEqual(fw.findTracknum(
-            '20241226_020000')[0], Path(Path(self.tmp_path, '20241226_000000'),
-                                        '20241226_020000.fits'))
+        try:
+            trovato = fw.findTracknum('20241226_020000')[0]
+        except Exception as e:
+            print("Exception: ", e)
+            # trovato = "pippo"
+
+        self.assertEqual(trovato, Path(
+            Path(self.tmp_path, '20241226_000000'), '20241226_020000.fits'))
 
     def testFindTagsBetweenDates(self):
         fw = FileWalker(self.tmp_path)

@@ -55,7 +55,8 @@ class FileWalker(AbstractFileNameWalker):
         if isinstance(tn_stop, Timestamp):
             tn_stop = tn_stop.asNowString()
         tn_path = []
-        for root, dirs, files in Path(self._data_root_dir).walk(on_error=print):
+        # for root, dirs, files in Path(self._data_root_dir).walk(on_error=print):
+        for root, dirs, files in os.walk(self._data_root_dir):
             found_tn_dirs = list(
                 filter(lambda l: tn_stop >= l, filter(lambda l: tn_start <= l, dirs)))
             found_tn_files = list(
