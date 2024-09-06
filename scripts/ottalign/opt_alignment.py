@@ -19,7 +19,8 @@ dof = {
        }
 
 class AlignmentCalibration():
-
+    """
+    """
     def __init__(self):
         """The Constructor"""
 
@@ -97,7 +98,8 @@ class AlignmentCalibration():
         """
 
 class AlignmentCorrection():
-
+    """
+    """
     def __init__(self):
         """The Constructor"""
 
