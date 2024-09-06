@@ -4,7 +4,7 @@ Created on 19 mag 2021
 @author: lbusoni
 '''
 import os
-import pathlib3x as pathlib
+import pathlib
 import tempfile
 
 
