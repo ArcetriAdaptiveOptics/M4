@@ -69,7 +69,7 @@ class Flattening:
         self._flatResidue   = None
         self._flatteningModes = None
 
-    def computeFlatCmd(self):
+    def computeFlatCmd(self, n_modes):
         """
         Compute the command to apply to flatten the input shape.
 
@@ -78,13 +78,19 @@ class Flattening:
         flat_cmd : ndarray
             Flat command.
         """
-        # Logica
         cmd_amp = -np.dot(self.shape2flat.compressed(), self._recMat)
-        flat_cmd = np.dot(self._cmdMat, cmd_amp)
-        self.flatCmd = flat_cmd
+        _cmd = np.dot(self._cmdMat, cmd_amp)
         #qui impacchettare il flat cmd:
-        #cmdMat2use = flatclass._cmdMat[:,0:nmodes]....
-        #command = cmdmat2use @ flatcmd
+        if isinstance(n_modes, int):
+            flat_cmd = self._cmdMat[:,n_modes] @ _cmd
+        elif isinstance(n_modes, list):
+            _cmdMat = np.zeros((self._cmdMat.shape[1], len(n_modes)))
+            for i,mode in enumerate(n_modes):
+                _cmdMat.T[i] = self._cmdMat.T[mode]
+            flat_cmd = _cmdMat @ _cmd
+        else:
+            raise TypeError("n_modes must be either an int or a list of int")
+        self.flatCmd = flat_cmd
         return flat_cmd
 
     def load_image2shape(self, img, compute_rec:bool=True):
