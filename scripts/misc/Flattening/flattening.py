@@ -60,7 +60,7 @@ class Flattening:
         self._path          = os.path.join(ifp.intMatFold, self._tn)
         self._intCube       = self._loadIntCube()
         self._cmdMat        = self._loadCmdMat()
-        self._rec           = crec.ComputeReconstructor(self._intCube)
+        self._rec           = self._loadReconstructor(self._intCube)
         self._recMat        = None
         self._frameCenter   = None
         self._flatOffset    = None
@@ -69,7 +69,7 @@ class Flattening:
         self._flatResidue   = None
         self._flatteningModes = None
 
-    def computeFlatCmd(self):
+    def computeFlatCmd(self, n_modes):
         """
         Compute the command to apply to flatten the input shape.
 
@@ -78,9 +78,18 @@ class Flattening:
         flat_cmd : ndarray
             Flat command.
         """
-        # Logica
         cmd_amp = -np.dot(self.shape2flat.compressed(), self._recMat)
-        flat_cmd = np.dot(self._cmdMat, cmd_amp)
+        _cmd = np.dot(self._cmdMat, cmd_amp)
+        #qui impacchettare il flat cmd:
+        if isinstance(n_modes, int):
+            flat_cmd = self._cmdMat[:,n_modes] @ _cmd
+        elif isinstance(n_modes, list):
+            _cmdMat = np.zeros((self._cmdMat.shape[1], len(n_modes)))
+            for i,mode in enumerate(n_modes):
+                _cmdMat.T[i] = self._cmdMat.T[mode]
+            flat_cmd = _cmdMat @ _cmd
+        else:
+            raise TypeError("n_modes must be either an int or a list of int")
         self.flatCmd = flat_cmd
         return flat_cmd
 
@@ -102,16 +111,48 @@ class Flattening:
             print("Computing recontruction matrix...")
             self._recMat = self._rec.run()
 
-    def _loadIntCube(self):
+    def reload_intCube(self, tn, zernModes:list=None):
+        """
+        Reload function for the interaction cube
+
+        Parameters
+        ----------
+        tn : str
+            Tracking number of the new data.
+        zernModes : list, optional
+            Zernike modes to filter out this cube (if it's not already filtered).
+            Default modes are [1,2,3] -> piston/tip/tilt.
+        """
+        self._intCube = self._loadIntCube(tn, zernModes)
+        self._cmdMat  = self._loadCmdMat()
+        self._rec     = self._loadReconstructor(self._intCube)
+        if self.shape2flat is not None:
+            self._recMat = self._rec.run()
+
+    def _loadIntCube(self, zernModes:list=None):
         """
         Interaction cube loader
+        
+        Parameters
+        ----------
+        zernModes : list
+            Zernike modes to filter out this cube (if it's not already filtered).
+            Default modes are [1,2,3] -> piston/tip/tilt.
+        
+        Return
+        ------
+        intCube : ndarray
+            The interaction cube data array.
         """
         with open(os.path.join(self._path, ifp.flagFile), 'r', encoding='utf-8') as f:
             flag = f.read()
         if ' filtered ' in flag:
             intCube = rd.read_phasemap(os.path.join(self._path, ifp.cubeFile))
         else:
-            intCube, new_tn = ifp.filterZernikeCube(self._tn)
+            if zernModes is not None:
+                intCube, new_tn = ifp.filterZernikeCube(self._tn, zernModes)
+            else:
+                intCube, new_tn = ifp.filterZernikeCube(self._tn)
             self.__update_tn(new_tn)
         return intCube
 
@@ -127,6 +168,23 @@ class Flattening:
         """
         cmdMat = rd.readFits_data(os.path.join(self._path, ifp.cmdMatFile))
         return cmdMat
+
+    def _loadReconstructor(self, intCube):
+        """
+        Builds the reconstructor object off the input cube
+
+        Parameters
+        ----------
+        intCube : ndarray
+            Interaction cube data array.
+
+        Returns
+        -------
+        rec : object
+            Reconstructor class.
+        """
+        rec = crec.ComputeReconstructor(self._intCube)
+        return rec
 
     def _loadFrameCenter(self):
         """
