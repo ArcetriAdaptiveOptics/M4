@@ -46,7 +46,7 @@ class AlignmentCalibration():
 
         """
 
-    def create_interaction_matrix(self, cmdMat, zernValues, cmdAmp):
+    def create_Cmatrix(self, cmdMat, zernValues, cmdAmp):
         """
 
 
@@ -100,8 +100,9 @@ class AlignmentCalibration():
 class AlignmentCorrection():
     """
     """
-    def __init__(self):
+    def __init__(self, ott):
         """The Constructor"""
+        self.ott = ott
 
     def apply_command(self, fullCmd):
         """
@@ -113,6 +114,23 @@ class AlignmentCorrection():
             DESCRIPTION.
 
         """
+        # iterare per tutti i comandi della matrice? No, non ha senso (?)
+        par_cmd = self._get_par_cmd(fullCmd)
+        rm_cmd  = self._get_rm_cmd(fullCmd)
+        m4_cmd  = self._get_m4_cmd(fullCmd)
+        cmd = [par_cmd, rm_cmd, m4_cmd]
+        dev = [self.ott.parabola, self.ott.referenceMirror, self.ott.dm] #provvisional
+        for command,device in zip(cmd,dev):
+            if np.sum(device) != 0.:
+                device.setPosition(command)
+            else:
+                print(f"Null command for {device}: skipping...")
+        text = f"""
+Parabola position : {dev[0].getPosition()}
+Reference Mirror position : {dev[1].getPosition()}
+M4 position : {dev[2].getPosition()}
+"""
+        print(text)
 
     def command_creation(self, redCmdVect, dof):
         """
@@ -131,6 +149,51 @@ class AlignmentCorrection():
             DESCRIPTION.
 
         """
+
+    def _get_par_cmd(self, cmd_vect):
+        """
+        Extract the parabola command out the full command vector.
+
+        Parameters
+        ----------
+        cmd_vect : ndarray
+            Full command vector.
+        """
+        rm = cmd_vect[3:5]
+        rm_cmd = np.zeros(6)
+        for i,idx in enumerate(rm):
+            rm_cmd[dof['Rm'][i]] = idx
+        return rm_cmd
+
+    def _get_rm_cmd(self, cmd_vect):
+        """
+        Extract the parabola command out the full command vector.
+
+        Parameters
+        ----------
+        cmd_vect : ndarray
+            Full command vector.
+        """
+        m4 = cmd_vect[5:]
+        m4_cmd = np.zeros(6)
+        for i,idx in enumerate(m4):
+            m4_cmd[dof['M4'][i]] = idx
+        return m4_cmd
+
+    def _get_m4_cmd(self, cmd_vect):
+        """
+        Extract the parabola command out the full command vector.
+
+        Parameters
+        ----------
+        cmd_vect : ndarray
+            Full command vector.
+        """
+        par = cmd_vect[:3]
+        par_cmd = np.zeros(6)
+        for i,idx in enumerate(par):
+            par_cmd[dof['Parabola'][i]] = idx
+        return par_cmd
 
     def _get_reduced_cmd_vector(self, zernVect, recMat):
         """
