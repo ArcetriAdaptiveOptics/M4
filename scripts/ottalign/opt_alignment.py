@@ -10,7 +10,7 @@ How to Use it
 """
 import os
 import numpy as np
-from script.ottalign import m4_alignment_configuration as mac # to change
+from scripts.ottalign import _m4ac as mac # to change
 from m4.ground import zernike as zern, read_data as rd
 
 class AlignmentCorrection():
@@ -18,7 +18,8 @@ class AlignmentCorrection():
     """
     def __init__(self):
         """The Constructor"""
-        self.ott        = [mac.ottpar, mac.ottrm, mac.ottm4]
+        self.ott        = mac.tower
+        self._devName   = mac.names
         self.dof        = mac.dof
         self.dof_tot    = mac.cmdDof
         self.idx        = mac.slices
@@ -34,9 +35,15 @@ class AlignmentCorrection():
 
         """
         device_commands = self._extract_cmd(fullCmd)
-        for cmd,dev in zip(device_commands,self.ott):
+        for cmd,fnc,dev in zip(device_commands,self.ott,self._devName):
             if np.sum(cmd)!=0.:
-                dev(cmd)
+                try:
+                    print(f"Commanding {cmd} to {dev}")
+                    fnc(cmd)
+                except Exception as e:
+                    print(f"Qualcosa non va con {dev}:\n", e)
+            else:
+                print(f'skipping null command for {dev}')
 
 
     def command_creation(self, redCmdVect, dof):
