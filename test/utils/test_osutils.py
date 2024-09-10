@@ -48,6 +48,7 @@ class testFileWalker(unittest.TestCase):
             trovato = fw.findTracknum('20241226_020000')[0]
         except Exception as e:
             print("Exception: ", e)
+            raise e
             # trovato = "pippo"
 
         self.assertEqual(trovato, Path(
@@ -65,8 +66,11 @@ class testFileWalker(unittest.TestCase):
              Path(self.tmp_path, '20241227_000000')])
 
     def tearDown(self):
-        print("Cleaning temporary tree")
-        shutil.rmtree(self.tmp_path)
+        try:
+            print("Cleaning temporary tree")
+            shutil.rmtree(self.tmp_path)
+        except Exception as e:
+            print("Exception: ", e)
         pass
 
 
