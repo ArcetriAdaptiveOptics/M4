@@ -18,7 +18,7 @@ Check the 'opt_alignment.py' library to see how it's used
 """Necessary imports and object creation"""
 import numpy as np
 from m4.configuration.start import create_ott
-ott,_,_ = create_ott()
+ott,interf,_ = create_ott()
 #_____________________________________________________________________________#
 """
 Mechanical motors - available degrees of freedom
@@ -39,8 +39,9 @@ second device in the full command vector and so on..."""
 tower = [
         ott.parabola.setPosition,
         ott.referenceMirror.setPosition,
-        ott.m4Exapode.setPosition
-    ]
+        ott.m4Exapode.setPosition,
+        interf.acquire_phasemap
+        ]
 """
 Names of the devices, for print fancyness. Ordered as usual.
 """

@@ -34,7 +34,7 @@ class ComputeReconstructor:
         where the interaction_matrix_cube is a masked_array dstack of
         shape [pixels, pixels, n_images]
     """
-    def __init__(self, interaction_matrix_cube=None, mask2intersect=None):
+    def __init__(self, interaction_matrix_cube, mask2intersect=None):
         """The constructor"""
         self._logger = logging.getLogger("COMPUTE_REC:")
         self._intMatCube = interaction_matrix_cube
@@ -141,22 +141,6 @@ class ComputeReconstructor:
             self._intMatCube = rd.read_phasemap(cube_path)
         else: raise KeyError("No cube or tracking number was provided.")
 
-    # @staticmethod
-    # def loadIntMatFromFolder(tn):
-    #     """
-    #     Creates the object using saved information about path measurements
-    #     """
-    #     # load cube from file
-    #     try:
-    #         intmat_fullpath = os.path.join(
-    #             os.path.join(intMatFold, tn), "IMCube.fits")
-    #         hdu = pyfits.open(intmat_fullpath)
-    #         _intMatCube = hdu[0].data
-    #         hdu.close()
-    #     except Exception as e:
-    #         raise e
-    #     return ComputeReconstructor(interation_matrix_cube=_intMatCube, tn=tn)
-
     def _computeIntMat(self):
         """
         Subroutine which computes the interaction matrix and stores it in a 
@@ -186,8 +170,7 @@ class ComputeReconstructor:
         try:
             analysisMask = np.logical_or(self._cubeMask, self._imgMask)
         except self._imgMask is None:
-            print("Lack of image mask. No analysis mask has been set")
-            analysisMask = None
+            raise ValueError("Lack of image mask. Can't compute the interaction matrix")
         self._analysisMask = analysisMask
 
     def _mask2intersect(self, img_or_mask):

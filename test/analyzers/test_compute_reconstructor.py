@@ -37,9 +37,16 @@ class TestComputeReconstructor(unittest.TestCase):
                 np.ma.masked_array(random_matrix, mask=mask))
         # self._intMatCube = np.array(self._intMatCube)
         self._intMatCube = np.ma.dstack(self._intMatCube)
+        xi, yi =  np.meshgrid(np.arange(100)-50+3*np.random.random(),
+                           np.arange(100)-50+3*np.random.random())
+        maski = mask = (x**2 + y**2) > 30**2
+        self._shape2flat = np.ma.MaskedArray((xi**2+yi**2), mask=maski)
 
     def test_compute_reconstructor(self):
         self._cr = ComputeReconstructor(self._intMatCube)
+        _ = self._cr.run(Interactive=False)
+
+        self._cr = ComputeReconstructor(self._intMatCube, mask2intersect=self._shape2flat)
         _ = self._cr.run(Interactive=False)
 
         self._cr = ComputeReconstructor(self._intMatCube)

@@ -10,6 +10,7 @@ How to Use it
 """
 import os
 import numpy as np
+from matplotlib import pyplot as plt
 from scripts.ottalign import _m4ac as mac # to change
 from m4.ground import zernike as zern, read_data as rd
 
@@ -24,7 +25,7 @@ class AlignmentCorrection():
         self.dof_tot    = mac.cmdDof
         self.idx        = mac.slices
 
-    def apply_command(self, fullCmd):
+    def apply_command(self, fullCmd, show=False):
         """
 
 
@@ -44,7 +45,8 @@ class AlignmentCorrection():
                     print(f"Qualcosa non va con {dev}:\n", e)
             else:
                 print(f'skipping null command for {dev}')
-
+        if show:
+            plt.imshow(self.ott[3]())
 
     def command_creation(self, redCmdVect, dof):
         """
