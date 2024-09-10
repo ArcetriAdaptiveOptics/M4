@@ -44,6 +44,7 @@ class TestComputeReconstructor(unittest.TestCase):
 
     def test_compute_reconstructor(self):
         self._cr = ComputeReconstructor(self._intMatCube)
+        self._cr.loadShape2Flat(self._shape2flat)
         _ = self._cr.run(Interactive=False)
 
         self._cr = ComputeReconstructor(self._intMatCube, mask2intersect=self._shape2flat)

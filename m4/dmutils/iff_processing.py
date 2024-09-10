@@ -306,7 +306,7 @@ def pushPullRedux(fileVec, template, shuffle=0):
                 else:
                     master_mask = np.na.mask_or(master_mask, master_mask2add)
                 image += opd2add
-    image = np.ma.masked_array(image, mask=master_mask)/ (template.shape[0]-1)
+    image = np.ma.masked_array(image, mask=master_mask) / (template.shape[0]-1)#!!!
     return image
 
 def registrationRedux(fileMat, template=None):

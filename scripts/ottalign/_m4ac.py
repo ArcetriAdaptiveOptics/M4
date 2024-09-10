@@ -14,11 +14,7 @@ How to Use it
 -------------
 Check the 'opt_alignment.py' library to see how it's used
 """
-#_____________________________________________________________________________#
-"""Necessary imports and object creation"""
 import numpy as np
-from m4.configuration.start import create_ott
-ott,interf,_ = create_ott()
 #_____________________________________________________________________________#
 """
 Mechanical motors - available degrees of freedom
@@ -36,18 +32,21 @@ slices = [slice(0,3), slice(3,5), slice(5,7)]
 This variable should be a list of ordered functions, i.e the first function 
 commands the first device in full command vector, the second one controls the
 second device in the full command vector and so on..."""
-tower = [
-        ott.parabola.setPosition,
-        ott.referenceMirror.setPosition,
-        ott.m4Exapode.setPosition,
-        interf.acquire_phasemap
-        ]
+
+dev_calls = [
+    'parabola.setPosition',
+    'referenceMirror.setPosition',
+    'm4Exapode.setPosition'
+         ]
+ccd_calls = [
+    'acquire_phasemap'
+    ]
 """
 Names of the devices, for print fancyness. Ordered as usual.
 """
 names = [
-        'Parabola',
-        'Reference Mirror',
-        'M4 Exapode'
+    'Parabola',
+    'Reference Mirror',
+    'M4 Exapode'
     ]
 #_____________________________________________________________________________#

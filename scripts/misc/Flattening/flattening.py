@@ -82,7 +82,7 @@ class Flattening:
         _cmd = np.dot(self._cmdMat, cmd_amp)
         #qui impacchettare il flat cmd:
         if isinstance(n_modes, int):
-            flat_cmd = self._cmdMat[:,n_modes] @ _cmd
+            flat_cmd = self._cmdMat[:,:n_modes] @ _cmd
         elif isinstance(n_modes, list):
             _cmdMat = np.zeros((self._cmdMat.shape[1], len(n_modes)))
             for i,mode in enumerate(n_modes):
