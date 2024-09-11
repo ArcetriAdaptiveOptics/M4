@@ -33,14 +33,22 @@ This variable should be a list of ordered functions, i.e the first function
 commands the first device in full command vector, the second one controls the
 second device in the full command vector and so on..."""
 
-dev_calls = [
+devices_move_calls = [
     'parabola.setPosition',
     'referenceMirror.setPosition',
     'm4Exapode.setPosition'
          ]
-ccd_calls = [
+devices_read_calls = [
+    'parabola.getPosition',
+    'referenceMirror.getPosition',
+    'm4Exapode.getPosition'
+    ]
+
+"""Function for the image acquisitiong through the system ccd/interferometer"""
+ccd_acquisition = [
     'acquire_phasemap'
     ]
+
 """
 Names of the devices, for print fancyness. Ordered as usual.
 """
