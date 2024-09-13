@@ -26,6 +26,19 @@ class AlignmentCorrection():
         self._dof       = mac.dof
         self._dofTot    = mac.cmdDof
         self._idx       = mac.slices
+        self._zvec2fit  = np.arange(1,11)
+        self._zvec2use  = [1,2,3,6,7]
+        
+
+    def zern_calculator(imglist):
+        coefflist = []
+        for i in imglist:
+            if self._auxmask is None:
+                coeff, _ = zern.zernikeFit(i, zvec2fit)
+            else:
+                coeff, _ = zern.zernikeFitAuxmask(i, auxmask, zvec2fit)
+            coefflist.append(coeff[self._zvec2use])
+            return np.array(coefflist)  #intmat
 
     def apply_command(self, fullCmd):
         """
