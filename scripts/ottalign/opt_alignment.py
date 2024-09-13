@@ -39,12 +39,12 @@ class AlignmentCorrection():
         """
         device_commands = self.cmds_to_apply(fullCmd)
         for cmd,fnc,dev in zip(device_commands,self._moveFnc,self._devName):
-            if np.array_equal(cmd, np.zeros(6)):
+            if cmd.to_ignore:#if np.array_equal(cmd, np.zeros(6)):
                 print(f'skipping null command for {dev}')
             else:
                 try:
                     print(f"Commanding {cmd} to {dev}")
-                    fnc(cmd)
+                    fnc(cmd.vect)
                 except Exception as e:
                     print(f"Someting went wrong with {dev}:\n", e)
         print('-'*30)
@@ -68,7 +68,11 @@ class AlignmentCorrection():
         positions= self.read_positions()
         device_commands = []
         for pos,cmd in zip(positions, commands):
-            device_commands.append(self.__check_cmds(pos, cmd))
+            res_cmd = pos+cmd #
+            if np.array_equal(res_cmd.vect, pos.vect): #
+                res_cmd.is_reset=False #
+            device_commands.append(res_cmd) #
+            # device_commands.append(self.__check_cmds(pos, cmd))
         return device_commands
 
     def read_positions(self):
@@ -85,7 +89,7 @@ class AlignmentCorrection():
         print("Current Positions")
         for fnc,dev_name in zip(self._readFnc, self._devName):
             temp = fnc()
-            pos.append(temp)
+            pos.append(_Command(temp))
             print(f"{dev_name}"+' '*(16-len(dev_name))+f" : {temp}")
         print('-'*30)#!!!
         return pos
@@ -108,21 +112,21 @@ class AlignmentCorrection():
             dev_idx = fullCmd[self._idx[d]]
             for i,idx in enumerate(dev_idx):
                 dev_cmd[dof[i]] = idx
-            commands.append(dev_cmd)
+            commands.append(_Command(dev_cmd))
         return commands
 
-    def __check_cmds(self, pos, cmd):
-        null_cmd = np.zeros(6)
-        check = np.array_equal(cmd, null_cmd)
-        if check:
-            device_command = null_cmd
-        else:
-            if np.array_equal(pos+cmd, null_cmd):
-                device_command = pos + cmd
-                device_command[0] += np.finfo(float).eps
-            else:
-                device_command = pos+cmd
-        return device_command
+    # def __check_cmds(self, pos, cmd):
+        # null_cmd = np.zeros(6)
+        # check = np.array_equal(cmd, null_cmd)
+        # if check:
+        #     device_command = null_cmd
+        # else:
+        #     if np.array_equal(pos+cmd, null_cmd):
+        #         device_command = pos + cmd
+        #         device_command[0] += np.finfo(float).eps
+        #     else:
+        #         device_command = pos+cmd
+        # return device_command
 
     @staticmethod
     def _get_callables(device, callables):
@@ -235,12 +239,11 @@ class _Command:
     def __add__(self, other):
         if not isinstance(other, _Command):
             return NotImplemented
-        elif not isinstance(self.vect, np.ndarray) and isinstance(other, np.ndarray):
+        elif not isinstance(self.vect, np.ndarray) and not isinstance(other.vect, np.ndarray):
             raise NotImplementedError(f"Operation not supported for operands types {type(self.vect)} and {type(other)}")
         else:
             combined_vect = self.vect + other.vect
-        if np.all(combined_vect==0):
-            is_reset = True
+        is_reset = True if np.all(combined_vect==0) else False
         return _Command(combined_vect, is_reset)
     
     @property
@@ -256,13 +259,7 @@ class _Command:
         """
         Determins whether the command is null, i.e a sequence of zeros.
         """
-        if isinstance(self.vect, np.ndarray):
-            return np.all(self.vect == 0)
-        elif isinstance(self.vect, list):
-            return all(x == 0 for x in self.vect)
-        elif isinstance(self.vect, dict):
-            return all(value == 0 for value in self.vect.values())
-        return False
+        return np.all(self.vect == 0)
 
     def update(self, vector, is_reset=None):
         """
