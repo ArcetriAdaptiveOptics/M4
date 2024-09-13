@@ -32,7 +32,6 @@ slices = [slice(0,3), slice(3,5), slice(5,7)]
 This variable should be a list of ordered functions, i.e the first function 
 commands the first device in full command vector, the second one controls the
 second device in the full command vector and so on..."""
-
 devices_move_calls = [
     'parabola.setPosition',
     'referenceMirror.setPosition',
@@ -43,12 +42,6 @@ devices_read_calls = [
     'referenceMirror.getPosition',
     'm4Exapode.getPosition'
     ]
-
-"""Function for the image acquisitiong through the system ccd/interferometer"""
-ccd_acquisition = [
-    'acquire_phasemap'
-    ]
-
 """
 Names of the devices, for print fancyness. Ordered as usual.
 """
@@ -57,4 +50,12 @@ names = [
     'Reference Mirror',
     'M4 Exapode'
     ]
+"""Function for the image acquisitiong through the system ccd/interferometer"""
+ccd_acquisition = [
+    'acquire_phasemap'
+    ]
+base_read_data_path = '/home/pietrof/git/M4/m4/data/M4Data/OPTData/AlignmentCalibration'
+base_write_data_path= '/home/pietrof/git/M4/m4/data/M4Data/OPTData/AlignmentCalibration'
+
+calibrated_parabola = ''
 #_____________________________________________________________________________#
