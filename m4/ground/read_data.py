@@ -53,18 +53,25 @@ def save_phasemap(filename, masked_image, overwrite:bool=False):
     pyfits.writeto(filename, masked_image.data, overwrite=overwrite)
     pyfits.append(filename, masked_image.mask.astype(np.uint8))
 
+def saveFits_data(filename, data, header=None, overwrite:bool=False):
+    """
+    Complete function for saving simple fits data
+    """
+    pyfits.writeto(filename, data, header, overwrite=overwrite)
+
 ### Generiche
 def readFits_data(fits_file_path):
-    '''
+    """
     Parameters
     ----------
-    fits_file_path: string
-                    fits file path of numpy array to read
+    fits_file_path: str
+        Complete filepath of the fits file to load.
 
     Returns
     -------
-            object: numpy array
-    '''
+    object : ndarray
+        The read data.
+    """
     hduList = pyfits.open(fits_file_path)
     obj = hduList[0].data
     hduList.close()
@@ -104,7 +111,6 @@ def readFitsSlimImage(fits_file_path):
     hduList.close()
     return immagine
 ###
-
 
 def readTypeFromFitsName(amplitude_fits_file_name,
                          mode_vector_fits_file_name,
