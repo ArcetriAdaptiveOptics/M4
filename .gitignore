@@ -1,4 +1,4 @@
-
+m4/data/
 sandbox
 
 
@@ -135,3 +135,5 @@ dmypy.json
 /howto.txt
 /todo.txt
 m4/configuration/myConfig.yaml
+m4/data/M4Data/OPTData/IFFunctions/20160516_114916/ampVector.fits
+.gitignore

@@ -4,6 +4,8 @@ Author(s):
 
 Description
 -----------
+This module provides the `Alignment` class and related functions for performing
+alignment procedures, including calibration and correction. 
 
 How to Use it
 -------------
@@ -151,7 +153,8 @@ class Alignment():
         Parameters
         ----------
         fullCmd : list or ndarray
-            Full command of the interaction matrix which commands all device's available motors.
+            Full command of the interaction matrix which commands all device's 
+            available motors.
 
         Returns
         -------
@@ -301,7 +304,8 @@ class Alignment():
     @staticmethod
     def _get_callables(device, callables):
         """
-        Returns a list of callables for the instanced object, taken from the configuration .py file.
+        Returns a list of callables for the instanced object, taken from the 
+        configuration.py file.
 
         Parameters
         ----------
@@ -326,8 +330,9 @@ class Alignment():
 
 class _Command:
     """
-    The _Command class represents a command with a vector and a reset flag. It provides methods for updating the command, 
-    checking if it is null, and combining it with other commands.
+    The _Command class represents a command with a vector and a reset flag. It 
+    provides methods for updating the command, checking if it is null, and 
+    combining it with other commands.
     Attributes:
         vect (np.ndarray): The vector representing the command.
         is_reset (bool): A flag indicating whether the command is a reset command.
@@ -343,11 +348,13 @@ class _Command:
         is_null():
             Determines whether the command is null, i.e., a sequence of zeros.
         to_ignore():
-            Returns True if the command is flagged to be ignored, False if it is null but should not be ignored.
+            Returns True if the command is flagged to be ignored, False if it 
+            is null but should not be ignored.
         to_ignore(value: bool):
             Setter for the 'to_ignore' property.
         update(vector, is_reset=None):
-            Recycles the class to reuse the instance, updating its vector and reset flag.
+            Recycles the class to reuse the instance, updating its vector and 
+            reset flag.
     """
     def __init__(self, vector=None, to_ignore: bool = None):
         """
@@ -356,7 +363,8 @@ class _Command:
         Parameters
         ----------
         vector : list or np.ndarray, optional
-            The vector representing the command. If a list is provided, it will be converted to a numpy array.
+            The vector representing the command. If a list is provided, it will
+            be converted to a numpy array.
         to_ignore : bool, optional
             A flag indicating whether the command should be ignored.
         """
@@ -400,7 +408,8 @@ class _Command:
         Returns
         -------
         _Command
-            A new _Command instance with the combined vector and updated to_ignore flag.
+            A new _Command instance with the combined vector and updated 
+            'to_ignore 'flag.
     
         Raises
         ------
@@ -448,7 +457,7 @@ class _Command:
         # If S = 0
         if np.all(S == 0):
             # C ≠ 0 and P ≠ 0 → TO_NOT_IGNORE
-            if not P.is_null and not C.is_null and np.array_equal(C.vect, -1 * P.vect):
+            if not P.is_null and not C.is_null and np.array_equal(C.vect,-1*P.vect):
                 decision = False
             # C = 0 and P = 0 → TO_IGNORE
             elif C.is_null and P.is_null:
@@ -456,12 +465,12 @@ class _Command:
         # If S ≠ 0
         else:
             # P ≠ 0 and C = 0 → TO_IGNORE
-            if not P.is_null and C.is_null and np.array_equal(S, P.vect):
+            if not P.is_null and C.is_null and np.array_equal(S,P.vect):
                 decision = True
             # C ≠ 0 and P ≠ 0 → TO_NOT_IGNORE
             elif not C.is_null and not P.is_null:
                 decision = False
             # P = 0 and C ≠ 0 → TO_NOT_IGNORE
-            elif P.is_null and not C.is_null and np.array_equal(S, C.vect):
+            elif P.is_null and not C.is_null and np.array_equal(S,C.vect):
                 decision = False
         return decision
