@@ -2,13 +2,11 @@
 Authors
   - C. Selmi:  written in 2022
 """
-
 import mock
 import numpy as np
 from m4.analyzers.compute_reconstructor import ComputeReconstructor
 import random
 import unittest
-
 
 class fake_hdu():
 
@@ -20,7 +18,6 @@ class fake_hdu():
 
     def close(self):
         pass
-
 
 class TestComputeReconstructor(unittest.TestCase):
 

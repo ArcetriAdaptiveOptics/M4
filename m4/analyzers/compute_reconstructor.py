@@ -51,18 +51,6 @@ class ComputeReconstructor:
 
         if isinstance(self._cubeMask,np.ndarray) and isinstance(self._imgMask,np.ndarray):
             self._setAnalysisMask()
-        # if self._tn is not None:
-        #     self._logger.info(
-        #         "Loaded interaction matrix from TN  %s", self._tn)
-        # if self._intMatCube is not None:
-        #     analysis_mask = self._intMatCube[:, :, 0].mask
-        #     # compute logical "or" mask of all the images in the cube
-        #     for i in range(1, self._intMatCube.shape[2]):
-        #         analysis_mask = np.logical_or(
-        #             analysis_mask, self._intMatCube[:, :, i].mask)
-        #     self.setAnalysisMask(analysis_mask)
-        # else:
-        #     self.analysisMask = None
 
     def run(self, Interactive=False, sv_threshold=None):
         """
