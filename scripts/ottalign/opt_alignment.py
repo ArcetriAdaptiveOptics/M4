@@ -12,6 +12,7 @@ How to Use it
 """
 import logging
 import numpy as np
+from astropy.io import fits
 from scripts.ottalign import _m4ac as mac # to change
 from m4.ground import zernike as zern, read_data as rd
 
@@ -32,7 +33,7 @@ class Alignment():
         """
         self.ott        = mechanical_devices
         self.ccd        = acquisition_devices
-        self.cmdMat     = rd.readFits_data('/home/pietrof/git/M4/scripts/ottalign/cmdMat.fits') #temporary
+        self.cmdMat     = _read_data('/home/pietrof/git/M4/scripts/ottalign/cmdMat.fits') #temporary
         self.intMat     = None
         self._moveFnc   = self._get_callables(self.ott, mac.devices_move_calls)
         self._readFnc   = self._get_callables(self.ott, mac.devices_read_calls)
@@ -52,7 +53,7 @@ class Alignment():
                                       level=logging.DEBUG,
                                       format='%(asctime)s - %(levelname)s - %(message)s')
 
-    def correct_alignment(self):
+    def correct_alignment(self, modes2correct, zern2correct, n_frames:int=15):
         """
         Corrects the alignment based on the current settings.
 
@@ -60,7 +61,20 @@ class Alignment():
         -------
         None
         """
-        return
+        image = self._acquire[0](n_frames)
+        zernike_coeff = self._zern_routine(image)
+        intMat = _read_data(self._readPath+'/intMat.fits')
+        reduced_intMat = intMat[:,zern2correct]
+        reduced_cmdMat = self.cmdMat[ modes2correct,:]
+        recMat = self._create_rec_mat(reduced_intMat)
+        reduced_cmd = np.dot(recMat.T, zernike_coeff[zern2correct])
+        f_cmd = np.dot(reduced_cmdMat, reduced_cmd)
+        full_cmd = np.zeros(6)
+        for x,mode in enumerate(modes2correct):
+            full_cmd[mode] = f_cmd[x]
+        #self._apply_command(full_cmd)
+        print(full_cmd, full_cmd.shape)
+        return reduced_cmd, full_cmd
 
     def calibrate_alignment(self, cmdAmp, template:list=None, n_repetitions:int=1):
         """
@@ -82,13 +96,52 @@ class Alignment():
         """
         self._cmdAmp = cmdAmp
         template = template if template is not None else self._template
-        results = self.images_production(template, n_repetitions)
-        intMat = self.create_intMat(results)
+        imglist = self._images_production(template, n_repetitions)
+        intMat = self._zern_routine(imglist)
         self.intMat = intMat
         rd.saveFits_data(self._writePath+'/intMat.fits', self.intMat)
         return intMat
+    
+    def read_positions(self):
+        """
+        Reads the current positions of the devices.
 
-    def images_production(self, template, n_repetitions):
+        Returns
+        -------
+        pos : list
+            The list of current positions of the devices.
+        """
+        logMsg = ''
+        pos = []
+        logMsg += "Current Positions\n"
+        for fnc,dev_name in zip(self._readFnc, self._devName):
+            temp = fnc()
+            pos.append(_Command(temp))
+            logMsg += f"{dev_name}"+' '*(16-len(dev_name))+f" : {temp}\n"
+        logMsg += '-'*30
+        logging.info(logMsg)
+        print(logMsg) #!!! debug only
+        return pos
+
+    def reload_parabola_tn(self, filepath):
+        """
+        Reloads the parabola from the given file path.
+
+        Parameters
+        ----------
+        filepath : str
+            The file path to the parabola file.
+
+        Returns
+        -------
+        str
+            A message indicating the successful loading of the file.
+        """
+        par = _read_data(filepath)
+        self.auxMask = par.mask #!!! to check
+        return f"Correctly loaded '{filepath}'"
+
+    def _images_production(self, template, n_repetitions):
         """
         Produces images based on the provided template and number of repetitions.
 
@@ -125,7 +178,7 @@ class Alignment():
                 n_results = results
         return n_results
 
-    def create_intMat(self, imglist):
+    def _zern_routine(self, imglist):
         """
         Creates the interaction matrix from the provided image list.
 
@@ -140,29 +193,33 @@ class Alignment():
             The interaction matrix created from the images.
         """
         coefflist = []
+        if not isinstance(imglist, list):
+            imglist = [imglist]
         for img in imglist:
             if self._auxMask is None:
                 coeff, _ = zern.zernikeFit(img, self._zvec2fit)
             else:
                 coeff, _ = zern.zernikeFitAuxmask(img, self._auxMask, self._zvec2fit)
             coefflist.append(coeff[self._zvec2use])
+        if len(coefflist) == 1:
+            coefflist = np.array(coefflist[0])
         return np.array(coefflist)  #intmat
 
-    def create_rec_mat(self):
+    def _create_rec_mat(self, intMat):
         """
         Creates the reconstruction matrix off the inversion of the interaction
-        matrix obtained.
+        matrix obtained in the alignment calibration procedure.
 
         Returns
         -------
         recMat : ndarray
             Reconstruction matrix.
         """
-        recMat = self._intMat.T
+        recMat = np.linalg.pinv(intMat)
         self.recMat = recMat
         return recMat
 
-    def apply_command(self, fullCmd):
+    def _apply_command(self, fullCmd):
         """
         Applies the full command to the devices.
 
@@ -191,44 +248,6 @@ class Alignment():
         logging.info(logMsg)
         print(logMsg) #!!! debug only
 
-    def read_positions(self):
-        """
-        Reads the current positions of the devices.
-
-        Returns
-        -------
-        pos : list
-            The list of current positions of the devices.
-        """
-        logMsg = ''
-        pos = []
-        logMsg += "Current Positions\n"
-        for fnc,dev_name in zip(self._readFnc, self._devName):
-            temp = fnc()
-            pos.append(_Command(temp))
-            logMsg += f"{dev_name}"+' '*(16-len(dev_name))+f" : {temp}\n"
-        logMsg += '-'*30
-        logging.info(logMsg)
-        print(logMsg) #!!! debug only
-        return pos
-
-    def reload_parabola_tn(self, filepath):
-        """
-        Reloads the parabola from the given file path.
-
-        Parameters
-        ----------
-        filepath : str
-            The file path to the parabola file.
-
-        Returns
-        -------
-        str
-            A message indicating the successful loading of the file.
-        """
-        par = rd.readFits_maskedImage(filepath)
-        self.auxMask = par.mask #!!! to check
-        return f"Correctly loaded '{filepath}'"
 
     def _extract_cmds_to_apply(self, fullCmd):
         """
@@ -281,9 +300,9 @@ class Alignment():
             cmd = self.cmdMat.T[k] * self._cmdAmp * t
             logMsg += f" - Full Command : {cmd}"
             logging.info(logMsg)
+            print(logMsg) #!!! debug only
             self.apply_command(cmd)
             imglist.append(self._acquire[0](15))
-            print(logMsg) #!!! debug only
         return imglist
 
     def _push_pull_redux(self, imglist, template):
@@ -489,3 +508,46 @@ class _Command:
             elif P.is_null and not C.is_null and np.array_equal(S,C.vect):
                 decision = False
         return decision
+
+def _read_data(fits_file_path):
+    """
+    Reads data from a FITS file.
+
+    Parameters
+    ----------
+    fits_file_path : str
+        The file path to the FITS file.
+
+    Returns
+    -------
+    object : ndarray or MaskedArray
+        The loaded data object.
+    """
+    with fits.open(fits_file_path) as hduList:
+        obj = hduList[0].data
+        if hasattr(obj, 'mask'):
+            obj = np.ma.masked_array(obj, mask=obj.mask)
+    return obj
+
+def _save_fits_data(filename, data, header=None, overwrite:bool=False):
+    """
+    Saves data to a FITS file.
+
+    Parameters
+    ----------
+    filename : str
+        The name of the file to be saved.
+    data : ndarray or MaskedArray
+        The data to save.
+    header : str, optional
+        The header information to save with the data. The default is None, which means 
+        an appropriate header for the data will be created (see astropy documentation
+        for more info).
+    overwrite : bool, optional
+        Whether to overwrite the file if it already exists. The default is False.
+    """
+    if hasattr(data, 'mask'):
+        fits.writeto(filename, data.data, header, overwrite=overwrite)
+        fits.append(filename, data.mask.astype(np.uint8), header, overwrite=overwrite)
+    else:
+        fits.writeto(filename, data, header, overwrite=overwrite)
