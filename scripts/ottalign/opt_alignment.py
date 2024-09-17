@@ -44,7 +44,7 @@ class Alignment():
         self._readPath  = mac.base_read_data_path
         self._writePath = mac.base_write_data_path
         self._zvec2fit  = np.arange(1,11)
-        self._zvec2use  = [1,2,3,6,7]
+        self._zvec2use  = [1,2,3,6,7] # passato da configurazione?
         self._template  = [+1,-2,+1]
         self._auxMask   = None # rd.readFits_data(mac.calibrated_parabola)
         self._cmdAmp    = None
@@ -109,11 +109,13 @@ class Alignment():
         for i in range(n_repetitions):
             logMsg = ''
             logMsg += f"Repetition n.{i}\n"
+            logging.info(logMsg)
             print(logMsg) ## debug only
             for k in range(self.cmdMat.shape[1]):
-                logMsg += f"Matrix Column {k+1} : {self.cmdMat.T[k]}"
-                print(f"Matrix Column {k+1} : {self.cmdMat.T[k]}") ## debug only
-                logging.info(logMsg)
+                logMsg2= ''
+                logMsg2 += f"Matrix Column {k+1} : {self.cmdMat.T[k]}"
+                print(f"Matrix Column {k+1} : {self.cmdMat.T[k]}\n") ## debug only
+                logging.info(logMsg2)
                 imglist = self._img_acquisition(k, template)
                 image = self._push_pull_redux(imglist, template)
                 results.append(image)
@@ -146,6 +148,20 @@ class Alignment():
             coefflist.append(coeff[self._zvec2use])
         return np.array(coefflist)  #intmat
 
+    def create_rec_mat(self):
+        """
+        Creates the reconstruction matrix off the inversion of the interaction
+        matrix obtained.
+
+        Returns
+        -------
+        recMat : ndarray
+            Reconstruction matrix.
+        """
+        recMat = self._intMat.T
+        self.recMat = recMat
+        return recMat
+
     def apply_command(self, fullCmd):
         """
         Applies the full command to the devices.
@@ -160,20 +176,19 @@ class Alignment():
         -------
         None
         """
-        logMsg = '' #!!!
         device_commands = self._extract_cmds_to_apply(fullCmd)
+        logMsg = '' #!!!
         for cmd,fnc,dev in zip(device_commands,self._moveFnc,self._devName):
             if cmd.to_ignore:
                 logMsg += f'Skipping null command for {dev}\n' # debug
-                logging.info(f"Skipping null command for {dev}\n")
             else:
                 try:
                     logMsg += f"Commanding {cmd} to {dev}\n"# debug
-                    logging.info(f"Commanding {cmd} to {dev}\n")
                     fnc(cmd.vect)
                 except Exception as e:
                     logging.warning(f"Someting went wrong with {dev}: {e}")
-        logMsg += '\n'+'-'*30 # debug
+        logMsg += '-'*30 # debug
+        logging.info(logMsg)
         print(logMsg) #!!! debug only
 
     def read_positions(self):
@@ -268,7 +283,7 @@ class Alignment():
             logging.info(logMsg)
             self.apply_command(cmd)
             imglist.append(self._acquire[0](15))
-        print(logMsg) #!!! debug only
+            print(logMsg) #!!! debug only
         return imglist
 
     def _push_pull_redux(self, imglist, template):
