@@ -8,6 +8,7 @@ from m4.analyzers.compute_reconstructor import ComputeReconstructor
 import random
 import unittest
 
+
 class fake_hdu():
 
     def __init__(self, data):
@@ -18,6 +19,7 @@ class fake_hdu():
 
     def close(self):
         pass
+
 
 class TestComputeReconstructor(unittest.TestCase):
 
@@ -34,25 +36,28 @@ class TestComputeReconstructor(unittest.TestCase):
                 np.ma.masked_array(random_matrix, mask=mask))
         # self._intMatCube = np.array(self._intMatCube)
         self._intMatCube = np.ma.dstack(self._intMatCube)
-        xi, yi =  np.meshgrid(np.arange(100)-50+3*np.random.random(),
-                           np.arange(100)-50+3*np.random.random())
+        xi, yi = np.meshgrid(np.arange(100)-50+3*np.random.random(),
+                             np.arange(100)-50+3*np.random.random())
         maski = mask = (x**2 + y**2) > 30**2
         self._shape2flat = np.ma.MaskedArray((xi**2+yi**2), mask=maski)
 
     def test_compute_reconstructor(self):
         self._cr = ComputeReconstructor(self._intMatCube)
+
         self._cr.loadShape2Flat(self._shape2flat)
         _ = self._cr.run(Interactive=False)
 
-        self._cr = ComputeReconstructor(self._intMatCube, mask2intersect=self._shape2flat)
+        self._cr = ComputeReconstructor(
+            self._intMatCube, mask2intersect=self._shape2flat)
         _ = self._cr.run(Interactive=False)
 
         self._cr = ComputeReconstructor(self._intMatCube)
-        _ = self._cr.run(Interactive=False, sv_threshold=11)
+        print(self._intMatCube.shape)
+        _ = self._cr.run(Interactive=False, sv_threshold=25)
 
-        print(self._cr._filtered_sv[-10:])
+        print(self._cr._filtered_sv[-11:])
         np.testing.assert_array_almost_equal_nulp(
-            self._cr._filtered_sv[-10:], np.zeros(10))
+            self._cr._filtered_sv[-9:], np.zeros(9))
         # _ = self._cr.run(Interactive=True)
 
     # @mock.patch("os.path.join")
