@@ -14,7 +14,7 @@ import logging
 import numpy as np
 from astropy.io import fits
 from scripts.ottalign import _m4ac as mac # to change
-from m4.ground import zernike as zern, read_data as rd
+from m4.ground import zernike as zern
 
 class Alignment():
     """
@@ -33,7 +33,7 @@ class Alignment():
         """
         self.ott        = mechanical_devices
         self.ccd        = acquisition_devices
-        self.cmdMat     = _read_data('/home/pietrof/git/M4/scripts/ottalign/cmdMat.fits') #temporary
+        self.cmdMat     = _read_fits_data('/home/pietrof/git/M4/scripts/ottalign/cmdMat.fits') #temporary
         self.intMat     = None
         self._moveFnc   = self._get_callables(self.ott, mac.devices_move_calls)
         self._readFnc   = self._get_callables(self.ott, mac.devices_read_calls)
@@ -47,7 +47,7 @@ class Alignment():
         self._zvec2fit  = np.arange(1,11)
         self._zvec2use  = [1,2,3,6,7] # passato da configurazione?
         self._template  = [+1,-2,+1]
-        self._auxMask   = None # rd.readFits_data(mac.calibrated_parabola)
+        self._auxMask   = None # _read_fits_data(mac.calibrated_parabola)
         self._cmdAmp    = None
         logging.basicConfig(filename=(self._writePath+'/alignment.log'),
                                       level=logging.DEBUG,
@@ -63,7 +63,7 @@ class Alignment():
         """
         image = self._acquire[0](n_frames)
         zernike_coeff = self._zern_routine(image)
-        intMat = _read_data(self._readPath+'/intMat.fits')
+        intMat = _read_fits_data(self._readPath+'/intMat.fits')
         reduced_intMat = intMat[:,zern2correct]
         reduced_cmdMat = self.cmdMat[ modes2correct,:]
         recMat = self._create_rec_mat(reduced_intMat)
@@ -99,8 +99,8 @@ class Alignment():
         imglist = self._images_production(template, n_repetitions)
         intMat = self._zern_routine(imglist)
         self.intMat = intMat
-        rd.saveFits_data(self._writePath+'/intMat.fits', self.intMat)
-        return intMat
+        _save_fits_data(self._writePath+'/intMat.fits', self.intMat)
+        return "Ready for Alignment..."
     
     def read_positions(self):
         """
@@ -137,7 +137,7 @@ class Alignment():
         str
             A message indicating the successful loading of the file.
         """
-        par = _read_data(filepath)
+        par = _read_fits_data(filepath)
         self.auxMask = par.mask #!!! to check
         return f"Correctly loaded '{filepath}'"
 
@@ -509,7 +509,7 @@ class _Command:
                 decision = False
         return decision
 
-def _read_data(fits_file_path):
+def _read_fits_data(fits_file_path):
     """
     Reads data from a FITS file.
 
