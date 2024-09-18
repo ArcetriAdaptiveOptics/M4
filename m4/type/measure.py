@@ -185,10 +185,10 @@ class SurfaceSequence():
                     print("found  %d frames" % len(self._filenames))
                     tmp_tmp = SurfaceMeasure.load_temperatures(root_dir)
                     self._temperature = pd.concat(
-                        [self._temperature, pd.DataFrame(tmp_tmp.byteswap().newbyteorder('='))])
+                        [self._temperature, pd.DataFrame(tmp_tmp.byteswap().dtype.newbyteorder('='))])
                     tmp_zn = SurfaceMeasure.load_zernikes(root_dir)
                     self._zernike = pd.concat(
-                        [self._zernike, pd.DataFrame(tmp_zn.byteswap().newbyteorder('='))])
+                        [self._zernike, pd.DataFrame(tmp_zn.byteswap().dtype.newbyteorder('='))])
                     self._tau_vector = np.concatenate(self._tau_vector, np.array(list(map(lambda l: dt.strptime(
                         str(l.name)[0:15], '%Y%m%d_%H%M%S'), self._filenames))))
             self._intersetion_mask = None
