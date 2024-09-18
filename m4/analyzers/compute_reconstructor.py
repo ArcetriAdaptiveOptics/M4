@@ -15,6 +15,7 @@ ifFold = fn.IFFUNCTIONS_ROOT_FOLDER
 intMatFold = fn.INTMAT_ROOT_FOLDER
 confFold = fn.CONFIGURATION_ROOT_FOLDER
 
+
 class ComputeReconstructor:
     """
     This class analyzes the measurements made through the IFF class
@@ -34,6 +35,7 @@ class ComputeReconstructor:
         where the interaction_matrix_cube is a masked_array dstack of
         shape [pixels, pixels, n_images]
     """
+
     def __init__(self, interaction_matrix_cube, mask2intersect=None):
         """The constructor"""
         self._logger = logging.getLogger("COMPUTE_REC:")
@@ -49,7 +51,7 @@ class ComputeReconstructor:
         self._filtered_sv = None
         self._tn = None
 
-        if isinstance(self._cubeMask,np.ndarray) and isinstance(self._imgMask,np.ndarray):
+        if isinstance(self._cubeMask, np.ndarray) and isinstance(self._imgMask, np.ndarray):
             self._setAnalysisMask()
 
     def run(self, Interactive=False, sv_threshold=None):
@@ -127,7 +129,8 @@ class ComputeReconstructor:
         elif tn is not None:
             cube_path = os.path.join(intMatFold, tn, 'IMCube.fits')
             self._intMatCube = rd.read_phasemap(cube_path)
-        else: raise KeyError("No cube or tracking number was provided.")
+        else:
+            raise KeyError("No cube or tracking number was provided.")
 
     def _computeIntMat(self):
         """
@@ -136,12 +139,14 @@ class ComputeReconstructor:
         """
         self._logger.info(
             "Computing interaction matrix from cube of size %s", self._intMatCube.shape)
+        print(
+            "Computing interaction matrix from cube of size %s", self._intMatCube.shape)
         try:
             if self._analysisMask is None:
                 self._setAnalysisMask()
             self._intMat = np.array(
                 [
-                    self._intMatCube[:, :, i][self._analysisMask == 0]
+                    (self._intMatCube[:, :, i].data)[self._analysisMask == 1]
                     for i in range(self._intMatCube.shape[2])
                 ]
             )
@@ -149,6 +154,8 @@ class ComputeReconstructor:
             self._logger.error(
                 "Error in computing interaction matrix from cube:%s", e)
             raise e
+        print(self._analysisMask.shape)
+        print(self._intMat.shape)
 
     def _setAnalysisMask(self):
         """
@@ -158,7 +165,8 @@ class ComputeReconstructor:
         try:
             analysisMask = np.logical_or(self._cubeMask, self._imgMask)
         except self._imgMask is None:
-            raise ValueError("Lack of image mask. Can't compute the interaction matrix")
+            raise ValueError(
+                "Lack of image mask. Can't compute the interaction matrix")
         self._analysisMask = analysisMask
 
     def _mask2intersect(self, img_or_mask):
@@ -180,7 +188,8 @@ class ComputeReconstructor:
                 mask = img_or_mask.mask
             except AttributeError:
                 mask = img_or_mask
-        else: mask=None
+        else:
+            mask = None
         return mask
 
     def _intersectCubeMask(self, cube):
@@ -203,7 +212,7 @@ class ComputeReconstructor:
                 mask, cube[:, :, i].mask)
         return cube_mask
 
-#______________________________________________________________________________
+# ______________________________________________________________________________
     @staticmethod
     def make_interactive_plot(singular_values, current_threshold=None):
         # Creare il grafico
