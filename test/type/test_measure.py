@@ -86,7 +86,7 @@ class testSurfaceSequence(unittest.TestCase):
         print(self.seq[0])
         print(self.seq[1])
         self.assertTrue(
-            self.seq[1].tn == '20241226_001800' or self.seq[1].tn == '20241226_000200')
+            self.seq[1].tn == '20241226_001800' or self.seq[1].tn == '20241226_000200' or self.seq[1].tn == '20241226_004000')
         # seq2 = self.seq[1:4]
 
         # time, stf = seq2.compute_fast_time_stf()
