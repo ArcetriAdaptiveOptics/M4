@@ -11,10 +11,12 @@ How to Use it
 -------------
 """
 import logging
+import os
 import numpy as np
 from astropy.io import fits
 from scripts.ottalign import _m4ac as mac # to change
-from m4.ground import zernike as zern
+from m4.ground import zernike as zern, timestamp as ts
+tt  = ts.Timestamp()
 
 class Alignment():
     """
@@ -39,7 +41,7 @@ class Alignment():
         self._readFnc   = self._get_callables(self.ott, mac.devices_read_calls)
         self._acquire   = self._get_callables(self.ccd, mac.ccd_acquisition)
         self._devName   = mac.names
-        self._dof       = mac.dof
+        self._dof       = [np.array(dof) if not isinstance(dof, np.ndarray) else dof for dof in mac.dof]
         self._dofTot    = mac.cmdDof
         self._idx       = mac.slices
         self._readPath  = mac.base_read_data_path
@@ -78,7 +80,7 @@ class Alignment():
         print(f_cmd)
         self._apply_command(f_cmd)
 
-    def calibrate_alignment(self, cmdAmp, template:list=None, n_repetitions:int=1):
+    def calibrate_alignment(self, cmdAmp, template:list=None, n_repetitions:int=1, save:bool=False):
         """
         Calibrates the alignment using the provided command amplitude and template.
 
@@ -101,7 +103,8 @@ class Alignment():
         imglist = self._images_production(template, n_repetitions)
         intMat = self._zern_routine(imglist)
         self.intMat = intMat
-        _save_fits_data(self._writePath+'/intMat.fits', self.intMat)
+        if save:
+            _save_fits_data(self._writePath+'/intMat.fits', self.intMat)
         return "Ready for Alignment..."
     
     def read_positions(self):
@@ -338,7 +341,7 @@ class Alignment():
         return image
 
     @staticmethod
-    def _get_callables(device, callables):
+    def _get_callables(devices, callables):
         """
         Returns a list of callables for the instanced object, taken from the 
         configuration.py file.
@@ -355,13 +358,16 @@ class Alignment():
         functions : list
             List of callables, which interacts with the input object of the class.
         """
+        if not isinstance(devices, list):
+            devices = [devices]
         functions = []
-        for dev_call in callables:
-            obj, *methods = dev_call.split('.')
-            call = getattr(device, obj)
-            for method in methods:
-                call = getattr(call, method)
-            functions.append(call)
+        for dev in devices:
+            for dev_call in callables:
+                obj, *methods = dev_call.split('.')
+                call = getattr(dev, obj)
+                for method in methods:
+                    call = getattr(call, method)
+                functions.append(call)
         return functions
 
 class _Command:
@@ -531,7 +537,7 @@ def _read_fits_data(fits_file_path):
             obj = np.ma.masked_array(obj, mask=obj.mask)
     return obj
 
-def _save_fits_data(filename, data, header=None, overwrite:bool=False):
+def _save_fits_data(fits_name, data, header=None, overwrite:bool=False):
     """
     Saves data to a FITS file.
 
@@ -548,6 +554,13 @@ def _save_fits_data(filename, data, header=None, overwrite:bool=False):
     overwrite : bool, optional
         Whether to overwrite the file if it already exists. The default is False.
     """
+    save_path = mac.base_write_data_path
+    filename = os.path.join(save_path, tt.now(), fits_name)
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
+    if os.path.exists(filename) and not overwrite:
+        raise FileExistsError(f"The file {filename} already
+        exists. Set overwrite=True to overwrite it.")
     if hasattr(data, 'mask'):
         fits.writeto(filename, data.data, header, overwrite=overwrite)
         fits.append(filename, data.mask.astype(np.uint8), header, overwrite=overwrite)
