@@ -84,6 +84,7 @@ class testSurfaceSequence(unittest.TestCase):
         self.seq = SurfaceSequence(self.tn_path)
         print("seq len %d" % len(self.seq))
         print(self.seq[0])
+        print(self.seq[1])
         self.assertTrue(
             self.seq[1].tn == '20241226_001800' or self.seq[1].tn == '20241226_000200')
         # seq2 = self.seq[1:4]
