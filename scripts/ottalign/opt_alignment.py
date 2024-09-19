@@ -55,26 +55,28 @@ class Alignment():
 
     def correct_alignment(self, modes2correct, zern2correct, n_frames:int=15):
         """
-        Corrects the alignment based on the current settings.
+        Alignment correction procedure.
 
-        Returns
-        -------
-        None
+        Parameters
+        ----------
+        modes2correct : list or array-like
+            The modes that need to be corrected.
+        zern2correct : list or array-like
+            The Zernike coefficients that need to be corrected.
+        n_frames : int, optional
+            The number of frames acquired and averaged for the correction process.
+            The default is 15.
         """
         image = self._acquire[0](n_frames)
         zernike_coeff = self._zern_routine(image)
         intMat = _read_fits_data(self._readPath+'/intMat.fits')
-        reduced_intMat = intMat[:,zern2correct]
-        reduced_cmdMat = self.cmdMat[ modes2correct,:]
+        reduced_intMat = intMat[np.ix_(modes2correct, zern2correct)]
+        reduced_cmdMat = self.cmdMat[:,modes2correct]
         recMat = self._create_rec_mat(reduced_intMat)
-        reduced_cmd = np.dot(recMat.T, zernike_coeff[zern2correct])
+        reduced_cmd = np.dot(recMat, zernike_coeff[zern2correct])
         f_cmd = np.dot(reduced_cmdMat, reduced_cmd)
-        full_cmd = np.zeros(6)
-        for x,mode in enumerate(modes2correct):
-            full_cmd[mode] = f_cmd[x]
-        #self._apply_command(full_cmd)
-        print(full_cmd, full_cmd.shape)
-        return reduced_cmd, full_cmd
+        print(f_cmd)
+        self._apply_command(f_cmd)
 
     def calibrate_alignment(self, cmdAmp, template:list=None, n_repetitions:int=1):
         """
@@ -301,7 +303,7 @@ class Alignment():
             logMsg += f" - Full Command : {cmd}"
             logging.info(logMsg)
             print(logMsg) #!!! debug only
-            self.apply_command(cmd)
+            self._apply_command(cmd)
             imglist.append(self._acquire[0](15))
         return imglist
 
