@@ -13,9 +13,9 @@ How to Use it
 import logging
 import os
 import numpy as np
-from astropy.io import fits
 from scripts.ottalign import _m4ac as mac # to change
 from m4.ground import zernike as zern, timestamp as ts
+from m4.ground.read_data import readFits_data, saveFits_data
 tt  = ts.Timestamp()
 
 class Alignment():
@@ -35,7 +35,7 @@ class Alignment():
         """
         self.ott        = mechanical_devices
         self.ccd        = acquisition_devices
-        self.cmdMat     = _read_fits_data('/home/pietrof/git/M4/scripts/ottalign/cmdMat.fits') #temporary
+        self.cmdMat     = readFits_data('/home/pietrof/git/M4/scripts/ottalign/cmdMat.fits') #temporary
         self.intMat     = None
         self._moveFnc   = self._get_callables(self.ott, mac.devices_move_calls)
         self._readFnc   = self._get_callables(self.ott, mac.devices_read_calls)
@@ -71,7 +71,7 @@ class Alignment():
         """
         image = self._acquire[0](n_frames)
         zernike_coeff = self._zern_routine(image)
-        intMat = _read_fits_data(self._readPath+'/intMat.fits')
+        intMat = readFits_data(self._readPath+'/intMat.fits')
         reduced_intMat = intMat[np.ix_(modes2correct, zern2correct)]
         reduced_cmdMat = self.cmdMat[:,modes2correct]
         recMat = self._create_rec_mat(reduced_intMat)
@@ -104,7 +104,8 @@ class Alignment():
         intMat = self._zern_routine(imglist)
         self.intMat = intMat
         if save:
-            _save_fits_data(self._writePath+'/intMat.fits', self.intMat)
+            filename = os.path.join(self._writePath, ts.now(), 'intMat.fits')
+            saveFits_data(filename, self.intMat)
         return "Ready for Alignment..."
     
     def read_positions(self):
@@ -142,7 +143,7 @@ class Alignment():
         str
             A message indicating the successful loading of the file.
         """
-        par = _read_fits_data(filepath)
+        par = readFits_data(filepath)
         self.auxMask = par.mask #!!! to check
         return f"Correctly loaded '{filepath}'"
 
@@ -517,52 +518,3 @@ class _Command:
                 decision = False
         return decision
 
-def _read_fits_data(fits_file_path):
-    """
-    Reads data from a FITS file.
-
-    Parameters
-    ----------
-    fits_file_path : str
-        The file path to the FITS file.
-
-    Returns
-    -------
-    object : ndarray or MaskedArray
-        The loaded data object.
-    """
-    with fits.open(fits_file_path) as hduList:
-        obj = hduList[0].data
-        if hasattr(obj, 'mask'):
-            obj = np.ma.masked_array(obj, mask=obj.mask)
-    return obj
-
-def _save_fits_data(fits_name, data, header=None, overwrite:bool=False):
-    """
-    Saves data to a FITS file.
-
-    Parameters
-    ----------
-    filename : str
-        The name of the file to be saved.
-    data : ndarray or MaskedArray
-        The data to save.
-    header : str, optional
-        The header information to save with the data. The default is None, which means 
-        an appropriate header for the data will be created (see astropy documentation
-        for more info).
-    overwrite : bool, optional
-        Whether to overwrite the file if it already exists. The default is False.
-    """
-    save_path = mac.base_write_data_path
-    filename = os.path.join(save_path, tt.now(), fits_name)
-    if not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
-    if os.path.exists(filename) and not overwrite:
-        raise FileExistsError(f"The file {filename} already
-        exists. Set overwrite=True to overwrite it.")
-    if hasattr(data, 'mask'):
-        fits.writeto(filename, data.data, header, overwrite=overwrite)
-        fits.append(filename, data.mask.astype(np.uint8), header, overwrite=overwrite)
-    else:
-        fits.writeto(filename, data, header, overwrite=overwrite)
