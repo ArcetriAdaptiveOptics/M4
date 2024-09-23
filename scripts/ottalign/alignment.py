@@ -16,7 +16,7 @@ from scripts.ottalign import _m4ac as mac # to change
 from m4.ground import zernike as zern, timestamp as ts
 from m4.ground.read_data import readFits_data, saveFits_data
 from m4.ground.logger_set_up import set_up_logger, log 
-tt  = ts.Timestamp()
+_tt  = ts.Timestamp()
 
 class Alignment():
     """
@@ -142,7 +142,7 @@ class Alignment():
         intMat = self._zern_routine(imglist)
         self.intMat = intMat
         if save:
-            tn = tt.now()
+            tn = _tt.now()
             filename = os.path.join(self._writePath, tn, 'intMat.fits')
             saveFits_data(filename, self.intMat, overwrite=True)
             log(f"{saveFits_data.__qualname__}")
