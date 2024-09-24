@@ -6,7 +6,8 @@ Author(s)
     - Pietro Ferraiuolo: modified in 2024
 Description
 -----------
-Module which creates and/or connects to the tower objects, that are:
+Module which creates and/or connects to the M4's Optical Test Tower
+devices, which are:
     - Accelerometers
     - Angle Rotator
     - M4's Exapode
@@ -21,9 +22,20 @@ How to Use it
     >>> from m4.configuration import start
     >>> ott, interf, dm = start.create_ott(config_file_path)
 """
+
 import os
+import playsound
 from m4.configuration.create_ott import OTT
 from m4.devices.opc_ua_controller import OpcUaController
+from m4.devices.parabola_slider import OpcUaParabolaSlider
+from m4.devices.reference_mirror_slider import OpcUaReferenceMirrorSlider
+from m4.devices.angle_rotator import OpcUaAngleRotator
+from m4.devices.parabola import OpcUaParabola
+from m4.devices.reference_mirror import OpcUaReferenceMirror
+from m4.devices.m4_exapode import OpcUaM4Exapode
+from m4.devices.temperature_sensors import OpcUaTemperatureSensors
+from m4.devices.accelerometers import ZmqAccelerometers
+from m4.devices.interferometer import I4d6110
 from m4.ott_sim.fake_parabola_slider import FakeParabolaSlider
 from m4.ott_sim.fake_reference_mirror_slider import FakeReferenceMirrorSlider
 from m4.ott_sim.fake_angle_rotator import FakeAngleRotator
@@ -34,32 +46,26 @@ from m4.ott_sim.fake_temperature_sensors import FakeTemperatureSensors
 from m4.ott_sim.fake_interferometer import FakeInterferometer
 from m4.ott_sim.fake_accelerometers import FakeAccelerometers
 from m4.ott_sim.fake_deformable_mirror import FakeM4DM
-from m4.devices.parabola_slider import OpcUaParabolaSlider
-from m4.devices.reference_mirror_slider import OpcUaReferenceMirrorSlider
-from m4.devices.angle_rotator import OpcUaAngleRotator
-from m4.devices.parabola import OpcUaParabola
-from m4.devices.reference_mirror import OpcUaReferenceMirror
-from m4.devices.m4_exapode import OpcUaM4Exapode
-from m4.devices.temperature_sensors import OpcUaTemperatureSensors
-from m4.devices.accelerometers import ZmqAccelerometers
-from m4.devices.interferometer import I4d6110
-
 from m4.configuration import update_folder_paths as ufp
 from m4.configuration.ott_parameters import Sound
-import playsound
 
 def create_ott():
-    """ 
-    This function creates and initialize the OTT, creating all the devices, fak
-    e or real, accordingly to what specified in the configuration file.
+    """
+    This function creates and initialize the OTT, creating all the devices, fake 
+    or real, accordingly to what specified in the .yaml configuration file.
 
     Returns
     -------
     ott: object
-        The Optical Test Tower, comprehensive of the Parabola, the Reference mi
-        rror and the Deformable Mirror.
+        The Optical Test Tower, comprehensive of:
+         - the Parabola actuators and slider
+         - the Reference Mirror actuators and slider
+         - the Angle Rotator
+         - M4's Exapode
     interf: object
-        The interferometer with which acquire the data.
+        The interferometer used for data acquisition.
+    dm: object
+        The deformable mirror, that is M4.
     """
     conf_obj = ufp.folders
     if conf_obj.simulated_accelerometers is True:
@@ -96,32 +102,33 @@ def create_ott():
     else:
         opcUa = OpcUaController()
         reference_mirror = OpcUaReferenceMirror(opcUa)
-    if conf_obj.simulated_tempSensors is True: 
+    if conf_obj.simulated_tempSensors is True:
         temperature_sensor = FakeTemperatureSensors()
     else:
         opcUa = OpcUaController()
         temperature_sensor = OpcUaTemperatureSensors(opcUa)
-
-
-    if conf_obj.simulated_interf is True:
-        interf = FakeInterferometer()
-    else:
-        interf = I4d6110()
-
     if conf_obj.simulated_dm is True:
         dm = FakeM4DM()
     else:
         dm = None
 
-    ott = OTT(parabola_slider, reference_mirror_slider, angle_rotator,
-              parab, reference_mirror, m4, temperature_sensor, accelerometers)
-
-    if Sound.PLAY is True:
-        playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH,'ott-ini.mp3'))
-
+    ott = OTT(
+        parabola_slider,
+        reference_mirror_slider,
+        angle_rotator,
+        parab,
+        reference_mirror,
+        m4,
+        temperature_sensor,
+        accelerometers,
+    )
     if conf_obj.simulated_interf is True:
-        interf.set_ott(ott)
-        interf.set_dm(dm)
+        interf = FakeInterferometer(ott, dm)
+    else:
+        interf = I4d6110()
+
     if Sound.PLAY is True:
-        playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, 'ott-conf.mp3'))
+        playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, "ott-ini.mp3"))
+        playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, "ott-conf.mp3"))
+
     return ott, interf, dm
