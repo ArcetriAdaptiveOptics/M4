@@ -14,14 +14,13 @@ from m4.configuration.create_ott import OTT as ottobj
 from m4.ott_sim.fake_deformable_mirror import FakeM4DM
 from m4.utils.optical_alignment import OpticalAlignment
 import mock
+from unittest.mock import MagicMock
 
 
 class TestOpticalAlignment(unittest.TestCase):
 
     class FakeOpen:
         def __init__(self, filename, mode):
-            # if filename == "config.json" and mode == "r":
-            #    raise FileNotFoundError()
             self.filename = filename
             self.mode = mode
             self.write_calls = 0
@@ -31,8 +30,6 @@ class TestOpticalAlignment(unittest.TestCase):
 
         def write(self, write_string):
             self.write_calls += 1
-            # assert self.write_calls <= 1
-            # assert write_string == "{}"
 
         def close(self):
             if self.mode == "w":
@@ -53,14 +50,6 @@ class TestOpticalAlignment(unittest.TestCase):
         self._interf
         self._dm
 
-    #        par_position = self._ott.parabola.getPosition()
-
-    #        rm_position = self._ott.referenceMirror.getPosition()
-    #        tout = self.selectModesInIntMatAndRecConstruction(
-    #        self._intMat, self._rec, self._cmat = tout
-    #        makedirs
-    #        self._interf.save_phasemap(dove, name, img)
-
     @mock.patch("m4.utils.optical_calibration.OpticalCalibration", autospec=True)
     @mock.patch("astropy.io.fits.getheader", autospec=True)
     @mock.patch("astropy.io.fits.open", autospec=True)
@@ -70,17 +59,19 @@ class TestOpticalAlignment(unittest.TestCase):
         self._fake_data = [np.ones((10, 10)) for i in range(4)]
         tt_cal = "20220309_142454.fits"
         mock_header.return_value = self._fake_header
-        mock_open.return_value = self._fake_data
+
+        # Create a mock HDUList object
+        mock_hdulist = MagicMock()
+        mock_hdulist.__enter__.return_value = mock_hdulist
+        mock_hdulist.__exit__.return_value = False
+        mock_hdulist[0].data = np.ones((10, 10))
+        mock_open.return_value = mock_hdulist
+
         mock_cal.return_value = OpticalCalibration(mock_interf, None)
         self._cal = OpticalCalibration.loadCalibrationObjectFromFits(tt_cal)
         self.assertIsInstance(self._cal, OpticalCalibration)
 
         self._ott, self._interf, self._dm = create_ott()
-            #os.path.join(
-             #   self.testDataRootDir(), "base", "Configurations", "testConf.yaml"
-            #)
-        #)
-
         self.assertIsInstance(self._ott, ottobj)
         self.assertIsInstance(self._interf, FakeInterferometer)
         self.assertIsInstance(self._dm, FakeM4DM)
@@ -114,19 +105,14 @@ class TestOpticalAlignment(unittest.TestCase):
         mock_cott,
         mock_interf,
         mock_makedirs,
-        # mock_open,
         mock_selectModes,
         mock_fits_open,
         mock_header,
         mock_cal,
     ):
         self._ott, self._interf, self._dm = create_ott()
-        #     os.path.join(
-        #         self.testDataRootDir(), "base", "Configurations", "testConf.yaml"
-        #     )
-        # )
         tt_cal = "20220309_142454.fits"
-        self._align = OpticalAlignment(tt_cal, self._ott, FakeInterferometer())
+        self._align = OpticalAlignment(tt_cal, self._ott, FakeInterferometer(self._ott, self._dm))
         self._align.opt_aligner(
             n_images=10,
             delay=1,
