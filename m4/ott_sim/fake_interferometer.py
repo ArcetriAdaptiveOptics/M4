@@ -6,7 +6,6 @@ Author(s)
 """
 
 import logging
-import os
 import time
 import numpy as np
 from m4.ott_sim.ott_images import OttImages
@@ -61,7 +60,7 @@ class FakeInterferometer(BaseInterferometer):
             time.sleep(delay)
         images = np.dstack(ima_list)
         ima = np.mean(images, 2)
-        masked_ima = np.ma.masked_array(ima, mask=masked_ima.mask)#np.invert(mask.astype(bool)).T)
+        masked_ima = np.ma.masked_array(ima, mask=masked_ima.mask)
         return masked_ima
 
     def getCameraSettings(self):

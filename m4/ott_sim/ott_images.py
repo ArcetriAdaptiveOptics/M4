@@ -109,12 +109,12 @@ class OttImages:
             OttParameters.rflat_radius * OttParameters.pscale
             - OttParameters.rflat_cell * OttParameters.pscale,
         )
-        romask = romask + rmask
+        romask = romask + rmask #???
         irmask = -rmask + 1
         smap1 = smap * irmask + rmap
         smap1 = smap1 + self.offset
         smask = rmap + mmask
-        smask[smask != 0] = 1
+        smask[romask != 0] = 1 #??? original: [smask !=0] = 1
         smask[romask == 1] = 0
         smap1 = smap1 * smask
         if quant == 1:
@@ -125,9 +125,10 @@ class OttImages:
             plt.imshow(self.ott_view())
             plt.subplot(132)
             plt.imshow(smap1, cmap="hot")
-            plt.colorbar()
+            plt.colorbar(shrink=0.3)
             plt.subplot(133)
             plt.imshow(self.pwrap(smap1, smask), cmap="gray")
+            plt.tight_layout()
         return smap1, smask
 
     def pwrap(self, img, mask):
@@ -290,7 +291,7 @@ class OttImages:
         simg = simg[x0 : x1 + 1, y0 : y1 + 1]
         return simg
 
-    def ott_view(self, show=None):
+    def ott_view(self, show:bool=False):
         """
         Creates a view of the OTT elements.
 
@@ -327,9 +328,8 @@ class OttImages:
             OttParameters.rflat_radius * pixscale,
         )
         ottimg = m4 + parcircle + refmcircle
-        if show is not None:
+        if show:
             plt.imshow(ottimg)
-
         return ottimg
 
     def ott_m4view(self, show=None):
