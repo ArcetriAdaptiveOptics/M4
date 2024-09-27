@@ -35,9 +35,7 @@ class FakeM4DM(BaseDeformableMirror):
         self.CapsensGain = np.load(
             os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf, "CapsensGain.npy")
         )
-        self.ifmat = read_data.readFits_data(
-            os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf, "if_sect4_rot-bin2.fits")
-        )
+        self.ifmat = self._getIfmat()
         self.ifidx = read_data.readFits_data(
             os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf, "if_idx4_rot-bin2.fits")
         )
@@ -179,3 +177,16 @@ class FakeM4DM(BaseDeformableMirror):
         elif rel == False:
             self.m4ima.flat[self.ifidx] = np.matmul(np.transpose(self.ifmat), comm)
         return self.m4ima
+
+    def _getIfmat(self):
+        """
+        Returns
+        -------
+        ifmat: numpy array
+            ifmat matrix
+        """
+        ifMat = read_data.readFits_data(
+            os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf, "if_sect4_rot-bin2.fits")
+        )
+        ifmat = self.getNActs()**(-0.5)*(ifMat/np.abs(ifMat).max()) # check for acts normalization
+        return ifmat
