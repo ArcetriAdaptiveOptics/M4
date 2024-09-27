@@ -4,13 +4,13 @@ Authors
   - L. Oggioni: added some functionalities
 """
 
-import os
+from os.path import join
 import logging
 import numpy as np
 from m4.devices.base_deformable_mirror import BaseDeformableMirror
 from m4.configuration.ott_parameters import M4Parameters
 from m4.configuration import config_folder_names as conf
-from m4.ground import read_data
+from m4.ground.read_data import readFits_data as rfd
 
 
 class FakeM4DM(BaseDeformableMirror):
@@ -26,22 +26,14 @@ class FakeM4DM(BaseDeformableMirror):
         """The constructor"""
         self._actPos = np.zeros(M4Parameters.N_ACT_SEG)
         self._logger = logging.getLogger("FakeM4DM")
-        self.m4pupil = read_data.readFits_data(
-            os.path.join(
-                conf.MIRROR_FOLDER, conf.mirror_conf, "m4_mech_pupil-bin2.fits"
-            )
-        )
+        self._conf   = join(conf.MIRROR_FOLDER, conf.mirror_conf)
+        self.m4pupil = rfd(join(self._conf, "m4_mech_pupil-bin2.fits"))
         self.m4ima = self.m4pupil * 0.0
-        self.CapsensGain = np.load(
-            os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf, "CapsensGain.npy")
-        )
-        self.ifmat = self._getIfmat()
-        self.ifidx = read_data.readFits_data(
-            os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf, "if_idx4_rot-bin2.fits")
-        )
-        self.vmat = read_data.readFits_data(
-            os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf, "ff_v_matrix.fits")
-        )
+        self.CapsensGain = np.load(join(self._conf, "CapsensGain.npy"))
+        self.ifmat = (lambda ifMat: self.getNActs()**(-0.5)*(ifMat/np.abs(ifMat).max()))\
+                        (rfd(join(self._conf, "if_sect4_rot-bin2.fits")))
+        self.ifidx = rfd(join(self._conf, "if_idx4_rot-bin2.fits"))
+        self.vmat = rfd(join(self._conf, "ff_v_matrix.fits"))
 
     def setActsCommand(self, command, rel=False):
         """
@@ -132,7 +124,7 @@ class FakeM4DM(BaseDeformableMirror):
             cap sens complete file path
         """
         gain = np.ones(self.getNActs()) + np.random.rand(self.getNActs()) * 0.1 - 0.05
-        file_path = os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf, file_name)
+        file_path = join(self._conf, file_name)
         np.save(file_path, gain)
         return file_path
 
@@ -177,16 +169,3 @@ class FakeM4DM(BaseDeformableMirror):
         elif rel == False:
             self.m4ima.flat[self.ifidx] = np.matmul(np.transpose(self.ifmat), comm)
         return self.m4ima
-
-    def _getIfmat(self):
-        """
-        Returns
-        -------
-        ifmat: numpy array
-            ifmat matrix
-        """
-        ifMat = read_data.readFits_data(
-            os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf, "if_sect4_rot-bin2.fits")
-        )
-        ifmat = self.getNActs()**(-0.5)*(ifMat/np.abs(ifMat).max()) # check for acts normalization
-        return ifmat
