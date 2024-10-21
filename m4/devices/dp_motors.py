@@ -101,7 +101,7 @@ class DpMotors(BaseM4Exapode):
         try:
             self._context = zmq.Context()
             self._socket = self._context.socket(zmq.PAIR)
-            self._socketconnect(f"tcp://{self.remote_ip}:{self.remote_port}")
+            self._socket.connect(f"tcp://{self.remote_ip}:{self.remote_port}")
             return True
         except Exception as e:
             logger.log(f"ConnectZMQ: {e}")

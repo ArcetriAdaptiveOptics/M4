@@ -5,6 +5,7 @@ from m4.configuration import update_folder_paths as ufp
 from m4.utils import markers as mrk
 from m4.mini_OTT import measurements
 from m4.analyzers import timehistory as th
+#from m4.utils.alignment import Alignment
 fn = ufp.folders
 
 class OTTScripts:
@@ -26,12 +27,16 @@ class OTTScripts:
         self._interf = interf
         self._dm = dm
         self._meas = measurements.Measurements(ott, interf)
+        #self.alignment = Alignment(ott, interf)
 
     def alignTT(self, nframes, move=0, removePar=True):
         self.config4D4Alignment()
         doit, tnPar = self._checkAlignmInfo(move, removePar)
         zern2corrf = np.array([0,1])
         dofidf = np.array([3,4])
+        #for new align procedure: if removePar == True: reloadCalibratedParabola;
+        #correct_alignment(dofidf, zern2corrf, move, nframes)
+
         tna = main.align_PARAndRM(self._ott, self._interf,
                                   myconf.alignmentCalibration_tn, zern2corrf,
                                   dofidf, nframes, doit, tnPar)
