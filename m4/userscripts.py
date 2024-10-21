@@ -1,11 +1,12 @@
 import numpy as np
 from m4.configuration import userconfig as myconf
-from m4 import main, noise
+#from m4 import main, noise #main is no longer required for alignment
+from m4 import noise
 from m4.configuration import update_folder_paths as ufp
 from m4.utils import markers as mrk
 from m4.mini_OTT import measurements
 from m4.analyzers import timehistory as th
-#from m4.utils.alignment import Alignment
+from m4.utils.alignment import Alignment
 fn = ufp.folders
 
 class OTTScripts:
@@ -27,19 +28,42 @@ class OTTScripts:
         self._interf = interf
         self._dm = dm
         self._meas = measurements.Measurements(ott, interf)
-        #self.alignment = Alignment(ott, interf)
+        self.alignment = Alignment(ott, interf)
 
+    def generalAlignment(self, zz, dof,nframes, move=0, removePar=True):
+        self.config4D4Alignment()
+        doit, tnPar = self._checkAlignmInfo(move, removePar)
+        #zern2corrf = np.array([0,1])
+        #dofidf = np.array([3,4])
+        if removePar == True:  #qui bisogna aggiungere il Tn dell'allineamento!!
+            self.alignment.reloadCalibratedParabola(tnPar)
+        self.alignment.correct_alignment(dof, zz, move, nframes)
+
+    def alignTT(nframes, move=0, removePar=True):
+        zz = np.array([0,1])
+        dd = np.array([3,4])
+        generalAlignment(self, zz, dd,nframes, move, removePar)
+
+    def alignComa(nframes, move=0, removePar=True):
+        zz = np.array([0,1,6,7])
+        dd = np.array([1,2,3,4])
+        generalAlignment(self, zz, dd,nframes, move, removePar)
+
+    def alignFocus(nframes, move=0, removePar=True):
+        zz = np.array([2])
+        dd = np.array([0])
+        generalAlignment(self, zz, dd,nframes, move, removePar)  
+    '''
     def alignTT(self, nframes, move=0, removePar=True):
         self.config4D4Alignment()
         doit, tnPar = self._checkAlignmInfo(move, removePar)
         zern2corrf = np.array([0,1])
         dofidf = np.array([3,4])
-        #for new align procedure: if removePar == True: reloadCalibratedParabola;
-        #correct_alignment(dofidf, zern2corrf, move, nframes)
+        if removePar == True: 
+            self.alignment.reloadCalibratedParabola(tnPar)
+        self.alignment.correct_alignment(dofidf, zern2corrf, move, nframes)
 
-        tna = main.align_PARAndRM(self._ott, self._interf,
-                                  myconf.alignmentCalibration_tn, zern2corrf,
-                                  dofidf, nframes, doit, tnPar)
+        #tna = main.align_PARAndRM(self._ott, self._interf,                                  myconf.alignmentCalibration_tn, zern2corrf,                                  dofidf, nframes, doit, tnPar)  #obsolete
 
     def alignFocus(self, nframes, move=0, removePar=True):
         doit, tnPar = self._checkAlignmInfo(move, removePar)
@@ -59,7 +83,7 @@ class OTTScripts:
         tna = main.align_PARAndRM(self._ott, self._interf,
                                   myconf.alignmentCalibration_tn, zern2corrf,
                                   dofidf, nframes, doit, tnPar)
-
+    '''
     def calibrateAlignment(self, nPushPull = 2, n_frames=20, removePar = True):
         doit, tnPar = self._checkAlignmInfo(1, removePar)
         par_pist = myconf.alignCal_parPist
