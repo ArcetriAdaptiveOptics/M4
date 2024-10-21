@@ -101,6 +101,10 @@ is the second in place going through the command vector, then it's position must
 the secondo for every list in this configuration file.
 It's easier to see, as the following example will show.
 """
+# M4's specific data path
+from m4.configuration import update_folder_paths as ufp
+_base_path = ufp.folders.BASE_PATH
+
 # Variables
 cmdDof = 6                # Total DoF per device
         # or 
@@ -143,9 +147,9 @@ ccd_acquisition = [
     ]
 
 # Data paths
-base_read_data_path     = '/home/pietrof/git/M4/m4/data/M4Data/OPTData/AlignmentCalibration'
-base_write_data_path    = '/home/pietrof/git/M4/m4/data/M4Data/OPTData/AlignmentCalibration'
-log_path                = '/home/pietrof/git/M4/m4/data/M4Data/OPTData/AlignmentCalibration/alignment.log'
+base_read_data_path     = _base_path+'/M4Data/OPTData/AlignmentCalibration'
+base_write_data_path    = _base_path+'/M4Data/OPTData/AlignmentCalibration'
+log_path                = _base_path+'/M4Data/OPTData/AlignmentCalibration/alignment.log'
 logging_level           =  20
-commandMatrix           = '/home/pietrof/git/M4/scripts/ottalign/cmdMat.fits'
+commandMatrix           = _base_path.strip('/data')+'/configuration/cmdMat.fits'
 calibrated_parabola     = ''
