@@ -56,7 +56,7 @@ class DpMotors(BaseM4Exapode):
         ''' to be implemented
         '''
         v = np.array([0,absolute_position_in_mm[OttParameters.M4_DOF]])
-        vm = np.dot(v,self._kinematrix)
+        vm = np.dot(v, self._kinematrix)
         print(vm)
         self._setMotorPosition(vm)
         pass
@@ -65,14 +65,22 @@ class DpMotors(BaseM4Exapode):
     def _getMotorPosition(self):
         ''' to be implemented, at low level
         '''
-        #read_from_the_motors
+        self._connectBusBox()
+        # Si manda il comando
+        # si riceve risposta 
+        # si fanno le conversioni del caso
+        self._disconnectBusBox()
         pass
 
 
     def _setMotorPosition(self, motorcmd):
         ''' to be implemented, at low level
         '''
-        #command_the_motors
+        self._connectBusBox()
+        # Si manda il comando
+        # si riceve risposta 
+        # si fanno le conversioni del caso
+        self._disconnectBusBox()
         pass
 
     def _motor2kinematics(self, pos):
