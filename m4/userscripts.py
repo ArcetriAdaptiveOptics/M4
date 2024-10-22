@@ -36,7 +36,7 @@ class OTTScripts:
         #zern2corrf = np.array([0,1])
         #dofidf = np.array([3,4])
         if removePar == True:  #qui bisogna aggiungere il Tn dell'allineamento!!
-            self.alignment.reloadCalibratedParabola(tnPar)
+            self.alignment.reload_calibrated_parabola(tnPar)
         self.alignment.correct_alignment(dof, zz, move, nframes)
 
     def alignTT(nframes, move=0, removePar=True):
