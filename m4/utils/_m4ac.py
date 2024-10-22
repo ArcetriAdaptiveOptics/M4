@@ -151,5 +151,5 @@ base_read_data_path     = _base_path+'/M4Data/OPTData/AlignmentCalibration'
 base_write_data_path    = _base_path+'/M4Data/OPTData/AlignmentCalibration'
 log_path                = _base_path+'/M4Data/OPTData/AlignmentCalibration/alignment.log'
 logging_level           =  20
-commandMatrix           = _base_path.strip('/data')+'/configuration/cmdMat.fits'
+commandMatrix           = _base_path.strip('data')+'configuration/cmdMat.fits'
 calibrated_parabola     = ''

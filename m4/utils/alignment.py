@@ -54,7 +54,7 @@ class Alignment():
         self._template  = mac.push_pull_template
         self._readPath  = mac.base_read_data_path
         self._writePath = mac.base_write_data_path
-        self.__txt      = txtLogger(mac.log_path)
+        self._txt       = txtLogger(mac.log_path)
         set_up_logger(mac.log_path, mac.logging_level)
 
     def correct_alignment(self, modes2correct, zern2correct, tn:str=None, apply:bool=False, n_frames:int=15):
@@ -93,6 +93,7 @@ class Alignment():
         """
         log(f"{self.correct_alignment.__qualname__}")
         image = self._acquire[0](n_frames)
+        initpos = self.read_positions(show=False)
         zernike_coeff = self._zern_routine(image)
         if tn is not None:
             intMat = readFits_data(self._readPath+f'/{tn}/intMat.fits')
@@ -110,6 +111,10 @@ class Alignment():
         reduced_cmd = np.dot(recMat, zernike_coeff[zern2correct])
         f_cmd = np.dot(reduced_cmdMat, reduced_cmd)
         print(f"Resulting Command: {f_cmd}")
+        endpos = self.read_positions(show=False)
+        self._txt.log(f"Calib. Trackn & IniZern:  {tn} {initpos:.3e}")
+        self._txt.log(f"Result Trackn & EndZern:  {tn} {endpos:.3e}")
+        self._txt.log(f"DoF & Zern2Corr:          {modes2correct} {zern2correct}")
         if apply:
             print("Applying correction command...")
             self._apply_command(f_cmd)
@@ -118,7 +123,7 @@ class Alignment():
             return
         return f_cmd
 
-    def calibrate_alignment(self, cmdAmp, template:list=None, n_repetitions:int=1, save:bool=False):
+    def calibrate_alignment(self, cmdAmp, template:list=None, n_repetitions:int=1, save:bool=True):
         """
         Calibrate the alignment of the system using the provided command amplitude and template.
 
@@ -131,7 +136,7 @@ class Alignment():
         n_repetitions : int, optional
             The number of repetitions for the calibration process. Default is 1.
         save : bool, optional
-            If True, the resulting internal matrix will be saved to a FITS file. Default is False.
+            If True, the resulting internal matrix will be saved to a FITS file. Default is True.
 
         Returns
         -------
@@ -156,6 +161,7 @@ class Alignment():
         if save:
             tn = _tt.now()
             filename = os.path.join(self._writePath, tn, 'intMat.fits')
+            os.mkdir(filename.strip('intMat.fits'))
             saveFits_data(filename, self.intMat, overwrite=True)
             log(f"{saveFits_data.__qualname__}")
         return "Ready for Alignment..."
@@ -178,7 +184,6 @@ class Alignment():
             pos.append(_Command(temp))
             logMsg += f"{dev_name}"+' '*(16-len(dev_name))+f" : {temp}\n"
         logMsg += '-'*30
-        #logging.info(logMsg)
         if show:
             print(logMsg) #!!! debug only
         return pos
