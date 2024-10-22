@@ -14,8 +14,8 @@ import os
 import numpy as np
 from m4.utils import _m4ac as mac # to change
 from m4.ground import zernike as zern, timestamp as ts
-from m4.ground.read_data import readFits_data, saveFits_data
-from m4.ground.logger_set_up import set_up_logger, log 
+from m4.ground.read_data import readFits_data, readFits_maskedImage, saveFits_data
+from m4.ground.logger_set_up import *
 _tt  = ts.Timestamp()
 
 class Alignment():
@@ -41,7 +41,7 @@ class Alignment():
         self.intMat     = None
         self.recMat     = None
         self._cmdAmp    = None
-        self._auxMask   = readFits_data(mac.calibrated_parabola).mask if not mac.calibrated_parabola=='' else None
+        self._parabola  = readFits_data(mac.calibrated_parabola) if not mac.calibrated_parabola=='' else None
         self._moveFnc   = self.__get_callables(self.mdev, mac.devices_move_calls)
         self._readFnc   = self.__get_callables(self.mdev, mac.devices_read_calls)
         self._acquire   = self.__get_callables(self.ccd,  mac.ccd_acquisition)
@@ -54,9 +54,10 @@ class Alignment():
         self._template  = mac.push_pull_template
         self._readPath  = mac.base_read_data_path
         self._writePath = mac.base_write_data_path
+        self.__txt      = txtLogger(mac.log_path)
         set_up_logger(mac.log_path, mac.logging_level)
 
-    def correct_alignment(self, modes2correct, zern2correct, apply:bool=False, n_frames:int=15):
+    def correct_alignment(self, modes2correct, zern2correct, tn:str=None, apply:bool=False, n_frames:int=15):
         """
         Corrects the alignment of the system based on Zernike coefficients.
 
@@ -66,6 +67,8 @@ class Alignment():
             Indices of the modes to correct.
         zern2correct : array-like
             Indices of the Zernike coefficients to correct.
+        tn : str, optional
+            Tracking number of the intMat.fits to be used
         apply : bool, optional
             If True, the correction command will be applied to the system.
             If False (default), the correction command will be returned.
@@ -91,7 +94,16 @@ class Alignment():
         log(f"{self.correct_alignment.__qualname__}")
         image = self._acquire[0](n_frames)
         zernike_coeff = self._zern_routine(image)
-        intMat = readFits_data(self._readPath+'/intMat.fits')
+        if tn is not None:
+            intMat = readFits_data(self._readPath+f'/{tn}/intMat.fits')
+        else:
+            try:
+                if self.intMat is not None:
+                    intMat = self.intMat
+                else:
+                    raise AttributeError()
+            except AttributeError:
+                raise AttributeError("No internal matrix found. Please calibrate the alignment first.")
         reduced_intMat = intMat[np.ix_(modes2correct,zern2correct)]
         reduced_cmdMat = self.cmdMat[:,modes2correct]
         recMat = self._create_rec_mat(reduced_intMat)
@@ -185,8 +197,7 @@ class Alignment():
         str
             A message indicating the successful loading of the file.
         """
-        par = readFits_data(filepath)
-        self._auxMask = par.mask #!!! to check
+        self._parabola = readFits_maskedImage(filepath)
         return f"Correctly loaded '{filepath}'"
 
     def _images_production(self, template, n_repetitions):
@@ -245,11 +256,11 @@ class Alignment():
         if not isinstance(imglist, list):
             imglist = [imglist]
         for img in imglist:
-            if self._auxMask is None:
+            if self._parabola is None:
                 coeff, _ = zern.zernikeFit(img, self._zvec2fit)
                 log(f"{zern.zernikeFit.__qualname__}")
             else:
-                coeff, _ = zern.zernikeFitAuxmask(img, self._auxMask, self._zvec2fit)
+                coeff, _ = zern.zernikeFitAuxmask(img, self._parabola.mask, self._zvec2fit)
                 log(f"{zern.zernikeFitAuxmask.__qualname__}")
             coefflist.append(coeff[self._zvec2use])
         if len(coefflist) == 1:
