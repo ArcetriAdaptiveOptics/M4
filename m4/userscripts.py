@@ -2,6 +2,7 @@ import numpy as np
 from m4.configuration import userconfig as myconf
 #from m4 import main, noise #main is no longer required for alignment
 from m4 import noise
+from m4 import main  #this is to be removed
 from m4.configuration import update_folder_paths as ufp
 from m4.utils import markers as mrk
 from m4.mini_OTT import measurements
@@ -42,17 +43,17 @@ class OTTScripts:
     def alignTT(nframes, move=0, removePar=True):
         zz = np.array([0,1])
         dd = np.array([3,4])
-        generalAlignment(self, zz, dd,nframes, move, removePar)
+        self.generalAlignment(zz, dd,nframes, move, removePar)
 
     def alignComa(nframes, move=0, removePar=True):
         zz = np.array([0,1,6,7])
         dd = np.array([1,2,3,4])
-        generalAlignment(self, zz, dd,nframes, move, removePar)
+        self.generalAlignment(zz, dd,nframes, move, removePar)
 
     def alignFocus(nframes, move=0, removePar=True):
         zz = np.array([2])
         dd = np.array([0])
-        generalAlignment(self, zz, dd,nframes, move, removePar)  
+        self.generalAlignment(zz, dd,nframes, move, removePar)  
     '''
     def alignTT(self, nframes, move=0, removePar=True):
         self.config4D4Alignment()
