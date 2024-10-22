@@ -43,17 +43,18 @@ class OTTScripts:
     def alignTT(nframes, move=0, removePar=True):
         zz = np.array([0,1])
         dd = np.array([3,4])
-        self.generalAlignment(zz, dd,nframes, move, removePar)
+        generalAlignment(zz, dd,nframes, move, removePar)
 
     def alignComa(nframes, move=0, removePar=True):
         zz = np.array([0,1,6,7])
         dd = np.array([1,2,3,4])
-        self.generalAlignment(zz, dd,nframes, move, removePar)
+        generalAlignment(zz, dd,nframes, move, removePar)
 
     def alignFocus(nframes, move=0, removePar=True):
         zz = np.array([2])
         dd = np.array([0])
-        self.generalAlignment(zz, dd,nframes, move, removePar)  
+        generalAlignment(zz, dd,nframes, move, removePar)  
+
     '''
     def alignTT(self, nframes, move=0, removePar=True):
         self.config4D4Alignment()
