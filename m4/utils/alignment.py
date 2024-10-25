@@ -44,7 +44,7 @@ class Alignment():
         self._parabola  = readFits_data(mac.calibrated_parabola) if not mac.calibrated_parabola=='' else None
         self._moveFnc   = self.__get_callables(self.mdev, mac.devices_move_calls)
         self._readFnc   = self.__get_callables(self.mdev, mac.devices_read_calls)
-        self._acquire   = self.__get_callables(self.ccd,  mac.ccd_acquisition)
+        self._ccdFncs   = self.__get_callables(self.ccd,  mac.ccd_acquisition)
         self._devName   = self.__get_dev_names(mac.names, ndev=len(self._moveFnc))
         self._dof       = [np.array(dof) if not isinstance(dof, np.ndarray) else dof for dof in mac.dof]
         self._dofTot    = mac.cmdDof if isinstance(mac.cmdDof, list) else [mac.cmdDof]*len(self._moveFnc)
@@ -92,8 +92,7 @@ class Alignment():
         correction command or returns it.
         """
         log(f"{self.correct_alignment.__qualname__}")
-        image = self._acquire[0](n_frames)
-        image = self._acquire[1](image)
+        image = self._acquire(n_frames)
         initpos = self.read_positions(show=False)
         zernike_coeff = self._zern_routine(image)
         if tn is not None:
@@ -366,8 +365,8 @@ class Alignment():
             The list of acquired images.
         """
         log(f"{self._img_acquisition.__qualname__}")
-        log(f"{self._acquire[0].__qualname__}")
-        imglist = [self._acquire[0](15)]
+        log(f"{self._acquire.__qualname__}")
+        imglist = [self._acquire(15)]
         for t in template:
             logMsg = ''
             logMsg += f"t = {t}"
@@ -376,9 +375,26 @@ class Alignment():
             #logging.info(logMsg)
             print(logMsg) #!!! debug only
             self._apply_command(cmd)
-            log(f"{self._acquire[0].__qualname__}")
-            imglist.append(self._acquire[0](15))
+            log(f"{self._acquire.__qualname__}")
+            imglist.append(self._acquire(15))
         return imglist
+    
+    def _acquire(self, n_frames):
+        """
+        Acquires images from the CCD device.
+
+        Parameters
+        ----------
+        n_frames : int
+            The number of frames to acquire and average.
+
+        Returns
+        -------
+        img : np.ndarray
+            The acquired image, correctly reframed according to the acquisition
+            device configuration settings.
+        """
+        return self._ccdFncs[1](self._ccdFncs[0](n_frames))
 
     def _push_pull_redux(self, imglist, template):
         """

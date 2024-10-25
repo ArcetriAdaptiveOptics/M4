@@ -5,6 +5,8 @@ Author(s)
     - Runa Briguglio: written in 2024
 """
 import zmq
+import time
+import struct
 import numpy as np
 from m4.ground import logger_set_up as logger
 from m4.configuration.ott_parameters import OttParameters
@@ -37,8 +39,8 @@ class DpMotors(BaseM4Exapode):
         self._invkinematrix = np.linalg.inv(self._kinematrix)
         self._context = None
         self._socket = None
-        self.remote_ip = 0
-        self.remote_port = 0
+        self.remote_ip = "192.168.22.51" # Provvisorio
+        self.remote_port = 6660 # provvisorio
         logger.set_up_logger('path/dpMotors.log', 10)
 
     def getPosition(self):
@@ -96,7 +98,138 @@ class DpMotors(BaseM4Exapode):
         abc = np.dot(pos,self._invkinematrix)
         #return abc
         pass
+
+    def _extract_motor_position(self, response):
+        '''
+        '''
+        pass
     
+    def _send_message(self, abs_pos, act_n:int=3):
+        """
+        Function wich comunicates with the BusBox for moving the actuators.
+
+        Parameters
+        ----------
+        abs_pos: int or list
+            The absolute position in um.
+        act_n: int
+            The actuator to move. default is 3, which means all actuators are 
+            moved, in which case abs_pos should be a list or array, whose order
+            will be the same as the actuators.
+
+        Returns
+        -------
+        response : bytearray
+            The 116 bytes response from the BusBox, to be decoded.
+        """
+        act_positions = np.zeros(3, dtype=int)
+        act_positions[act_n] = abs_pos
+        cmd = struct.pack('<BBBhhh', 
+                        17,
+                        7,
+                        7, 
+                        act_positions[0],
+                        act_positions[1],
+                        act_positions[2])
+        cmd += bytearray(12)
+        out = self._send(cmd)
+        response = self._decode_message(out)
+        act_pos = response['actuators'][act_n]['actual_position']
+        act_enc_pos = response['actuators'][act_n]['encoder_position']
+        act_targ_pos = abs_pos
+        tot_time = 0
+        while np.abs(act_targ_pos-act_enc_pos) > 4:
+            waittime = 3
+            tot_time += waittime
+            print("waiting ", waittime)
+            time.sleep(waittime)
+            out = self._send(cmd)
+            response = self._decode_message(out)
+            act_pos = response['actuators'][act_n]['actual_position']
+            act_enc_pos = response['actuators'][act_n]['encoder_position']
+            print(f"actual position: {act_pos}\nencoder_position: {act_enc_pos}")
+        check = self._send_read_message()
+        response = self._decode_message(check)
+        response['execution_time'] = tot_time
+        return response
+    
+    def _send(self, bytestream):
+        """
+        Function wich comunicates with the BusBox.
+
+        Parameters
+        ----------
+        bytestream : bytearray
+            The message to be sent to the BusBox.
+        """
+        try:
+            self._socket.send(bytestream)
+            out = self._socket.recv()
+            return out
+        except zmq.ZMQError as ze:
+            print(ze)
+            return False
+
+    def _send_read_message(self):
+        """
+        Function wich comunicates with the BusBox for reading the actuators
+        position, done through a null byte command.
+
+        Returns
+        -------
+        response : bytearray
+            The 116 bytes response from the BusBox, to be decoded.
+        """
+        read_cmd = bytearray(hex(17), 'utf-8') + bytearray(18)
+        out = self._send(read_cmd)
+        response = self._decode_message(out)
+        return response
+
+    def _decode_message(self, message):
+        """
+        Function which decodes the message from the BusBox into human readable format.
+
+        Parameters
+        ----------
+        message : bytearray
+            The 116 bytes response from the BusBox.
+
+        Returns
+        -------
+        response : dict
+            The decoded message.
+        """
+        act_struct = 'hhibH3b' # short*2, int, char, unsigned short, 3-char array
+        struct_size = struct.calcsize('Bbbb')
+        outer_data = struct.unpack('Bbbb', message[:struct_size])
+        heart_beat_counter, voltage, temperature, status = outer_data
+        actuators = []
+        act_size = struct.calcsize(act_struct)
+        # Unpack each inner struct
+        for i in range(3):
+            start = struct_size + i * act_size
+            end = start + act_size
+            status_bytes = np.zeros(3, dtype=int)
+            actual_position, target_position, encoder_position, actual_velocity, bus_voltage, *status_bytes = struct.unpack(act_struct, message[start:end])
+            # Decode the status field from bytes to string and strip null bytes
+            status_str = ''.join(chr(b if b >= 0 else 256 + b) for b in status_bytes if b != 0)
+            actuators.append({
+                'actual_position': actual_position,
+                'target_position': target_position,
+                'encoder_position': encoder_position,
+                'actual_velocity': actual_velocity,
+                'bus_voltage': bus_voltage,
+                'status': status_str
+            })
+        decodified_out_message = {
+            'heart_beat_counter': heart_beat_counter,
+            'voltage': voltage,
+            'temperature': temperature,
+            'status': status,
+            'actuators': actuators
+        }
+        return decodified_out_message
+
     def _connectBusBox(self):
         try:
             self._context = zmq.Context()
@@ -117,3 +250,7 @@ class DpMotors(BaseM4Exapode):
             logger.log(f"DisconnectZMQ: {e}")
             return False
         pass
+
+
+#_______________________
+# Dictionary
