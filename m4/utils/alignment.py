@@ -93,10 +93,11 @@ class Alignment():
         """
         log(f"{self.correct_alignment.__qualname__}")
         image = self._acquire[0](n_frames)
+        image = self._acquire[1](image)
         initpos = self.read_positions(show=False)
         zernike_coeff = self._zern_routine(image)
         if tn is not None:
-            intMat = readFits_data(self._readPath+f'/{tn}/intMat.fits')
+            intMat = readFits_data(self._readPath+f'/{tn}/InteractionMatrix.fits')
         else:
             try:
                 if self.intMat is not None:
