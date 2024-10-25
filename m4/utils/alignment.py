@@ -13,7 +13,7 @@ How to Use it
 import os
 import numpy as np
 from m4.utils import _m4ac as mac # to change
-from m4.ground import zernike as zern, timestamp as ts
+from m4.ground import zernike as zern, timestamp as ts, geo
 from m4.ground.read_data import readFits_data, readFits_maskedImage, saveFits_data
 from m4.ground.logger_set_up import *
 _tt  = ts.Timestamp()
@@ -97,6 +97,7 @@ class Alignment():
         zernike_coeff = self._zern_routine(image)
         if tn is not None:
             intMat = readFits_data(self._readPath+f'/{tn}/InteractionMatrix.fits')
+            self.intMat=intMat
         else:
             try:
                 if self.intMat is not None:
@@ -105,16 +106,30 @@ class Alignment():
                     raise AttributeError()
             except AttributeError:
                 raise AttributeError("No internal matrix found. Please calibrate the alignment first.")
-        reduced_intMat = intMat[np.ix_(modes2correct,zern2correct)]
+        #reduced_intMat = intMat[np.ix_(modes2correct,zern2correct)]
+        reduced_intMat = intMat[np.ix_(zern2correct, modes2correct)]#mod
+        print('intmat shape')
+        print(reduced_intMat.shape)
         reduced_cmdMat = self.cmdMat[:,modes2correct]
+        reduced_cmdMat = reduced_cmdMat[modes2correct,:]  #added
+
+        print('cmd mat, reduced cmd mat')
+        print(self.cmdMat.shape, reduced_cmdMat.shape)
         recMat = self._create_rec_mat(reduced_intMat)
         reduced_cmd = np.dot(recMat, zernike_coeff[zern2correct])
+        reduced_cmd = np.dot(zernike_coeff[zern2correct],recMat)  #order modified
+
+        print('Reconstructed command')
+        print(reduced_cmd)
         f_cmd = np.dot(reduced_cmdMat, reduced_cmd)
+        f_cmd = np.dot( reduced_cmd,reduced_cmdMat)#order modified
+       # f_cmd = np.dot( reduced_cmd,self.cmdMat)#order modified
+
         print(f"Resulting Command: {f_cmd}")
         endpos = self.read_positions(show=False)
-        self._txt.log(f"Calib. Trackn & IniZern:  {tn} {initpos:.3e}")
-        self._txt.log(f"Result Trackn & EndZern:  {tn} {endpos:.3e}")
-        self._txt.log(f"DoF & Zern2Corr:          {modes2correct} {zern2correct}")
+        #self._txt.log(f"Calib. Trackn & IniZern:  {tn} {initpos:.3e}")
+        #self._txt.log(f"Result Trackn & EndZern:  {tn} {endpos:.3e}")
+        #self._txt.log(f"DoF & Zern2Corr:          {modes2correct} {zern2correct}")
         if apply:
             print("Applying correction command...")
             self._apply_command(f_cmd)
@@ -265,7 +280,13 @@ class Alignment():
                 coeff, _ = zern.zernikeFit(img, self._zvec2fit)
                 log(f"{zern.zernikeFit.__qualname__}")
             else:
-                coeff, _ = zern.zernikeFitAuxmask(img, self._parabola.mask, self._zvec2fit)
+                print('Removing the PAR')
+                img = img-2*self._parabola
+                cir = geo.qpupil(-1 * self._parabola.mask + 1)
+                mm = geo.draw_mask(self._parabola.data * 0, cir[0],
+                               cir[1], 1.44 / 0.00076 / 2, out=0)
+                coeff, _ = zern.zernikeFitAuxmask(img, mm, self._zvec2fit)
+                print(coeff)  #to be removed
                 log(f"{zern.zernikeFitAuxmask.__qualname__}")
             coefflist.append(coeff[self._zvec2use])
         if len(coefflist) == 1:
