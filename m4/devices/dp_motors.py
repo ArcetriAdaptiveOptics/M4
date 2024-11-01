@@ -39,20 +39,25 @@ class DpMotors(BaseM4Exapode):
         self._invkinematrix = np.linalg.inv(self._kinematrix)
         self._context = None
         self._socket = None
-        self.remote_ip = "192.168.22.51" # Provvisorio
-        self.remote_port = 6660 # provvisorio
+        self.remote_ip = "192.168.22.51" # final?
+        self.remote_port = 6660 # final?
         logger.set_up_logger('path/dpMotors.log', 10)
 
     def getPosition(self):
-        ''' to be implemented
-        '''
+        """
+        Function to get the current position of the actuators.
+
+        Returns
+        -------
+        pos : list or ArrayLike
+            The current position of the actuators.
+        """
         pp = self._getMotorPosition()
         kk = self._motor2kinematics(pp)
         pos = np.zeros(6)
         pos[OttParameters.M4_DOF] = kk[1:]
         print(pos)
-        #return pos
-        pass
+        return pos
 
     def setPosition(self, absolute_position_in_mm):
         ''' to be implemented
@@ -63,21 +68,27 @@ class DpMotors(BaseM4Exapode):
         self._setMotorPosition(vm)
         pass
 
-
     def _getMotorPosition(self):
-        ''' to be implemented, at low level
-        '''
+        """
+        Function to get the current position of the actuators.
+        
+        Returns
+        -------
+        positions : list
+            A list containing, in order, the encoder position of the actuators
+            read from the bus box, in millimeters.
+        """
         self._connectBusBox()
-        # Si manda il comando
-        # si riceve risposta 
-        # si fanno le conversioni del caso
+        reading = self._decode_message(self._send_read_message())
+        positions = self._extract_motor_position(reading)
+        positions = positions*10e-3 # conversion in mm
         self._disconnectBusBox()
-        pass
-
+        return positions
 
     def _setMotorPosition(self, motorcmd):
         ''' to be implemented, at low level
         '''
+        pos = motorcmd*10e3 # conversion in um
         self._connectBusBox()
         # Si manda il comando
         # si riceve risposta 
@@ -88,23 +99,36 @@ class DpMotors(BaseM4Exapode):
     def _motor2kinematics(self, pos):
         '''
         '''
-        ptt = np.dot(pos,self._kinematrix)
+        ptt = np.dot(pos, self._kinematrix)
         #return ptt
         pass
 
     def _kinematics2motor(self,pos):
         '''
         '''
-        abc = np.dot(pos,self._invkinematrix)
+        abc = np.dot(pos, self._invkinematrix)
         #return abc
         pass
 
     def _extract_motor_position(self, response):
-        '''
-        '''
-        pass
+        """
+        Function to extract the motor position from the response of the BusBox.
+        
+        Parameters
+        ----------
+        response : dict
+            The response from the BusBox.
+            
+        Returns
+        -------
+        positions : list
+            A list containing, in order, the encoder position of the actuators
+            read from the bus box.
+        """
+        position = [response['actuators'][act]['encoder_position'] for act in range(3)]
+        return position
     
-    def _send_message(self, abs_pos, act_n:int=3):
+    def _send_message(self, abs_pos_in_um, act_n:int=3):
         """
         Function wich comunicates with the BusBox for moving the actuators.
 
@@ -123,7 +147,7 @@ class DpMotors(BaseM4Exapode):
             The 116 bytes response from the BusBox, to be decoded.
         """
         act_positions = np.zeros(3, dtype=int)
-        act_positions[act_n] = abs_pos
+        act_positions[act_n] = abs_pos_in_um
         cmd = struct.pack('<BBBhhh', 
                         17,
                         7,
@@ -136,7 +160,7 @@ class DpMotors(BaseM4Exapode):
         response = self._decode_message(out)
         act_pos = response['actuators'][act_n]['actual_position']
         act_enc_pos = response['actuators'][act_n]['encoder_position']
-        act_targ_pos = abs_pos
+        act_targ_pos = abs_pos_in_um
         tot_time = 0
         while np.abs(act_targ_pos-act_enc_pos) > 4:
             waittime = 3
@@ -151,6 +175,21 @@ class DpMotors(BaseM4Exapode):
         check = self._send_read_message()
         response = self._decode_message(check)
         response['execution_time'] = tot_time
+        return response
+
+    def _send_read_message(self):
+        """
+        Function wich comunicates with the BusBox for reading the actuators
+        position, done through a null byte command.
+
+        Returns
+        -------
+        response : bytearray
+            The 116 bytes response from the BusBox, to be decoded.
+        """
+        read_cmd = bytearray(hex(17), 'utf-8') + bytearray(18)
+        out = self._send(read_cmd)
+        response = self._decode_message(out)
         return response
     
     def _send(self, bytestream):
@@ -169,21 +208,6 @@ class DpMotors(BaseM4Exapode):
         except zmq.ZMQError as ze:
             print(ze)
             return False
-
-    def _send_read_message(self):
-        """
-        Function wich comunicates with the BusBox for reading the actuators
-        position, done through a null byte command.
-
-        Returns
-        -------
-        response : bytearray
-            The 116 bytes response from the BusBox, to be decoded.
-        """
-        read_cmd = bytearray(hex(17), 'utf-8') + bytearray(18)
-        out = self._send(read_cmd)
-        response = self._decode_message(out)
-        return response
 
     def _decode_message(self, message):
         """

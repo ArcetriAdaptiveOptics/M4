@@ -97,7 +97,7 @@ class Alignment():
         zernike_coeff = self._zern_routine(image)
         if tn is not None:
             intMat = readFits_data(self._readPath+f'/{tn}/InteractionMatrix.fits')
-            self.intMat=intMat
+            self.intMat = intMat
         else:
             try:
                 if self.intMat is not None:
@@ -106,30 +106,22 @@ class Alignment():
                     raise AttributeError()
             except AttributeError:
                 raise AttributeError("No internal matrix found. Please calibrate the alignment first.")
-        #reduced_intMat = intMat[np.ix_(modes2correct,zern2correct)]
-        reduced_intMat = intMat[np.ix_(zern2correct, modes2correct)]#mod
-        print('intmat shape')
-        print(reduced_intMat.shape)
+        reduced_intMat = intMat[np.ix_(zern2correct, modes2correct)]
+        print('intmat shape') # debug
+        print(reduced_intMat.shape) # debug
         reduced_cmdMat = self.cmdMat[:,modes2correct]
-        reduced_cmdMat = reduced_cmdMat[modes2correct,:]  #added
-
-        print('cmd mat, reduced cmd mat')
-        print(self.cmdMat.shape, reduced_cmdMat.shape)
+        print('cmd mat, reduced cmd mat') # debug
+        print(self.cmdMat.shape, reduced_cmdMat.shape) # debug
         recMat = self._create_rec_mat(reduced_intMat)
         reduced_cmd = np.dot(recMat, zernike_coeff[zern2correct])
-        reduced_cmd = np.dot(zernike_coeff[zern2correct],recMat)  #order modified
-
-        print('Reconstructed command')
-        print(reduced_cmd)
-        f_cmd = np.dot(reduced_cmdMat, reduced_cmd)
-        f_cmd = np.dot( reduced_cmd,reduced_cmdMat)#order modified
-       # f_cmd = np.dot( reduced_cmd,self.cmdMat)#order modified
-
+        print('Reconstructed command') # debug
+        print(reduced_cmd) # debug
+        f_cmd = -np.dot(reduced_cmdMat, reduced_cmd)
         print(f"Resulting Command: {f_cmd}")
         endpos = self.read_positions(show=False)
-        #self._txt.log(f"Calib. Trackn & IniZern:  {tn} {initpos:.3e}")
-        #self._txt.log(f"Result Trackn & EndZern:  {tn} {endpos:.3e}")
-        #self._txt.log(f"DoF & Zern2Corr:          {modes2correct} {zern2correct}")
+        #self._txt.log("Calib. Trackn & IniZern:  {} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e}".format(tn, *initpos))
+        #self._txt.log("Result Trackn & EndZern:  {} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e}".format(tn, *endpos))
+        self._txt.log(f"DoF & Zern2Corr:          {modes2correct} {zern2correct}")
         if apply:
             print("Applying correction command...")
             self._apply_command(f_cmd)
