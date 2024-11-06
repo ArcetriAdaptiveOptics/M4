@@ -41,6 +41,7 @@ class DpMotors(BaseM4Exapode):
         self._socket = None
         self.remote_ip = "192.168.22.51" # final?
         self.remote_port = 6660 # final?
+        self._m4dof = slice(OttParameters.M4_DOF[0], OttParameters.M4_DOF[1]+1)
         logger.set_up_logger('path/dpMotors.log', 10)
 
     def getPosition(self):
@@ -54,23 +55,34 @@ class DpMotors(BaseM4Exapode):
         """
         pp = self._getMotorPosition()
         kk = self._motor2kinematics(pp)
-        pos = np.zeros(6)
-        pos[OttParameters.M4_DOF] = kk[1:]
+        pos = np.array([0,0,0] + kk[self._m4dof] + [0])
         print(pos)
         return pos
 
-    def setPosition(self, absolute_position_in_mm):
-        ''' to be implemented
-        '''
-        v = np.array([0,absolute_position_in_mm[OttParameters.M4_DOF]])
-        vm = np.dot(v, self._kinematrix)
-        print(vm)
+    def setPosition(self, absolute_position_in_mm:list):
+        """
+        Function to set the position of the DP actuators.
+        
+        Parameters
+        ----------
+        absolute_position_in_mm : list or ArrayLike
+            The 6-dimentional array of the absolute positions, in mm, of all
+            the degrees of freedom of the DP. Since only Tip/Til can be commanded,
+            the array should have the form [0,0,0,x,y,0].
+        
+        Returns
+        -------
+        pos : list or ArrayLike
+            The current position of the actuators.
+        """
+        v = np.array([0] + absolute_position_in_mm[self._m4dof])
+        vm = self._kinematics2motor(v)
         self._setMotorPosition(vm)
-        pass
+        return self.getPosition()
 
     def _getMotorPosition(self):
         """
-        Function to get the current position of the actuators.
+        Middle level function to get the current position of the actuators.
         
         Returns
         -------
@@ -86,29 +98,63 @@ class DpMotors(BaseM4Exapode):
         return positions
 
     def _setMotorPosition(self, motorcmd):
-        ''' to be implemented, at low level
-        '''
+        """
+        Middle level function to set the position of the actuators.
+        
+        Parameters
+        ----------
+        motorcmd : list
+            A list containing, in order, the absolute position in mm of the
+            actuators to be set.
+            
+        Returns
+        -------
+        response : dict
+            The response from the BusBox.
+        """
         pos = motorcmd*10e3 # conversion in um
         self._connectBusBox()
-        # Si manda il comando
-        # si riceve risposta 
-        # si fanno le conversioni del caso
+        self._send_message(pos)
         self._disconnectBusBox()
-        pass
+        return 
 
     def _motor2kinematics(self, pos):
-        '''
-        '''
-        ptt = np.dot(pos, self._kinematrix)
-        #return ptt
-        pass
+        """
+        Function to convert the absolute positions of the actuators from motor
+        to zernike positions.
+        
+        Parameters
+        ----------
+        pos: list or ArrayLike
+            The 3-component only vector containing the motor encoder positions.
+            
+        Returns
+        -------
+        kin: list
+            The 3-component only vector containing the kinematic positions of the
+            Motors.
+        """
+        kin = np.dot(pos, self._kinematrix)
+        return kin
 
-    def _kinematics2motor(self,pos):
-        '''
-        '''
-        abc = np.dot(pos, self._invkinematrix)
-        #return abc
-        pass
+    def _kinematics2motor(self, pos):
+        """
+        Function to convert the absolute positions of the actuators from zernike
+        to motor positions.
+        
+        Parameters
+        ----------
+        pos: list or ArrayLike
+            The 3-component only vector containing the kinematic positions of the
+            Motors.
+        
+        Returns
+        -------
+        motor_pos: list
+            The 3-component only vector containing the motor encoder positions.
+        """
+        motor_pos = np.dot(pos, self._invkinematrix)
+        return motor_pos
 
     def _extract_motor_position(self, response):
         """
@@ -128,26 +174,22 @@ class DpMotors(BaseM4Exapode):
         position = [response['actuators'][act]['encoder_position'] for act in range(3)]
         return position
     
-    def _send_message(self, abs_pos_in_um, act_n:int=3):
+    def _send_message(self, acts_pos_in_um:list):
         """
         Function wich comunicates with the BusBox for moving the actuators.
 
         Parameters
         ----------
-        abs_pos: int or list
-            The absolute position in um.
-        act_n: int
-            The actuator to move. default is 3, which means all actuators are 
-            moved, in which case abs_pos should be a list or array, whose order
-            will be the same as the actuators.
+        acts_pos_in_um: int or list
+            A List containing the absolute positions, in um, to actuate of the
+            DP actuators.
 
         Returns
         -------
         response : bytearray
             The 116 bytes response from the BusBox, to be decoded.
         """
-        act_positions = np.zeros(3, dtype=int)
-        act_positions[act_n] = abs_pos_in_um
+        act_positions = np.array([pos for pos in acts_pos_in_um], dtype=int)
         cmd = struct.pack('<BBBhhh', 
                         17,
                         7,
@@ -157,21 +199,22 @@ class DpMotors(BaseM4Exapode):
                         act_positions[2])
         cmd += bytearray(12)
         out = self._send(cmd)
+        time.sleep(3)
         response = self._decode_message(out)
-        act_pos = response['actuators'][act_n]['actual_position']
-        act_enc_pos = response['actuators'][act_n]['encoder_position']
-        act_targ_pos = abs_pos_in_um
-        tot_time = 0
-        while np.abs(act_targ_pos-act_enc_pos) > 4:
-            waittime = 3
-            tot_time += waittime
-            print("waiting ", waittime)
-            time.sleep(waittime)
-            out = self._send(cmd)
-            response = self._decode_message(out)
+        for act_n in range(3):
             act_pos = response['actuators'][act_n]['actual_position']
             act_enc_pos = response['actuators'][act_n]['encoder_position']
-            print(f"actual position: {act_pos}\nencoder_position: {act_enc_pos}")
+            act_targ_pos = acts_pos_in_um[act_n]
+            tot_time = 0
+            while np.abs(act_targ_pos-act_enc_pos) > 4:
+                waittime = 2.5
+                tot_time += waittime
+                out = self._send(cmd)
+                time.sleep(waittime)
+                response = self._decode_message(out)
+                act_pos = response['actuators'][act_n]['actual_position']
+                act_enc_pos = response['actuators'][act_n]['encoder_position']
+                print(f"actual position: {act_pos}\nencoder_position: {act_enc_pos}")
         check = self._send_read_message()
         response = self._decode_message(check)
         response['execution_time'] = tot_time
@@ -278,3 +321,23 @@ class DpMotors(BaseM4Exapode):
 
 #_______________________
 # Dictionary
+# TCS Interface KAMAL (C#)
+#
+# struct status_actuator {
+#    short actual_position;         2by - h
+#    short target_position;         2by - h
+#    int encoder_position;          4by - i
+#    char actual_velocity;          1by - b
+#    unsigned short bus_voltage;    2by - H
+#  //unsigned short run_current;
+#    char status[3];                1by x 3 - 3b
+# }__attribute((packed)); -> 14 bytes - hhibH3b
+
+# struct status_packet
+#    {
+#    unsigned char heart_beat_counter;      1by - B
+#    char voltage;                          1by - b
+#    char temperature;                      1by - b
+#    char status;                           1by - b
+#    struct status_actuator actuators[8];   14by x 8 -> 112
+# }__attribute((packed)); -> 116by - (Bbbb + hhibH3b * 8)
