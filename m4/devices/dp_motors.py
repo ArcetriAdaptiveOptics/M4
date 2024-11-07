@@ -113,7 +113,17 @@ class DpMotors(BaseM4Exapode):
             The response from the BusBox.
         """
         pos = motorcmd*10e3 # conversion in um
-        self._connectBusBox()
+        connected = self._connectBusBox()
+        if connected is not True:
+            for ntry in range(5):
+                print(f"Connection failed, retrying... {ntry}")
+                connected = self._connectBusBox()
+                if connected is True:
+                    break
+                time.sleep(1)
+        if connected is False:
+            print("Connection failed")
+            return
         self._send_message(pos)
         self._disconnectBusBox()
         return 
@@ -298,6 +308,10 @@ class DpMotors(BaseM4Exapode):
         return decodified_out_message
 
     def _connectBusBox(self):
+        """
+        Connection to the BusBox controlling the DP motors actuators, via 
+        ZMQ Pair protocol.
+        """
         try:
             self._context = zmq.Context()
             self._socket = self._context.socket(zmq.PAIR)
@@ -308,6 +322,9 @@ class DpMotors(BaseM4Exapode):
             return False
 
     def _disconnectBusBox(self):
+        """
+        Disconnection from the BusBox controlling the DP motors actuators.
+        """
         try:
             self._socket.disconnect(f"tcp://{self.remote_ip}:{self.remote_port}")
             self._socket.close()
@@ -316,7 +333,6 @@ class DpMotors(BaseM4Exapode):
         except Exception as e:
             logger.log(f"DisconnectZMQ: {e}")
             return False
-        pass
 
 
 #_______________________
