@@ -40,7 +40,12 @@ class OTTScripts:
             self.alignment.reload_calibrated_parabola(tnPar)
         self.alignment.correct_alignment(dof, zz, move, nframes)
 
-    def alignTT(self, nframes, move=0, removePar=True):
+    def alignM4TT(self, nframes, move=0, removePar=True):
+        zz = np.array([0,1])
+        dd = np.array([5,6])
+        self.generalAlignment(zz, dd,nframes, move, removePar)
+
+    def alignOTT(self, nframes, move=0, removePar=True):
         zz = np.array([0,1])
         dd = np.array([3,4])
         self.generalAlignment(zz, dd,nframes, move, removePar)
