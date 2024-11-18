@@ -42,7 +42,7 @@ class DpMotors(BaseM4Exapode):
         self.remote_ip = "192.168.22.51" # final?
         self.remote_port = 6660 # final?
         self._m4dof = slice(OttParameters.M4_DOF[0], OttParameters.M4_DOF[1]+1)
-        logger.set_up_logger('path/dpMotors.log', 10)
+        #logger.set_up_logger('path/dpMotors.log', 10)
 
     def getPosition(self):
         """
@@ -318,7 +318,7 @@ class DpMotors(BaseM4Exapode):
             self._socket.connect(f"tcp://{self.remote_ip}:{self.remote_port}")
             return True
         except Exception as e:
-            logger.log(f"ConnectZMQ: {e}")
+            #logger.log(f"ConnectZMQ: {e}")
             return False
 
     def _disconnectBusBox(self):
@@ -331,7 +331,7 @@ class DpMotors(BaseM4Exapode):
             self._context.term()
             return True
         except Exception as e:
-            logger.log(f"DisconnectZMQ: {e}")
+            #logger.log(f"DisconnectZMQ: {e}")
             return False
 
 
