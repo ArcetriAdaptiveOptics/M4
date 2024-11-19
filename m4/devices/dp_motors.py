@@ -276,18 +276,18 @@ class DpMotors(BaseM4Exapode):
         response : dict
             The decoded message.
         """
-        act_struct = 'hhibH3b' # short*2, int, char, unsigned short, 3-char array
+        act_struct = 'hhib3bH' # short*2, int, char, unsigned short, 3-char array
         struct_size = struct.calcsize('Bbbb')
         outer_data = struct.unpack('Bbbb', message[:struct_size])
         heart_beat_counter, voltage, temperature, status = outer_data
         actuators = []
         act_size = struct.calcsize(act_struct)
         # Unpack each inner struct
-        for i in range(3):
+        for i in range(7):
             start = struct_size + i * act_size
             end = start + act_size
             status_bytes = np.zeros(3, dtype=int)
-            actual_position, target_position, encoder_position, actual_velocity, bus_voltage, *status_bytes = struct.unpack(act_struct, message[start:end])
+            actual_position, target_position, encoder_position, actual_velocity, *status_bytes, bus_voltage = struct.unpack(act_struct, message[start:end])
             # Decode the status field from bytes to string and strip null bytes
             status_str = ''.join(chr(b if b >= 0 else 256 + b) for b in status_bytes if b != 0)
             actuators.append({
