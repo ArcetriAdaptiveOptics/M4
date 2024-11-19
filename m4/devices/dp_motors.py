@@ -211,7 +211,7 @@ class DpMotors(BaseM4Exapode):
         out = self._send(cmd)
         time.sleep(3)
         response = self._decode_message(out)
-        check = self._check_actuation_success(response)
+        check = self._check_actuation_success(acts_pos_in_um, cmd, response)
         response = self._decode_message(check)
         return response
 
@@ -231,15 +231,15 @@ class DpMotors(BaseM4Exapode):
         success : bool
             True if the actuation was successful, False otherwise.
         """
-        timeout = act_targ_pos/40
         for act_n in range(3):
             act_pos = response['actuators'][act_n]['actual_position']
             act_enc_pos = response['actuators'][act_n]['encoder_position']
             act_targ_pos = target_pos[act_n]
             tot_time = 0
             pos_err = np.abs(act_targ_pos-act_enc_pos)
+            timeout = act_targ_pos/40
             while pos_err > 1:
-                waittime = (act_enc_pos-target_pos[act_n])/40
+                waittime = (act_enc_pos-act_targ_pos)/40
                 tot_time += waittime
                 if tot_time >= timeout:
                     print("Timeout reached, trying reconnection...")
@@ -320,8 +320,7 @@ class DpMotors(BaseM4Exapode):
             end = start + act_size
             status_bytes = np.zeros(3, dtype=int)
             actual_position, target_position, encoder_position, actual_velocity, *status_bytes, bus_voltage = struct.unpack(act_struct, message[start:end])
-            # Decode the status field from bytes to string and strip null bytes
-            status_hex = [f"{b:02x}" for b in status_bytes]
+            status_hex = status_bytes#bytearray([b for b in status_bytes])
             actuators.append({
                 'actual_position': actual_position,
                 'target_position': target_position,
