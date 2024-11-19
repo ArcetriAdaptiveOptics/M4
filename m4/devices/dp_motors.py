@@ -238,6 +238,7 @@ class DpMotors(BaseM4Exapode):
             True if the actuation was successful, False otherwise.
         """
         for act_n in range(3):
+            print(f"act n.{act_n}")
             act_pos = response["actuators"][act_n]["actual_position"]
             act_enc_pos = response["actuators"][act_n]["encoder_position"]
             act_targ_pos = target_pos[act_n]
