@@ -321,14 +321,14 @@ class DpMotors(BaseM4Exapode):
             status_bytes = np.zeros(3, dtype=int)
             actual_position, target_position, encoder_position, actual_velocity, *status_bytes, bus_voltage = struct.unpack(act_struct, message[start:end])
             # Decode the status field from bytes to string and strip null bytes
-            status_str = ''.join(chr(b if b >= 0 else 256 + b) for b in status_bytes if b != 0)
+            status_hex = [f"{b:02x}" for b in status_bytes]
             actuators.append({
                 'actual_position': actual_position,
                 'target_position': target_position,
                 'encoder_position': encoder_position,
                 'actual_velocity': actual_velocity,
                 'bus_voltage': bus_voltage,
-                'status': status_str
+                'status': status_hex
             })
         decodified_out_message = {
             'heart_beat_counter': heart_beat_counter,
