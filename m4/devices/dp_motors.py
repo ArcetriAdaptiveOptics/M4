@@ -212,6 +212,9 @@ class DpMotors(BaseM4Exapode):
         time.sleep(3)
         response = self._decode_message(out)
         check = self._check_actuation_success(act_positions, cmd, response)
+        if check is False:
+            print("Actuation failed")
+            return
         return check
 
     def _check_actuation_success(self, target_pos, cmd, response):
@@ -222,6 +225,8 @@ class DpMotors(BaseM4Exapode):
         ----------
         trget_pos: list of int
             The target position to reach of the actuators.
+        cmd : bytearray
+            The message sent to the BusBox.
         response : dict
             The response from the BusBox.
 
@@ -240,27 +245,14 @@ class DpMotors(BaseM4Exapode):
             while pos_err > 1:
                 waittime = np.abs(act_enc_pos - act_targ_pos) / 40
                 tot_time += waittime
-                if tot_time >= timeout:
-                    print("Timeout reached, trying reconnection...")
-                    connected = self._connectBusBox()
-                    if connected is not True:
-                        for ntry in range(5):
-                            print(f"Connection failed, retrying... {ntry}")
-                            connected = self._connectBusBox()
-                            if connected is True:
-                                break
-                            time.sleep(1)
-                    if connected is False:
-                        print("Connection failed")
-                        raise ConnectionError("Connection failed")
+                self._timeout_check(tot_time, timeout)
                 out = self._send(cmd)
                 time.sleep(waittime)
                 response = self._decode_message(out)
                 act_pos = response["actuators"][act_n]["actual_position"]
                 act_enc_pos = response["actuators"][act_n]["encoder_position"]
                 print(f"actual position: {act_pos}\nencoder_position: {act_enc_pos}")
-        check = self._send_read_message()
-        return check
+        return True
 
     def _send_read_message(self):
         """
@@ -347,6 +339,34 @@ class DpMotors(BaseM4Exapode):
         }
         return decodified_out_message
 
+    def _timeout_check(self, total_time, timeout):
+        """
+        Function to check if the timeout is reached.
+
+        Parameters
+        ----------
+        total_time : float
+            The total time spent in the loop.
+        timeout : float
+            The maximum time allowed for the loop.
+
+        Returns
+        -------
+        timeout_reached : bool
+            True if the timeout is reached, False otherwise.
+        """
+        if total_time >= timeout:
+            print("Timeout reached, probably BusBox freezed. Trying reconnecting...")
+            reconnected = self._recconnectBusBox()
+            if reconnected:
+                print("Reconnection successful, re-applying command")
+                pass
+            else:
+                raise ConnectionError("Reconnection failed, exiting...")
+        if total_time > 2*timeout:
+            raise ConnectionError("Something's wrong. Exiting...")
+        
+
     def _connectBusBox(self):
         """
         Connection to the BusBox controlling the DP motors actuators, via
@@ -360,6 +380,24 @@ class DpMotors(BaseM4Exapode):
         except Exception as e:
             # logger.log(f"ConnectZMQ: {e}")
             return False
+        
+    def _recconnectBusBox(self):
+        """
+        Reconnection to the BusBox controlling the DP motors actuators.
+        """
+        self._disconnectBusBox()
+        connected = self._connectBusBox()
+        if connected is not True:
+            for ntry in range(5):
+                print(f"Connection failed, retrying... {ntry}")
+                connected = self._connectBusBox()
+                if connected is True:
+                    break
+                time.sleep(1)
+        if connected is False:
+            print("Connection failed")
+            return False
+        return True
 
     def _disconnectBusBox(self):
         """
