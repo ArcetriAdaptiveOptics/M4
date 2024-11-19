@@ -46,6 +46,7 @@ class DpMotors(BaseM4Exapode):
         self.remote_ip = "192.168.22.51"  # final?
         self.remote_port = 6660  # final?
         self._m4dof = slice(OttParameters.M4_DOF[0], OttParameters.M4_DOF[1] + 1)
+        self._minVel = 30
         # logger.set_up_logger('path/dpMotors.log', 10)
 
     def getPosition(self):
@@ -242,9 +243,9 @@ class DpMotors(BaseM4Exapode):
             act_targ_pos = target_pos[act_n]
             tot_time = 0
             pos_err = np.abs(act_targ_pos - act_enc_pos)
-            timeout = pos_err / 40 + 3
+            timeout = pos_err / self._minVel + 3
             while pos_err > 1:
-                waittime = np.abs(act_enc_pos - act_targ_pos) / 40
+                waittime = pos_err / self._minVel
                 tot_time += waittime
                 self._timeout_check(tot_time, timeout)
                 out = self._send(cmd)
@@ -252,7 +253,8 @@ class DpMotors(BaseM4Exapode):
                 response = self._decode_message(out)
                 act_pos = response["actuators"][act_n]["actual_position"]
                 act_enc_pos = response["actuators"][act_n]["encoder_position"]
-                print(f"actual position: {act_pos}\nencoder_position: {act_enc_pos}")
+                pos_err = np.abs(act_targ_pos - act_enc_pos)
+                print(f"ActPos: {act_pos} ; EncPos: {act_enc_pos}\n")
         return True
 
     def _send_read_message(self):
