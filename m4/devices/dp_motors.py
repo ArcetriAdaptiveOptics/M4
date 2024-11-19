@@ -207,28 +207,60 @@ class DpMotors(BaseM4Exapode):
                         act_positions[0],
                         act_positions[1],
                         act_positions[2])
-        cmd += bytearray(12)
+        cmd += bytearray(10)
         out = self._send(cmd)
         time.sleep(3)
         response = self._decode_message(out)
+        check = self._check_actuation_success(response)
+        response = self._decode_message(check)
+        return response
+
+    def _check_actuation_success(self, target_pos, cmd, response):
+        """
+        Function to check if the actuation was successful.
+
+        Parameters
+        ----------
+        trget_pos: list of int
+            The target position to reach of the actuators.
+        response : dict
+            The response from the BusBox.
+
+        Returns
+        -------
+        success : bool
+            True if the actuation was successful, False otherwise.
+        """
+        timeout = act_targ_pos/40
         for act_n in range(3):
             act_pos = response['actuators'][act_n]['actual_position']
             act_enc_pos = response['actuators'][act_n]['encoder_position']
-            act_targ_pos = acts_pos_in_um[act_n]
+            act_targ_pos = target_pos[act_n]
             tot_time = 0
-            while np.abs(act_targ_pos-act_enc_pos) > 4:
-                waittime = 2.5
+            pos_err = np.abs(act_targ_pos-act_enc_pos)
+            while pos_err > 1:
+                waittime = (act_enc_pos-target_pos[act_n])/40
                 tot_time += waittime
+                if tot_time >= timeout:
+                    print("Timeout reached, trying reconnection...")
+                    connected = self._connectBusBox()
+                    if connected is not True:
+                        for ntry in range(5):
+                            print(f"Connection failed, retrying... {ntry}")
+                            connected = self._connectBusBox()
+                            if connected is True:
+                                break
+                            time.sleep(1)
+                    if connected is False:
+                        print("Connection failed")
+                        raise ConnectionError("Connection failed")
                 out = self._send(cmd)
                 time.sleep(waittime)
                 response = self._decode_message(out)
                 act_pos = response['actuators'][act_n]['actual_position']
                 act_enc_pos = response['actuators'][act_n]['encoder_position']
                 print(f"actual position: {act_pos}\nencoder_position: {act_enc_pos}")
-        check = self._send_read_message()
-        response = self._decode_message(check)
-        response['execution_time'] = tot_time
-        return response
+        return self._send_read_message()
 
     def _send_read_message(self):
         """
@@ -283,7 +315,7 @@ class DpMotors(BaseM4Exapode):
         actuators = []
         act_size = struct.calcsize(act_struct)
         # Unpack each inner struct
-        for i in range(7):
+        for i in range(3):
             start = struct_size + i * act_size
             end = start + act_size
             status_bytes = np.zeros(3, dtype=int)
