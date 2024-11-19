@@ -237,25 +237,23 @@ class DpMotors(BaseM4Exapode):
         success : bool
             True if the actuation was successful, False otherwise.
         """
-        for act_n in range(3):
-            print(f"act n.{act_n}")
-            act_pos = response["actuators"][act_n]["actual_position"]
-            act_enc_pos = response["actuators"][act_n]["encoder_position"]
-            act_targ_pos = target_pos[act_n]
-            tot_time = 0
-            pos_err = np.abs(act_targ_pos - act_enc_pos)
-            timeout = pos_err / self._minVel + 3
-            while pos_err > 1:
-                waittime = pos_err / self._minVel
-                tot_time += waittime
-                self._timeout_check(tot_time, timeout)
-                out = self._send(cmd)
-                time.sleep(waittime)
-                response = self._decode_message(out)
-                act_pos = response["actuators"][act_n]["actual_position"]
-                act_enc_pos = response["actuators"][act_n]["encoder_position"]
-                pos_err = np.abs(act_targ_pos - act_enc_pos)
-                print(f"ActPos: {act_pos} ; EncPos: {act_enc_pos}\n")
+        #for act_n in range(3):
+        act_pos = [b['actual_position'] for b in [c for c in response['actuators']]][:3] #response["actuators"][act_n]["actual_position"]
+        act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3] #response["actuators"][act_n]["encoder_position"]
+        tot_time = 0
+        pos_err = np.max(np.abs(target_pos - act_enc_pos))
+        timeout = pos_err / self._minVel + 3
+        while pos_err > 1:
+            waittime = pos_err / self._minVel
+            tot_time += waittime
+            self._timeout_check(tot_time, timeout)
+            out = self._send(cmd)
+            time.sleep(waittime)
+            response = self._decode_message(out)
+            act_pos = [b['actual_position'] for b in [c for c in response['actuators']]][:3]
+            act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3] 
+            pos_err = np.max(np.abs(target_pos - act_enc_pos))
+            print(f"ActPos: {act_pos} ; EncPos: {act_enc_pos}\n")
         return True
 
     def _send_read_message(self):
