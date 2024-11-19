@@ -215,7 +215,8 @@ class DpMotors(BaseM4Exapode):
         if check is False:
             print("Actuation failed")
             return
-        return check
+        else:
+            return self._send_read_message()
 
     def _check_actuation_success(self, target_pos, cmd, response):
         """
