@@ -13,6 +13,7 @@ How to Use it
 import os
 import numpy as np
 from m4.utils import _m4ac as mac # to change
+from m4.utils.osutils import findTracknum
 from m4.ground import zernike as zern, timestamp as ts, geo
 from m4.ground.read_data import readFits_data, readFits_maskedImage, saveFits_data
 from m4.ground.logger_set_up import *
@@ -91,6 +92,7 @@ class Alignment():
         reconstruction matrix, calculates the reduced command, and either applies the
         correction command or returns it.
         """
+        z2c = [z+1 for z in zern2correct] #np.array(zern2correct) + 1
         log(f"{self.correct_alignment.__qualname__}")
         image = self._acquire(n_frames)
         initpos = self.read_positions(show=False)
@@ -106,14 +108,15 @@ class Alignment():
                     raise AttributeError()
             except AttributeError:
                 raise AttributeError("No internal matrix found. Please calibrate the alignment first.")
-        reduced_intMat = intMat[np.ix_(zern2correct, modes2correct)]
+        reduced_intMat = intMat[np.ix_(modes2correct, zern2correct)] #zern2correct, modes2correct)]
+        print(reduced_intMat)
         print('intmat shape') # debug
-        print(reduced_intMat.shape) # debug
+        print(reduced_intMat) # debug
         reduced_cmdMat = self.cmdMat[:,modes2correct]
         print('cmd mat, reduced cmd mat') # debug
-        print(self.cmdMat.shape, reduced_cmdMat.shape) # debug
+        print(self.cmdMat,'\n', reduced_cmdMat) # debug
         recMat = self._create_rec_mat(reduced_intMat)
-        reduced_cmd = np.dot(recMat, zernike_coeff[zern2correct])
+        reduced_cmd = np.dot(recMat, zernike_coeff[z2c])
         print('Reconstructed command') # debug
         print(reduced_cmd) # debug
         f_cmd = -np.dot(reduced_cmdMat, reduced_cmd)
@@ -130,7 +133,7 @@ class Alignment():
             return
         return f_cmd
 
-    def calibrate_alignment(self, cmdAmp, template:list=None, n_repetitions:int=1, save:bool=True):
+    def calibrate_alignment(self, cmdAmp, n_frames:int=15, template:list=None, n_repetitions:int=1, save:bool=True):
         """
         Calibrate the alignment of the system using the provided command amplitude and template.
 
@@ -162,13 +165,13 @@ class Alignment():
         log(f"{self.calibrate_alignment.__qualname__}")
         self._cmdAmp = cmdAmp
         template = template if template is not None else self._template
-        imglist = self._images_production(template, n_repetitions)
+        imglist = self._images_production(template, n_frames, n_repetitions)
         intMat = self._zern_routine(imglist)
         self.intMat = intMat
         if save:
             tn = _tt.now()
-            filename = os.path.join(self._writePath, tn, 'intMat.fits')
-            os.mkdir(filename.strip('intMat.fits'))
+            filename = os.path.join(self._writePath, tn, 'InteractionMatrix.fits')
+            os.mkdir(filename.strip('InteractionMatrix.fits'))
             saveFits_data(filename, self.intMat, overwrite=True)
             log(f"{saveFits_data.__qualname__}")
         return "Ready for Alignment..."
@@ -195,24 +198,25 @@ class Alignment():
             print(logMsg) #!!! debug only
         return pos
 
-    def reload_calibrated_parabola(self, filepath):
+    def reload_calibrated_parabola(self, tn):
         """
         Reloads the parabola from the given file path.
 
         Parameters
         ----------
-        filepath : str
-            The file path to the parabola file.
+        tn : str
+            The tracking number of the parabola file.
 
         Returns
         -------
         str
             A message indicating the successful loading of the file.
         """
+        filepath = findTracknum(tn, complete_path=True)
         self._parabola = readFits_maskedImage(filepath)
         return f"Correctly loaded '{filepath}'"
 
-    def _images_production(self, template, n_repetitions):
+    def _images_production(self, template, n_frames, n_repetitions):
         """
         Produces images based on the provided template and number of repetitions.
 
@@ -240,8 +244,10 @@ class Alignment():
                 logMsg2 += f"Matrix Column {k+1} : {self.cmdMat.T[k]}"
                 print(f"Matrix Column {k+1} : {self.cmdMat.T[k]}\n") ## debug only
                 #logging.info(logMsg2)
-                imglist = self._img_acquisition(k, template)
+                imglist = self._img_acquisition(k, template, n_frames)
                 image = self._push_pull_redux(imglist, template)
+                image = image/self._cmdAmp[k]
+                #print(f"{self._cmdAmp[k]}")
                 results.append(image)
             if n_repetitions!=1:
                 n_results.append(results)
@@ -270,6 +276,7 @@ class Alignment():
         for img in imglist:
             if self._parabola is None:
                 coeff, _ = zern.zernikeFit(img, self._zvec2fit)
+                print(coeff)
                 log(f"{zern.zernikeFit.__qualname__}")
             else:
                 print('Removing the PAR')
@@ -282,7 +289,7 @@ class Alignment():
                 log(f"{zern.zernikeFitAuxmask.__qualname__}")
             coefflist.append(coeff[self._zvec2use])
         if len(coefflist) == 1:
-            coefflist = np.array(coefflist[0])
+            coefflist = [c for c in coefflist[0]] #np.array(coefflist[0])
         return np.array(coefflist)  #intmat
 
     def _create_rec_mat(self, intMat):
@@ -361,7 +368,7 @@ class Alignment():
             device_commands.append(res_cmd)
         return device_commands
 
-    def _img_acquisition(self, k, template):
+    def _img_acquisition(self, k, template, n_frames):
         """
         Acquires images based on the given template.
 
@@ -379,17 +386,17 @@ class Alignment():
         """
         log(f"{self._img_acquisition.__qualname__}")
         log(f"{self._acquire.__qualname__}")
-        imglist = [self._acquire(15)]
+        imglist = [self._acquire(n_frames)]
         for t in template:
             logMsg = ''
             logMsg += f"t = {t}"
-            cmd = self.cmdMat.T[k] * self._cmdAmp * t
+            cmd = self.cmdMat.T[k] * self._cmdAmp[k] * t
             logMsg += f" - Full Command : {cmd}"
             #logging.info(logMsg)
             print(logMsg) #!!! debug only
             self._apply_command(cmd)
             log(f"{self._acquire.__qualname__}")
-            imglist.append(self._acquire(15))
+            imglist.append(self._acquire(n_frames))
         return imglist
     
     def _acquire(self, n_frames):
@@ -426,7 +433,7 @@ class Alignment():
             The reduced image.
         """
         log(f"{self._push_pull_redux.__qualname__}")
-        template.insert(0,-1)
+        template.insert(0,1) # was -1 
         image = np.zeros((imglist[0].shape[0], imglist[0].shape[1]))
         for x in range(1, len(imglist)):
             opd2add = imglist[x] * template[x] + imglist[x-1] * template[x-1]
@@ -436,7 +443,7 @@ class Alignment():
             else:
                 master_mask = np.ma.mask_or(master_mask, mask2add)
             image += opd2add
-        image = np.ma.masked_array(image, mask=master_mask) / self._cmdAmp
+        image = np.ma.masked_array(image, mask=master_mask)/6#/(-2) # result of pp is -2Delta
         template.pop(0)
         return image
         

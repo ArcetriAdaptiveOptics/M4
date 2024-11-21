@@ -129,19 +129,19 @@ push_pull_template = [+1,-2,+1]
 devices_move_calls = [
     'parabola.setPosition',
     'referenceMirror.setPosition',
-    'm4Exapode.setPosition'
+    #'m4Exapode.setPosition'
     ]
 
 devices_read_calls = [
     'parabola.getPosition',
     'referenceMirror.getPosition',
-    'm4Exapode.getPosition'
+    #'m4Exapode.getPosition'
     ]
 
 names = [
     'Parabola',
     'Reference Mirror',
-    'M4 Exapode'
+    #'M4 Exapode'
     ]
 
 ccd_acquisition = [
@@ -150,9 +150,9 @@ ccd_acquisition = [
     ]
 
 # Data paths
-base_read_data_path     = _base_path+'/M4Data/OPTData/AlignmentCalibration'
-base_write_data_path    = _base_path+'/M4Data/OPTData/AlignmentCalibration'
-log_path                = _base_path+'/M4Data/OPTData/AlignmentCalibration/alignment.log'
-logging_level           =  20
+base_read_data_path     = os.path.join(_base_path, 'M4Data/OPTData/AlignmentCalibration')
+base_write_data_path    = os.path.join(_base_path, 'M4Data/OPTData/AlignmentCalibration')
+log_path                = os.path.join(_base_path, 'M4Data/OPTData/AlignmentCalibration/alignment.log')
+logging_level           = 20
 commandMatrix           = os.path.join(os.getenv('M4_BASE_PATH'),'m4','configuration/cmdMat.fits')
 calibrated_parabola     = ''
