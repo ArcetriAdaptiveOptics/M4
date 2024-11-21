@@ -46,7 +46,8 @@ class DpMotors(BaseM4Exapode):
         self.remote_ip = "192.168.22.51"  # final?
         self.remote_port = 6660  # final?
         self._m4dof = slice(OttParameters.M4_DOF[0], OttParameters.M4_DOF[1] + 1)
-        self._minVel = 30
+        self._minVel = 30 # um/s
+        self._timeout = 180 # seconds
         # logger.set_up_logger('path/dpMotors.log', 10)
 
     def getPosition(self):
@@ -60,7 +61,7 @@ class DpMotors(BaseM4Exapode):
         """
         pp = self._getMotorPosition()
         kk = self._motor2kinematics(pp)
-        pos = np.array([0, 0, 0] + kk[self._m4dof] + [0])
+        pos = np.array([0, 0, 0] + [k for k in kk[1:]] + [0])
         print(pos)
         return pos
 
@@ -95,10 +96,12 @@ class DpMotors(BaseM4Exapode):
             A list containing, in order, the encoder position of the actuators
             read from the bus box, in millimeters.
         """
-        self._connectBusBox()
-        reading = self._decode_message(self._send_read_message())
+        connected = self._connectBusBox()
+        if connected is not True:
+            self._recconnectBusBox()
+        reading = self._send_read_message()
         positions = self._extract_motor_position(reading)
-        positions = positions * 10e-3  # conversion in mm
+        positions =  [p*1e-3 for p in positions]  # conversion in mm
         self._disconnectBusBox()
         return positions
 
@@ -117,18 +120,11 @@ class DpMotors(BaseM4Exapode):
         response : dict
             The response from the BusBox.
         """
-        pos = motorcmd * 10e3  # conversion in um
+        pos = motorcmd * 1e3  # conversion in um
+        print(pos)
         connected = self._connectBusBox()
         if connected is not True:
-            for ntry in range(5):
-                print(f"Connection failed, retrying... {ntry}")
-                connected = self._connectBusBox()
-                if connected is True:
-                    break
-                time.sleep(1)
-        if connected is False:
-            print("Connection failed")
-            return
+            self._recconnectBusBox()
         self._send_message(pos)
         self._disconnectBusBox()
         return
@@ -212,6 +208,7 @@ class DpMotors(BaseM4Exapode):
         out = self._send(cmd)
         time.sleep(3)
         response = self._decode_message(out)
+        print(f"{response['actuators'][0]['target_position']}")
         check = self._check_actuation_success(act_positions, cmd, response)
         if check is False:
             print("Actuation failed")
@@ -237,14 +234,14 @@ class DpMotors(BaseM4Exapode):
         success : bool
             True if the actuation was successful, False otherwise.
         """
-        #for act_n in range(3):
-        act_pos = [b['actual_position'] for b in [c for c in response['actuators']]][:3] #response["actuators"][act_n]["actual_position"]
-        act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3] #response["actuators"][act_n]["encoder_position"]
+        act_pos = [b['actual_position'] for b in [c for c in response['actuators']]][:3]
+        act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3]
         tot_time = 0
         pos_err = np.max(np.abs(target_pos - act_enc_pos))
-        timeout = pos_err / self._minVel + 3
+        timeout = self._timeout
         while pos_err > 1:
-            waittime = pos_err / self._minVel
+            waittime = np.min([pos_err/self._minVel, 3])
+            print(waittime)
             tot_time += waittime
             self._timeout_check(tot_time, timeout)
             out = self._send(cmd)
