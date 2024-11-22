@@ -92,7 +92,7 @@ class Alignment():
         reconstruction matrix, calculates the reduced command, and either applies the
         correction command or returns it.
         """
-        z2c = [z+1 for z in zern2correct] #np.array(zern2correct) + 1
+        z2c = zern2correct #np.array(zern2correct) + 1
         log(f"{self.correct_alignment.__qualname__}")
         image = self._acquire(n_frames)
         initpos = self.read_positions(show=False)
@@ -108,7 +108,7 @@ class Alignment():
                     raise AttributeError()
             except AttributeError:
                 raise AttributeError("No internal matrix found. Please calibrate the alignment first.")
-        reduced_intMat = intMat[np.ix_(modes2correct, zern2correct)] #zern2correct, modes2correct)]
+        reduced_intMat = intMat[np.ix_(modes2correct, zern2correct)].T #zern2correct, modes2correct)]
         print(reduced_intMat)
         print('intmat shape') # debug
         print(reduced_intMat) # debug
