@@ -234,15 +234,17 @@ class DpMotors(BaseM4Exapode):
         success : bool
             True if the actuation was successful, False otherwise.
         """
+        stime = time.time()
         act_pos = [b['actual_position'] for b in [c for c in response['actuators']]][:3]
         act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3]
-        tot_time = 0
+        tot_time = 3
         pos_err = np.max(np.abs(target_pos - act_enc_pos))
         timeout = self._timeout
+        ftime = stime+3
         while pos_err > 1:
             waittime = np.min([pos_err/self._minVel, 3])
             print(waittime)
-            tot_time += waittime
+            tot_time += (ftime - stime)
             self._timeout_check(tot_time, timeout)
             out = self._send(cmd)
             time.sleep(waittime)
@@ -251,6 +253,7 @@ class DpMotors(BaseM4Exapode):
             act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3] 
             pos_err = np.max(np.abs(target_pos - act_enc_pos))
             print(f"ActPos: {act_pos} ; EncPos: {act_enc_pos}\n")
+            ftime = time.time()
         return True
 
     def _send_read_message(self):

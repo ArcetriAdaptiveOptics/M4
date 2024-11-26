@@ -92,7 +92,6 @@ class Alignment():
         reconstruction matrix, calculates the reduced command, and either applies the
         correction command or returns it.
         """
-        z2c = zern2correct #np.array(zern2correct) + 1
         log(f"{self.correct_alignment.__qualname__}")
         image = self._acquire(n_frames)
         initpos = self.read_positions(show=False)
@@ -108,23 +107,14 @@ class Alignment():
                     raise AttributeError()
             except AttributeError:
                 raise AttributeError("No internal matrix found. Please calibrate the alignment first.")
-        reduced_intMat = intMat[np.ix_(modes2correct, zern2correct)].T #zern2correct, modes2correct)]
-        print(reduced_intMat)
-        print('intmat shape') # debug
-        print(reduced_intMat) # debug
+        reduced_intMat = intMat[np.ix_(modes2correct, zern2correct)].T # should not be transposed. Retry modyfing the way the intmat is defined
         reduced_cmdMat = self.cmdMat[:,modes2correct]
-        print('cmd mat, reduced cmd mat') # debug
-        print(self.cmdMat,'\n', reduced_cmdMat) # debug
         recMat = self._create_rec_mat(reduced_intMat)
-        reduced_cmd = np.dot(recMat, zernike_coeff[z2c])
-        print('Reconstructed command') # debug
-        print(reduced_cmd) # debug
+        reduced_cmd = np.dot(recMat, zernike_coeff[zern2correct])
         f_cmd = -np.dot(reduced_cmdMat, reduced_cmd)
         print(f"Resulting Command: {f_cmd}")
-        endpos = self.read_positions(show=False)
-        #self._txt.log("Calib. Trackn & IniZern:  {} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e}".format(tn, *initpos))
-        #self._txt.log("Result Trackn & EndZern:  {} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e}".format(tn, *endpos))
-        self._txt.log(f"DoF & Zern2Corr:          {modes2correct} {zern2correct}")
+        self._write_correction_log(tn, initpos)
+        self._txt.log(f"DoF & Zern2Corr:          {modes2correct} {zern2correct}\n"+"-"*30)
         if apply:
             print("Applying correction command...")
             self._apply_command(f_cmd)
@@ -433,7 +423,7 @@ class Alignment():
             The reduced image.
         """
         log(f"{self._push_pull_redux.__qualname__}")
-        template.insert(0,1) # was -1 
+        template.insert(0,1)
         image = np.zeros((imglist[0].shape[0], imglist[0].shape[1]))
         for x in range(1, len(imglist)):
             opd2add = imglist[x] * template[x] + imglist[x-1] * template[x-1]
@@ -443,9 +433,25 @@ class Alignment():
             else:
                 master_mask = np.ma.mask_or(master_mask, mask2add)
             image += opd2add
-        image = np.ma.masked_array(image, mask=master_mask)/6#/(-2) # result of pp is -2Delta
+        image = np.ma.masked_array(image, mask=master_mask)/6
         template.pop(0)
         return image
+    
+    def _write_correction_log(self, tn, initpos):
+        """
+        Writes the log of the allignment correction applied to the OTT devices.
+
+        Parameters
+        ----------
+        initpos : list
+            List of the starting positions of the devices, as _Command classes.
+        """
+        endpos = self.read_positions(show=False)
+        par_i, rm_i, m4_i = initpos
+        par_f, rm_f, m4_f = endpos
+        self._txt.log("Calib. Trackn & IniPos:  {} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e}".format(tn, *par_i, *rm_i, *m4_i))
+        self._txt.log("Result Trackn & EndPos:  {} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e}".format(tn, *par_f, *rm_f, *m4_f))
+        return
         
     @staticmethod
     def __get_callables(devices, callables):
