@@ -1,8 +1,36 @@
 """
 Author(s)
 ---------
-    - Pietro Ferraiuolo: written in 2024
-    - Runa Briguglio: written in 2024
+- Pietro Ferraiuolo: written in 2024
+- Runa Briguglio: written in 2024
+
+Description
+-----------
+This module contains the class `DpMotors`, which is used to control the actuators
+controlling the DP alignment at the OTT. These actuators, connected to a BusBox, 
+are controlled via ZMQ Pair protocol. The class provides methods to get and set the
+position of the actuators, converting the "motor positions" into "kinematic positions"
+The matrix controlling the kinematics is written in the form (normalization-less):
+
+   Pist  Tx  Ty
+ A [ 1  -1  -1 ]
+ B [ 1   1  -1 ]
+ C [ 1   0   1 ]
+
+with the actuators A, B, C positioned as follows:
+``` 
+↑ Y         C
+→ X
+         A     B
+```
+How to Use
+----------
+The utilization is straightforward.
+
+>>> from m4.devices.dp_motors import DpMotors
+>>> dp = DpMotors(DPinterface) # DPinterface is a dummy variable for now
+
+Then just call what you need, really only `getPosition` and `setPosition`.
 """
 
 import zmq
@@ -25,13 +53,33 @@ from m4.devices.base_m4_exapode import BaseM4Exapode
 
 
 class DpMotors(BaseM4Exapode):
-    """Class for M4 control via opc ua??
+    """
+    Class for controlling the DP motors actuators, via ZMQ Pair protocol.
+    
+    Attributes
+    ----------
+    remote_ip : str
+        The remote IP address.
+    remote_port : int
+        The remote port.
 
-    HOW TO USE IT::
-
-        from m4.devices.opc_ua_controller import OpcUaController
-        opcUa = OpcUaController()
-        from m4.devices.m4_exapode import OpcUaM4Exapode
+    Methods
+    -------
+    getPosition()
+        Function to get the current position of the actuators.
+    setPosition(absolute_position_in_mm)
+        Function to set the position of the DP actuators.
+    
+    Usefull Private Methods
+    -----------------------
+    _send_message(acts_pos_in_um)
+        Function which comunicates with the BusBox for moving the actuators.
+        Uses the lower level `_send()` function.
+    _connectBusBox()
+        Connection to the BusBox controlling the DP motors actuators, via
+        ZMQ Pair protocol.
+    _disconnectBusBox()
+        Disconnection from the BusBox controlling the DP motors actuators.
     """
 
     DPinterface = 0  # dummy, to replicate the sintax
@@ -48,7 +96,7 @@ class DpMotors(BaseM4Exapode):
         self._m4dof = slice(OttParameters.M4_DOF[0], OttParameters.M4_DOF[1] + 1)
         self._minVel = 30 # um/s
         self._timeout = 180 # seconds
-        # logger.set_up_logger('path/dpMotors.log', 10)
+        logger.set_up_logger('path/dpMotors.log', 10)
 
     def getPosition(self):
         """
@@ -234,7 +282,6 @@ class DpMotors(BaseM4Exapode):
         success : bool
             True if the actuation was successful, False otherwise.
         """
-        stime = time.time()
         act_pos = [b['actual_position'] for b in [c for c in response['actuators']]][:3]
         act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3]
         tot_time = 3
@@ -245,6 +292,7 @@ class DpMotors(BaseM4Exapode):
             waittime = np.min([pos_err/self._minVel, 3])
             print(waittime)
             tot_time += (ftime - stime)
+            stime = time.time()
             self._timeout_check(tot_time, timeout)
             out = self._send(cmd)
             time.sleep(waittime)
@@ -380,7 +428,7 @@ class DpMotors(BaseM4Exapode):
             self._socket.connect(f"tcp://{self.remote_ip}:{self.remote_port}")
             return True
         except Exception as e:
-            # logger.log(f"ConnectZMQ: {e}")
+            logger.log(f"ConnectZMQ: {e}")
             return False
         
     def _recconnectBusBox(self):
@@ -411,7 +459,7 @@ class DpMotors(BaseM4Exapode):
             self._context.term()
             return True
         except Exception as e:
-            # logger.log(f"DisconnectZMQ: {e}")
+            logger.log(f"DisconnectZMQ: {e}")
             return False
 
 
