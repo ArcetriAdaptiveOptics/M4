@@ -47,7 +47,7 @@ def connect():
 sock = connect()
 
 def iterative_actuators_test():
-    cmd = [5, -5]*25 + [10,-10]*25 + [15,-15]*25 + [20,-20]*25
+    cmd = [10,-10]*25 + [15,-15]*25 + [20,-20]*25
     actuators = np.zeros((3, len(cmd)), dtype=dict)
     for n,c in enumerate(cmd):
         for act in range(0,3):
@@ -56,11 +56,12 @@ def iterative_actuators_test():
     return actuators
 
 def sequential_actuators_test():
-    cmd = [5, -5]*25 + [10,-10]*25 + [15,-15]*25 + [20,-20]*25
+    cmd = [10,-10]*25 + [15,-15]*25 + [20,-20]*25
     actuators = np.zeros((3, len(cmd)), dtype=dict)
     for act in range(0,3):
         print(f"Actuator n.{act}")
         for n,c in enumerate(cmd):
+            print(f"iter {n}")
             actuators[act][n] = command(c, act)
     return actuators
             
@@ -81,17 +82,21 @@ def command(position_um:int, act:int=0):
     act_enc_pos = response['actuators'][act]['encoder_position']
     act_targ_pos = position_um
     tot_time = 0
-    while np.abs(act_targ_pos-act_enc_pos) > 4:
+    tol = 1
+    pos_err = tol+1
+    while pos_err > tol:
         waittime = 3
         #waittime = np.abs(act_pos-act_targ_pos)/act_vel
         tot_time += waittime
-        print("waiting ", waittime)
+        print("waiting ", waittime, "s")
         time.sleep(waittime)
         out = send(cmd)
         response = decode(out)
         act_pos = response['actuators'][act]['actual_position']
         act_enc_pos = response['actuators'][act]['encoder_position']
-        print(f"actual position: {act_pos}\nencoder_position: {act_enc_pos}")
+        pos_err = np.abs(act_targ_pos-act_enc_pos)
+        print(f"Actual position: {act_pos} ; Encoder_position: {act_enc_pos} ; Position error: {pos_err}\n")
+        
     check = send(read)
     check = decode(check)
     check['execution_time'] = tot_time
@@ -135,7 +140,7 @@ def disconnect(socket):
 # }__attribute((packed)); -> 116by - (Bbbb + hhibH3b * 8)
 
 def decode(outMsg):
-    act_struct = 'hhibH3b' # short*2, int, char, unsigned short, 3-char array
+    act_struct = 'hhib3bH' # short*2, int, char, unsigned short, 3-char array
     struct_size = struct.calcsize('Bbbb')
     outer_data = struct.unpack('Bbbb', outMsg[:struct_size])
     heart_beat_counter, voltage, temperature, status = outer_data
@@ -148,7 +153,7 @@ def decode(outMsg):
         start = struct_size + i * act_size
         end = start + act_size
         status_bytes = np.zeros(3, dtype=int)
-        actual_position, target_position, encoder_position, actual_velocity, bus_voltage, status_bytes[0], status_bytes[1], status_bytes[2] = struct.unpack(act_struct, outMsg[start:end])
+        actual_position, target_position, encoder_position, actual_velocity, status_bytes[0], status_bytes[1], status_bytes[2], bus_voltage = struct.unpack(act_struct, outMsg[start:end])
         # Decode the status field from bytes to string and strip null bytes
         status_str = ''.join(chr(b if b >= 0 else 256 + b) for b in status_bytes if b != 0)
         actuators.append({

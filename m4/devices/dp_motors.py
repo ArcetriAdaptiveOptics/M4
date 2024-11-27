@@ -4,6 +4,7 @@ Author(s)
     - Pietro Ferraiuolo: written in 2024
     - Runa Briguglio: written in 2024
 """
+
 import zmq
 import time
 import struct
@@ -22,27 +23,32 @@ from m4.devices.base_m4_exapode import BaseM4Exapode
 # B    1   1  -1
 # C    1   0   1
 
+
 class DpMotors(BaseM4Exapode):
-    ''' Class for M4 control via opc ua??
+    """Class for M4 control via opc ua??
 
     HOW TO USE IT::
 
         from m4.devices.opc_ua_controller import OpcUaController
         opcUa = OpcUaController()
         from m4.devices.m4_exapode import OpcUaM4Exapode
-    '''
-    DPinterface = 0 #dummy, to replicate the sintax 
+    """
+
+    DPinterface = 0  # dummy, to replicate the sintax
+
     def __init__(self, DPinterface):
-        """The constructor """
+        """The constructor"""
         self._dpinterface = DPinterface
-        self._kinematrix = np.array([[1,1,1],[-1,1,0],[-1,-1,1]])
+        self._kinematrix = np.array([[1, 1, 1], [-1, 1, 0], [-1, -1, 1]])
         self._invkinematrix = np.linalg.inv(self._kinematrix)
         self._context = None
         self._socket = None
-        self.remote_ip = "192.168.22.51" # final?
-        self.remote_port = 6660 # final?
-        self._m4dof = slice(OttParameters.M4_DOF[0], OttParameters.M4_DOF[1]+1)
-        #logger.set_up_logger('path/dpMotors.log', 10)
+        self.remote_ip = "192.168.22.51"  # final?
+        self.remote_port = 6660  # final?
+        self._m4dof = slice(OttParameters.M4_DOF[0], OttParameters.M4_DOF[1] + 1)
+        self._minVel = 30 # um/s
+        self._timeout = 180 # seconds
+        # logger.set_up_logger('path/dpMotors.log', 10)
 
     def getPosition(self):
         """
@@ -55,21 +61,21 @@ class DpMotors(BaseM4Exapode):
         """
         pp = self._getMotorPosition()
         kk = self._motor2kinematics(pp)
-        pos = np.array([0,0,0] + kk[self._m4dof] + [0])
+        pos = np.array([0, 0, 0] + [k for k in kk[1:]] + [0])
         print(pos)
         return pos
 
-    def setPosition(self, absolute_position_in_mm:list):
+    def setPosition(self, absolute_position_in_mm: list):
         """
         Function to set the position of the DP actuators.
-        
+
         Parameters
         ----------
         absolute_position_in_mm : list or ArrayLike
             The 6-dimentional array of the absolute positions, in mm, of all
             the degrees of freedom of the DP. Since only Tip/Til can be commanded,
             the array should have the form [0,0,0,x,y,0].
-        
+
         Returns
         -------
         pos : list or ArrayLike
@@ -83,61 +89,56 @@ class DpMotors(BaseM4Exapode):
     def _getMotorPosition(self):
         """
         Middle level function to get the current position of the actuators.
-        
+
         Returns
         -------
         positions : list
             A list containing, in order, the encoder position of the actuators
             read from the bus box, in millimeters.
         """
-        self._connectBusBox()
-        reading = self._decode_message(self._send_read_message())
+        connected = self._connectBusBox()
+        if connected is not True:
+            self._recconnectBusBox()
+        reading = self._send_read_message()
         positions = self._extract_motor_position(reading)
-        positions = positions*10e-3 # conversion in mm
+        positions =  [p*1e-3 for p in positions]  # conversion in mm
         self._disconnectBusBox()
         return positions
 
     def _setMotorPosition(self, motorcmd):
         """
         Middle level function to set the position of the actuators.
-        
+
         Parameters
         ----------
         motorcmd : list
             A list containing, in order, the absolute position in mm of the
             actuators to be set.
-            
+
         Returns
         -------
         response : dict
             The response from the BusBox.
         """
-        pos = motorcmd*10e3 # conversion in um
+        pos = motorcmd * 1e3  # conversion in um
+        print(pos)
         connected = self._connectBusBox()
         if connected is not True:
-            for ntry in range(5):
-                print(f"Connection failed, retrying... {ntry}")
-                connected = self._connectBusBox()
-                if connected is True:
-                    break
-                time.sleep(1)
-        if connected is False:
-            print("Connection failed")
-            return
+            self._recconnectBusBox()
         self._send_message(pos)
         self._disconnectBusBox()
-        return 
+        return
 
     def _motor2kinematics(self, pos):
         """
         Function to convert the absolute positions of the actuators from motor
         to zernike positions.
-        
+
         Parameters
         ----------
         pos: list or ArrayLike
             The 3-component only vector containing the motor encoder positions.
-            
+
         Returns
         -------
         kin: list
@@ -151,13 +152,13 @@ class DpMotors(BaseM4Exapode):
         """
         Function to convert the absolute positions of the actuators from zernike
         to motor positions.
-        
+
         Parameters
         ----------
         pos: list or ArrayLike
             The 3-component only vector containing the kinematic positions of the
             Motors.
-        
+
         Returns
         -------
         motor_pos: list
@@ -169,22 +170,22 @@ class DpMotors(BaseM4Exapode):
     def _extract_motor_position(self, response):
         """
         Function to extract the motor position from the response of the BusBox.
-        
+
         Parameters
         ----------
         response : dict
             The response from the BusBox.
-            
+
         Returns
         -------
         positions : list
             A list containing, in order, the encoder position of the actuators
             read from the bus box.
         """
-        position = [response['actuators'][act]['encoder_position'] for act in range(3)]
+        position = [response["actuators"][act]["encoder_position"] for act in range(3)]
         return position
-    
-    def _send_message(self, acts_pos_in_um:list):
+
+    def _send_message(self, acts_pos_in_um: list):
         """
         Function wich comunicates with the BusBox for moving the actuators.
 
@@ -200,35 +201,60 @@ class DpMotors(BaseM4Exapode):
             The 116 bytes response from the BusBox, to be decoded.
         """
         act_positions = np.array([pos for pos in acts_pos_in_um], dtype=int)
-        cmd = struct.pack('<BBBhhh', 
-                        17,
-                        7,
-                        7, 
-                        act_positions[0],
-                        act_positions[1],
-                        act_positions[2])
-        cmd += bytearray(12)
+        cmd = struct.pack(
+            "<BBBhhh", 17, 7, 7, act_positions[0], act_positions[1], act_positions[2]
+        )
+        cmd += bytearray(10)
         out = self._send(cmd)
         time.sleep(3)
         response = self._decode_message(out)
-        for act_n in range(3):
-            act_pos = response['actuators'][act_n]['actual_position']
-            act_enc_pos = response['actuators'][act_n]['encoder_position']
-            act_targ_pos = acts_pos_in_um[act_n]
-            tot_time = 0
-            while np.abs(act_targ_pos-act_enc_pos) > 4:
-                waittime = 2.5
-                tot_time += waittime
-                out = self._send(cmd)
-                time.sleep(waittime)
-                response = self._decode_message(out)
-                act_pos = response['actuators'][act_n]['actual_position']
-                act_enc_pos = response['actuators'][act_n]['encoder_position']
-                print(f"actual position: {act_pos}\nencoder_position: {act_enc_pos}")
-        check = self._send_read_message()
-        response = self._decode_message(check)
-        response['execution_time'] = tot_time
-        return response
+        print(f"{response['actuators'][0]['target_position']}")
+        check = self._check_actuation_success(act_positions, cmd, response)
+        if check is False:
+            print("Actuation failed")
+            return
+        else:
+            return self._send_read_message()
+
+    def _check_actuation_success(self, target_pos, cmd, response):
+        """
+        Function to check if the actuation was successful.
+
+        Parameters
+        ----------
+        trget_pos: list of int
+            The target position to reach of the actuators.
+        cmd : bytearray
+            The message sent to the BusBox.
+        response : dict
+            The response from the BusBox.
+
+        Returns
+        -------
+        success : bool
+            True if the actuation was successful, False otherwise.
+        """
+        stime = time.time()
+        act_pos = [b['actual_position'] for b in [c for c in response['actuators']]][:3]
+        act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3]
+        tot_time = 3
+        pos_err = np.max(np.abs(target_pos - act_enc_pos))
+        timeout = self._timeout
+        ftime = stime+3
+        while pos_err > 1:
+            waittime = np.min([pos_err/self._minVel, 3])
+            print(waittime)
+            tot_time += (ftime - stime)
+            self._timeout_check(tot_time, timeout)
+            out = self._send(cmd)
+            time.sleep(waittime)
+            response = self._decode_message(out)
+            act_pos = [b['actual_position'] for b in [c for c in response['actuators']]][:3]
+            act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3] 
+            pos_err = np.max(np.abs(target_pos - act_enc_pos))
+            print(f"ActPos: {act_pos} ; EncPos: {act_enc_pos}\n")
+            ftime = time.time()
+        return True
 
     def _send_read_message(self):
         """
@@ -240,11 +266,11 @@ class DpMotors(BaseM4Exapode):
         response : bytearray
             The 116 bytes response from the BusBox, to be decoded.
         """
-        read_cmd = bytearray(hex(17), 'utf-8') + bytearray(18)
+        read_cmd = bytearray(hex(17), "utf-8") + bytearray(18)
         out = self._send(read_cmd)
         response = self._decode_message(out)
         return response
-    
+
     def _send(self, bytestream):
         """
         Function wich comunicates with the BusBox.
@@ -276,9 +302,9 @@ class DpMotors(BaseM4Exapode):
         response : dict
             The decoded message.
         """
-        act_struct = 'hhibH3b' # short*2, int, char, unsigned short, 3-char array
-        struct_size = struct.calcsize('Bbbb')
-        outer_data = struct.unpack('Bbbb', message[:struct_size])
+        act_struct = "hhib3bH"  # short*2, int, char, 3-char array, unsigned short
+        struct_size = struct.calcsize("Bbbb") # 1 unsigned char, 3 char
+        outer_data = struct.unpack("Bbbb", message[:struct_size])
         heart_beat_counter, voltage, temperature, status = outer_data
         actuators = []
         act_size = struct.calcsize(act_struct)
@@ -287,29 +313,65 @@ class DpMotors(BaseM4Exapode):
             start = struct_size + i * act_size
             end = start + act_size
             status_bytes = np.zeros(3, dtype=int)
-            actual_position, target_position, encoder_position, actual_velocity, bus_voltage, *status_bytes = struct.unpack(act_struct, message[start:end])
-            # Decode the status field from bytes to string and strip null bytes
-            status_str = ''.join(chr(b if b >= 0 else 256 + b) for b in status_bytes if b != 0)
-            actuators.append({
-                'actual_position': actual_position,
-                'target_position': target_position,
-                'encoder_position': encoder_position,
-                'actual_velocity': actual_velocity,
-                'bus_voltage': bus_voltage,
-                'status': status_str
-            })
+            (
+                actual_position,
+                target_position,
+                encoder_position,
+                actual_velocity,
+                *status_bytes,
+                bus_voltage,
+            ) = struct.unpack(act_struct, message[start:end])
+            status_hex = status_bytes # bytearray([b for b in status_bytes])
+            actuators.append(
+                {
+                    "actual_position": actual_position,
+                    "target_position": target_position,
+                    "encoder_position": encoder_position,
+                    "actual_velocity": actual_velocity,
+                    "bus_voltage": bus_voltage,
+                    "status": status_hex,
+                }
+            )
         decodified_out_message = {
-            'heart_beat_counter': heart_beat_counter,
-            'voltage': voltage,
-            'temperature': temperature,
-            'status': status,
-            'actuators': actuators
+            "heart_beat_counter": heart_beat_counter,
+            "voltage": voltage,
+            "temperature": temperature,
+            "status": status,
+            "actuators": actuators,
         }
         return decodified_out_message
 
+    def _timeout_check(self, total_time, timeout):
+        """
+        Function to check if the timeout is reached.
+
+        Parameters
+        ----------
+        total_time : float
+            The total time spent in the loop.
+        timeout : float
+            The maximum time allowed for the loop.
+
+        Returns
+        -------
+        timeout_reached : bool
+            True if the timeout is reached, False otherwise.
+        """
+        if total_time >= timeout:
+            print("Timeout reached, probably BusBox freezed. Trying reconnecting...")
+            reconnected = self._recconnectBusBox()
+            if reconnected:
+                print("Reconnection successful, re-applying command")
+                pass
+            else:
+                raise ConnectionError("Reconnection failed, exiting...")
+        if total_time > 2*timeout:
+            raise ConnectionError("Something's wrong. Exiting...")
+        
+
     def _connectBusBox(self):
         """
-        Connection to the BusBox controlling the DP motors actuators, via 
+        Connection to the BusBox controlling the DP motors actuators, via
         ZMQ Pair protocol.
         """
         try:
@@ -318,8 +380,26 @@ class DpMotors(BaseM4Exapode):
             self._socket.connect(f"tcp://{self.remote_ip}:{self.remote_port}")
             return True
         except Exception as e:
-            #logger.log(f"ConnectZMQ: {e}")
+            # logger.log(f"ConnectZMQ: {e}")
             return False
+        
+    def _recconnectBusBox(self):
+        """
+        Reconnection to the BusBox controlling the DP motors actuators.
+        """
+        self._disconnectBusBox()
+        connected = self._connectBusBox()
+        if connected is not True:
+            for ntry in range(5):
+                print(f"Connection failed, retrying... {ntry}")
+                connected = self._connectBusBox()
+                if connected is True:
+                    break
+                time.sleep(1)
+        if connected is False:
+            print("Connection failed")
+            return False
+        return True
 
     def _disconnectBusBox(self):
         """
@@ -331,11 +411,11 @@ class DpMotors(BaseM4Exapode):
             self._context.term()
             return True
         except Exception as e:
-            #logger.log(f"DisconnectZMQ: {e}")
+            # logger.log(f"DisconnectZMQ: {e}")
             return False
 
 
-#_______________________
+# _______________________
 # Dictionary
 # TCS Interface KAMAL (C#)
 #

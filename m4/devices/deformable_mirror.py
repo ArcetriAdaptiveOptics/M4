@@ -157,7 +157,8 @@ class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror
         nact: int
             number of actuators of the DM.
         """
-        with open(os.path.join(self.dmConf,nActFile),'r') as f:
+        fname = open(os.path.join(self.dmConf, nActFile),'r')
+        with open(fname,'r') as f:
             nact = int(f.read())
         return nact
 
@@ -206,10 +207,9 @@ class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror
         '''
         Reading the actuators coordinate from file
         '''
-        fname = os.path.join(self.dmConf,actCoordFile)
-        hdu = pyfits.open(fname)
-        actCoord = hdu[0].data
-        #nActs = np.shape(cmdMat)[0]
+        fname = os.path.join(self.dmConf, actCoordFile)
+        with pyfits.open(fname) as hdu:
+            actCoord = hdu[0].data
         return actCoord
     
     #def _mirrorConfFolder(self):
