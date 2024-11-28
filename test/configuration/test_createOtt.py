@@ -27,6 +27,7 @@ class TestOtt(unittest.TestCase):
         parabola = FakeParabola()
         reference_mirror = FakeReferenceMirror()
         m4 = FakeM4Exapode()
+        dp = None
         temperature_sensor = FakeTemperatureSensors()
         accelerometers = FakeAccelerometers()
         self.ott = OTT(
@@ -36,6 +37,7 @@ class TestOtt(unittest.TestCase):
             parabola,
             reference_mirror,
             m4,
+            dp,
             temperature_sensor,
             accelerometers)
 
