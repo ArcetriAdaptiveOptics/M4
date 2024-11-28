@@ -45,6 +45,11 @@ class configuration_path():
     @property
     def simulated_m4Exapode(self):
         return self._conf['simulated_m4Exapode']
+    
+    @property
+    def simulated_dp(self):
+        return self._conf['simulated_dp']
+
     @property
     def simulated_parSlider(self):
         return self._conf['simulated_parSlider']

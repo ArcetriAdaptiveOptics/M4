@@ -134,7 +134,7 @@ class OpticalAlignment:
         calfile = open(dove + "/" + calfilename, "w")
         calfile.write(self.tt_cal)
         calfile.close()
-        # ott_status.save(dove, self._ott) #saving the ott status
+        # ott_status.save_positions(dove, self._ott) #saving the ott status
         # end of modRB
         self._interf.save_phasemap(dove, name, img)
 
@@ -155,7 +155,7 @@ class OpticalAlignment:
             self._loggerRuna.info(
                 "Tracking number for alignment measurements = %s", self.tt_al
             )
-            ott_status.save(dove, self._ott)  # saving the ott status
+            ott_status.save_positions(dove, self._ott)  # saving the ott status
             return self.par_command, self.rm_command, dove
         elif self._who == "M4":
             pass

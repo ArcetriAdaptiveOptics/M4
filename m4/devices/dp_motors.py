@@ -37,6 +37,7 @@ import zmq
 import time
 import struct
 import numpy as np
+from m4.configuration import config_folder_names as fn
 from m4.ground import logger_set_up as logger
 from m4.configuration.ott_parameters import OttParameters
 from m4.devices.base_m4_exapode import BaseM4Exapode
@@ -52,7 +53,7 @@ from m4.devices.base_m4_exapode import BaseM4Exapode
 # C    1   0   1
 
 
-class DpMotors(BaseM4Exapode):
+class ZmqDpMotors(BaseM4Exapode):
     """
     Class for controlling the DP motors actuators, via ZMQ Pair protocol.
     
@@ -82,11 +83,8 @@ class DpMotors(BaseM4Exapode):
         Disconnection from the BusBox controlling the DP motors actuators.
     """
 
-    DPinterface = 0  # dummy, to replicate the sintax
-
-    def __init__(self, DPinterface):
+    def __init__(self):
         """The constructor"""
-        self._dpinterface = DPinterface
         self._kinematrix = np.array([[1, 1, 1], [-1, 1, 0], [-1, -1, 1]])
         self._invkinematrix = np.linalg.inv(self._kinematrix)
         self._context = None
@@ -95,8 +93,8 @@ class DpMotors(BaseM4Exapode):
         self.remote_port = 6660  # final?
         self._m4dof = slice(OttParameters.M4_DOF[0], OttParameters.M4_DOF[1] + 1)
         self._minVel = 30 # um/s
-        self._timeout = 180 # seconds
-        logger.set_up_logger('path/dpMotors.log', 10)
+        self._timeout = 120 # seconds
+        logger.set_up_logger(fn.LOG_ROOT_FOLDER+'/dpMotors.log', 10)
 
     def getPosition(self):
         """
@@ -287,8 +285,9 @@ class DpMotors(BaseM4Exapode):
         tot_time = 3
         pos_err = np.max(np.abs(target_pos - act_enc_pos))
         timeout = self._timeout
-        ftime = stime+3
+        stime = 3
         while pos_err > 1:
+            ftime = time.time()
             waittime = np.min([pos_err/self._minVel, 3])
             print(waittime)
             tot_time += (ftime - stime)
@@ -301,7 +300,6 @@ class DpMotors(BaseM4Exapode):
             act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3] 
             pos_err = np.max(np.abs(target_pos - act_enc_pos))
             print(f"ActPos: {act_pos} ; EncPos: {act_enc_pos}\n")
-            ftime = time.time()
         return True
 
     def _send_read_message(self):
