@@ -3,8 +3,8 @@ Alignment Software Configuration File
 =====================================
 Author(s)
 ---------
-    - Pietro Ferraiuolo : written in 2024
-        e-mail : pietro.ferraiuolo@inaf.it
+- Pietro Ferraiuolo : written in 2024
+             e-mail : pietro.ferraiuolo@inaf.it
 
 Description
 -----------

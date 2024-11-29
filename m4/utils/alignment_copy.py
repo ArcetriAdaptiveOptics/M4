@@ -239,6 +239,8 @@ class Alignment:
         ----------
         cmdAmp : float
             The command amplitude used for calibration.
+        n_frames : int, optional
+            The number of frames acquired and averaged for each image. Default is 15.
         template : list, optional
             A list representing the template for calibration. If not provided, the default template will be used.
         n_repetitions : int, optional
@@ -345,7 +347,6 @@ class Alignment:
                 imglist = self._img_acquisition(k, template, n_frames)
                 image = self._push_pull_redux(imglist, template)
                 image = image / self._cmdAmp[k]
-                # print(f"{self._cmdAmp[k]}")
                 results.append(image)
             if n_repetitions != 1:
                 n_results.append(results)
