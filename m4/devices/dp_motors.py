@@ -6,7 +6,7 @@ Author(s)
 
 Description
 -----------
-This module contains the class `DpMotors`, which is used to control the actuators
+This module contains the class `ZmqDpMotors`, which is used to control the actuators
 controlling the DP alignment at the OTT. These actuators, connected to a BusBox, 
 are controlled via ZMQ Pair protocol. The class provides methods to get and set the
 position of the actuators, converting the "motor positions" into "kinematic positions"
@@ -41,16 +41,6 @@ from m4.configuration import config_folder_names as fn
 from m4.ground import logger_set_up as logger
 from m4.configuration.ott_parameters import OttParameters
 from m4.devices.base_m4_exapode import BaseM4Exapode
-
-# The kinematics is written in the form (normalization-less):
-
-#           C     ^Y
-#                 |
-#        A     B  -->X
-#   Pist  Tx  Ty
-# A    1  -1  -1
-# B    1   1  -1
-# C    1   0   1
 
 
 class ZmqDpMotors(BaseM4Exapode):
@@ -94,7 +84,7 @@ class ZmqDpMotors(BaseM4Exapode):
         self._m4dof = slice(OttParameters.M4_DOF[0], OttParameters.M4_DOF[1] + 1)
         self._minVel = 30 # um/s
         self._timeout = 120 # seconds
-        logger.set_up_logger(fn.LOG_ROOT_FOLDER+'/dpMotors.log', 10)
+        #logger.set_up_logger(fn.LOG_ROOT_FOLDER+'/dpMotors.log', 10)
 
     def getPosition(self):
         """
@@ -127,7 +117,10 @@ class ZmqDpMotors(BaseM4Exapode):
         pos : list or ArrayLike
             The current position of the actuators.
         """
-        v = np.array([0] + absolute_position_in_mm[self._m4dof])
+        if isinstance(absolute_position_in_mm, list):        
+            v = np.array([0] + absolute_position_in_mm[self._m4dof])
+        elif isinstance(absolute_position_in_mm, np.array):
+            v = np.array([0] + [c for c in absolute_position_in_mm[self._m4dof]])
         vm = self._kinematics2motor(v)
         self._setMotorPosition(vm)
         return self.getPosition()
@@ -166,7 +159,7 @@ class ZmqDpMotors(BaseM4Exapode):
         response : dict
             The response from the BusBox.
         """
-        pos = motorcmd * 1e3  # conversion in um
+        pos = np.array([c*1000 for c in motorcmd], dtype=int)  # conversion in um
         print(pos)
         connected = self._connectBusBox()
         if connected is not True:
@@ -426,7 +419,7 @@ class ZmqDpMotors(BaseM4Exapode):
             self._socket.connect(f"tcp://{self.remote_ip}:{self.remote_port}")
             return True
         except Exception as e:
-            logger.log(f"ConnectZMQ: {e}")
+            #logger.log(f"ConnectZMQ: {e}")
             return False
         
     def _recconnectBusBox(self):
@@ -457,7 +450,7 @@ class ZmqDpMotors(BaseM4Exapode):
             self._context.term()
             return True
         except Exception as e:
-            logger.log(f"DisconnectZMQ: {e}")
+            #logger.log(f"DisconnectZMQ: {e}")
             return False
 
 
