@@ -13,15 +13,15 @@ position of the actuators, converting the "motor positions" into "kinematic posi
 The matrix controlling the kinematics is written in the form (normalization-less):
 
    Pist  Tx  Ty
- A [ 1  -1  -1 ]
- B [ 1   1  -1 ]
- C [ 1   0   1 ]
+ A [ 1   0   1 ]
+ B [ 1  -1  -1 ]
+ C [ 1   1  -1 ]
 
 with the actuators A, B, C positioned as follows:
 ``` 
-↑ Y         C
+↑ Y         A
 → X
-         A     B
+         B     C
 ```
 How to Use
 ----------
@@ -75,7 +75,7 @@ class ZmqDpMotors(BaseM4Exapode):
 
     def __init__(self):
         """The constructor"""
-        self._kinematrix = np.array([[1, 1, 1], [-1, 1, 0], [-1, -1, 1]])
+        self._kinematrix = np.array([[1, 1, 1], [0, -1, 1], [1, -1, -1]]).T
         self._invkinematrix = np.linalg.inv(self._kinematrix)
         self._context = None
         self._socket = None
@@ -97,7 +97,7 @@ class ZmqDpMotors(BaseM4Exapode):
         """
         pp = self._getMotorPosition()
         kk = self._motor2kinematics(pp)
-        pos = np.array([0, 0, 0] + [k for k in kk[1:]] + [0])
+        pos = np.array([0, 0] + kk + [0])
         print(pos)
         return pos
 
@@ -118,9 +118,9 @@ class ZmqDpMotors(BaseM4Exapode):
             The current position of the actuators.
         """
         if isinstance(absolute_position_in_mm, list):        
-            v = np.array([0] + absolute_position_in_mm[self._m4dof])
-        elif isinstance(absolute_position_in_mm, np.array):
-            v = np.array([0] + [c for c in absolute_position_in_mm[self._m4dof]])
+            v = np.array(absolute_position_in_mm[2:5])
+        elif isinstance(absolute_position_in_mm, np.ndarray):
+            v = np.array([c for c in absolute_position_in_mm[2:5]])
         vm = self._kinematics2motor(v)
         self._setMotorPosition(vm)
         return self.getPosition()
@@ -160,7 +160,6 @@ class ZmqDpMotors(BaseM4Exapode):
             The response from the BusBox.
         """
         pos = np.array([c*1000 for c in motorcmd], dtype=int)  # conversion in um
-        print(pos)
         connected = self._connectBusBox()
         if connected is not True:
             self._recconnectBusBox()
@@ -285,7 +284,7 @@ class ZmqDpMotors(BaseM4Exapode):
             print(waittime)
             tot_time += (ftime - stime)
             stime = time.time()
-            self._timeout_check(tot_time, timeout)
+#            self._timeout_check(tot_time, timeout)
             out = self._send(cmd)
             time.sleep(waittime)
             response = self._decode_message(out)
