@@ -37,21 +37,16 @@ def read_positions(tn):
     config.read(f2read)
     #OTT
     pp = config['OTT']
-    par= np.array(json.loads(pp['PAR']))
-    rm = np.array(json.loads(pp['RM']))
-    m4 = np.array(json.loads(pp['M4']))
-    dp = np.array(json.loads(pp['DP']))
-    ps = float(pp['PAR_SLIDER'])
-    rs = float(pp['RM_SLIDER'])
-    ang= float(pp['ROT_ANGLE'])
+    positions = {key: np.array(json.loads(pp[key])) if key in ['PAR', 'RM', 'M4', 'DP'] else float(pp[key])
+                 for key in ['PAR', 'RM', 'M4', 'DP', 'PAR_SLIDER', 'RM_SLIDER', 'ROT_ANGLE']}
     positions = {
-        'parabola': par,
-        'referenceMirror': rm,
-        'm4Exapode': m4,
-        'dp': dp,
-        'parabolaSlider': ps,
-        'referenceMirrorSlider': rs,
-        'angleRotator': ang
+        'parabola': positions['PAR'],
+        'referenceMirror': positions['RM'],
+        'm4Exapode': positions['M4'],
+        'dp': positions['DP'],
+        'parabolaSlider': positions['PAR_SLIDER'],
+        'referenceMirrorSlider': positions['RM_SLIDER'],
+        'angleRotator': positions['ROT_ANGLE']
     }
     return positions
 
