@@ -277,14 +277,10 @@ class ZmqDpMotors(BaseM4Exapode):
         tot_time = 3
         pos_err = np.max(np.abs(target_pos - act_enc_pos))
         timeout = self._timeout
-        stime = 3
         while pos_err > 1:
-            ftime = time.time()
-            waittime = np.min([pos_err/self._minVel, 3])
-            print(waittime)
-            tot_time += (ftime - stime)
             stime = time.time()
-#            self._timeout_check(tot_time, timeout)
+            waittime = np.min([pos_err/self._minVel, 3])
+            print("waiting",waittime, "s...")
             out = self._send(cmd)
             time.sleep(waittime)
             response = self._decode_message(out)
@@ -292,6 +288,9 @@ class ZmqDpMotors(BaseM4Exapode):
             act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3] 
             pos_err = np.max(np.abs(target_pos - act_enc_pos))
             print(f"ActPos: {act_pos} ; EncPos: {act_enc_pos}\n")
+            ftime = time.time()
+            tot_time += (ftime - stime)
+            self._timeout_check(tot_time, timeout)
         return True
 
     def _send_read_message(self):

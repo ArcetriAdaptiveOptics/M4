@@ -205,8 +205,8 @@ class Alignment:
                     "No internal matrix found. Please calibrate the alignment first."
                 )
         reduced_intMat = intMat[
-            np.ix_(modes2correct, zern2correct)
-        ].T  # should not be transposed. Retry modyfing the way the intmat is defined
+            np.ix_(zern2correct, modes2correct)
+        ]
         reduced_cmdMat = self.cmdMat[:, modes2correct]
         recMat = self._create_rec_mat(reduced_intMat)
         reduced_cmd = np.dot(recMat, zernike_coeff[zern2correct])
@@ -239,6 +239,8 @@ class Alignment:
         ----------
         cmdAmp : float
             The command amplitude used for calibration.
+        n_frames : int, optional
+            The number of frames acquired and averaged for each image. Default is 15.
         template : list, optional
             A list representing the template for calibration. If not provided, the default template will be used.
         n_repetitions : int, optional
@@ -345,7 +347,6 @@ class Alignment:
                 imglist = self._img_acquisition(k, template, n_frames)
                 image = self._push_pull_redux(imglist, template)
                 image = image / self._cmdAmp[k]
-                # print(f"{self._cmdAmp[k]}")
                 results.append(image)
             if n_repetitions != 1:
                 n_results.append(results)
@@ -387,8 +388,9 @@ class Alignment:
             coefflist.append(coeff[self._zvec2use])
         if len(coefflist) == 1:
             coefflist = [c for c in coefflist[0]]
-        #intMat = np.array(coefflist).T
-        return np.array(coefflist)  # intmat
+            return np.array(coefflist)
+        intMat = np.array(coefflist).T
+        return intMat
 
     def _create_rec_mat(self, intMat):
         """
