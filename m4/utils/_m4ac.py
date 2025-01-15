@@ -3,8 +3,8 @@ Alignment Software Configuration File
 =====================================
 Author(s)
 ---------
-    - Pietro Ferraiuolo : written in 2024
-        e-mail : pietro.ferraiuolo@inaf.it
+- Pietro Ferraiuolo : written in 2024
+             e-mail : pietro.ferraiuolo@inaf.it
 
 Description
 -----------
@@ -115,11 +115,11 @@ cmdDof = 6                # Total DoF per device
 dof = []                  # Available Degrees of Freedom (DoF)
 dof.append([2, 3, 4])     # Parabola DoF
 dof.append([3, 4])        # Reference Mirror DoF
-#dof.append([3, 4])        # M4 Exapode DoF
+dof.append([3, 4])        # M4 Exapode DoF
 slices = []               # Full cmd vector devices indices
 slices.append(slice(0,3)) # Parabola
 slices.append(slice(3,5)) # Reference Mirror
-#slices.append(slice(5,7)) # M4 Exapode
+slices.append(slice(5,7)) # M4 Exapode
 
 zernike_to_use = [1,2,3,6,7]
 push_pull_template = [+1,-2,+1]
@@ -129,19 +129,19 @@ push_pull_template = [+1,-2,+1]
 devices_move_calls = [
     'parabola.setPosition',
     'referenceMirror.setPosition',
-    #'m4Exapode.setPosition'
+    'm4Exapode.setPosition'
     ]
 
 devices_read_calls = [
     'parabola.getPosition',
     'referenceMirror.getPosition',
-    #'m4Exapode.getPosition'
+    'm4Exapode.getPosition'
     ]
 
 names = [
     'Parabola',
     'Reference Mirror',
-    #'M4 Exapode'
+    'M4 Exapode'
     ]
 
 ccd_acquisition = [

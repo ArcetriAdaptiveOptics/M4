@@ -165,8 +165,8 @@ class Parabola:
         Parameters
         ---------------
         intensity : int
-            Relative change in position to apply, in mllimeters, of the parabol
-            a piston.
+            Relative (differential) change in position to apply, in mllimeters,
+            of the parabola piston.
 
         Returns
         ---------------
@@ -202,6 +202,17 @@ class Parabola:
         coords[3] += tt[0]
         coords[4] += tt[1]
         self._par.setPosition(coords)
+
+    def parabolaGetPosition(self):
+        """
+        Returns the current position of the parabola in meters.
+
+        Returns
+        -------
+        current_pos : float
+            Current position of the parabola, in meters.
+        """
+        return self._par.getPosition()
 
 class ReferenceMirror:
     """
@@ -271,7 +282,7 @@ class ReferenceMirror:
             new_pos = pos - OttParameters.RM_SLIDER_KIN_OFFSET*1000
         return new_pos
 
-    def rmGetPosition(self) -> float:
+    def rmsGetPosition(self) -> float:
         """
         Returns the current position, in meters, of the reference mirror slider.
 
@@ -288,7 +299,7 @@ class ReferenceMirror:
         current_pos /= 1000
         return current_pos
 
-    def moveRmTo(self, pos_in_m: float) -> float:
+    def moveRmsTo(self, pos_in_m: float) -> float:
         """
         Moves the reference mirror slider to a given position in the reference
         mirror slider's range.
@@ -314,7 +325,7 @@ class ReferenceMirror:
         current_pos = self._pos = self.rmGetPosition()
         return current_pos
 
-    def moveRmBy(self, change_in_m: float) -> float:
+    def moveRmsBy(self, change_in_m: float) -> float:
         """
         Moves the reference mirror slider from the current position by the spec
         ified amount, in meters.
@@ -334,27 +345,6 @@ class ReferenceMirror:
         self._slider.setPosition(new_pos)
         current_pos = self._pos = self.rmGetPosition()
         return current_pos
-
-    def rmPiston(self, intensity: int) -> int:
-        """
-        Applies a relative piston command to the reference mirror. For absolute
-        positioning, refer to ott.referenceMirror.
-
-        Parameters
-        ---------------
-        intensity : int
-            Relative change in position to apply, in millimeters, to the refere
-            nce mirror piston.
-
-        Returns
-        ---------------
-        pos : int
-            Current position of the piston, in millimeters
-        """
-        coords = self._rm.getPosition()
-        coords[2] += intensity
-        self._rm.setPosition(coords)
-        return self._rm.getPosition()[2]
 
     def rmTipTilt(self, tt):
         """
@@ -381,6 +371,17 @@ class ReferenceMirror:
         coords[4] += tt[1]
         self._rm.setPosition(coords)
         return self._rm.getPosition()[3:5]
+    
+    def rmGetPosition(self):
+        """
+        Returns the current position of the reference mirror in meters.
+
+        Returns
+        -------
+        current_pos : float
+            Current position of the reference mirror, in meters.
+        """
+        return self._rm.getPosition()
 
 class AngleRotator:
     """

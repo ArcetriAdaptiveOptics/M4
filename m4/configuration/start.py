@@ -1,16 +1,17 @@
 """
 Author(s)
 ---------
-    - Chiara Selmi: written in 2020
-                    modified in 2022
-    - Pietro Ferraiuolo: modified in 2024
+- Chiara Selmi: written in 2020
+                modified in 2022
+- Pietro Ferraiuolo: modified in 2024
 Description
 -----------
-Module which creates and/or connects to the M4's Optical Test Tower
-devices, which are:
+Module which creates and/or connects to the M4's Optical Test Tower devices,
+which are:
     - Accelerometers
     - Angle Rotator
     - M4's Exapode
+    - DP alignment motors
     - Parabola (with parabola slider)
     - Reference Mirror (with reference mirror slider)
     - Temperature Sensors
@@ -33,6 +34,7 @@ from m4.devices.angle_rotator import OpcUaAngleRotator
 from m4.devices.parabola import OpcUaParabola
 from m4.devices.reference_mirror import OpcUaReferenceMirror
 from m4.devices.m4_exapode import OpcUaM4Exapode
+from m4.devices.dp_motors import ZmqDpMotors
 from m4.devices.temperature_sensors import OpcUaTemperatureSensors
 from m4.devices.accelerometers import ZmqAccelerometers
 from m4.devices.interferometer import I4d6110
@@ -68,49 +70,65 @@ def create_ott():
         The deformable mirror, that is M4.
     """
     conf_obj = ufp.folders
-    if conf_obj.simulated_accelerometers is True:
-        accelerometers = FakeAccelerometers()
-    else:
-        accelerometers = ZmqAccelerometers()
-    if conf_obj.simulated_angleRotator is True:
-        angle_rotator = FakeAngleRotator()
-    else:
-        opcUa = OpcUaController()
-        angle_rotator = OpcUaAngleRotator(opcUa)
-    if conf_obj.simulated_m4Exapode is True:
-        m4 = FakeM4Exapode()
-    else:
-        opcUa = OpcUaController()
-        m4 = OpcUaM4Exapode(opcUa)
+    # Sliders
+    # Parabola Slider
     if conf_obj.simulated_parSlider is True:
         parabola_slider = FakeParabolaSlider()
     else:
         opcUa = OpcUaController()
         parabola_slider = OpcUaParabolaSlider(opcUa)
-    if conf_obj.simulated_par is True:
-        parab = FakeParabola()
-    else:
-        opcUa = OpcUaController()
-        parab = OpcUaParabola(opcUa)
+    # Reference Mirror Slider
     if conf_obj.simulated_rmSlider is True:
         reference_mirror_slider = FakeReferenceMirrorSlider()
     else:
         opcUa = OpcUaController()
         reference_mirror_slider = OpcUaReferenceMirrorSlider(opcUa)
+    # Rotator
+    if conf_obj.simulated_angleRotator is True:
+        angle_rotator = FakeAngleRotator()
+    else:
+        opcUa = OpcUaController()
+        angle_rotator = OpcUaAngleRotator(opcUa)
+    # alignment
+    # Parabola
+    if conf_obj.simulated_par is True:
+        parab = FakeParabola()
+    else:
+        opcUa = OpcUaController()
+        parab = OpcUaParabola(opcUa)
+    # Reference Mirror
     if conf_obj.simulated_rm is True:
         reference_mirror = FakeReferenceMirror()
     else:
         opcUa = OpcUaController()
         reference_mirror = OpcUaReferenceMirror(opcUa)
+    # DP
+    if conf_obj.simulated_dp is True:
+        dp = None
+    else:
+        dp = ZmqDpMotors()
+    # M4
+    if conf_obj.simulated_m4Exapode is True:
+        m4 = FakeM4Exapode()
+    else:
+        opcUa = OpcUaController()
+        m4 = OpcUaM4Exapode(opcUa)
+    # DM
+    if conf_obj.simulated_dm is True:
+        dm = FakeM4DM()
+    else:
+        dm = None
+    # Others
+    # Temperature Sensors and Accelerometers
+    if conf_obj.simulated_accelerometers is True:
+        accelerometers = FakeAccelerometers()
+    else:
+        accelerometers = ZmqAccelerometers()
     if conf_obj.simulated_tempSensors is True:
         temperature_sensor = FakeTemperatureSensors()
     else:
         opcUa = OpcUaController()
         temperature_sensor = OpcUaTemperatureSensors(opcUa)
-    if conf_obj.simulated_dm is True:
-        dm = FakeM4DM()
-    else:
-        dm = None
 
     ott = OTT(
         parabola_slider,
@@ -119,6 +137,7 @@ def create_ott():
         parab,
         reference_mirror,
         m4,
+        dp,
         temperature_sensor,
         accelerometers,
     )

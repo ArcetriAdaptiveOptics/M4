@@ -85,7 +85,7 @@ class Measurements():
         shutil.copy(Interferometer.SETTINGS_CONF_FILE_M4OTT_PC, dove)
         shutil.move(os.path.join(dove, 'AppSettings.ini'),
                     os.path.join(dove, '4DSettings.ini'))
-        ott_status.save(dove, self._ott) #saving the ott status
+        ott_status.save_positions(dove, self._ott) #saving the ott status
 
         print('waiting {:n} s...'.format(start_delay))
         time.sleep(start_delay)

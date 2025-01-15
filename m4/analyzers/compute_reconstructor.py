@@ -2,6 +2,8 @@
 Author(s):
 ----------
     - Chiara Selmi : written in 2019
+    - Marco Xompero : modified in 2024
+    - Pietro Ferraiuolo : modified in 2024
 """
 import logging
 import os

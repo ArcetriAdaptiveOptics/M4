@@ -1,6 +1,7 @@
 """
 Author(s):
-    - Pietro Ferraiuolo : written in 2024
+----------
+- Pietro Ferraiuolo : written in 2024
 
 Description
 -----------
@@ -9,20 +10,97 @@ alignment procedures, including calibration and correction.
 
 How to Use it
 -------------
+This module contains the class `Alignment`, which manages, alone, both the calibration
+and the correction of the alignment of the system. The class is initialized with the
+mechanical and acquisition devices used for alignment. These devices, which in
+the case of the M4 project are the OTT and the interferometer, are passed as arguments
+and configured through the `_m4ac.py` configuration file, (for more information,
+check the documentation init).
+
+Given an IPython shell with the tower initialized (`pyott -i`):
+
+>>> from m4.utils.alignment import Alignment
+>>> align = Alignment(ott, interf)
+>>> # At this point the alignment is ready to be calibrated, given the command amplitude
+>>> amps = [0,7, 10, 10, 6, 6, 4, 4] # example, verosimilar, amplitudes
+>>> align.calibrate_alignment(amps)
+>>> [...]
+>>> "Ready for Alignment..."
+
+At this point, the calibration is complete and and `InteractionMatrix.FITS`
+was created, saved and stored in the Alignment class. It is ready to compute
+and apply corrections. 
+
+>>> modes2correct = [3,4] # Reference Mirror DoF
+>>> zern2correct = [0,1] # tip $ tilt
+>>> align.correct_alignment(modes2correct, zern2correct, apply=True)
+
+If we already have an InteractionMatrix.FITS file, we can load it and apply 
+corrections based off the loaded calibration. All to do is to pass a tracking
+number to the `correct_alignment` method:
+
+>>> tn_intmat = '20241122_160000' # example, tracking number
+>>> align.correct_alignment(modes2correct, zern2correct, tn=tn_intmat, apply=True)
+
+And the alignment is done.
+
+
+Notes
+-----
+Note that the calibration process can be done uploading to the class
+a calibrated parabola, so that a different algorithm for the Zernike fitting is 
+performed. This can be done through the `reload_calibrated_parabola` method.
+
+>>> tn_parabola = '20241122_160000' # example, tracking number
+>>> align.reload_calibrated_parabola(tn_parabola) # load the calibrated parabola
 """
+
 import os
 import numpy as np
-from m4.utils import _m4ac as mac # to change
+from m4.utils import _m4ac as mac  # to change
 from m4.utils.osutils import findTracknum
 from m4.ground import zernike as zern, timestamp as ts, geo
 from m4.ground.read_data import readFits_data, readFits_maskedImage, saveFits_data
 from m4.ground.logger_set_up import *
-_tt  = ts.Timestamp()
 
-class Alignment():
+_tt = ts.Timestamp()
+
+
+class Alignment:
     """
     Class for the alignment procedure: calibration and correction.
+
+    This class provides methods to perform alignment procedures using mechanical
+    and acquisition devices. It handles the initialization of devices, reading
+    calibration data, and executing alignment commands.
+
+    Attributes
+    ----------
+    mdev : object or list
+        The mechanical devices used for alignment. Can be either a single object
+        which calls more devices or a list of single devices.
+    ccd : object
+        The acquisition devices used for alignment.
+    cmdMat : numpy.ndarray
+        The command matrix read from a FITS file, used for alignment commands.
+    intMat : numpy.ndarray or None
+        The interaction matrix, initialized as None.
+    recMat : numpy.ndarray or None
+        The reconstruction matrix, initialized as None.
+
+    Methods
+    -------
+    correct_alignment(modes2correct, zern2correct, tn=None, apply=False, n_frames=15)
+        Corrects the alignment of the system based on Zernike coefficients.
+    calibrate_alignment(cmdAmp, n_frames=15, template=None, n_repetitions=1, save=True)
+        Calibrates the alignment of the system using the provided command amplitude and template.
+    read_positions(show=True)
+        Reads the current positions of the devices.
+    reload_calibrated_parabola(tn)
+        Reloads the calibrated parabola from the given tracking number.
+
     """
+
     def __init__(self, mechanical_devices, acquisition_devices):
         """
         Initializes the Alignment class with mechanical and acquisition devices.
@@ -36,29 +114,46 @@ class Alignment():
         acquisition_devices : object
             The acquisition devices used for alignment.
         """
-        self.mdev       = mechanical_devices
-        self.ccd        = acquisition_devices
-        self.cmdMat     = readFits_data(mac.commandMatrix)
-        self.intMat     = None
-        self.recMat     = None
-        self._cmdAmp    = None
-        self._parabola  = readFits_data(mac.calibrated_parabola) if not mac.calibrated_parabola=='' else None
-        self._moveFnc   = self.__get_callables(self.mdev, mac.devices_move_calls)
-        self._readFnc   = self.__get_callables(self.mdev, mac.devices_read_calls)
-        self._ccdFncs   = self.__get_callables(self.ccd,  mac.ccd_acquisition)
-        self._devName   = self.__get_dev_names(mac.names, ndev=len(self._moveFnc))
-        self._dof       = [np.array(dof) if not isinstance(dof, np.ndarray) else dof for dof in mac.dof]
-        self._dofTot    = mac.cmdDof if isinstance(mac.cmdDof, list) else [mac.cmdDof]*len(self._moveFnc)
-        self._idx       = mac.slices
-        self._zvec2fit  = np.arange(1,11)
-        self._zvec2use  = mac.zernike_to_use
-        self._template  = mac.push_pull_template
-        self._readPath  = mac.base_read_data_path
+        self.mdev = mechanical_devices
+        self.ccd = acquisition_devices
+        self.cmdMat = readFits_data(mac.commandMatrix)
+        self.intMat = None
+        self.recMat = None
+        self._cmdAmp = None
+        self._parabola = (
+            readFits_data(mac.calibrated_parabola)
+            if not mac.calibrated_parabola == ""
+            else None
+        )
+        self._moveFnc = self.__get_callables(self.mdev, mac.devices_move_calls)
+        self._readFnc = self.__get_callables(self.mdev, mac.devices_read_calls)
+        self._ccdFncs = self.__get_callables(self.ccd, mac.ccd_acquisition)
+        self._devName = self.__get_dev_names(mac.names, ndev=len(self._moveFnc))
+        self._dof = [
+            np.array(dof) if not isinstance(dof, np.ndarray) else dof for dof in mac.dof
+        ]
+        self._dofTot = (
+            mac.cmdDof
+            if isinstance(mac.cmdDof, list)
+            else [mac.cmdDof] * len(self._moveFnc)
+        )
+        self._idx = mac.slices
+        self._zvec2fit = np.arange(1, 11)
+        self._zvec2use = mac.zernike_to_use
+        self._template = mac.push_pull_template
+        self._readPath = mac.base_read_data_path
         self._writePath = mac.base_write_data_path
-        self._txt       = txtLogger(mac.log_path)
+        self._txt = txtLogger(mac.log_path.strip('.log')+'Record.txt')
         set_up_logger(mac.log_path, mac.logging_level)
 
-    def correct_alignment(self, modes2correct, zern2correct, tn:str=None, apply:bool=False, n_frames:int=15):
+    def correct_alignment(
+        self,
+        modes2correct,
+        zern2correct,
+        tn: str = None,
+        apply: bool = False,
+        n_frames: int = 15,
+    ):
         """
         Corrects the alignment of the system based on Zernike coefficients.
 
@@ -97,7 +192,7 @@ class Alignment():
         initpos = self.read_positions(show=False)
         zernike_coeff = self._zern_routine(image)
         if tn is not None:
-            intMat = readFits_data(self._readPath+f'/{tn}/InteractionMatrix.fits')
+            intMat = readFits_data(self._readPath + f"/{tn}/InteractionMatrix.fits")
             self.intMat = intMat
         else:
             try:
@@ -106,15 +201,21 @@ class Alignment():
                 else:
                     raise AttributeError()
             except AttributeError:
-                raise AttributeError("No internal matrix found. Please calibrate the alignment first.")
-        reduced_intMat = intMat[np.ix_(modes2correct, zern2correct)].T # should not be transposed. Retry modyfing the way the intmat is defined
-        reduced_cmdMat = self.cmdMat[:,modes2correct]
+                raise AttributeError(
+                    "No internal matrix found. Please calibrate the alignment first."
+                )
+        reduced_intMat = intMat[
+            np.ix_(zern2correct, modes2correct)
+        ]
+        reduced_cmdMat = self.cmdMat[:, modes2correct]
         recMat = self._create_rec_mat(reduced_intMat)
         reduced_cmd = np.dot(recMat, zernike_coeff[zern2correct])
         f_cmd = -np.dot(reduced_cmdMat, reduced_cmd)
         print(f"Resulting Command: {f_cmd}")
         self._write_correction_log(tn, initpos)
-        self._txt.log(f"DoF & Zern2Corr:          {modes2correct} {zern2correct}\n"+"-"*30)
+        self._txt.log(
+            f"DoF & Zern2Corr:          {modes2correct} {zern2correct}\n" + "-" * 30
+        )
         if apply:
             print("Applying correction command...")
             self._apply_command(f_cmd)
@@ -123,7 +224,14 @@ class Alignment():
             return
         return f_cmd
 
-    def calibrate_alignment(self, cmdAmp, n_frames:int=15, template:list=None, n_repetitions:int=1, save:bool=True):
+    def calibrate_alignment(
+        self,
+        cmdAmp,
+        n_frames: int = 15,
+        template: list = None,
+        n_repetitions: int = 1,
+        save: bool = True,
+    ):
         """
         Calibrate the alignment of the system using the provided command amplitude and template.
 
@@ -131,6 +239,8 @@ class Alignment():
         ----------
         cmdAmp : float
             The command amplitude used for calibration.
+        n_frames : int, optional
+            The number of frames acquired and averaged for each image. Default is 15.
         template : list, optional
             A list representing the template for calibration. If not provided, the default template will be used.
         n_repetitions : int, optional
@@ -160,13 +270,13 @@ class Alignment():
         self.intMat = intMat
         if save:
             tn = _tt.now()
-            filename = os.path.join(self._writePath, tn, 'InteractionMatrix.fits')
-            os.mkdir(filename.strip('InteractionMatrix.fits'))
+            filename = os.path.join(self._writePath, tn, "InteractionMatrix.fits")
+            os.mkdir(filename.strip("InteractionMatrix.fits"))
             saveFits_data(filename, self.intMat, overwrite=True)
             log(f"{saveFits_data.__qualname__}")
         return "Ready for Alignment..."
 
-    def read_positions(self, show:bool=True):
+    def read_positions(self, show: bool = True):
         """
         Reads the current positions of the devices.
 
@@ -176,16 +286,16 @@ class Alignment():
             The list of current positions of the devices.
         """
         log(f"{self.read_positions.__qualname__}")
-        logMsg = ''
+        logMsg = ""
         pos = []
         logMsg += "Current Positions\n"
-        for fnc,dev_name in zip(self._readFnc, self._devName):
+        for fnc, dev_name in zip(self._readFnc, self._devName):
             temp = fnc()
             pos.append(_Command(temp))
-            logMsg += f"{dev_name}"+' '*(16-len(dev_name))+f" : {temp}\n"
-        logMsg += '-'*30
+            logMsg += f"{dev_name}" + " " * (16 - len(dev_name)) + f" : {temp}\n"
+        logMsg += "-" * 30
         if show:
-            print(logMsg) #!!! debug only
+            print(logMsg)  #!!! debug only
         return pos
 
     def reload_calibrated_parabola(self, tn):
@@ -225,21 +335,20 @@ class Alignment():
         results = []
         n_results = []
         for i in range(n_repetitions):
-            logMsg = ''
+            logMsg = ""
             logMsg += f"Repetition n.{i}\n"
-            #logging.info(logMsg)
-            print(logMsg) ## debug only
+            # logging.info(logMsg)
+            print(logMsg)  ## debug only
             for k in range(self.cmdMat.shape[1]):
-                logMsg2= ''
+                logMsg2 = ""
                 logMsg2 += f"Matrix Column {k+1} : {self.cmdMat.T[k]}"
-                print(f"Matrix Column {k+1} : {self.cmdMat.T[k]}\n") ## debug only
-                #logging.info(logMsg2)
+                print(f"Matrix Column {k+1} : {self.cmdMat.T[k]}\n")  ## debug only
+                # logging.info(logMsg2)
                 imglist = self._img_acquisition(k, template, n_frames)
                 image = self._push_pull_redux(imglist, template)
-                image = image/self._cmdAmp[k]
-                #print(f"{self._cmdAmp[k]}")
+                image = image / self._cmdAmp[k]
                 results.append(image)
-            if n_repetitions!=1:
+            if n_repetitions != 1:
                 n_results.append(results)
             else:
                 n_results = results
@@ -266,21 +375,22 @@ class Alignment():
         for img in imglist:
             if self._parabola is None:
                 coeff, _ = zern.zernikeFit(img, self._zvec2fit)
-                print(coeff)
                 log(f"{zern.zernikeFit.__qualname__}")
             else:
-                print('Removing the PAR')
-                img = img-2*self._parabola
+                print("Removing the PAR")
+                img = img - 2 * self._parabola
                 cir = geo.qpupil(-1 * self._parabola.mask + 1)
-                mm = geo.draw_mask(self._parabola.data * 0, cir[0],
-                               cir[1], 1.44 / 0.00076 / 2, out=0)
+                mm = geo.draw_mask(
+                    self._parabola.data * 0, cir[0], cir[1], 1.44 / 0.00076 / 2, out=0
+                )
                 coeff, _ = zern.zernikeFitAuxmask(img, mm, self._zvec2fit)
-                print(coeff)  #to be removed
                 log(f"{zern.zernikeFitAuxmask.__qualname__}")
             coefflist.append(coeff[self._zvec2use])
         if len(coefflist) == 1:
-            coefflist = [c for c in coefflist[0]] #np.array(coefflist[0])
-        return np.array(coefflist)  #intmat
+            coefflist = [c for c in coefflist[0]]
+            return np.array(coefflist)
+        intMat = np.array(coefflist).T
+        return intMat
 
     def _create_rec_mat(self, intMat):
         """
@@ -312,22 +422,21 @@ class Alignment():
         None
         """
         device_commands = self._extract_cmds_to_apply(fullCmd)
-        logMsg = '' #!!!
-        for cmd,fnc,dev in zip(device_commands,self._moveFnc,self._devName):
+        logMsg = ""  #!!!
+        for cmd, fnc, dev in zip(device_commands, self._moveFnc, self._devName):
             if cmd.to_ignore:
-                logMsg += f'Skipping null command for {dev}\n' # debug
+                logMsg += f"Skipping null command for {dev}\n"  # debug
             else:
                 try:
-                    logMsg += f"Commanding {cmd} to {dev}\n"# debug
+                    logMsg += f"Commanding {cmd} to {dev}\n"  # debug
                     fnc(cmd.vect)
                     log(f"{fnc.__qualname__} : {cmd.vect}")
                 except Exception as e:
                     print(e)
-                    #logging.warning(f"Someting went wrong with {dev}: {e}")
-        logMsg += '-'*30 # debug
-        #logging.info(logMsg)
-        print(logMsg) #!!! debug only
-
+                    # logging.warning(f"Someting went wrong with {dev}: {e}")
+        logMsg += "-" * 30  # debug
+        # logging.info(logMsg)
+        print(logMsg)  #!!! debug only
 
     def _extract_cmds_to_apply(self, fullCmd):
         """
@@ -345,16 +454,16 @@ class Alignment():
         """
         log(f"{self._extract_cmds_to_apply.__qualname__}")
         commands = []
-        for d,dof in enumerate(self._dof):
+        for d, dof in enumerate(self._dof):
             dev_cmd = np.zeros(self._dofTot[d])
             dev_idx = fullCmd[self._idx[d]]
-            for i,idx in enumerate(dev_idx):
+            for i, idx in enumerate(dev_idx):
                 dev_cmd[dof[i]] = idx
             commands.append(_Command(dev_cmd))
         positions = self.read_positions(show=False)
         device_commands = []
-        for pos,cmd in zip(positions, commands):
-            res_cmd = pos+cmd
+        for pos, cmd in zip(positions, commands):
+            res_cmd = pos + cmd
             device_commands.append(res_cmd)
         return device_commands
 
@@ -378,17 +487,17 @@ class Alignment():
         log(f"{self._acquire.__qualname__}")
         imglist = [self._acquire(n_frames)]
         for t in template:
-            logMsg = ''
+            logMsg = ""
             logMsg += f"t = {t}"
             cmd = self.cmdMat.T[k] * self._cmdAmp[k] * t
             logMsg += f" - Full Command : {cmd}"
-            #logging.info(logMsg)
-            print(logMsg) #!!! debug only
+            # logging.info(logMsg)
+            print(logMsg)  #!!! debug only
             self._apply_command(cmd)
             log(f"{self._acquire.__qualname__}")
             imglist.append(self._acquire(n_frames))
         return imglist
-    
+
     def _acquire(self, n_frames):
         """
         Acquires images from the CCD device.
@@ -423,20 +532,20 @@ class Alignment():
             The reduced image.
         """
         log(f"{self._push_pull_redux.__qualname__}")
-        template.insert(0,1)
+        template.insert(0, 1)
         image = np.zeros((imglist[0].shape[0], imglist[0].shape[1]))
         for x in range(1, len(imglist)):
-            opd2add = imglist[x] * template[x] + imglist[x-1] * template[x-1]
-            mask2add = np.ma.mask_or(imglist[x].mask, imglist[x-1].mask)
-            if x==1:
+            opd2add = imglist[x] * template[x] + imglist[x - 1] * template[x - 1]
+            mask2add = np.ma.mask_or(imglist[x].mask, imglist[x - 1].mask)
+            if x == 1:
                 master_mask = mask2add
             else:
                 master_mask = np.ma.mask_or(master_mask, mask2add)
             image += opd2add
-        image = np.ma.masked_array(image, mask=master_mask)/6
+        image = np.ma.masked_array(image, mask=master_mask) / 6
         template.pop(0)
         return image
-    
+
     def _write_correction_log(self, tn, initpos):
         """
         Writes the log of the allignment correction applied to the OTT devices.
@@ -449,27 +558,35 @@ class Alignment():
         endpos = self.read_positions(show=False)
         par_i, rm_i, m4_i = initpos
         par_f, rm_f, m4_f = endpos
-        self._txt.log("Calib. Trackn & IniPos:  {} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e}".format(tn, *par_i, *rm_i, *m4_i))
-        self._txt.log("Result Trackn & EndPos:  {} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e}".format(tn, *par_f, *rm_f, *m4_f))
+        self._txt.log(
+            "Calib. Trackn & IniPos:  {} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e}".format(
+                tn, *par_i.vect, *rm_i.vect, *m4_i.vect
+            )
+        )
+        self._txt.log(
+            "Result Trackn & EndPos:  {} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e} {:.3e}".format(
+                tn, *par_f.vect, *rm_f.vect, *m4_f.vect
+            )
+        )
         return
-        
+
     @staticmethod
     def __get_callables(devices, callables):
         """
-        Returns a list of callables for the instanced object, taken from the
-        configuration.py file.
+        Retrieves callable functions for the given devices and calls from
+        a configuration file.
 
         Parameters
         ----------
-        devices : object
-            The device object for which callables are retrieved.
-        callables : list
-            The list of callable names to be retrieved.
+        devices : object or list
+            The devices for which to retrieve callable functions.
+        callables : list of str
+            The names of the callable functions to retrieve.
 
         Returns
         -------
-        functions : list
-            List of callables, which interacts with the input object of the class.
+        functions : list of callable
+            A list of callable functions for the given devices and calls.
         """
         if not isinstance(devices, list):
             devices = [devices]
@@ -486,17 +603,19 @@ class Alignment():
     @staticmethod
     def __get_dev_names(names, ndev):
         """
-        Returns the names of the devices.
+        Retrieves device names for the given names and number of devices.
 
         Parameters
         ----------
-        names : list
-            The list of device names.
+        names : list of str
+            The names of the devices.
+        ndev : int
+            The number of devices.
 
         Returns
         -------
-        names : list
-            The list of device names.
+        names : list of str
+            A list of device names.
         """
         dev_names = []
         try:
@@ -506,6 +625,7 @@ class Alignment():
             for x in range(ndev):
                 dev_names.append(f"Device {x}")
         return dev_names
+
 
 class _Command:
     """
@@ -531,7 +651,8 @@ class _Command:
         _process_command_logic(P, C, S):
             Processes the command logic to determine the to_ignore flag.
     """
-    def __init__(self, vector=None, to_ignore:bool=None):
+
+    def __init__(self, vector=None, to_ignore: bool = None):
         """
         Initializes a new instance of the _Command class.
 
@@ -593,8 +714,12 @@ class _Command:
         """
         if not isinstance(other, _Command):
             return NotImplemented
-        if not isinstance(self.vect, np.ndarray) and not isinstance(other.vect, np.ndarray):
-            raise NotImplementedError(f"Operation not supported for operands types {type(self.vect)} and {type(other)}")
+        if not isinstance(self.vect, np.ndarray) and not isinstance(
+            other.vect, np.ndarray
+        ):
+            raise NotImplementedError(
+                f"Operation not supported for operands types {type(self.vect)} and {type(other)}"
+            )
         combined_vect = self.vect + other.vect
         to_ignore = self._process_command_logic(self, other, combined_vect)
         return _Command(combined_vect, to_ignore)
@@ -632,11 +757,11 @@ class _Command:
         # P = current device position
         # C = received device command
         # S = sum of P and C - command to apply (absolute)
-        #_________________________________________________#
+        # _________________________________________________#
         # If S = 0
         if np.all(S == 0):
             # C ≠ 0 and P ≠ 0 → TO_NOT_IGNORE
-            if not P.is_null and not C.is_null and np.array_equal(C.vect,-1*P.vect):
+            if not P.is_null and not C.is_null and np.array_equal(C.vect, -1 * P.vect):
                 decision = False
             # C = 0 and P = 0 → TO_IGNORE
             elif C.is_null and P.is_null:
@@ -644,12 +769,12 @@ class _Command:
         # If S ≠ 0
         else:
             # P ≠ 0 and C = 0 → TO_IGNORE
-            if not P.is_null and C.is_null and np.array_equal(S,P.vect):
+            if not P.is_null and C.is_null and np.array_equal(S, P.vect):
                 decision = True
             # C ≠ 0 and P ≠ 0 → TO_NOT_IGNORE
             elif not C.is_null and not P.is_null:
                 decision = False
             # P = 0 and C ≠ 0 → TO_NOT_IGNORE
-            elif P.is_null and not C.is_null and np.array_equal(S,C.vect):
+            elif P.is_null and not C.is_null and np.array_equal(S, C.vect):
                 decision = False
         return decision
