@@ -24,7 +24,7 @@ ffFile          = 'ff_matrix.fits'
 actCoordFile    = 'ActuatorCoordinates.fits'
 nActFile        = 'nActuators.dat'
 
-class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror
+class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror  #forse passare un TN come configurazione del DM??
     """
     Class that defines the M4 Adaptive Unit (M4AU) device.
     

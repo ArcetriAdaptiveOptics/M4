@@ -4,7 +4,7 @@ this module includes the functions for the preparation and the acquisition  IFF 
 from m4.configuration import read_iffconfig as rif  #contains a dictionary or similar with configuration
 from m4.device import deformable_mirror as dm
 from m4.iffutils import iff_acquisition_preparation as ifa
-m4u = dm.M4AU()
+m4u = dm.AdOpticaDM()
 ifc=ifa.IFFCapturePreparation(m4u)
 
 #Template
