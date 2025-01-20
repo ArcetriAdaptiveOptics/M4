@@ -36,6 +36,7 @@ class Runner:
         self.ott = ott
         self.paroffset = OttParameters.PAR_SLIDER_KIN_OFFSET
         self.rmoffset = OttParameters.RM_SLIDER_KIN_OFFSET
+        
     def _setUp(self):
 
         def setPlot(gui, image):
@@ -191,10 +192,7 @@ class Runner:
 
 def main():
     from m4.configuration import start
-    import os
-    conf = os.environ["PYOTTCONF"]  # conf = "/mnt/m4storage/Data/SYSCONFData/m4Config.yaml" modRB20240518
-    ott, interf, dm = start.create_ott(conf)
-
+    ott, _,_ = start.create_ott()
     runner = Runner(ott)
     sys.exit(runner.run())
 
