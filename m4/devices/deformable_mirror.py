@@ -8,17 +8,17 @@ Description
 This module contains the class that defines the M4 Adaptive Unit (M4AU) device.
 """
 import os
-import logging
+import time
 import numpy as np
-from m4.devices.base_deformable_mirror import BaseDeformableMirror
+from m4.ground import logger_set_up as lsu, timestamp, read_data as rd
 from m4.configuration import config_folder_names as fn
-from astropy.io import fits as pyfits
+from m4.devices.base_deformable_mirror import BaseDeformableMirror
 
 #put the imports from Mic Library
 
 #here we define the M4 class. 
 #implement it properly!!!
-
+_ts = timestamp.Timestamp()
 mirrorModesFile = 'ff_v_matrix.fits'
 ffFile          = 'ff_matrix.fits'
 actCoordFile    = 'ActuatorCoordinates.fits'
@@ -216,3 +216,75 @@ class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror  #forse
         #basef = fn.MIRROR_FOLDER
         #conffolder = os.path.join(basef,tn)
         #return conffolder
+
+class AlpaoDm(BaseDeformableMirror):
+    """
+    Alpao interface with M4 software.
+    """
+
+    def __init__(self, ip:str, port:int):
+        """The Contructor"""
+        import plico_dm
+        print("Ricorda di spostare le _dmCoords!")
+        self._dmCoords      = {
+            'dm97' : [5, 7, 9, 11],
+            'dm277': [7, 9, 11, 13, 15, 17, 19],
+            'dm468': [8, 12, 16, 18, 20, 20, 22, 22, 24],
+            'dm820': [10, 14, 18, 20, 22, 24, 26, 28, 28, 30, 30, 32],
+        }
+        self._dm            = plico_dm.deformableMirror(ip, port)
+        self.nActs          = self._initNactuators()
+        self.mirrorModes    = None
+        self.actCoord       = self._initActCoord()
+        self.cmdHistory     = None
+        self.baseDataPath   = "/mnt/libero/DMcharacterization/IFFunctions"
+
+    def get_shape(self):
+        shape = self._dm.get_shape()
+        return shape
+    
+    def set_shape(self, cmd):
+        self._dm.set_shape(cmd)
+
+    def uploadCmdHistory(self, cmdhist):
+        self.cmdHistory = cmdhist
+
+    def runCmdHist(self, interf=None, save:bool=False):
+        if self.cmdHistory is None:
+            raise Exception("No Command History to run!")
+        else:
+            tn = _ts.now()
+            print(tn, f"{self.cmdHistory.shape[-1]} images to go.\n")
+            os.mkdir(os.path.join(self.baseDataPath, tn))
+            for i,cmd in enumerate(self.cmdHistory.T):
+                self.set_shape(cmd)
+                time.sleep(0.2)
+                if interf is not None:
+                    img = interf.wavefront()
+                    path = os.path.join(self.baseDataPath, tn, f"image_{i:05d}.fits")
+                    if save:
+                        rd.save_phasemap(path, img)
+        return tn
+
+    def nActuators(self):
+        return self.nActs
+
+    def _initNactuators(self):
+        return self._dm.get_number_of_actuators()
+
+    def _initActCoord(self):
+        nacts_row_sequence = self._dmCoords[f'dm{self.nActs}']
+        n_dim = nacts_row_sequence[-1]
+        upper_rows = nacts_row_sequence[:-1]
+        lower_rows = [l for l in reversed(upper_rows)]
+        center_rows = [n_dim]*upper_rows[0]
+        rows_number_of_acts = upper_rows + center_rows + lower_rows
+        N_acts = sum(rows_number_of_acts)
+        n_rows = len(rows_number_of_acts)
+        cx = np.array([], dtype=int)
+        cy = np.array([], dtype=int)
+        for i in range(n_rows):
+            cx = np.concatenate((cx, np.arange(rows_number_of_acts[i]) + (n_dim - rows_number_of_acts[i]) // 2))
+            cy = np.concatenate((cy, np.full(rows_number_of_acts[i], i)))
+        self.actCoord = np.array([cx, cy])
+        return self.actCoord

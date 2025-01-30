@@ -24,6 +24,8 @@ class FakeM4DM(BaseDeformableMirror):
 
     def __init__(self):
         """The constructor"""
+        self.mirrorModes = None
+        self.nActs = self.getNActs()
         self._actPos = np.zeros(M4Parameters.N_ACT_SEG)
         self._logger = logging.getLogger("FakeM4DM")
         self._conf = os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf)

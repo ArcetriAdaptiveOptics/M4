@@ -133,8 +133,11 @@ class IFFCapturePreparation():
         self._updateModalBase(mbasename=None)
         self._modesList = modesList
         self.createCmdMatrixHistory(modesList, modesAmp, template, shuffle)
-        self.createAuxCmdHistory()
-        cmdHistory = np.hstack((self.auxCmdHistory, self.cmdMatHistory))
+        if not self.triggPadCmdHist is None and not self.regPadCmdHist is None:
+            self.createAuxCmdHistory()
+            cmdHistory = np.hstack((self.auxCmdHistory, self.cmdMatHistory))
+        else:
+            cmdHistory = self.cmdMatHistory
         timing = read_iffconfig.getTiming()
         timedCmdHist = np.repeat(cmdHistory, timing, axis=1)
         self.timedCmdHistory = timedCmdHist
@@ -212,10 +215,12 @@ class IFFCapturePreparation():
             self._indexingList = np.arange(0, len(modesList), 1)
         n_frame = len(self._modesList) * n_push_pull
         cmd_matrixHistory = np.zeros((self._NActs, n_frame+zeroScheme))
-        for j in range(n_push_pull):
-            for i in range(nModes):
-                k = zeroScheme + cmd_matrix.shape[1]*j + i
+        k = zeroScheme
+        for i in range(nModes):
+            for j in range(n_push_pull):
+                # k = zeroScheme + cmd_matrix.shape[1]*j + i
                 cmd_matrixHistory.T[k] = cmd_matrix[:,i]*template[j]*modesAmp[i]
+                k += 1
         self.cmdMatHistory = cmd_matrixHistory
         return cmd_matrixHistory
 
@@ -252,6 +257,8 @@ class IFFCapturePreparation():
 
         """
         infoR = read_iffconfig.getConfig('REGISTRATION')
+        if len(infoR['modes']) == 0:
+            return
         self._regActs = infoR['modes']
         self._updateModalBase(infoR['modalBase'])
         zeroScheme = np.zeros((self._NActs, infoR['zeros']))
@@ -278,6 +285,8 @@ class IFFCapturePreparation():
             Trigger padding command history
         """
         infoT = read_iffconfig.getConfig('TRIGGER')
+        if len(infoT['modes']) == 0:
+            return
         self._updateModalBase(infoT['modalBase'])
         zeroScheme = np.zeros((self._NActs, infoT['zeros']))
         trigMode = self._modalBase[:,infoT['modes']]*infoT['amplitude']
