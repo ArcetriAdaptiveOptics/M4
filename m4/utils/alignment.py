@@ -192,7 +192,9 @@ class Alignment:
         initpos = self.read_positions(show=False)
         zernike_coeff = self._zern_routine(image)
         if tn is not None:
-            intMat = readFits_data(self._readPath + f"/{tn}/InteractionMatrix.fits")
+            intMat = readFits_data(
+                self._readPath + f"/{tn}/InteractionMatrix.fits"
+            )
             self.intMat = intMat
         else:
             try:
@@ -422,21 +424,19 @@ class Alignment:
         None
         """
         device_commands = self._extract_cmds_to_apply(fullCmd)
-        logMsg = ""  #!!!
+        logMsg = ""
         for cmd, fnc, dev in zip(device_commands, self._moveFnc, self._devName):
             if cmd.to_ignore:
-                logMsg += f"Skipping null command for {dev}\n"  # debug
+                logMsg += f"Skipping null command for {dev}\n"
             else:
                 try:
-                    logMsg += f"Commanding {cmd} to {dev}\n"  # debug
+                    logMsg += f"Commanding {cmd} to {dev}\n"
                     fnc(cmd.vect)
                     log(f"{fnc.__qualname__} : {cmd.vect}")
                 except Exception as e:
                     print(e)
-                    # logging.warning(f"Someting went wrong with {dev}: {e}")
-        logMsg += "-" * 30  # debug
-        # logging.info(logMsg)
-        print(logMsg)  #!!! debug only
+        logMsg += "-" * 30
+        print(logMsg)
 
     def _extract_cmds_to_apply(self, fullCmd):
         """
@@ -491,8 +491,7 @@ class Alignment:
             logMsg += f"t = {t}"
             cmd = self.cmdMat.T[k] * self._cmdAmp[k] * t
             logMsg += f" - Full Command : {cmd}"
-            # logging.info(logMsg)
-            print(logMsg)  #!!! debug only
+            print(logMsg)
             self._apply_command(cmd)
             log(f"{self._acquire.__qualname__}")
             imglist.append(self._acquire(n_frames))

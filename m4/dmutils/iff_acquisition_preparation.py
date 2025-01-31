@@ -138,6 +138,7 @@ class IFFCapturePreparation():
             cmdHistory = np.hstack((self.auxCmdHistory, self.cmdMatHistory))
         else:
             cmdHistory = self.cmdMatHistory
+            self._regActs = np.array([])
         timing = read_iffconfig.getTiming()
         timedCmdHist = np.repeat(cmdHistory, timing, axis=1)
         self.timedCmdHistory = timedCmdHist
@@ -152,13 +153,13 @@ class IFFCapturePreparation():
         info : dict
             Dictionary containing all the vectors and matrices needed
         """
-        info = {'cmdMatrix': self._cmdMatrix,
-                'modesList': self._modesList,
-                'regActs'  : self._regActs,
-                'ampVector': self._modesAmp,
-                'indexList': self._indexingList,
-                'template' : self._template,
-                'shuffle'  : self._shuffle
+        info = {'cmdMatrix'  : self._cmdMatrix,
+                'modesVector': self._modesList,
+                'regActs'    : self._regActs,
+                'ampVector'  : self._modesAmp,
+                'indexList'  : self._indexingList,
+                'template'   : self._template,
+                'shuffle'    : self._shuffle
             }
         return info
 
@@ -258,6 +259,7 @@ class IFFCapturePreparation():
         """
         infoR = read_iffconfig.getConfig('REGISTRATION')
         if len(infoR['modes']) == 0:
+            self._regActs = infoR['modes']
             return
         self._regActs = infoR['modes']
         self._updateModalBase(infoR['modalBase'])

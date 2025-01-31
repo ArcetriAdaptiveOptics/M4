@@ -64,8 +64,8 @@ confFold    = fn.CONFIGURATION_ROOT_FOLDER
 frameCenter = [200,200]
 ampVecFile     = 'ampVector.fits'
 modesVecFile   = 'modesVector.fits'
-templateFile   = 'Template.fits'
-regisActFile   = 'registrationActs.fits'
+templateFile   = 'template.fits'
+regisActFile   = 'regActs.fits'
 shuffleFile    = 'shuffle.dat'
 indexListFile  = 'indexList.fits'
 coordfile      = '' #TODO
@@ -391,6 +391,8 @@ def getTriggerFrame(tn, amplitude=None):
     fileList = osu.getFileList(tn)
     img0 = rd.read_phasemap(fileList[0])
     go = i = 1
+    # add the condition where if there are not trigger frames the code is skipped and the 
+    # the rest is handled with care
     while go !=0:
         thresh = infoT['amplitude']/3
         img1 = rd.read_phasemap(fileList[i])

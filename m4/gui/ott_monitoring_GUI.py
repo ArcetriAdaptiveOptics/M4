@@ -286,7 +286,7 @@ class SystemMonitoring():
         if progress:
             progress(10, 'Interferometer information updated')
             time.sleep(0.5)
-            progress(20, 'Fasta data acquisition started')
+            progress(20, 'Fast data acquisition started')
         self._fast_acquisition()
         if progress:
             progress(30, "Fast data acquisition Completed\nInitiating Slow data acquisition")
