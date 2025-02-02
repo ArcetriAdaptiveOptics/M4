@@ -14,9 +14,9 @@ More information on its use can be found on the class documentation.
 """
 import os
 import numpy as np
-from m4.configuration import read_iffconfig
+from m4.configuration import read_iffconfig, config_folder_names as fn
 from m4.ground import read_data as rd
-from m4.configuration import config_folder_names as fn
+from m4.dmutils.iff_processing import _getAcqInfo
 iffold = fn.IFFUNCTIONS_ROOT_FOLDER
 
 class IFFCapturePreparation():
@@ -130,11 +130,10 @@ class IFFCapturePreparation():
             Final timed command history, including the trigger padding, the
             registration pattern and the command matrix history.
         """
-        self._updateModalBase(mbasename=None)
         self._modesList = modesList
         self.createCmdMatrixHistory(modesList, modesAmp, template, shuffle)
-        if not self.triggPadCmdHist is None and not self.regPadCmdHist is None:
-            self.createAuxCmdHistory()
+        self.createAuxCmdHistory()
+        if not self.auxCmdHistory is None:
             cmdHistory = np.hstack((self.auxCmdHistory, self.cmdMatHistory))
         else:
             cmdHistory = self.cmdMatHistory
@@ -186,8 +185,13 @@ class IFFCapturePreparation():
             Command matrix history to be applied, with the correct push-pull
             application, following the desired template.
         """
-        infoIF = read_iffconfig.getConfig('IFFUNC')
-        mlist = mlist if mlist is not None else infoIF.get('modes')
+        _,_,infoIF = _getAcqInfo()
+        if mlist is None:
+            mlist = infoIF.get('modes')
+        else:
+            mlist = mlist
+            infoIF['modes'] = mlist
+            read_iffconfig.updateConfigFile('IFFUNC', infoIF)
         modesAmp = modesAmp if modesAmp is not None else infoIF.get('amplitude')
         template = template if template is not None else infoIF.get('template')
         zeroScheme = infoIF['zeros']
@@ -240,7 +244,14 @@ class IFFCapturePreparation():
         '''
         self._createTriggerPadding()
         self._createRegistrationPattern()
-        aux_cmdHistory = np.hstack((self.triggPadCmdHist, self.regPadCmdHist))
+        if self.triggPadCmdHist is not None and self.regPadCmdHist is not None:
+            aux_cmdHistory = np.hstack((self.triggPadCmdHist, self.regPadCmdHist))
+        elif self.triggPadCmdHist is not None:
+            aux_cmdHistory = self.triggPadCmdHist
+        elif self.regPadCmdHist is not None:
+            aux_cmdHistory = self.regPadCmdHist
+        else:
+            aux_cmdHistory = None
         self.auxCmdHistory = aux_cmdHistory
         return aux_cmdHistory
 
@@ -266,9 +277,9 @@ class IFFCapturePreparation():
         zeroScheme = np.zeros((self._NActs, infoR['zeros']))
         regScheme = np.zeros((self._NActs, len(infoR['template'])*len(infoR['modes'])))
         k=0
-        for i in infoR['modes']:
+        for mode in infoR['modes']:
             for t in range(len(infoR['template'])):
-                regScheme[i,k] = infoR['amplitude']*infoR['template'][t]
+                regScheme.T[k] = self._modalBase.T[mode]*infoR['amplitude']*infoR['template'][t]
                 k+=1
         regHist = np.hstack((zeroScheme, regScheme))
         self.regPadCmdHist = regHist
@@ -301,12 +312,8 @@ class IFFCapturePreparation():
         '''
         Cuts the modal base according the given modes list
         '''
-        if self.modalBaseId is None:
-            infoIF = read_iffconfig.getConfig('IFFUNC')
-            baseId = infoIF['modalBase']
-        else:
-            baseId = self.modalBaseId
-        self._updateModalBase(baseId)
+        infoIF = read_iffconfig.getConfig('IFFUNC')
+        self._updateModalBase(infoIF['modalBase'])
         self._cmdMatrix = self._modalBase[:,mlist]
         return self._cmdMatrix
 
@@ -326,19 +333,19 @@ class IFFCapturePreparation():
 
         """
         if (mbasename is None) or (mbasename == 'mirror'):
-            # print('Using mirror modes')
+            print('Using mirror modes')
             self.modalBaseId = mbasename
             self._modalBase = self.mirrorModes
         elif mbasename == 'zonal':
-            # print('Using zonal modes')
+            print('Using zonal modes')
             self.modalBaseId = mbasename
             self._modalBase = self._createZonalMat()
         elif mbasename == 'hadamard':
-            # print('Using Hadamard modes')
+            print('Using Hadamard modes')
             self.modalBaseId = mbasename
             self._modalBase = self._createHadamardMat()
         else:
-            # print('Using user-defined modes')
+            print('Using user-defined modes')
             self.modalBaseId = mbasename
             self._modalBase = self._createUserMat(mbasename) #this is expected to be a tracknum
 

@@ -9,6 +9,7 @@ import os
 import configparser
 import json
 import numpy as np
+import shutil
 import m4.configuration.config_folder_names as fn
 
 config=configparser.ConfigParser()
@@ -50,7 +51,11 @@ def getConfig(key, bpath=cfoldname):
     config.read(fname)
     cc = config[key]
     nzeros      = int(cc[nzeroName])
-    modeId      = np.array(json.loads(cc[modeIdName]))
+    modeId_str  = cc[modeIdName]
+    try:
+        modeId = np.array(json.loads(modeId_str))
+    except json.JSONDecodeError:
+        modeId = np.array(eval(modeId_str))
     modeAmp     = float(cc[modeAmpName])
     modalBase   = cc[modalBaseName]
     template    = np.array(json.loads(cc[templateName]))
@@ -61,6 +66,42 @@ def getConfig(key, bpath=cfoldname):
             'modalBase': modalBase
         }
     return info
+
+def updateConfigFile(key, info, bpath=cfoldname):
+    """
+    Updates the configuration file for the IFF acquisition.
+    The key passed is the block of information to update
+
+    Parameters
+    ----------
+    key : str
+        Key value of the block of information to update. Can be
+            - 'TRIGGER'
+            - 'REGISTRATION'
+            - 'IFFUNC'
+    info : dict
+        A dictionary containing all the configuration file's info:
+            - nzeros
+            - modeId
+            - modeAmp 
+            - template
+            - modalBase 
+    bpath : str, OPTIONAL
+        Base path of the file to read. Default points to the Configuration root
+        folder
+    """
+    fname = os.path.join(bpath, iff_configFile)
+    fnameBck = os.path.join(bpath, 'iffConfig_backup.ini')
+    shutil.copyfile(fname, fnameBck)  # Create a backup of the original file
+    config.read(fname)
+    cc = config[key]
+    cc[nzeroName]       = str(info['zeros'])
+    cc[modeIdName]      = json.dumps(info['modes'].tolist())
+    cc[modeAmpName]     = str(info['amplitude'])
+    cc[modalBaseName]   = info['modalBase']
+    cc[templateName]    = json.dumps(info['template'].tolist())
+    with open(fname, 'w') as configfile:
+        config.write(configfile)
 
 def getNActs_fromConf(bpath=cfoldname):
     """

@@ -92,7 +92,7 @@ def process(tn, register:bool=False, save_cube:bool=False):
     actImgList = registrationRedux(regMat, template) #FIXME
     modesMatReorg = _modesReorganization(modesMat)
     iffRedux(tn, modesMatReorg, ampVector, modesVector, template, shuffle)
-    if register:
+    if register and not len(regMat)==0:
         dx = findFrameOffset(tn, actImgList, registrationActs)
     else:
         dx = register
@@ -325,8 +325,11 @@ def registrationRedux(fileMat, template=None):
     imgList : ArrayLike
         List of the processed registration images.
     """
+    _,infoR,_ = _getAcqInfo()
+    if np.array_equal(fileMat,np.array([])) and len(infoR['modes']) == 0:
+        print("No registration data found")
+        return []
     if template is None:
-        _,infoR,_ = _getAcqInfo()
         template = infoR['template']
     nActs = fileMat.shape[0]
     imglist = []
@@ -393,6 +396,9 @@ def getTriggerFrame(tn, amplitude=None):
     go = i = 1
     # add the condition where if there are not trigger frames the code is skipped and the 
     # the rest is handled with care
+    if infoT['zeros'] == 0 and len(infoT['modes']) == 0:
+        trigFrame = 0
+        return trigFrame
     while go !=0:
         thresh = infoT['amplitude']/3
         img1 = rd.read_phasemap(fileList[i])
@@ -431,8 +437,11 @@ def getRegFileMatrix(tn):
     _, infoR, _ = _getAcqInfo()
     timing      = read_iffconfig.getTiming()
     trigFrame   = getTriggerFrame(tn)
-    regStart    = trigFrame + infoR['zeros']*timing +1
-    regEnd      = regStart + len(infoR['modes'])*len(infoR['template'])*timing
+    if infoR['zeros'] == 0 and len(infoR['modes']) == 0:
+        regStart = regEnd = (trigFrame + 1) if trigFrame != 0 else 0
+    else:
+        regStart    = trigFrame + infoR['zeros']*timing + (1 if trigFrame != 0 else 0)
+        regEnd      = regStart + len(infoR['modes'])*len(infoR['template'])*timing
     regList     = fileList[regStart:regEnd]
     regMat      = np.reshape(regList, (len(infoR['modes']), len(infoR['template'])))
     return regEnd, regMat
