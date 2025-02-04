@@ -130,7 +130,6 @@ class IFFCapturePreparation():
             Final timed command history, including the trigger padding, the
             registration pattern and the command matrix history.
         """
-        self._modesList = modesList
         self.createCmdMatrixHistory(modesList, modesAmp, template, shuffle)
         self.createAuxCmdHistory()
         if not self.auxCmdHistory is None:
@@ -192,6 +191,7 @@ class IFFCapturePreparation():
             mlist = mlist
             infoIF['modes'] = mlist
             read_iffconfig.updateConfigFile('IFFUNC', infoIF)
+        self._modesList = mlist
         modesAmp = modesAmp if modesAmp is not None else infoIF.get('amplitude')
         template = template if template is not None else infoIF.get('template')
         zeroScheme = infoIF['zeros']

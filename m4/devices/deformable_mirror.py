@@ -238,7 +238,7 @@ class AlpaoDm(BaseDeformableMirror):
         self.mirrorModes    = None
         self.actCoord       = self._initActCoord()
         self.cmdHistory     = None
-        self.baseDataPath   = "/mnt/libero/DMcharacterization/IFFunctions"
+        self.baseDataPath   = fn.OPD_IMAGES_ROOT_FOLDER
 
     def get_shape(self):
         shape = self._dm.get_shape()
@@ -259,7 +259,6 @@ class AlpaoDm(BaseDeformableMirror):
             os.mkdir(os.path.join(self.baseDataPath, tn))
             for i,cmd in enumerate(self.cmdHistory.T):
                 self.set_shape(cmd)
-                time.sleep(0.2)
                 if interf is not None:
                     img = interf.wavefront()
                     path = os.path.join(self.baseDataPath, tn, f"image_{i:05d}.fits")

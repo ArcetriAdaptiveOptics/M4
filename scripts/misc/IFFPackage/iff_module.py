@@ -1,82 +1,94 @@
-'''
-this module includes the functions for the preparation and the acquisition  IFF data
-'''
-from m4.configuration import read_iffconfig as rif  #contains a dictionary or similar with configuration
-from m4.device import deformable_mirror as dm
-from m4.iffutils import iff_acquisition_preparation as ifa
-m4u = dm.AdOpticaDM()
-ifc=ifa.IFFCapturePreparation(m4u)
+"""
+IFF Module
+==========
+Author(s):
+----------
+- Pietro Ferraiuolo
+- Runa Briguglio
 
-#Template
-def yyy(a,b):
+Description:
+------------
+This module contains the necessary high/user-leve functions to acquire the IFF data, 
+given a deformable mirror and an interferometer.
+"""
+import os
+import numpy as np
+from m4.ground import read_data as rd
+from m4.ground.timestamp import Timestamp
+from m4.configuration import config_folder_names as fn
+from m4.dmutils import iff_acquisition_preparation as ifa
+
+def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None, shuffle=False):
     """
-    This function ...
+    This is the user-lever function for the acquisition of the IFF data, given a
+    deformable mirror and an interferometer.
+
+    Except for the devices, all the arguments are optional, as, by default, the
+    values are taken from the `iffConfig.ini` configuration file.
     Parameters
     ----------------
-    Returns
-    -------
-    """
-    return 
-
-
-def iffDataCollection(modesList, amplitude, template=None, modalBase = None,shuffle = False):
-    """
-    This is the user-level function for the sampling of the IFF data
-    Parameters
-    ----------------
-    modesList: int | list, array like
+    dm: object
+        The inizialized deformable mirror object
+    interf: object
+        The initialized interferometer object to take measurements
+    modesList: int | list, array like , optional
         list of modes index to be measured, relative to the command matrix to be used
-    amplitude: float
+    amplitude: float , optional
         command amplitude
-    nRepetitions: int
-        number of push and pull to be collected
-    modalBase: string
+    template: string , oprional
+        template file for the command matrix
+    modalBase: string , optional
         identifier of the modal base to be used
+    shuffle: bool , optional
+        if True, shuffle the modes before acquisition
+
     Returns
     -------
     tn: string
-        tracking number of the dataset acquired
+        The tracking number of the dataset acquired, saved in the OPDImages folder
     """
-    ifc._modalBaseId = modalbase
-    tmh = ifc.createTimedCmdMatrixHistory(modesList,amplitude, template, shuffle )
+    ifc = ifa.IFFAcquisitionPreparation(dm)
+    tch = ifc.createTimedCmdMatrixHistory(modesList, amplitude, template, shuffle)
+    info = ifc.getInfoToSave()
+    dm.set_shape(np.zeros(dm.NActs))
     tn = Timestamp.now()
-    _saveMatrix(filename, ifc._cmdMatrix)
-    _saveMatrix(filenamex,amplitude)
-    #tn = prepareIFFcollection(modesList, amplitude, nRepetitions, modalBase = None)
-    iffCapture(tn)
+    print(tn, f"{tch.shape[-1]} images to go.")
+    datapath = os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn)
+    iffpath  = os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)
+    os.mkdir(datapath)
+    os.mkdir(iffpath)
+    try:
+        for key, value in info.items():
+            if not isinstance(value, np.ndarray):
+                with open(os.path.join(iffpath, f"{key}.dat"), 'w') as f:
+                    f.write(str(value))
+            else:
+                rd.saveFits_data(os.path.join(iffpath, f"{key}.fits"), value, overwrite=True)
+    except KeyError as e:
+        print(f"KeyError: {key}, {e}")
+    dm.uploadCmdHist(tch)
+    dm.runCmdHist(interf)
     return tn
 
 
+# def iffCapture(tn):
+#     """
+#     This function manages the interfacing equence for collecting the IFF data
+#     Parameters
+#     ----------------
+#     tn: string
+#         the tracking number in the xxx folder where the cmd history is saved
+#     Returns
+#     -------
+#     """
 
-def iffCapture(tn):
-    """
-    This function manages the interfacing equence for collecting the IFF data
-    Parameters
-    ----------------
-    tn: string
-        the tracking number in the xxx folder where the cmd history is saved
-    Returns
-    -------
-    """
+#     cmdHist = getCmdHist(tn)
+#     dm.uploadCmdHist(cmdHist)
+#     dm.runCmdHist()
+#     print('Now launching the acquisition sequence')
+#     start4DAcq(tn)
+#     print('Acquisition completed. Dataset tracknum:')
+#     print(tn)
 
-    cmdHist = getCmdHist(tn)
-    dm.uploadCmdHist(cmdHist)
-    dm.runCmdHist()
-    print('Now launching the acquisition sequence')
-    start4DAcq(tn)
-    print('Acquisition completed. Dataset tracknum:')
-    print(tn)
-
-
-def getCmdHist(tn):
-    """
-    This function ...
-    Parameters
-    ----------------
-    Returns
-    -------
-    """
-    cmdHist = [1,2,3]
-    return cmdHist
 
 
