@@ -10,7 +10,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from astropy.io import fits as pyfits
 from m4.ground import timestamp
-from m4.utils.osutils import rename4D
+from m4.utils.osutils import rename4D, modeRebinner
 from m4.configuration import config_folder_names as fold_name
 from m4.configuration.ott_parameters import Interferometer
 from m4.ground.read_data import InterferometerConverter
@@ -128,37 +128,38 @@ class I4d6110(BaseInterferometer):
         self._logger = logging.getLogger('4D')
         self._ts = timestamp.Timestamp()
 
-    def acquire_phasemap(self, nframes=1, delay=0):
+    def acquire_phasemap(self, nframes=1, delay=0, rebin:int=1):
         """
+        Acquires the interferometer image and returns it as a masked array.
+
         Parameters
         ----------
-            nframes: int
-                number of frames
-            delay: int [s]
-                delay between images
-
+        nframes: int
+            Number of frames to be averaged that produce the measurement.
+        delay: int 
+            Delay between images in seconds.
+        rebin: int
+            Rebin factor for the image.
+            
         Returns
         -------
-            masked_ima: numpy masked array
-                    interferometer image
+        masked_ima: numpy masked array
+            Interferometer image.
         """
         if nframes == 1:
-            width, height, pixel_size_in_microns, data_array = self._i4d.takeSingleMeasurement()
+            width, height, _, data_array = self._i4d.takeSingleMeasurement()
             masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array*632.8e-9)
+            masked_ima = modeRebinner(masked_ima, rebin)
         else:
             image_list = []
             for i in range(nframes):
-                width, height, pixel_size_in_microns, data_array = self._i4d.takeSingleMeasurement()
+                width, height, _, data_array = self._i4d.takeSingleMeasurement()
                 masked_ima = self._fromDataArrayToMaskedArray(width, height, data_array*632.8e-9)
                 image_list.append(masked_ima)
                 time.sleep(delay)
             images = np.ma.dstack(image_list)
             masked_ima = np.ma.mean(images, 2)
-
-#         if show != 0:
-#             plt.clf()
-#             plt.imshow(masked_ima, origin='lower')
-#             plt.colorbar()
+            masked_ima = modeRebinner(masked_ima, rebin)
         return masked_ima
 
     def acquire_detector(self, nframes=1, delay=0):

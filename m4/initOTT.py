@@ -170,21 +170,22 @@ Functions that talk directly to the OPCUA, thus relative to its reference frame.
         
         setPosition(deg)
 """
-import os, time, numpy as np
-from matplotlib import pyplot as plt
 from m4 import main, noise
-from m4.ground import read_data as rd, zernike as zern
+import os, time, numpy as np
+from m4.devices.i4d import I4D
 from m4.utils import osutils as osu
+from m4.mini_OTT import measurements
+from matplotlib import pyplot as plt
+from m4.userscripts import OTTScripts
+from m4.analyzers import timehistory as th
+from m4.configuration.start import create_ott
+from m4.ground import read_data as rd, zernike as zern
 from m4.configuration import update_folder_paths as ufp
 from m4.configuration.ott_parameters import Interferometer
-from m4.configuration.start import create_ott
-from m4.devices.i4d import I4D
 from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
-from m4.mini_OTT import measurements
-from m4.analyzers import timehistory as th
-from m4.userscripts import OTTScripts
-fn = ufp.folders
+
 ott, interf, dm = create_ott()
+fn = ufp.folders
 par = Parabola(ott)
 flat = ReferenceMirror(ott)
 angrot = AngleRotator(ott)
@@ -192,8 +193,8 @@ meas = measurements.Measurements(ott, interf)
 phcamfocus = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
 myott = OTTScripts(ott, interf, dm)
 
-text = """
-Using the IPython console for OTT operations.
+text = \
+"""Using the IPython console for OTT operations.
 
            |X|           |X|
            |X|_____ _____|X|
@@ -205,8 +206,7 @@ Using the IPython console for OTT operations.
     |  |   |X|    |/  \| |X|
  ___|__|___|X|____ ---- _|X|_____
 
-Type help() for information on the available operations
-"""
+Type help() for information on the available operations."""
 print(text)
 
 def docs(arg=None):

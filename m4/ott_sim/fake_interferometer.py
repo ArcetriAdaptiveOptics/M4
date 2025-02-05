@@ -8,6 +8,7 @@ Author(s)
 import logging
 import time
 import numpy as np
+from m4.utils.osutils import modeRebinner
 from m4.ott_sim.ott_images import OttImages
 from m4.devices.base_interferometer import BaseInterferometer
 
@@ -27,7 +28,7 @@ class FakeInterferometer(BaseInterferometer):
         self._dm = dm
         self._ottIma = OttImages(self._ott)
 
-    def acquire_phasemap(self, n_frames=1, delay=0, indet=False):
+    def acquire_phasemap(self, n_frames=1, delay=0, rebin:int=1, indet=False):
         """
         Parameters
         ----------
@@ -61,6 +62,7 @@ class FakeInterferometer(BaseInterferometer):
         images = np.dstack(ima_list)
         ima = np.mean(images, 2)
         masked_ima = np.ma.masked_array(ima, mask=masked_ima.mask)
+        masked_ima = modeRebinner(masked_ima, rebin)
         return masked_ima
 
     def getCameraSettings(self):

@@ -32,8 +32,8 @@ all is ready to compute the flat command, by simply running the method
 """
 import os
 import numpy as np
-from m4.dmutils import iff_processing as ifp
 from m4.ground import read_data as rd
+from m4.dmutils import iff_processing as ifp
 from m4.analyzers import compute_reconstructor as crec
 
 class Flattening:

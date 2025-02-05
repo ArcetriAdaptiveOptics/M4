@@ -10,10 +10,11 @@ This module contains the class that defines the M4 Adaptive Unit (M4AU) device.
 import os
 import time
 import numpy as np
+from m4.utils.osutils import modeRebinner
 from astropy.io import fits as pyfits
-from m4.ground import logger_set_up as lsu, timestamp, read_data as rd
 from m4.configuration import config_folder_names as fn
 from m4.devices.base_deformable_mirror import BaseDeformableMirror
+from m4.ground import logger_set_up as lsu, timestamp, read_data as rd
 
 #put the imports from Mic Library
 
@@ -250,7 +251,7 @@ class AlpaoDm(BaseDeformableMirror):
     def uploadCmdHistory(self, cmdhist):
         self.cmdHistory = cmdhist
 
-    def runCmdHist(self, interf=None, save:bool=False):
+    def runCmdHist(self, interf=None, rebin:int=1, save:bool=False):
         if self.cmdHistory is None:
             raise Exception("No Command History to run!")
         else:
@@ -261,6 +262,7 @@ class AlpaoDm(BaseDeformableMirror):
                 self.set_shape(cmd)
                 if interf is not None:
                     img = interf.wavefront()
+                    img = modeRebinner(img, rebin)
                     path = os.path.join(self.baseDataPath, tn, f"image_{i:05d}.fits")
                     if save:
                         rd.save_phasemap(path, img)

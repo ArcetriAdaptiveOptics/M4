@@ -47,14 +47,16 @@ Cube saved in '.../m4/data/M4Data/OPTData/INTMatrices/20160516_114917/IMcube.fit
 >>> ifp.stackCubes(tnlist)
 Stacekd cube and matrices saved in '.../m4/data/M4Data/OPTData/INTMatrices/'new_tn'/IMcube.fits'
 """
+
 import os, shutil
-import configparser
 import numpy as np
-from astropy.io import fits as pyfits
-from m4.configuration import read_iffconfig, update_folder_paths as ufp
-from m4.ground import read_data as rd, zernike as zern, timestamp
+import configparser
 from m4.utils import osutils as osu
+from astropy.io import fits as pyfits
+from m4.ground import read_data as rd, zernike as zern, timestamp
 from scripts.misc.IFFPackage import actuator_identification_lib as fa
+from m4.configuration import read_iffconfig, update_folder_paths as ufp
+
 config = configparser.ConfigParser()
 fn = ufp.folders
 imgFold     = fn.OPD_IMAGES_ROOT_FOLDER
@@ -246,6 +248,7 @@ def iffRedux(tn, fileMat, ampVect, modeList, template, shuffle=0):
     nmodes = len(modeList)
     for i in range(0, nmodes):
         img = pushPullRedux(fileMat[i,:], template, shuffle)
+        img = osu.modeRebinner(img, rebin=2)
         norm_img = img / (2*ampVect[i])
         img_name = os.path.join(fold, f"mode_{modeList[i]:04d}.fits")
         rd.save_phasemap(img_name, norm_img)
@@ -471,6 +474,23 @@ def getIffFileMatrix(tn):
     return iffMat
 
 def _getCubeList(tnlist):
+    """
+    Retireves the cubes from each tn in the tnlist.
+    
+    Parameters
+    ----------
+    tnlist : list of str
+        List containing the tracking number of the cubes to stack.
+        
+    Returns
+    -------
+    cubeList : list of masked_array
+        List containing the cubes to stack.
+    matrixList : list of ndarray
+        List containing the command matrices for each cube.
+    modesVectList : list of ndarray
+        List containing the modes vectors for each cube.
+    """
     cubeList = []
     matrixList = []
     modesVectList = []

@@ -10,11 +10,12 @@ machine OS.
 """
 import os
 import numpy as np
+from pathlib import Path
+from m4.ground import rebinner
 from m4.ground import read_data as rd
 from m4.ground.timestamp import Timestamp
 from m4.configuration import update_folder_paths as ufp
 from m4.ground.read_4DConfSettingFile import ConfSettingReader
-from pathlib import Path
 fn = ufp.folders
 OPTDATA = fn.OPT_DATA_FOLDER
 OPDIMG = fn.OPD_IMAGES_ROOT_FOLDER
@@ -298,3 +299,25 @@ def createCube(filelist, register=False):
         cube_list.append(image)
     cube = np.ma.dstack(cube_list)
     return cube
+
+
+def modeRebinner(img, rebin:int=1):
+    """
+    Image rebinner
+
+    Parameters
+    ----------
+    img : masked_array
+        Image to rebin.
+    rebin : int, optional
+        Rebinning factor. The default is 2.
+    
+    Returns
+    -------
+    newImg : masked_array
+        Rebinned image.
+    """
+    shape = img.shape
+    new_shape = (shape[0]//rebin, shape[1]//rebin)
+    newImg = rebinner.rebin2DArray(img, new_shape)
+    return newImg
