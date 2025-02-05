@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-from m4.utils.roi import ROI
+from m4.utils import roi
 from m4.ground import zernike
 
 
@@ -17,7 +17,7 @@ class TipTiltDetrend():
     def __init__(self):
         """The constructor """
         self._logger = logging.getLogger('TIP_TILT_DETREND:')
-        self.roi = ROI()
+        self.roi = roi
 
     def segment_view_tiptilt_detrend(self, image):
         '''

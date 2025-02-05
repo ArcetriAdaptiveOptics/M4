@@ -177,20 +177,18 @@ class I4d6110(BaseInterferometer):
                     detector interferometer image 
         """
         self.acquire_phasemap()
-        
         if nframes == 1:
-            data, height, pixel_size_in_microns, width=self._i4d.getFringeAmplitudeData()
+            data, height, _, width=self._i4d.getFringeAmplitudeData()
             data2d = np.reshape(data, (width, height))
         else:
             image_list = []
             for i in range(nframes):
-                data, height, pixel_size_in_microns, width=self._i4d.getFringeAmplitudeData()
+                data, height, _, width=self._i4d.getFringeAmplitudeData()
                 data2d_t = np.reshape(data, (width, height))
                 image_list.append(data2d_t)
                 time.sleep(delay)
             images = np.ma.dstack(image_list)
             data2d = np.ma.mean(images, 2)
-
         return data2d
 
     def _fromDataArrayToMaskedArray(self, width, height, data_array):

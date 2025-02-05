@@ -123,7 +123,7 @@ class OpticalCalibration:
 
     def _findMask(self, cube):
         ima = cube[:, :, 0]
-        from m4.utils.roi import ROI
+        from m4.utils import roi
 
         r = ROI()
         roi = r.roiGenerator(ima)

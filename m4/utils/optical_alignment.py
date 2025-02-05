@@ -14,7 +14,7 @@ from m4.utils.optical_calibration import OpticalCalibration
 from m4.ground import zernike
 from m4.configuration.ott_parameters import OttParameters, OtherParameters
 from m4.ground.timestamp import Timestamp
-from m4.utils.roi import ROI
+from m4.utils import roi
 from m4.configuration import ott_status
 from m4.ground import geo
 from arte.utils.zernike_projection_on_subaperture import (
@@ -335,7 +335,7 @@ class OpticalAlignment:
             mask_index = OtherParameters.MASK_INDEX_SIMULATORE
         else:
             mask_index = OtherParameters.MASK_INDEX_TOWER
-        r = ROI()
+        r = roi
         roi = r.roiGenerator(img)
         mask = roi[mask_index]
         mm = np.ma.mask_or(img.mask, mask)

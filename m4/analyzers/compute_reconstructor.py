@@ -166,9 +166,9 @@ class ComputeReconstructor:
         """
         try:
             analysisMask = np.logical_or(self._cubeMask, self._imgMask)
-        except self._imgMask is None:
+        except Exception as e:
             raise ValueError(
-                "Lack of image mask. Can't compute the interaction matrix")
+                "Lack of image mask. Can't compute the interaction matrix") from e
         self._analysisMask = analysisMask
 
     def _mask2intersect(self, img_or_mask):

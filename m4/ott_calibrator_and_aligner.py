@@ -8,7 +8,7 @@ import os
 import logging
 from m4.utils.optical_alignment import OpticalAlignment
 from m4.utils.optical_calibration import OpticalCalibration
-from m4.utils.roi import ROI
+from m4.utils import roi
 
 
 class OttCalibAndAlign():
@@ -34,7 +34,7 @@ class OttCalibAndAlign():
         self._interf = interf
         self._cal = OpticalCalibration(ott, interf)
         self._tt = None
-        self._roi = ROI()
+        self._roi = roi
 
     def par_and_rm_calibrator(self, command_amp_vector, n_push_pull, n_frames, delay, tnPar):
         '''Calibration of the optical tower

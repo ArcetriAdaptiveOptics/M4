@@ -329,8 +329,7 @@ surf_image = zernike.zernikeSurface(img, coef, mat)
 
 __ROI__
 ```
-from m4.utils.roi import ROI
-roi = ROI()
+from m4.utils import roi
 roi.automatical_roi_selection(image, segment_view, ref_mirror_in)
 ```
 where segment_view and ref_mirror_in are boolean that decribes the input image.

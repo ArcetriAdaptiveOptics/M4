@@ -7,7 +7,7 @@ import logging
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.configuration.ott_parameters import OttParameters, M4Parameters
-from m4.utils.roi import ROI
+from m4.utils import roi
 #from m4.configuration.create_ott import DMirror
 from m4.ground.timestamp import Timestamp
 from m4.configuration import config_folder_names as fold_name
@@ -26,7 +26,7 @@ class Flattenig():
         self._logger = logging.getLogger('FLATTENING:')
         self._an = analyzerIFFunctions
         self._who = self._an._who
-        self._roi = ROI()
+        self._roi = roi
         self._mirror = deformableMirror
         self._command = None
         self._flatteningWf = None

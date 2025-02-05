@@ -11,7 +11,7 @@ import numpy as np
 from m4.ground import read_data
 from m4.ground.read_data import InterferometerConverter
 from m4.utils.influence_functions_maker import IFFunctionsMaker
-from m4.utils.roi import ROI
+from m4.utils import roi
 from m4.utils.image_reducer import TipTiltDetrend
 from m4.configuration import config_folder_names as fold_name
 
@@ -231,7 +231,7 @@ class AnalyzerIFF():
                 if tiptilt_detrend is None:
                     img_if = img_if
                 else:
-                    r = ROI()
+                    r = roi
                     roi = r.roiGenerator(img_if)
                     tt = TipTiltDetrend()
                     img_if = tt.segment_view_tiptilt_detrend(img_if)
