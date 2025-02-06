@@ -231,8 +231,7 @@ class AnalyzerIFF():
                 if tiptilt_detrend is None:
                     img_if = img_if
                 else:
-                    r = roi
-                    roi = r.roiGenerator(img_if)
+                    rois = roi.roiGenerator(img_if)
                     tt = TipTiltDetrend()
                     img_if = tt.segment_view_tiptilt_detrend(img_if)
 

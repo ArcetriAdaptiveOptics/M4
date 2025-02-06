@@ -335,9 +335,8 @@ class OpticalAlignment:
             mask_index = OtherParameters.MASK_INDEX_SIMULATORE
         else:
             mask_index = OtherParameters.MASK_INDEX_TOWER
-        r = roi
-        roi = r.roiGenerator(img)
-        mask = roi[mask_index]
+        rois = roi.roiGenerator(img)
+        mask = rois[mask_index]
         mm = np.ma.mask_or(img.mask, mask)
 
         new_image = np.ma.masked_array(img, mask=mm)

@@ -125,13 +125,12 @@ class OpticalCalibration:
         ima = cube[:, :, 0]
         from m4.utils import roi
 
-        r = ROI()
-        roi = r.roiGenerator(ima)
+        rois = roi.roiGenerator(ima)
         if fold_name.simulated_interf is True:
             mask_index = OtherParameters.MASK_INDEX_SIMULATORE
         else:
             mask_index = OtherParameters.MASK_INDEX_TOWER
-        mask = roi[mask_index]
+        mask = rois[mask_index]
         return mask
 
     def getCommandMatrix(self):
