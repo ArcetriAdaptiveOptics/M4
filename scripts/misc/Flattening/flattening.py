@@ -54,13 +54,13 @@ class Flattening:
     def __init__(self, tn, img2flatten=None):
         """The Constructor"""
         self.flatCmd        = None
-        self.shape2flat     = self.load_image2shape(img2flatten) \
-                                           if img2flatten is not None else None
         self._tn            = tn
         self._path          = os.path.join(ifp.intMatFold, self._tn)
         self._intCube       = self._loadIntCube()
         self._cmdMat        = self._loadCmdMat()
-        self._rec           = self._loadReconstructor(self._intCube)
+        self._rec           = self._loadReconstructor()
+        self.shape2flat     = self.loadImage2Shape(img2flatten) \
+                                           if img2flatten is not None else None
         self._recMat        = None
         self._frameCenter   = None
         self._flatOffset    = None
@@ -79,8 +79,7 @@ class Flattening:
             Flat command.
         """
         img = np.ma.masked_array(self.shape2flat, mask=self._getMasterMask())
-        cmd_amp = -np.dot(img.compressed(), self._recMat)
-        _cmd = np.dot(self._cmdMat, cmd_amp)
+        _cmd = -np.dot(img.compressed(), self._recMat)
         #qui impacchettare il flat cmd:
         if isinstance(n_modes, int):
             flat_cmd = self._cmdMat[:,:n_modes] @ _cmd
@@ -94,13 +93,7 @@ class Flattening:
         self.flatCmd = flat_cmd
         return flat_cmd
 
-    def _getMasterMask(self):
-        cubeMask = np.sum(self._intCube.mask.astype(int), axis=2)
-        master_mask = np.zeros(cubeMask.shape, dtype=np.bool_)
-        master_mask[np.where(cubeMask > 0)] = True
-        return master_mask
-
-    def load_image2shape(self, img, compute_rec:bool=True):
+    def loadImage2Shape(self, img):
         """
         (Re)Loader for the image to flatten.
 
@@ -114,11 +107,58 @@ class Flattening:
         """
         self.shape2flat = img
         self._rec.loadShape2Flat(img)
-        if compute_rec:
+
+    def computeRecMat(self):
+        """
+        Compute the reconstruction matrix for the loaded image.
+        """
+        if self._recMat is not None:
+            print("Reconstruction matrix already computed, skipping...")
+            return
+        else:
             print("Computing recontruction matrix...")
             self._recMat = self._rec.run()
 
-    def reload_intCube(self, tn, zernModes:list=None):
+    def loadNewTn(self, tn):
+        """
+        Load a new tracking number for the flattening.
+
+        Parameters
+        ----------
+        tn : str
+            Tracking number of the new data.
+        """
+        self.__update_tn(tn)
+        self._reloadIntCube()
+
+    def filter_intCube(self, zernModes:list=None):
+        """
+        Filter the interaction cube with the given zernike modes
+
+        Parameters
+        ----------
+        zernModes : list
+            Zernike modes to filter out this cube (if it's not already filtered).
+            Default modes are [1,2,3] -> piston/tip/tilt.
+        """
+        with open(os.path.join(self._path, ifp.flagFile), 'r', encoding='utf-8') as f:
+            flag = f.read()
+        if ' filtered ' in flag:
+            print("Cube already filtered, skipping...")
+            return
+        else:
+            print("Filtering cube...")
+            zern2fit = zernModes if zernModes is not None else [1,2,3]
+            self._intCube, new_tn = ifp.filterZernikeCube(self._tn, zern2fit)
+            self.__update_tn(new_tn)
+
+    def _getMasterMask(self):
+        cubeMask = np.sum(self._intCube.mask.astype(int), axis=2)
+        master_mask = np.zeros(cubeMask.shape, dtype=np.bool_)
+        master_mask[np.where(cubeMask > 0)] = True
+        return master_mask
+
+    def _reloadIntCube(self, tn, zernModes:list=None):
         """
         Reload function for the interaction cube
 
@@ -133,34 +173,17 @@ class Flattening:
         self._intCube = self._loadIntCube(tn, zernModes)
         self._cmdMat  = self._loadCmdMat()
         self._rec     = self._loadReconstructor(self._intCube)
-        if self.shape2flat is not None:
-            self._recMat = self._rec.run()
 
-    def _loadIntCube(self, zernModes:list=None):
+    def _loadIntCube(self):
         """
         Interaction cube loader
-        
-        Parameters
-        ----------
-        zernModes : list
-            Zernike modes to filter out this cube (if it's not already filtered).
-            Default modes are [1,2,3] -> piston/tip/tilt.
         
         Return
         ------
         intCube : ndarray
             The interaction cube data array.
         """
-        with open(os.path.join(self._path, ifp.flagFile), 'r', encoding='utf-8') as f:
-            flag = f.read()
-        if ' filtered ' in flag:
-            intCube = rd.read_phasemap(os.path.join(self._path, ifp.cubeFile))
-        else:
-            if zernModes is not None:
-                intCube, new_tn = ifp.filterZernikeCube(self._tn, zernModes)
-            else:
-                intCube, new_tn = ifp.filterZernikeCube(self._tn)
-            self.__update_tn(new_tn)
+        intCube = rd.read_phasemap(os.path.join(self._path, ifp.cubeFile))
         return intCube
 
     def _loadCmdMat(self):
@@ -176,14 +199,9 @@ class Flattening:
         cmdMat = rd.readFits_data(os.path.join(self._path, ifp.cmdMatFile))
         return cmdMat
 
-    def _loadReconstructor(self, intCube):
+    def _loadReconstructor(self):
         """
         Builds the reconstructor object off the input cube
-
-        Parameters
-        ----------
-        intCube : ndarray
-            Interaction cube data array.
 
         Returns
         -------
