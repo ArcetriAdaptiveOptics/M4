@@ -95,7 +95,7 @@ class Flattening:
         return flat_cmd
 
     def _getMasterMask(self):
-        cubeMask = np.sum(self._intCube.mask.astype(int), axis(2))
+        cubeMask = np.sum(self._intCube.mask.astype(int), axis=2)
         master_mask = np.zeros(cubeMask.shape, dtype=np.bool_)
         master_mask[np.where(cubeMask > 0)] = True
         return master_mask

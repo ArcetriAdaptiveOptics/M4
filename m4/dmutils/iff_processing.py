@@ -75,7 +75,7 @@ cmdMatFile     = 'cmdMatrix.fits'
 cubeFile       = 'IMCube.fits'
 flagFile       = 'flag.txt'
 
-def process(tn, register:bool=False, save_cube:bool=False):
+def process(tn, rebin:int=1, register:bool=False, save_cube:bool=False):
     """
     High level function with processes the data contained in the given tracking
     number OPDimages folder, performing the differential algorithm and saving 
@@ -93,7 +93,7 @@ def process(tn, register:bool=False, save_cube:bool=False):
     modesMat = getIffFileMatrix(tn)
     actImgList = registrationRedux(regMat, template) #FIXME
     modesMatReorg = _modesReorganization(modesMat)
-    iffRedux(tn, modesMatReorg, ampVector, modesVector, template, shuffle)
+    iffRedux(tn, rebin, modesMatReorg, ampVector, modesVector, template, shuffle)
     if register and not len(regMat)==0:
         dx = findFrameOffset(tn, actImgList, registrationActs)
     else:
@@ -221,7 +221,7 @@ def filterZernikeCube(tn, zern_modes:list=None, save:bool=True):
         print(f"Filtered cube saved at {new_tn}")
     return ffcube, new_tn.split('/')[-1]
 
-def iffRedux(tn, fileMat, ampVect, modeList, template, shuffle=0):
+def iffRedux(tn, rebin, fileMat, ampVect, modeList, template, shuffle=0):
     """
     Reduction function that performs the push-pull analysis on each mode, saving
     out the final processed image for each mode.
@@ -248,7 +248,7 @@ def iffRedux(tn, fileMat, ampVect, modeList, template, shuffle=0):
     nmodes = len(modeList)
     for i in range(0, nmodes):
         img = pushPullRedux(fileMat[i,:], template, shuffle)
-        img = osu.modeRebinner(img, rebin=2)
+        img = osu.modeRebinner(img, rebin)
         norm_img = img / (2*ampVect[i])
         img_name = os.path.join(fold, f"mode_{modeList[i]:04d}.fits")
         rd.save_phasemap(img_name, norm_img)

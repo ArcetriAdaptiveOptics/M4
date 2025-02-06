@@ -93,9 +93,11 @@ class ComputeReconstructor:
                 }
         sv_threshold = self._intMat_S.copy()
         sv_threshold[self._threshold["x"]:] = 0
-        self._filtered_sv = sv_threshold
+        sv_inv_threshold = sv_threshold*0
+        sv_inv_threshold[0:self._threshold['x']] = 1/sv_threshold[0:self._threshold['x']]
+        self._filtered_sv = sv_inv_threshold
         self._logger.info("Assembling reconstructor")
-        return self._intMat_Vt.T @ np.diag(sv_threshold) @ self._intMat_U.T
+        return self._intMat_Vt.T @ np.diag(sv_inv_threshold) @ self._intMat_U.T
 
     def loadShape2Flat(self, img):
         """
