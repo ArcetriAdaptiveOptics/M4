@@ -97,7 +97,8 @@ class Flattening:
     def _getMasterMask(self):
         cubeMask = np.sum(self._intCube.mask.astype(int), axis(2))
         master_mask = np.zeros(cubeMask.shape, dtype=np.bool_)
-        return (master_mask[np.where(cubeMask > 0)] = True)
+        master_mask[np.where(cubeMask > 0)] = True
+        return master_mask
 
     def load_image2shape(self, img, compute_rec:bool=True):
         """
