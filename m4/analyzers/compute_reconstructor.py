@@ -148,7 +148,7 @@ class ComputeReconstructor:
                 self._setAnalysisMask()
             self._intMat = np.array(
                 [
-                    (self._intMatCube[:, :, i].data)[self._analysisMask == 1]
+                    (self._intMatCube[:, :, i].data)[self._analysisMask == 0]
                     for i in range(self._intMatCube.shape[2])
                 ]
             )

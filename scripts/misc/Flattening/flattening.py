@@ -78,7 +78,8 @@ class Flattening:
         flat_cmd : ndarray
             Flat command.
         """
-        cmd_amp = -np.dot(self.shape2flat.compressed(), self._recMat)
+        img = np.ma.masked_array(self.shape2flat, mask=self._getMasterMask())
+        cmd_amp = -np.dot(img.compressed(), self._recMat)
         _cmd = np.dot(self._cmdMat, cmd_amp)
         #qui impacchettare il flat cmd:
         if isinstance(n_modes, int):
@@ -92,6 +93,11 @@ class Flattening:
             raise TypeError("n_modes must be either an int or a list of int")
         self.flatCmd = flat_cmd
         return flat_cmd
+
+    def _getMasterMask(self):
+        cubeMask = np.sum(self._intCube.mask.astype(int), axis(2))
+        master_mask = np.zeros(cubeMask.shape, dtype=np.bool_)
+        return (master_mask[np.where(cubeMask > 0)] = True)
 
     def load_image2shape(self, img, compute_rec:bool=True):
         """
