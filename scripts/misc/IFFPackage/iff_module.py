@@ -47,16 +47,17 @@ def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None
     tn: string
         The tracking number of the dataset acquired, saved in the OPDImages folder
     """
-    ifc = ifa.IFFAcquisitionPreparation(dm)
-    tch = ifc.createTimedCmdMatrixHistory(modesList, amplitude, template, shuffle)
+    ifc = ifa.IFFCapturePreparation(dm)
+    tch = ifc.createTimedCmdHistory(modesList, amplitude, template, shuffle)
     info = ifc.getInfoToSave()
-    dm.set_shape(np.zeros(dm.NActs))
+    dm.set_shape(np.zeros(dm.nActs))
     tn = Timestamp.now()
-    print(tn, f"{tch.shape[-1]} images to go.")
     datapath = os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn)
     iffpath  = os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)
-    os.mkdir(datapath)
-    os.mkdir(iffpath)
+    if not os.path.exists(datapath):
+        os.mkdir(datapath)
+    if not os.path.exists(iffpath):
+        os.mkdir(iffpath)
     try:
         for key, value in info.items():
             if not isinstance(value, np.ndarray):
@@ -66,7 +67,7 @@ def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None
                 rd.saveFits_data(os.path.join(iffpath, f"{key}.fits"), value, overwrite=True)
     except KeyError as e:
         print(f"KeyError: {key}, {e}")
-    dm.uploadCmdHist(tch)
+    dm.uploadCmdHistory(tch)
     dm.runCmdHist(interf)
     return tn
 

@@ -1,6 +1,6 @@
 #base_path: 'D:/M4/'
 base_path: '/mnt/backup/Archeopterix_20230517/Data/'
-simulated_interf: True
+simulated_interf: False
 simulated_dm: True
 simulated_accelerometers: True
 simulated_angleRotator: True

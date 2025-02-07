@@ -191,7 +191,7 @@ flat = ReferenceMirror(ott)
 angrot = AngleRotator(ott)
 meas = measurements.Measurements(ott, interf)
 phcamfocus = I4D(Interferometer.i4d_IP, Interferometer.i4d_port)
-myott = OTTScripts(ott, interf, dm)
+#myott = OTTScripts(ott, interf, dm)
 
 text = \
 """Using the IPython console for OTT operations.

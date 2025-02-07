@@ -256,16 +256,19 @@ class AlpaoDm(BaseDeformableMirror):
             raise Exception("No Command History to run!")
         else:
             tn = _ts.now()
-            print(tn, f"{self.cmdHistory.shape[-1]} images to go.\n")
-            os.mkdir(os.path.join(self.baseDataPath, tn))
+            print(tn, f"{self.cmdHistory.shape[-1]} images to go.")
+            datafold = os.path.join(self.baseDataPath, tn)
+            if not os.path.exists(datafold):
+                os.mkdir(datafold)
             for i,cmd in enumerate(self.cmdHistory.T):
                 self.set_shape(cmd)
                 if interf is not None:
-                    img = interf.wavefront()
+                    img = interf.acquire_phasemap()
                     img = modeRebinner(img, rebin)
-                    path = os.path.join(self.baseDataPath, tn, f"image_{i:05d}.fits")
+                    path = os.path.join(datafold, f"image_{i:05d}.fits")
                     if save:
                         rd.save_phasemap(path, img)
+        self.set_shape(np.zeros(self.nActs))
         return tn
 
     def nActuators(self):

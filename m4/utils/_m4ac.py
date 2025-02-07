@@ -100,12 +100,63 @@ lists must be the same as the order in the command matrix supplied, eg. if the d
 is the second in place going through the command vector, then it's position must be
 the secondo for every list in this configuration file.
 It's easier to see, as the following example will show.
-"""
-# M4's specific data path
-import os
-from m4.configuration import update_folder_paths as ufp
-_base_path = ufp.folders.BASE_PATH
 
+Configuration Example: M4's OTT
+-------------------------------
+For the following example, which regard the ELT@M4 Optical Test Tower (OTT),
+we have three devices: the Parabola, the Reference Mirror and the M4 Exapode.
+Each device accept a vector of 6 elements, which means they "talk" in 6 DoF, 
+however, for 'reality' constraints, they can only move certain dof. In particula:
+the Parabola can move in piston, tip and tilt, so the DoF are 2, 3 and 4;
+the Reference Mirror can move in tip and tilt, so the DoF are 3 and 4;
+the M4 Exapode can move in tip and tilt, so the DoF are 3 and 4.
+The command matrix (7x7) has a 7 element columns, which is the alignment command, 
+and these devices appear in the same order as i listed them above, so the ordering
+inside every list will be Parabola-ReferenceMirror-M4Exapode.
+
+>>> # Variables
+>>> cmdDof = 6                # Total DoF per device
+>>>         # or []
+>>>         # cmdDof.append(6)
+>>>         # ...
+>>> dof = []                  # Available Degrees of Freedom (DoF)
+>>> dof.append([2, 3, 4])     # Parabola DoF
+>>> dof.append([3, 4])        # Reference Mirror DoF
+>>> dof.append([3, 4])        # M4 Exapode DoF
+>>> slices = []               # Full cmd vector devices indices
+>>> slices.append(slice(0,3)) # Parabola
+>>> slices.append(slice(3,5)) # Reference Mirror
+>>> slices.append(slice(5,7)) # M4 Exapode
+>>> zernike_to_use = [1,2,3,6,7]
+>>> push_pull_template = [+1,-2,+1]
+>>> # Devices calls
+>>> devices_move_calls = [
+>>>     'parabola.setPosition',
+>>>     'referenceMirror.setPosition',
+>>>     'm4Exapode.setPosition'
+>>>     ]
+>>> devices_read_calls = [
+>>>     'parabola.getPosition',
+>>>     'referenceMirror.getPosition',
+>>>     'm4Exapode.getPosition'
+>>>     ]
+>>> names = [
+>>>     'Parabola',
+>>>     'Reference Mirror',
+>>>     'M4 Exapode'
+>>>     ]
+>>> ccd_acquisition = [
+>>>     'acquire_phasemap'
+>>>     ]
+>>> # Data paths
+>>> base_read_data_path     = '.../m4/data/M4Data/OPTData/AlignmentCalibration'
+>>> base_write_data_path    = '.../m4/data/M4Data/OPTData/AlignmentCalibration'
+>>> log_path                = '.../m4/data/M4Data/OPTData/AlignmentCalibration/alignment.log'
+>>> logging_level           =  20
+>>> commandMatrix           = '.../m4/data/M4Data/cmdMat.fits'
+>>> calibrated_parabola     = ''
+
+"""
 # Variables
 cmdDof = 6                # Total DoF per device
         # or 
@@ -125,7 +176,6 @@ zernike_to_use = [1,2,3,6,7]
 push_pull_template = [+1,-2,+1]
 
 # Devices calls
-
 devices_move_calls = [
     'parabola.setPosition',
     'referenceMirror.setPosition',
@@ -145,14 +195,13 @@ names = [
     ]
 
 ccd_acquisition = [
-    'acquire_phasemap',
-    'intoFullFrame'
+    'acquire_phasemap'
     ]
 
 # Data paths
-base_read_data_path     = os.path.join(_base_path, 'M4Data/OPTData/AlignmentCalibration')
-base_write_data_path    = os.path.join(_base_path, 'M4Data/OPTData/AlignmentCalibration')
-log_path                = os.path.join(_base_path, 'M4Data/OPTData/AlignmentCalibration/alignment.log')
-logging_level           = 20
-commandMatrix           = os.path.join(os.getenv('M4_BASE_PATH'),'m4','configuration/cmdMat.fits')
-calibrated_parabola     = ''
+base_read_data_path     = '/home/pietrof/git/M4/m4/data/M4Data/OPTData/AlignmentCalibration'
+base_write_data_path    = '/home/pietrof/git/M4/m4/data/M4Data/OPTData/AlignmentCalibration'
+log_path                = '/home/pietrof/git/M4/m4/data/M4Data/OPTData/AlignmentCalibration/alignment.log'
+logging_level           =  20
+commandMatrix           = '/home/pietrof/git/M4/scripts/ottalign/cmdMat.fits'
+fitting_surface         = ''
