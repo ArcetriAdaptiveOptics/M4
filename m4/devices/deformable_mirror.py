@@ -245,7 +245,11 @@ class AlpaoDm(BaseDeformableMirror):
         shape = self._dm.get_shape()
         return shape
     
-    def set_shape(self, cmd):
+    def set_shape(self, cmd, differential:bool=False):
+        if differential:
+            shape = self._dm.get_shape()
+            cmd = cmd + shape
+        self._checkCmdIntegrity(cmd)
         self._dm.set_shape(cmd)
 
     def uploadCmdHistory(self, cmdhist):
@@ -256,11 +260,12 @@ class AlpaoDm(BaseDeformableMirror):
             raise Exception("No Command History to run!")
         else:
             tn = _ts.now()
-            print(tn, f"{self.cmdHistory.shape[-1]} images to go.")
+            print(f"{tn} - {self.cmdHistory.shape[-1]} images to go.")
             datafold = os.path.join(self.baseDataPath, tn)
             if not os.path.exists(datafold):
                 os.mkdir(datafold)
             for i,cmd in enumerate(self.cmdHistory.T):
+                print(f"{i}/{self.cmdHistory.shape[-1]}", end="\r", flush=True)
                 self.set_shape(cmd)
                 if interf is not None:
                     img = interf.acquire_phasemap()
@@ -273,6 +278,17 @@ class AlpaoDm(BaseDeformableMirror):
 
     def nActuators(self):
         return self.nActs
+    
+    def _checkCmdIntegrity(self, cmd):
+        mcmd = np.max(cmd)
+        if mcmd > 0.9:
+            raise ValueError(f"Command value {mcmd} is greater than 1.")
+        mcmd = np.min(cmd)
+        if mcmd < -0.9:
+            raise ValueError(f"Command value {mcmd} is smaller than -1.")
+        scmd = np.std(cmd)
+        if scmd > 0.5:
+            raise ValueError(f"Command standard deviation {scmd} is greater than 0.1.")
 
     def _initNactuators(self):
         return self._dm.get_number_of_actuators()

@@ -69,6 +69,22 @@ class Flattening:
         self._flatResidue   = None
         self._flatteningModes = None
 
+    def applyFlatComand(self, dm, flat_cmd=None):
+        """
+        Applies the computed flat command to the DM
+
+        Parameters
+        ----------
+        dm : object
+            Deformable mirror object.
+        flat_cmd : ndarray, optional
+            Flat command to apply. If not provided, the class attribute flatCmd
+            will be used. The default is None.
+        """
+        if flat_cmd is None:
+            flat_cmd = self.flatCmd
+        dm.set_shape(flat_cmd, differential=True)
+
     def computeFlatCmd(self, n_modes):
         """
         Compute the command to apply to flatten the input shape.
@@ -108,30 +124,14 @@ class Flattening:
         self.shape2flat = img
         self._rec.loadShape2Flat(img)
 
-    def computeRecMat(self):
+    def computeRecMat(self, threshold=None):
         """
         Compute the reconstruction matrix for the loaded image.
         """
-        if self._recMat is not None:
-            print("Reconstruction matrix already computed, skipping...")
-            return
-        else:
-            print("Computing recontruction matrix...")
-            self._recMat = self._rec.run()
+        print("Computing recontruction matrix...")
+        self._recMat = self._rec.run(sv_threshold=threshold)
 
-    def loadNewTn(self, tn):
-        """
-        Load a new tracking number for the flattening.
-
-        Parameters
-        ----------
-        tn : str
-            Tracking number of the new data.
-        """
-        self.__update_tn(tn)
-        self._reloadIntCube()
-
-    def filter_intCube(self, zernModes:list=None):
+    def filterIntCube(self, zernModes:list=None):
         """
         Filter the interaction cube with the given zernike modes
 
@@ -150,7 +150,20 @@ class Flattening:
             print("Filtering cube...")
             zern2fit = zernModes if zernModes is not None else [1,2,3]
             self._intCube, new_tn = ifp.filterZernikeCube(self._tn, zern2fit)
-            self.__update_tn(new_tn)
+            self.loadNewTn(new_tn)
+
+    def loadNewTn(self, tn):
+        """
+        Load a new tracking number for the flattening.
+
+        Parameters
+        ----------
+        tn : str
+            Tracking number of the new data.
+        """
+        self.__update_tn(tn)
+        self._reloadIntCube(tn)
+
 
     def _getMasterMask(self):
         cubeMask = np.sum(self._intCube.mask.astype(int), axis=2)
@@ -158,7 +171,7 @@ class Flattening:
         master_mask[np.where(cubeMask > 0)] = True
         return master_mask
 
-    def _reloadIntCube(self, tn, zernModes:list=None):
+    def _reloadIntCube(self, tn):
         """
         Reload function for the interaction cube
 
@@ -170,7 +183,7 @@ class Flattening:
             Zernike modes to filter out this cube (if it's not already filtered).
             Default modes are [1,2,3] -> piston/tip/tilt.
         """
-        self._intCube = self._loadIntCube(tn, zernModes)
+        self._intCube = self._loadIntCube(tn)
         self._cmdMat  = self._loadCmdMat()
         self._rec     = self._loadReconstructor(self._intCube)
 

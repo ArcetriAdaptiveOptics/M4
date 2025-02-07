@@ -10,8 +10,10 @@ import numpy as np
 from m4.devices.base_deformable_mirror import BaseDeformableMirror
 from m4.configuration.ott_parameters import M4Parameters
 from m4.configuration import config_folder_names as conf
-from m4.ground import read_data
+from m4.ground import read_data, timestamp
+from m4.utils.osutils import modeRebinner
 
+_ts = timestamp.Timestamp()
 
 class FakeM4DM(BaseDeformableMirror):
     """
@@ -26,6 +28,7 @@ class FakeM4DM(BaseDeformableMirror):
         """The constructor"""
         self.mirrorModes = None
         self.nActs = self.getNActs()
+        self.cmdHistory = None
         self._actPos = np.zeros(M4Parameters.N_ACT_SEG)
         self._logger = logging.getLogger("FakeM4DM")
         self._conf = os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf)
@@ -45,7 +48,66 @@ class FakeM4DM(BaseDeformableMirror):
             os.path.join(self._conf, "ff_v_matrix.fits")
         )
 
-    def setActsCommand(self, command, rel=False):
+    def get_shape(self):
+        """
+        Returns
+        -------
+        shape: numpy array
+            shape of the mirror
+        """
+        return self._getActsCommand()
+    
+    def set_shape(self, command, differential:bool=False):
+        """
+        Parameters
+        ----------
+        command: numpy array [NActs]
+            command for a segment
+        differential: boolean
+            if differential is True the command is added to the previous one
+            else the command is absolute
+        """
+        self._setActsCommand(command, differential)
+
+    def uploadCmdHistory(self, cmdHist):
+        """
+        Parameters
+        ----------
+        cmdHist: numpy array [NActs, NFrames]
+            command history
+        """
+        self.cmdHistory = cmdHist
+
+    def runCmdHist(self, interf=None, rebin:int=1):
+        """
+        Run command history
+        
+        Parameters
+        ----------
+        interf: object
+            Interferometer to acquire and store measurements.
+        """
+        baseDataPath = conf.OPD_IMAGES_ROOT_FOLDER
+        if self.cmdHistory is None:
+            raise Exception("No Command History to run!")
+        else:
+            tn = _ts.now()
+            print(f"{tn} - {self.cmdHistory.shape[-1]} images to go.")
+            datafold = os.path.join(baseDataPath, tn)
+            if not os.path.exists(datafold):
+                os.mkdir(datafold)
+            for i,cmd in enumerate(self.cmdHistory.T):
+                print(f"{i+1}/{self.cmdHistory.shape[-1]}", end="\r", flush=True)
+                self.set_shape(cmd)
+                if interf is not None:
+                    img = interf.acquire_phasemap()
+                    img = modeRebinner(img, rebin)
+                    path = os.path.join(datafold, f"image_{i:05d}.fits")
+                    read_data.save_phasemap(path, img)
+        self.set_shape(np.zeros(self.nActs))
+        return tn
+
+    def _setActsCommand(self, command, rel=False):
         """
         Paramenters
         -----------
@@ -62,7 +124,7 @@ class FakeM4DM(BaseDeformableMirror):
         image = self._mirrorCommand(self._actPos, rel)
         return
 
-    def getActsCommand(self):
+    def _getActsCommand(self):
         """
         Returns
         -------
@@ -92,14 +154,13 @@ class FakeM4DM(BaseDeformableMirror):
         """
         inc = inc
         comm = np.ones(self.getNActs()) * inc
-        self.setActsCommand(comm, rel)
+        self.set_shape(comm, rel)
         return
 
     def setZerosToSegActs(self):
-        """resets piston position (old act_zero"""
+        """resets piston position (old act_zero)"""
         comm = np.zeros(self.getNActs())
-        rel = False
-        self.setActsCommand(comm, rel)
+        self.set_shape(comm)
         return
 
     def setRandomCommandToSegActs(self, ampiezza, rel=False):
@@ -118,7 +179,7 @@ class FakeM4DM(BaseDeformableMirror):
         """
         ampiezza = ampiezza
         comm = np.random.rand(self.getNActs()) * ampiezza
-        self.setActsCommand(comm, rel)
+        self.set_shape(comm, rel)
         return
 
     def _generateAndSaveCapsensGain(self, file_name):

@@ -28,10 +28,6 @@ def roiGenerator(ima):
 
     '''
     labels = measure.label(np.invert(ima.mask))
-#       from scipy import ndimage as ndi
-#       labels = ndi.label(np.invert(ima.mask))[0]
-#       import skimage.morphology as skm
-#       pro= skm.watershed(ima, markers)
     roiList = []
     for i in range(1, 13):
         maski = np.zeros(labels.shape, dtype=bool)
@@ -39,13 +35,6 @@ def roiGenerator(ima):
         final_roi = np.ma.mask_or(np.invert(maski), ima.mask)
         roiList.append(final_roi)
     return roiList
-
-def _plotTest(self, roiList):
-    plt.figure(figsize=(16, 10))
-    for i in range(0,4):
-        plt.subplot(2, 2, i+1)
-        plt.imshow(roiList[i])
-        plt.title(f"roiList[{i}]")
 
 def automatical_roi_selection(image, segment_view, ref_mirror_in):
     '''

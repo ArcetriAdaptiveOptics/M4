@@ -195,7 +195,8 @@ names = [
     ]
 
 ccd_acquisition = [
-    'acquire_phasemap'
+    'acquire_phasemap',
+    'intoFullFrame'
     ]
 
 # Data paths
@@ -203,5 +204,5 @@ base_read_data_path     = '/home/pietrof/git/M4/m4/data/M4Data/OPTData/Alignment
 base_write_data_path    = '/home/pietrof/git/M4/m4/data/M4Data/OPTData/AlignmentCalibration'
 log_path                = '/home/pietrof/git/M4/m4/data/M4Data/OPTData/AlignmentCalibration/alignment.log'
 logging_level           =  20
-commandMatrix           = '/home/pietrof/git/M4/scripts/ottalign/cmdMat.fits'
-fitting_surface         = ''
+commandMatrix           = '/media/pietrof/Crucial480/data/SYSCONFData/cmdMat.fits'
+calibrated_parabola     = ''

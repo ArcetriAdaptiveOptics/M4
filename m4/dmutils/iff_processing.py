@@ -135,7 +135,7 @@ def saveCube(tn, register=False):
     pyfits.writeto(os.path.join(intMatFold, tn, 'cmdMatrix.fits'), cmat)
     pyfits.writeto(os.path.join(intMatFold, tn, 'modesVector.fits'), mvec)
     with open(os.path.join(intMatFold, tn, flagFile), 'w', encoding='utf-8') as f:
-        f.write(f"Cube created from '{old_fold}' data.\n \n \n")
+        f.write(f"Cube created from '{old_fold.split('/')[-1]}' data.\n \n \n")
     print(f"Cube saved in '{cube_path}'")
     print(f"Shape: {cube.shape}")
     return cube
