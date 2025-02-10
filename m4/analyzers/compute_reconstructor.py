@@ -86,6 +86,11 @@ class ComputeReconstructor:
                     "y": np.finfo(np.float32).eps,
                     "x": np.argmin(np.abs(self._intMat_S - np.finfo(np.float32).eps)),
                 }
+            elif isinstance(sv_threshold, int):
+                self._threshold = {
+                    "y": np.finfo(np.float32).eps,
+                    "x": -sv_threshold,
+                }
             else:
                 self._threshold = {
                     "y": sv_threshold,

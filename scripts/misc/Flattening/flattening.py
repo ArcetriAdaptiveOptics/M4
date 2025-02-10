@@ -151,6 +151,7 @@ class Flattening:
             zern2fit = zernModes if zernModes is not None else [1,2,3]
             self._intCube, new_tn = ifp.filterZernikeCube(self._tn, zern2fit)
             self.loadNewTn(new_tn)
+        return self
 
     def loadNewTn(self, tn):
         """
@@ -183,9 +184,9 @@ class Flattening:
             Zernike modes to filter out this cube (if it's not already filtered).
             Default modes are [1,2,3] -> piston/tip/tilt.
         """
-        self._intCube = self._loadIntCube(tn)
+        self._intCube = self._loadIntCube()
         self._cmdMat  = self._loadCmdMat()
-        self._rec     = self._loadReconstructor(self._intCube)
+        self._rec     = self._loadReconstructor()
 
     def _loadIntCube(self):
         """

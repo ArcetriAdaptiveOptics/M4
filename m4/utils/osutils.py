@@ -42,6 +42,8 @@ def findTracknum(tn, complete_path: bool = False):
     tn_path = []
     for fold in os.listdir(OPTDATA):
         search_fold = os.path.join(OPTDATA, fold)
+        if not os.path.isdir(search_fold):
+            continue
         if tn in os.listdir(search_fold):
             if complete_path:
                 tn_path.append(os.path.join(search_fold, tn))
