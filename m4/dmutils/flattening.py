@@ -107,7 +107,7 @@ class Flattening:
                 rd.save_phasemap(path, d)
             else:
                 rd.saveFits_data(path, d)
-        with open(os.path.join(_fn.FLAT_ROOT_FOLD, self.tn, 'info.txt'), 'w') as info:
+        with open(os.path.join(fold, 'info.txt'), 'w') as info:
             info.write(f"Flattened with `{self.tn}` data")
 
 

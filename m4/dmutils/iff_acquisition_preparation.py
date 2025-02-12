@@ -191,18 +191,16 @@ class IFFCapturePreparation():
             mlist = mlist
             infoIF['modes'] = mlist
             read_iffconfig.updateConfigFile('IFFUNC', infoIF)
-        self._modesList = mlist
         modesAmp = modesAmp if modesAmp is not None else infoIF.get('amplitude')
         template = template if template is not None else infoIF.get('template')
         zeroScheme = infoIF['zeros']
         self._template = template
         self._createCmdMatrix(mlist)
+        self._modesList = mlist
         nModes = self._cmdMatrix.shape[1]
         n_push_pull = len(template)
         if np.size(modesAmp)==1:
             modesAmp = np.full(nModes, modesAmp)
-        self._createCmdMatrix(mlist)
-        self._modesList = mlist
         self._modesAmp  = modesAmp
         if shuffle is not False:
             self._shuffle = shuffle
