@@ -69,7 +69,7 @@ def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None
     except KeyError as e:
         print(f"KeyError: {key}, {e}")
     dm.uploadCmdHistory(tch)
-    dm.runCmdHist(interf)
+    dm.runCmdHistory(interf)
     return tn
 
 

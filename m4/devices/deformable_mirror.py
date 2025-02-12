@@ -255,7 +255,7 @@ class AlpaoDm(BaseDeformableMirror):
     def uploadCmdHistory(self, cmdhist):
         self.cmdHistory = cmdhist
 
-    def runCmdHist(self, interf=None, rebin:int=1, save:str=None, differential:bool=True):
+    def runCmdHistory(self, interf=None, rebin:int=1, save:str=None, differential:bool=True):
         if self.cmdHistory is None:
             raise Exception("No Command History to run!")
         else:
