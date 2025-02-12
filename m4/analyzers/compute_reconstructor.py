@@ -82,10 +82,7 @@ class ComputeReconstructor:
             self._threshold = self.make_interactive_plot(self._intMat_S)
         else:
             if sv_threshold is None:
-                self._threshold = {
-                    "y": np.finfo(np.float32).eps,
-                    "x": np.argmin(np.abs(self._intMat_S - np.finfo(np.float32).eps)),
-                }
+                return np.linalg.pinv(self._intMat)
             elif isinstance(sv_threshold, int):
                 self._threshold = {
                     "y": np.finfo(np.float32).eps,
