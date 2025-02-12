@@ -61,7 +61,7 @@ def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None
         os.mkdir(iffpath)
     try:
         for key, value in info.items():
-            if not isinstance(value, np.ndarray) or not isinstance(value, list):
+            if key=='shuffle':
                 with open(os.path.join(iffpath, f"{key}.dat"), 'w') as f:
                     f.write(str(value))
             else:

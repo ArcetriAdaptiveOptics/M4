@@ -99,9 +99,9 @@ def process(tn, rebin:int=1, register:bool=False, save_cube:bool=False):
     else:
         dx = register
     if save_cube:
-        saveCube(tn, dx)
+        saveCube(tn, rebin=rebin, register=dx)
 
-def saveCube(tn, register=False):
+def saveCube(tn, rebin:int=1, register=False):
     """
     Creates and save a cube from the fits files contained in the tn folder, 
     along with the command matrix and the modes vector fits.
@@ -136,7 +136,7 @@ def saveCube(tn, register=False):
     pyfits.writeto(os.path.join(intMatFold, tn, 'cmdMatrix.fits'), cmat)
     pyfits.writeto(os.path.join(intMatFold, tn, 'modesVector.fits'), mvec)
     with open(os.path.join(intMatFold, tn, flagFile), 'w', encoding='utf-8') as f:
-        f.write(f"Cube created from '{old_fold.split('/')[-1]}' data.\nRebin=2\n \n")
+        f.write(f"Cube created from '{old_fold.split('/')[-1]}' data.\nRebin={rebin}\n \n")
     print(f"Cube saved in '{cube_path}'")
     print(f"Shape: {cube.shape}")
     return cube
