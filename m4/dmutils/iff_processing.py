@@ -129,13 +129,14 @@ def saveCube(tn, register=False):
     os.mkdir(new_fold)
     cube_path = os.path.join(new_fold, cubeFile)
     rd.save_phasemap(cube_path, cube)
+    read_iffconfig.copyConfingFile(tn)
     # Copying the cmdMatrix and the ModesVector into the INTMAT Folder
     cmat = rd.readFits_data(os.path.join(ifFold, tn, 'cmdMatrix.fits'))
     mvec = rd.readFits_data(os.path.join(ifFold, tn, 'modesVector.fits'))
     pyfits.writeto(os.path.join(intMatFold, tn, 'cmdMatrix.fits'), cmat)
     pyfits.writeto(os.path.join(intMatFold, tn, 'modesVector.fits'), mvec)
     with open(os.path.join(intMatFold, tn, flagFile), 'w', encoding='utf-8') as f:
-        f.write(f"Cube created from '{old_fold.split('/')[-1]}' data.\n \n \n")
+        f.write(f"Cube created from '{old_fold.split('/')[-1]}' data.\nRebin=2\n \n")
     print(f"Cube saved in '{cube_path}'")
     print(f"Shape: {cube.shape}")
     return cube

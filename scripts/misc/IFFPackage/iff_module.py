@@ -25,8 +25,9 @@ def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None
 
     Except for the devices, all the arguments are optional, as, by default, the
     values are taken from the `iffConfig.ini` configuration file.
+
     Parameters
-    ----------------
+    ----------
     dm: object
         The inizialized deformable mirror object
     interf: object
@@ -50,7 +51,7 @@ def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None
     ifc = ifa.IFFCapturePreparation(dm)
     tch = ifc.createTimedCmdHistory(modesList, amplitude, template, shuffle)
     info = ifc.getInfoToSave()
-    dm.set_shape(np.zeros(dm.nActs))
+#    dm.set_shape(np.zeros(dm.nActs))
     tn = Timestamp.now()
     datapath = os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn)
     iffpath  = os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)
@@ -60,7 +61,7 @@ def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None
         os.mkdir(iffpath)
     try:
         for key, value in info.items():
-            if not isinstance(value, np.ndarray):
+            if not isinstance(value, np.ndarray) or not isinstance(value, list):
                 with open(os.path.join(iffpath, f"{key}.dat"), 'w') as f:
                     f.write(str(value))
             else:

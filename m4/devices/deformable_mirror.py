@@ -255,17 +255,20 @@ class AlpaoDm(BaseDeformableMirror):
     def uploadCmdHistory(self, cmdhist):
         self.cmdHistory = cmdhist
 
-    def runCmdHist(self, interf=None, rebin:int=1, save:bool=True):
+    def runCmdHist(self, interf=None, rebin:int=1, save:bool=True, differential:bool=True):
         if self.cmdHistory is None:
             raise Exception("No Command History to run!")
         else:
             tn = _ts.now()
             print(f"{tn} - {self.cmdHistory.shape[-1]} images to go.")
             datafold = os.path.join(self.baseDataPath, tn)
+            s = self.get_shape()
             if not os.path.exists(datafold):
                 os.mkdir(datafold)
             for i,cmd in enumerate(self.cmdHistory.T):
-                print(f"{i}/{self.cmdHistory.shape[-1]}", end="\r", flush=True)
+                print(f"{i+1}/{self.cmdHistory.shape[-1]}", end="\r", flush=True)
+                if differential:
+                    cmd += s
                 self.set_shape(cmd)
                 if interf is not None:
                     img = interf.acquire_phasemap()
@@ -273,8 +276,12 @@ class AlpaoDm(BaseDeformableMirror):
                     path = os.path.join(datafold, f"image_{i:05d}.fits")
                     if save:
                         rd.save_phasemap(path, img)
-        self.set_shape(np.zeros(self.nActs))
+        self.set_shape(s)
         return tn
+
+    def setZeros2Acts(self):
+        zero = np.zeros(self.nActs)
+        self.set_shape(zero)
 
     def nActuators(self):
         return self.nActs

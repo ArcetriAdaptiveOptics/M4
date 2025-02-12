@@ -42,7 +42,6 @@ class ComputeReconstructor:
         """The constructor"""
         self._logger = logging.getLogger("COMPUTE_REC:")
         self._intMatCube = interaction_matrix_cube
-        self._intMat = None
         self._cubeMask = self._intersectCubeMask(interaction_matrix_cube)
         self._imgMask = self._mask2intersect(mask2intersect)
         self._analysisMask = None
@@ -52,6 +51,7 @@ class ComputeReconstructor:
         self._threshold = None
         self._filtered_sv = None
         self._tn = None
+        self._intMat = self._computeIntMat()
 
         if isinstance(self._cubeMask, np.ndarray) and isinstance(self._imgMask, np.ndarray):
             self._setAnalysisMask()
@@ -116,7 +116,7 @@ class ComputeReconstructor:
         """
         self._shape2flat = img
         self._imgMask = img.mask
-        return
+        return self
 
     def loadInteractionCube(self, intCube=None, tn=None):
         """
@@ -140,6 +140,8 @@ class ComputeReconstructor:
             self._intMatCube = rd.read_phasemap(cube_path)
         else:
             raise KeyError("No cube or tracking number was provided.")
+        self._computeIntMat
+        return self
 
     def _computeIntMat(self):
         """
@@ -150,9 +152,8 @@ class ComputeReconstructor:
             "Computing interaction matrix from cube of size %s", self._intMatCube.shape)
         print(
             "Computing interaction matrix from cube of size %s", self._intMatCube.shape)
-        try:
-            if self._analysisMask is None:
-                self._setAnalysisMask()
+        try:            
+            self._setAnalysisMask()
             self._intMat = np.array(
                 [
                     (self._intMatCube[:, :, i].data)[self._analysisMask == 0]
@@ -174,8 +175,7 @@ class ComputeReconstructor:
         try:
             analysisMask = np.logical_or(self._cubeMask, self._imgMask)
         except Exception as e:
-            raise ValueError(
-                "Lack of image mask. Can't compute the interaction matrix") from e
+            raise e
         self._analysisMask = analysisMask
 
     def _mask2intersect(self, img_or_mask):

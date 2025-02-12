@@ -67,6 +67,13 @@ def getConfig(key, bpath=cfoldname):
         }
     return info
 
+def copyConfingFile(tn, old_path=cfoldname):
+    fname = os.path.join(old_path, iff_configFile)
+    nfname= os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn, iff_configFile)
+    res = shutil.copy2(fname, nfname)
+    return f"{iff_configFile} copied to {res}"
+
+
 def updateConfigFile(key, info, bpath=cfoldname):
     """
     Updates the configuration file for the IFF acquisition.
