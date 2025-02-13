@@ -109,6 +109,7 @@ class Flattening:
                 rd.saveFits_data(path, d)
         with open(os.path.join(fold, 'info.txt'), 'w') as info:
             info.write(f"Flattened with `{self.tn}` data")
+        print(f"Flat command saved in {'/'.join(fold.split('/')[-2:])}")
 
 
     def computeFlatCmd(self, n_modes, save:bool=False):
