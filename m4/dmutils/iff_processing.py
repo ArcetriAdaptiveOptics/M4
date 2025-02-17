@@ -340,6 +340,8 @@ def registrationRedux(fileMat, template=None):
     for i in range(0, nActs-1):
         img = pushPullRedux(fileMat[i,:], template)
         imglist.append(img)
+    cube = np.dstack(imglist)
+    rd.save_phasemap(os.path.join(intMatFold, 'regActCube.fits'), cube)
     return imglist
 
 def findFrameOffset(tn, imglist, actlist):
@@ -538,9 +540,9 @@ def _getAcqPar(tn):
     registrationActs = rd.readFits_data(os.path.join(base, regisActFile))
     with open(os.path.join(base, shuffleFile), 'r', encoding='UTF-8') as shf:
         shuffle = int(shf.read())
-    return ampVector, modesVector, template,indexList, registrationActs,shuffle
+    return ampVector,modesVector,template,indexList,registrationActs,shuffle
 
-def _getAcqInfo():
+def _getAcqInfo(tn=None):
     """
     Returns the information read from the iffConfig.ini file.
 
@@ -553,9 +555,10 @@ def _getAcqInfo():
     infoIF : dict
         Information read about the IFFUNC option.
     """
-    infoT = read_iffconfig.getConfig('TRIGGER')
-    infoR = read_iffconfig.getConfig('REGISTRATION')
-    infoIF = read_iffconfig.getConfig('IFFUNC')
+    path = os.path.join(ifFold, tn)
+    infoT = read_iffconfig.getConfig('TRIGGER', bpath=path)
+    infoR = read_iffconfig.getConfig('REGISTRATION', bpath=path)
+    infoIF = read_iffconfig.getConfig('IFFUNC', bpath=path)
     return infoT, infoR, infoIF
 
 def _checkStackedCubes(tnlist):

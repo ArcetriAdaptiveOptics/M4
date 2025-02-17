@@ -52,7 +52,8 @@ def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None
     tch = ifc.createTimedCmdHistory(modesList, amplitude, template, shuffle)
     info = ifc.getInfoToSave()
 #    dm.set_shape(np.zeros(dm.nActs))
-    tn = Timestamp.now()
+    dm.uploadCmdHistory(tch)
+    tn = dm.runCmdHistory(interf)
     datapath = os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn)
     iffpath  = os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)
     if not os.path.exists(datapath):
@@ -68,8 +69,6 @@ def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None
                 rd.saveFits_data(os.path.join(iffpath, f"{key}.fits"), value, overwrite=True)
     except KeyError as e:
         print(f"KeyError: {key}, {e}")
-    dm.uploadCmdHistory(tch)
-    dm.runCmdHistory(interf, save=tn)
     return tn
 
 

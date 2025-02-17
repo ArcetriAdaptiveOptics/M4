@@ -240,6 +240,7 @@ class AlpaoDm(BaseDeformableMirror):
         self.actCoord       = self._initActCoord()
         self.cmdHistory     = None
         self.baseDataPath   = fn.OPD_IMAGES_ROOT_FOLDER
+        self.refAct         = 425
 
     def get_shape(self):
         shape = self._dm.get_shape()
@@ -263,7 +264,7 @@ class AlpaoDm(BaseDeformableMirror):
             print(f"{tn} - {self.cmdHistory.shape[-1]} images to go.")
             datafold = os.path.join(self.baseDataPath, tn)
             s = self.get_shape()
-            if not os.path.exists(datafold):
+            if not os.path.exists(datafold) and interf is not None:
                 os.mkdir(datafold)
             for i,cmd in enumerate(self.cmdHistory.T):
                 print(f"{i+1}/{self.cmdHistory.shape[-1]}", end="\r", flush=True)
@@ -274,8 +275,7 @@ class AlpaoDm(BaseDeformableMirror):
                     img = interf.acquire_phasemap()
                     img = modeRebinner(img, rebin)
                     path = os.path.join(datafold, f"image_{i:05d}.fits")
-                    if save is not None:
-                        rd.save_phasemap(path, img)
+                    rd.save_phasemap(path, img)
         self.set_shape(s)
         return tn
 
