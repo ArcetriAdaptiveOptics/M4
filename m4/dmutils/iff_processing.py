@@ -363,11 +363,10 @@ def registrationRedux(tn, fileMat):
         List of the processed registration images.
     """
     _, infoR, _ = _getAcqInfo()
+    template = infoR["template"]
     if np.array_equal(fileMat, np.array([])) and len(infoR["modes"]) == 0:
         print("No registration data found")
         return []
-    if template is None:
-        template = infoR["template"]
     nActs = fileMat.shape[0]
     imglist = []
     for i in range(0, nActs - 1):
