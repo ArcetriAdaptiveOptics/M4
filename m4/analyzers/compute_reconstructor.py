@@ -38,12 +38,12 @@ class ComputeReconstructor:
         shape [pixels, pixels, n_images]
     """
 
-    def __init__(self, interaction_matrix_cube, img=None):
+    def __init__(self, interaction_matrix_cube, mask2intersect=None):
         """The constructor"""
         self._logger        = logging.getLogger("COMPUTE_REC:")
         self._intMatCube    = interaction_matrix_cube
-        self._cubeMask      = self._intersectCubeMask(interaction_matrix_cube)
-        self._imgMask       = self._mask2intersect(img)
+        self._cubeMask      = self._intersectCubeMask()
+        self._imgMask       = self._mask2intersect(mask2intersect)
         self._analysisMask  = self._setAnalysisMask()
         self._intMat        = self._computeIntMat()
         self._intMat_U      = None

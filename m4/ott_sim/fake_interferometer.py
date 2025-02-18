@@ -5,10 +5,10 @@ Author(s)
     - Pietro Ferraiuolo: modified in 2024
 """
 
-import logging
 import time
+import logging
 import numpy as np
-from m4.utils.osutils import modeRebinner
+from m4.ground.rebinner import modeRebinner
 from m4.ott_sim.ott_images import OttImages
 from m4.devices.base_interferometer import BaseInterferometer
 

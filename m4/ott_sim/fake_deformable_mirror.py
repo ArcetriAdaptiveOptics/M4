@@ -11,7 +11,7 @@ from m4.devices.base_deformable_mirror import BaseDeformableMirror
 from m4.configuration.ott_parameters import M4Parameters
 from m4.configuration import config_folder_names as conf
 from m4.ground import read_data, timestamp
-from m4.utils.osutils import modeRebinner
+from m4.ground.rebinner import modeRebinner
 
 _ts = timestamp.Timestamp()
 

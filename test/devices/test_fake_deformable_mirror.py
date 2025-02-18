@@ -42,6 +42,6 @@ class TestCalc(unittest.TestCase):
 
     def test_fake_dm(self):
         n_acts = self.dm.getNActs()
-        comm2 = self.dm.getActsCommand()
+        comm2 = self.dm.get_shape()
         #comm = np.ones(self.dm.getNActs())
         #self.dm.setActsCommand(comm)

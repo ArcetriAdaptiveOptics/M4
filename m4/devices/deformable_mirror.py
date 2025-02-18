@@ -10,7 +10,6 @@ This module contains the class that defines the M4 Adaptive Unit (M4AU) device.
 import os
 import time
 import numpy as np
-from m4.utils.osutils import modeRebinner
 from astropy.io import fits as pyfits
 from m4.configuration import config_folder_names as fn
 from m4.devices.base_deformable_mirror import BaseDeformableMirror
