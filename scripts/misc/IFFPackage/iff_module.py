@@ -53,7 +53,7 @@ def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None
     info = ifc.getInfoToSave()
 #    dm.set_shape(np.zeros(dm.nActs))
     dm.uploadCmdHistory(tch)
-    tn = dm.runCmdHistory(interf)
+    tn = dm.runCmdHistory(interf, delay=0.5)
     datapath = os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn)
     iffpath  = os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)
     if not os.path.exists(datapath):

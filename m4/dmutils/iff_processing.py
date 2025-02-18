@@ -91,7 +91,9 @@ def process(tn, rebin:int=1, register:bool=False, save_cube:bool=False):
     ampVector,modesVector,template,_,registrationActs,shuffle = _getAcqPar(tn)
     _,regMat = getRegFileMatrix(tn)
     modesMat = getIffFileMatrix(tn)
-    actImgList = registrationRedux(regMat, template) #FIXME
+    new_fold = os.path.join(intMatFold, tn)
+    os.mkdir(new_fold)
+    actImgList = registrationRedux(tn,regMat)# template is incorrect here , template) #FIXME  #tn added
     modesMatReorg = _modesReorganization(modesMat)
     iffRedux(tn, rebin, modesMatReorg, ampVector, modesVector, template, shuffle)
     if register and not len(regMat)==0:
@@ -126,7 +128,7 @@ def saveCube(tn, rebin:int=1, register=False):
     cube = osu.createCube(filelist, register=register)
     # Saving the cube
     new_fold = os.path.join(intMatFold, tn)
-    os.mkdir(new_fold)
+    #os.mkdir(new_fold)
     cube_path = os.path.join(new_fold, cubeFile)
     rd.save_phasemap(cube_path, cube)
     read_iffconfig.copyConfingFile(tn)
@@ -313,7 +315,7 @@ def pushPullRedux(fileVec, template, shuffle=0):
     image = np.ma.masked_array(image, mask=master_mask) / (template.shape[0]-1)#!!!
     return image
 
-def registrationRedux(fileMat, template=None):
+def registrationRedux(tn, fileMat, template=None):
     """
     Reduction function that performs the push-pull analysis on the registration
     data.
@@ -340,8 +342,9 @@ def registrationRedux(fileMat, template=None):
     for i in range(0, nActs-1):
         img = pushPullRedux(fileMat[i,:], template)
         imglist.append(img)
-    cube = np.dstack(imglist)
-    rd.save_phasemap(os.path.join(intMatFold, 'regActCube.fits'), cube)
+    cube = np.ma.masked_array(imglist)
+    #cube = np.dstack(imglist)
+    rd.save_phasemap(os.path.join(intMatFold,tn, 'regActCube.fits'), cube)
     return imglist
 
 def findFrameOffset(tn, imglist, actlist):
@@ -555,7 +558,7 @@ def _getAcqInfo(tn=None):
     infoIF : dict
         Information read about the IFFUNC option.
     """
-    path = os.path.join(ifFold, tn)
+    path = os.path.join(ifFold, tn) if tn is not None else fn.CONFIGURATION_ROOT_FOLDER
     infoT = read_iffconfig.getConfig('TRIGGER', bpath=path)
     infoR = read_iffconfig.getConfig('REGISTRATION', bpath=path)
     infoIF = read_iffconfig.getConfig('IFFUNC', bpath=path)

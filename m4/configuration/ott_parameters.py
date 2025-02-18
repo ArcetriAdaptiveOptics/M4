@@ -25,7 +25,7 @@ class Interferometer():
     ''' Interferometer parameters
     '''
     i4d_IP =  '192.168.22.78' #'193.206.155.193'
-    i4d_IP = '193.206.155.218'
+    i4d_IP = '193.206.155.218' #218
     i4d_port = 8011
     N_PIXEL = np.array([512, 512]) #2048
     BIN_PIX = 1

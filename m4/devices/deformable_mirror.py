@@ -256,7 +256,7 @@ class AlpaoDm(BaseDeformableMirror):
     def uploadCmdHistory(self, cmdhist):
         self.cmdHistory = cmdhist
 
-    def runCmdHistory(self, interf=None, rebin:int=1, save:str=None, differential:bool=True):
+    def runCmdHistory(self, interf=None, rebin:int=1, delay=0, save:str=None, differential:bool=True):
         if self.cmdHistory is None:
             raise Exception("No Command History to run!")
         else:
@@ -276,6 +276,7 @@ class AlpaoDm(BaseDeformableMirror):
                     img = modeRebinner(img, rebin)
                     path = os.path.join(datafold, f"image_{i:05d}.fits")
                     rd.save_phasemap(path, img)
+                    time.sleep(delay)
         self.set_shape(s)
         return tn
 
