@@ -18,18 +18,25 @@ How to Use it
 =============
 Instancing the class only with the tn of the interaction cube
 
-    >>> from m4.__ import flattening as flt
+    >>> from m4.dmutils import flattening as flt
     >>> tn = '20240906_110000' # example tn
-    >>> flat = flt.Flattening(tn)
+    >>> f = flt.Flattening(tn)
     >>> # say we have acquired an image
     >>> img = interf.acquire_phasemap()
-    >>> flat.load_image2shape(img)
+    >>> f.load_image2shape(img)
+    >>> f.computeRecMat()
     'Computing reconstruction matrix...'
 
 all is ready to compute the flat command, by simply running the method
 
     >>> flatCmd = flat.computeFlatCmd()
+
+Update : all the steps above have been wrapped into the `applyFlatCommand` method,
+which will also save the flat command and the images used for the computation in a
+dedicated folder in the flat root folder.
+
 """
+
 import os
 import numpy as np
 from m4.ground import read_data as rd
@@ -40,79 +47,92 @@ from m4.analyzers import compute_reconstructor as crec
 _ts = Timestamp().now
 _fn = ifp.fn
 
+
 class Flattening:
     """
     Class which handles the flattening command computation
-    
+
     Public Methods
     -------
-    computeFlatCmd : 
+    computeFlatCmd :
         Method which computes the flattening command to apply to a given shape,
-        which must be already in memory, through the class instancing or the 
+        which must be already in memory, through the class instancing or the
         load_img2shape method
-    
-    load_image2shape : 
+
+    load_image2shape :
         method to (re)upload and image to shape in the class, after which the
         reconstructor will be automatically computed for it.
     """
-    def __init__(self, tn, img2flatten=None):
-        """The Constructor"""
-        self.flatCmd        = None
-        self.rebin          = None
-        self.filtered       = False
-        self._oldtn         = tn
-        self.tn             = tn
-        self._path          = os.path.join(ifp.intMatFold, self.tn)
-        self._intCube       = self._loadIntCube()
-        self._cmdMat        = self._loadCmdMat()
-        self._rec           = self._loadReconstructor()
-        self.shape2flat     = self.loadImage2Shape(img2flatten) \
-                                           if img2flatten is not None else None
-        self._recMat        = None
-        self._frameCenter   = None
-        self._flatOffset    = None
-        self._cavityOffset  = None
-        self._synthFlat     = None
-        self._flatResidue   = None
-        self._flatteningModes = None
 
-    def applyFlatCommand(self, dm, interf, modes2flat, nframes:int=5, modes2discard=3):
-        """
-        Applies the computed flat command to the DM
+    def __init__(self, tn):
+        """The Constructor"""
+        self.tn                 = tn
+        self.shape2flat         = None
+        self.flatCmd            = None
+        self.rebin              = None
+        self.filtered           = False
+        self._path              = os.path.join(ifp.intMatFold, self.tn)
+        self._oldtn             = tn
+        self._intCube           = self._loadIntCube()
+        self._cmdMat            = self._loadCmdMat()
+        self._rec               = self._loadReconstructor()
+        self._recMat            = None
+        self._frameCenter       = None
+        self._flatOffset        = None
+        self._cavityOffset      = None
+        self._synthFlat         = None
+        self._flatResidue       = None
+        self._flatteningModes   = None
+
+    def applyFlatCommand(
+        self, dm, interf, modes2flat, nframes: int = 5, modes2discard=3
+    ):
+        f"""
+        Computes, applies and saves the computed flat command to the DM, given
+        the {self.tn} calibration.
 
         Parameters
         ----------
         dm : object
             Deformable mirror object.
-        flat_cmd : ndarray, optional
-            Flat command to apply. If not provided, the class attribute flatCmd
-            will be used. The default is None.
+        interf : object
+            Interferometer object to acquire phasemaps.
+        modes2flat : int or list
+            Modes to flatten.
+        nframes : int, optional
+            Number of frames to average for phasemap acquisition. Default is 5.
+        modes2discard : int, optional
+            Number of modes to discard when computing the reconstruction matrix. Default is 3.
         """
         new_tn = _ts()
         imgstart = interf.acquire_phasemap(nframes, rebin=self.rebin)
         self.loadImage2Shape(imgstart)
         self.computeRecMat(modes2discard)
-        deltacmd, _ = self.computeFlatCmd(modes2flat) #TOFIX
+        deltacmd = self.computeFlatCmd(modes2flat)
         cmd = deltacmd + dm.get_shape()
         dm.set_shape(cmd)
         imgflat = interf.acquire_phasemap(nframes, rebin=self.rebin)
-        files = ['flatCommand.fits', 'flatDeltaCommand.fits', 'imgstart.fits', 'imgflat.fits']
-        data  = [cmd, deltacmd, imgstart, imgflat]
+        files = [
+            "flatCommand.fits",
+            "flatDeltaCommand.fits",
+            "imgstart.fits",
+            "imgflat.fits",
+        ]
+        data = [cmd, deltacmd, imgstart, imgflat]
         fold = os.path.join(_fn.FLAT_ROOT_FOLD, new_tn)
         if not os.path.exists(fold):
             os.mkdir(fold)
-        for f,d in zip(files, data):
-            path = (os.path.join(fold, f))
+        for f, d in zip(files, data):
+            path = os.path.join(fold, f)
             if isinstance(d, np.ma.masked_array):
                 rd.save_phasemap(path, d)
             else:
                 rd.saveFits_data(path, d)
-        with open(os.path.join(fold, 'info.txt'), 'w') as info:
+        with open(os.path.join(fold, "info.txt"), "w") as info:
             info.write(f"Flattened with `{self.tn}` data")
         print(f"Flat command saved in {'/'.join(fold.split('/')[-2:])}")
 
-
-    def computeFlatCmd(self, n_modes, save:bool=False):
+    def computeFlatCmd(self, n_modes, save: bool = False):
         """
         Compute the command to apply to flatten the input shape.
 
@@ -123,20 +143,19 @@ class Flattening:
         """
         img = np.ma.masked_array(self.shape2flat, mask=self._getMasterMask())
         _cmd = -np.dot(img.compressed(), self._recMat)
-        #qui impacchettare il flat cmd:
         if isinstance(n_modes, int):
-            flat_cmd = self._cmdMat[:,:n_modes] @ _cmd
+            flat_cmd = self._cmdMat[:, :n_modes] @ _cmd
         elif isinstance(n_modes, list):
             _cmdMat = np.zeros((self._cmdMat.shape[1], len(n_modes)))
-            for i,mode in enumerate(n_modes):
+            for i, mode in enumerate(n_modes):
                 _cmdMat.T[i] = self._cmdMat.T[mode]
             flat_cmd = _cmdMat @ _cmd
         else:
             raise TypeError("n_modes must be either an int or a list of int")
         self.flatCmd = flat_cmd
-        return flat_cmd, _cmd # TOFIX
+        return flat_cmd
 
-    def loadImage2Shape(self, img, compute:int=None):
+    def loadImage2Shape(self, img, compute: int = None):
         """
         (Re)Loader for the image to flatten.
 
@@ -160,7 +179,7 @@ class Flattening:
         print("Computing recontruction matrix...")
         self._recMat = self._rec.run(sv_threshold=threshold)
 
-    def filterIntCube(self, zernModes:list=None):
+    def filterIntCube(self, zernModes: list = None):
         """
         Filter the interaction cube with the given zernike modes
 
@@ -170,14 +189,15 @@ class Flattening:
             Zernike modes to filter out this cube (if it's not already filtered).
             Default modes are [1,2,3] -> piston/tip/tilt.
         """
-        with open(os.path.join(self._path, ifp.flagFile), 'r', encoding='utf-8') as f:
+        with open(os.path.join(self._path, ifp.flagFile), "r", encoding="utf-8") as f:
             flag = f.read()
-        if ' filtered ' in flag:
+        if " filtered " in flag:
             print("Cube already filtered, skipping...")
             return
         else:
             print("Filtering cube...")
-            zern2fit = zernModes if zernModes is not None else [1,2,3]
+            self._oldCube = self._intCube
+            zern2fit = zernModes if zernModes is not None else [1, 2, 3]
             self._intCube, new_tn = ifp.filterZernikeCube(self.tn, zern2fit)
             self.loadNewTn(new_tn)
         return self
@@ -192,16 +212,10 @@ class Flattening:
             Tracking number of the new data.
         """
         self.__update_tn(tn)
-        self._reloadIntCube(tn)
+        self._reloadClass(tn)
 
 
-    def _getMasterMask(self):
-        cubeMask = np.sum(self._intCube.mask.astype(int), axis=2)
-        master_mask = np.zeros(cubeMask.shape, dtype=np.bool_)
-        master_mask[np.where(cubeMask > 0)] = True
-        return master_mask
-
-    def _reloadIntCube(self, tn):
+    def _reloadClass(self, tn):
         """
         Reload function for the interaction cube
 
@@ -213,28 +227,39 @@ class Flattening:
             Zernike modes to filter out this cube (if it's not already filtered).
             Default modes are [1,2,3] -> piston/tip/tilt.
         """
-        self._intCube = self._loadIntCube()
-        self._cmdMat  = self._loadCmdMat()
-        self._rec     = self._rec.loadInteractionCube(tn=tn)
+        self._cmdMat = self._loadCmdMat()
+        self._rec = self._rec.loadInteractionCube(tn=tn)
+
+
+    def _getMasterMask(self):
+        """
+        Creates the intersection mask of the interaction cube.
+        """
+        cubeMask = np.sum(self._intCube.mask.astype(int), axis=2)
+        master_mask = np.zeros(cubeMask.shape, dtype=np.bool_)
+        master_mask[np.where(cubeMask > 0)] = True
+        return master_mask
+    
 
     def _loadIntCube(self):
         """
         Interaction cube loader
-        
+
         Return
         ------
         intCube : ndarray
             The interaction cube data array.
         """
         intCube = rd.read_phasemap(os.path.join(self._path, ifp.cubeFile))
-        with open(os.path.join(self._path, ifp.flagFile), 'r') as file:
+        with open(os.path.join(self._path, ifp.flagFile), "r") as file:
             lines = file.readlines()
-        rebin = eval(lines[1].split('=')[-1])
-        with open(os.path.join(self._path, ifp.flagFile), 'r', encoding='utf-8') as f:
+        rebin = eval(lines[1].split("=")[-1])
+        with open(os.path.join(self._path, ifp.flagFile), "r", encoding="utf-8") as f:
             flag = f.read()
-        if ' filtered ' in flag:
+        if " filtered " in flag:
             self.filtered = True
-        else: False
+        else:
+            False
         self.rebin = rebin
         return intCube
 
@@ -273,16 +298,16 @@ class Flattening:
             DESCRIPTION.
 
         """
-        frame_center = rd.readFits_data('data')
+        frame_center = rd.readFits_data("data")
         return frame_center
 
     def _registerShape(self, shape):
-        xxx=None
-        dp = ifp.findFrameOffset(self.tn,xxx)
-        #cannot work. we should create a dedicated function, not necessarily linked to IFF or flattening
+        xxx = None
+        dp = ifp.findFrameOffset(self.tn, xxx)
+        # cannot work. we should create a dedicated function, not necessarily linked to IFF or flattening
         return dp
 
-    def __update_tn(self,tn):
+    def __update_tn(self, tn):
         """
         Updates the tn and cube path if the tn is to change
 

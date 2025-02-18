@@ -68,6 +68,23 @@ def getConfig(key, bpath=cfoldname):
     return info
 
 def copyConfingFile(tn, old_path=cfoldname):
+    """
+    This function copies the configuration file to the new folder created for the
+    IFF data, to keep record of the configuration used on data acquisition.
+
+    Parameters
+    ----------
+    tn : str
+        Tracking number of the new data.
+    old_path : str, OPTIONAL
+        Base path of the file to read. Default points to the Configuration root
+        folder.
+
+    Returns
+    -------
+    res : str
+        String containing the path where the file has been copied
+    """
     fname = os.path.join(old_path, iff_configFile)
     nfname= os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn, iff_configFile)
     res = shutil.copy2(fname, nfname)

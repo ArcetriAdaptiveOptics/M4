@@ -2,21 +2,22 @@
 Authors
   - C. Selmi: written in 2020
 '''
-import logging
 import os
 import time
 import shutil
+import logging
+import playsound
 import numpy as np
+from m4.ground import timestamp
 from matplotlib import pyplot as plt
 from astropy.io import fits as pyfits
-from m4.ground import timestamp
-from m4.utils.osutils import rename4D, modeRebinner
-from m4.configuration import config_folder_names as fold_name
-from m4.configuration.ott_parameters import Interferometer
-from m4.ground.read_data import InterferometerConverter
-from m4.devices.base_interferometer import BaseInterferometer
-import playsound
+from m4.utils.osutils import rename4D
+from m4.ground.rebinner import modeRebinner
 from m4.configuration.ott_parameters import Sound
+from m4.ground.read_data import InterferometerConverter
+from m4.configuration.ott_parameters import Interferometer
+from m4.devices.base_interferometer import BaseInterferometer
+from m4.configuration import config_folder_names as fold_name
 from m4.ground.read_4DConfSettingFile import ConfSettingReader #modRB 20231027 to implement frame2OTTframe here
 
 class I4d4020(BaseInterferometer):

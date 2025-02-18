@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 from m4.configuration import config_folder_names as fn
 from m4.ground import read_data as rd
 
-imgFold = fn.OPD_IMAGES_ROOT_FOLDER
-ifFold = fn.IFFUNCTIONS_ROOT_FOLDER
-intMatFold = fn.INTMAT_ROOT_FOLDER
-confFold = fn.CONFIGURATION_ROOT_FOLDER
+imgFold     = fn.OPD_IMAGES_ROOT_FOLDER
+ifFold      = fn.IFFUNCTIONS_ROOT_FOLDER
+intMatFold  = fn.INTMAT_ROOT_FOLDER
+confFold    = fn.CONFIGURATION_ROOT_FOLDER
 
 
 class ComputeReconstructor:
@@ -38,23 +38,20 @@ class ComputeReconstructor:
         shape [pixels, pixels, n_images]
     """
 
-    def __init__(self, interaction_matrix_cube, mask2intersect=None):
+    def __init__(self, interaction_matrix_cube, img=None):
         """The constructor"""
-        self._logger = logging.getLogger("COMPUTE_REC:")
-        self._intMatCube = interaction_matrix_cube
-        self._cubeMask = self._intersectCubeMask(interaction_matrix_cube)
-        self._imgMask = self._mask2intersect(mask2intersect)
-        self._analysisMask = None
-        self._intMat_U = None
-        self._intMat_S = None
-        self._intMat_Vt = None
-        self._threshold = None
-        self._filtered_sv = None
-        self._tn = None
-        self._intMat = self._computeIntMat()
+        self._logger        = logging.getLogger("COMPUTE_REC:")
+        self._intMatCube    = interaction_matrix_cube
+        self._cubeMask      = self._intersectCubeMask(interaction_matrix_cube)
+        self._imgMask       = self._mask2intersect(img)
+        self._analysisMask  = self._setAnalysisMask()
+        self._intMat        = self._computeIntMat()
+        self._intMat_U      = None
+        self._intMat_S      = None
+        self._intMat_Vt     = None
+        self._threshold     = None
+        self._filtered_sv   = None
 
-        if isinstance(self._cubeMask, np.ndarray) and isinstance(self._imgMask, np.ndarray):
-            self._setAnalysisMask()
 
     def run(self, Interactive=False, sv_threshold=None):
         """
@@ -137,7 +134,7 @@ class ComputeReconstructor:
             self._intMatCube = rd.read_phasemap(cube_path)
         else:
             raise KeyError("No cube or tracking number was provided.")
-        self._computeIntMat
+        self._computeIntMat()
         return self
 
     def _computeIntMat(self):
@@ -161,8 +158,7 @@ class ComputeReconstructor:
             self._logger.error(
                 "Error in computing interaction matrix from cube:%s", e)
             raise e
-        print(self._analysisMask.shape)
-        print(self._intMat.shape)
+        print("Interaction Matrix : ", self._intMat.shape)
 
     def _setAnalysisMask(self):
         """
@@ -170,7 +166,10 @@ class ComputeReconstructor:
         the cube mask and the image to flatten mask.
         """
         try:
-            analysisMask = np.logical_or(self._cubeMask, self._imgMask)
+            if self._imgMask is None:
+                analysisMask = self._cubeMask
+            else:
+                analysisMask = np.logical_or(self._cubeMask, self._imgMask)
         except Exception as e:
             raise e
         self._analysisMask = analysisMask
@@ -198,24 +197,20 @@ class ComputeReconstructor:
             mask = None
         return mask
 
-    def _intersectCubeMask(self, cube):
+    def _intersectCubeMask(self):
         """
-        creates the cube's mask by intersecating the masks of each frame.
-
-        Parameters
-        ----------
-        cube : ndarray
-            The data cube.
+        Creates the cube's mask by intersecating the masks of each frame.
 
         Returns
         -------
         cube_mask : ndarray
             the intersection mask for the cube.
         """
-        mask = cube[:, :, 0].mask
-        for i in range(1, cube.shape[2]):
+        mask = self._intMatCube[:, :, 0].mask
+        for i in range(1, self._intMatCube.shape[2]):
             cube_mask = np.logical_or(
-                mask, cube[:, :, i].mask)
+                mask, self._intMatCube[:, :, i].mask
+            )
         return cube_mask
 
 # ______________________________________________________________________________

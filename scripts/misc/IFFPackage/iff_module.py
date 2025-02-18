@@ -11,14 +11,17 @@ Description:
 This module contains the necessary high/user-leve functions to acquire the IFF data, 
 given a deformable mirror and an interferometer.
 """
+
 import os
-import numpy as np
 from m4.ground import read_data as rd
-from m4.ground.timestamp import Timestamp
 from m4.configuration import config_folder_names as fn
 from m4.dmutils import iff_acquisition_preparation as ifa
+from m4.configuration.read_iffconfig import copyConfingFile
 
-def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None, shuffle=False):
+
+def iffDataAcquisition(
+    dm, interf, modesList=None, amplitude=None, template=None, shuffle=False
+):
     """
     This is the user-lever function for the acquisition of the IFF data, given a
     deformable mirror and an interferometer.
@@ -51,24 +54,23 @@ def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None
     ifc = ifa.IFFCapturePreparation(dm)
     tch = ifc.createTimedCmdHistory(modesList, amplitude, template, shuffle)
     info = ifc.getInfoToSave()
-#    dm.set_shape(np.zeros(dm.nActs))
     dm.uploadCmdHistory(tch)
     tn = dm.runCmdHistory(interf, delay=0.5)
-    datapath = os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn)
-    iffpath  = os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)
-    if not os.path.exists(datapath):
-        os.mkdir(datapath)
+    iffpath = os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)
     if not os.path.exists(iffpath):
         os.mkdir(iffpath)
     try:
         for key, value in info.items():
-            if key=='shuffle':
-                with open(os.path.join(iffpath, f"{key}.dat"), 'w') as f:
+            if key == "shuffle":
+                with open(os.path.join(iffpath, f"{key}.dat"), "w") as f:
                     f.write(str(value))
             else:
-                rd.saveFits_data(os.path.join(iffpath, f"{key}.fits"), value, overwrite=True)
+                rd.saveFits_data(
+                    os.path.join(iffpath, f"{key}.fits"), value, overwrite=True
+                )
     except KeyError as e:
         print(f"KeyError: {key}, {e}")
+    copyConfingFile(tn)
     return tn
 
 
@@ -90,6 +92,3 @@ def iffDataAcquisition(dm, interf, modesList=None, amplitude=None, template=None
 #     start4DAcq(tn)
 #     print('Acquisition completed. Dataset tracknum:')
 #     print(tn)
-
-
-

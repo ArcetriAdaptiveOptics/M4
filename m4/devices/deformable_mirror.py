@@ -256,9 +256,9 @@ class AlpaoDm(BaseDeformableMirror):
     def uploadCmdHistory(self, cmdhist):
         self.cmdHistory = cmdhist
 
-    def runCmdHistory(self, interf=None, rebin:int=1, delay=0, save:str=None, differential:bool=True):
+    def runCmdHistory(self, interf=None, delay=0, save:str=None, differential:bool=True):
         if self.cmdHistory is None:
-            raise Exception("No Command History to run!")
+            raise ValueError("No Command History to run!")
         else:
             tn = _ts.now() if save is None else save
             print(f"{tn} - {self.cmdHistory.shape[-1]} images to go.")
@@ -268,12 +268,9 @@ class AlpaoDm(BaseDeformableMirror):
                 os.mkdir(datafold)
             for i,cmd in enumerate(self.cmdHistory.T):
                 print(f"{i+1}/{self.cmdHistory.shape[-1]}", end="\r", flush=True)
-                if differential:
-                    cmd += s
-                self.set_shape(cmd)
+                self.set_shape(cmd, differential=differential)
                 if interf is not None:
                     img = interf.acquire_phasemap()
-                    img = modeRebinner(img, rebin)
                     path = os.path.join(datafold, f"image_{i:05d}.fits")
                     rd.save_phasemap(path, img)
                     time.sleep(delay)

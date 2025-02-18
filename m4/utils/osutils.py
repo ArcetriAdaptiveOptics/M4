@@ -302,24 +302,3 @@ def createCube(filelist, register=False):
     cube = np.ma.dstack(cube_list)
     return cube
 
-
-def modeRebinner(img, rebin:int=1):
-    """
-    Image rebinner
-
-    Parameters
-    ----------
-    img : masked_array
-        Image to rebin.
-    rebin : int, optional
-        Rebinning factor. The default is 2.
-    
-    Returns
-    -------
-    newImg : masked_array
-        Rebinned image.
-    """
-    shape = img.shape
-    new_shape = (shape[0]//rebin, shape[1]//rebin)
-    newImg = rebinner.rebin2DArray(img, new_shape)
-    return newImg

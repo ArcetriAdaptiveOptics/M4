@@ -6,6 +6,50 @@ Authors
 import numpy as np
 
 
+def modeRebinner(img, rebin):
+    """
+    Image rebinner
+
+    Parameters
+    ----------
+    img : masked_array
+        Image to rebin.
+    rebin : int
+        Rebinning factor.
+    
+    Returns
+    -------
+    newImg : masked_array
+        Rebinned image.
+    """
+    shape = img.shape
+    new_shape = (shape[0]//rebin, shape[1]//rebin)
+    newImg = rebin2DArray(img, new_shape)
+    return newImg
+
+
+def cubeRebinner(cube, rebin):
+    """
+    Cube rebinner
+
+    Parameters
+    ----------
+    cube : ndarray
+        Cube to rebin.
+    rebin : int
+        Rebinning factor.
+    
+    Returns
+    -------
+    newCube : ndarray
+        Rebinned cube.
+    """
+    newCube = np.zeros((cube.shape[0]//rebin, cube.shape[1]//rebin, cube.shape[2]))
+    for i in range(cube.shape[0]):
+        newCube[:,:,i] = modeRebinner(cube[:,:,i], rebin)
+    return newCube
+
+
 def rebin(a, *args):
     # modRB to correct for the wrong amplitude after rebin
     """rebin ndarray data into a smaller ndarray of the same rank whose dimensions
