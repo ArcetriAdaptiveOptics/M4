@@ -55,7 +55,7 @@ def iffDataAcquisition(
     tch = ifc.createTimedCmdHistory(modesList, amplitude, template, shuffle)
     info = ifc.getInfoToSave()
     dm.uploadCmdHistory(tch)
-    tn = dm.runCmdHistory(interf, delay=0.5)
+    tn = dm.runCmdHistory(interf)
     iffpath = os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)
     if not os.path.exists(iffpath):
         os.mkdir(iffpath)

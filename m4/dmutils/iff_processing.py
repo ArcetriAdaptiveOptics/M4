@@ -144,7 +144,7 @@ def saveCube(tn, rebin, register=False):
     """
     old_fold = os.path.join(ifFold, tn)
     filelist = osu.getFileList(fold=old_fold, key="mode_")
-    cube = osu.createCube(filelist, rebin=rebin, register=register)
+    cube = osu.createCube(filelist, register=register)
     # Rebinning the cube
     if rebin != 1:
         cube = rb.cubeRebinner(cube, rebin)
@@ -280,7 +280,7 @@ def iffRedux(tn, fileMat, ampVect, modeList, template, shuffle=0):
         img = pushPullRedux(fileMat[i, :], template, shuffle)
         norm_img = img / (2 * ampVect[i])
         img_name = os.path.join(fold, f"mode_{modeList[i]:04d}.fits")
-        rd.save_phasemap(img_name, norm_img)
+        rd.save_phasemap(img_name, norm_img, overwrite=True)
 
 
 def pushPullRedux(fileVec, template, shuffle=0):
@@ -318,14 +318,18 @@ def pushPullRedux(fileVec, template, shuffle=0):
         image_list.append(ima)
     image = np.zeros((ima.shape[0], ima.shape[1]))
     if shuffle == 0:
-        for x in range(1, len(image_list)):
-            opd2add = image_list[x] * template[x] + image_list[x - 1] * template[x - 1]
-            master_mask2add = np.ma.mask_or(image_list[x].mask, image_list[x - 1].mask)
-            if x == 1:
-                master_mask = master_mask2add
-            else:
-                master_mask = np.ma.mask_or(master_mask, master_mask2add)
-            image += opd2add
+        if len(template) == 1:
+            image = image_list[0] * template[0]
+            master_mask = image_list[0].mask
+        else:
+            for x in range(1, len(image_list)):
+                opd2add = image_list[x] * template[x] + image_list[x - 1] * template[x - 1]
+                master_mask2add = np.ma.mask_or(image_list[x].mask, image_list[x - 1].mask)
+                if x == 1:
+                    master_mask = master_mask2add
+                else:
+                    master_mask = np.ma.mask_or(master_mask, master_mask2add)
+                image += opd2add
     else:
         print("Shuffle option")
         for i in range(0, shuffle - 1):
@@ -364,7 +368,7 @@ def registrationRedux(tn, fileMat):
     """
     _, infoR, _ = _getAcqInfo()
     template = infoR["template"]
-    if np.array_equal(fileMat, np.array([])) and len(infoR["modes"]) == 0:
+    if np.array_equal(fileMat, np.array([])) and len(infoR["modesid"]) == 0:
         print("No registration data found")
         return []
     nActs = fileMat.shape[0]
@@ -373,8 +377,7 @@ def registrationRedux(tn, fileMat):
         img = pushPullRedux(fileMat[i, :], template)
         imglist.append(img)
     cube = np.ma.masked_array(imglist)
-    # cube = np.dstack(imglist)
-    rd.save_phasemap(os.path.join(intMatFold, tn, "regActCube.fits"), cube)
+    #rd.save_phasemap(os.path.join(intMatFold, tn, "regActCube.fits"), cube)
     return imglist
 
 

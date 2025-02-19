@@ -15,11 +15,11 @@ import m4.configuration.config_folder_names as fn
 config=configparser.ConfigParser()
 cfoldname       = fn.CONFIGURATION_ROOT_FOLDER
 iff_configFile  = 'iffConfig.ini'
-nzeroName       = 'numberOfZeros'
-modeIdName      = 'modeId'
-modeAmpName     = 'modeAmp'
+nzeroName       = 'numberofzeros'
+modeIdName      = 'modeid'
+modeAmpName     = 'modeamp'
 templateName    = 'template'
-modalBaseName   = 'modalBase'
+modalBaseName   = 'modalbase'
 
 def getConfig(key, bpath=cfoldname):
     """

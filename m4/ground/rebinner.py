@@ -10,6 +10,8 @@ def modeRebinner(img, rebin):
     """
     Image rebinner
 
+    Rebins a masked array image by a factor rebin.
+
     Parameters
     ----------
     img : masked_array
@@ -44,10 +46,10 @@ def cubeRebinner(cube, rebin):
     newCube : ndarray
         Rebinned cube.
     """
-    newCube = np.zeros((cube.shape[0]//rebin, cube.shape[1]//rebin, cube.shape[2]))
+    newCube = []
     for i in range(cube.shape[0]):
-        newCube[:,:,i] = modeRebinner(cube[:,:,i], rebin)
-    return newCube
+        newCube.append(modeRebinner(cube[:,:,i], rebin))
+    return np.ma.dstack(newCube)
 
 
 def rebin(a, *args):
