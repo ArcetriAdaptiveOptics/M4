@@ -47,7 +47,7 @@ def cubeRebinner(cube, rebin):
         Rebinned cube.
     """
     newCube = []
-    for i in range(cube.shape[0]):
+    for i in range(cube.shape[-1]):
         newCube.append(modeRebinner(cube[:,:,i], rebin))
     return np.ma.dstack(newCube)
 

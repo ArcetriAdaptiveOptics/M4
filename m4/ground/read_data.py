@@ -13,12 +13,12 @@ Function for reading file fits::
                                 'ampName.fits', 'mvec.fits', 'cmdMatrix.fits')
 """
 import os
-from astropy.io import fits as pyfits
-import numpy as np
 import h5py
-from m4.type.modalAmplitude import ModalAmplitude
+import numpy as np
+from astropy.io import fits as pyfits
 from m4.type.modalBase import ModalBase
 from m4.type.modesVector import ModesVector
+from m4.type.modalAmplitude import ModalAmplitude
 
 def read_phasemap(file_path):
     ''' per leggere i tre formati di dati interferometrici

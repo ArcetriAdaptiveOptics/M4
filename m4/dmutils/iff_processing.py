@@ -146,7 +146,7 @@ def saveCube(tn, rebin, register=False):
     filelist = osu.getFileList(fold=old_fold, key="mode_")
     cube = osu.createCube(filelist, register=register)
     # Rebinning the cube
-    if rebin != 1:
+    if rebin > 1:
         cube = rb.cubeRebinner(cube, rebin)
     # Saving the cube
     new_fold = os.path.join(intMatFold, tn)
@@ -346,7 +346,7 @@ def pushPullRedux(fileVec, template, shuffle=0):
                 else:
                     master_mask = np.na.mask_or(master_mask, master_mask2add)
                 image += opd2add
-    image = np.ma.masked_array(image, mask=master_mask) / (template.shape[0] - 1)  #!!!
+    image = np.ma.masked_array(image, mask=master_mask) / np.max(((template.shape[0] - 1), 1))  #!!!
     return image
 
 
