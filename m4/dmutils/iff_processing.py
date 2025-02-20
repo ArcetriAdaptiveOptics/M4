@@ -153,12 +153,13 @@ def saveCube(tn, rebin, register=False):
     if not os.path.exists(new_fold):
         os.mkdir(new_fold)
     cube_path = os.path.join(new_fold, cubeFile)
-    rd.save_phasemap(cube_path, cube)
+    rd.save_phasemap(cube_path, cube, overwrite=True)
     # Copying the cmdMatrix and the ModesVector into the INTMAT Folder
     cmat = rd.readFits_data(os.path.join(ifFold, tn, "cmdMatrix.fits"))
     mvec = rd.readFits_data(os.path.join(ifFold, tn, "modesVector.fits"))
-    pyfits.writeto(os.path.join(intMatFold, tn, "cmdMatrix.fits"), cmat)
-    pyfits.writeto(os.path.join(intMatFold, tn, "modesVector.fits"), mvec)
+    pyfits.writeto(os.path.join(intMatFold, tn, "cmdMatrix.fits"), cmat, overwrite=True)
+    pyfits.writeto(os.path.join(intMatFold, tn, "modesVector.fits"), mvec, overwrite=True)
+    # Creating the flag file
     with open(os.path.join(intMatFold, tn, flagFile), "w", encoding="utf-8") as f:
         f.write(
             f"Cube created from '{old_fold.split('/')[-1]}' data.\nRebin={rebin}\n \n"
@@ -366,7 +367,7 @@ def registrationRedux(tn, fileMat):
     imgList : ArrayLike
         List of the processed registration images.
     """
-    _, infoR, _ = _getAcqInfo()
+    _, infoR, _ = _getAcqInfo(tn)
     template = infoR["template"]
     if np.array_equal(fileMat, np.array([])) and len(infoR["modesid"]) == 0:
         print("No registration data found")
@@ -432,7 +433,7 @@ def getTriggerFrame(tn, amplitude=None):
         wich can be inferred through the number of trigger zeros in the iffConfig.ini
         file.
     """
-    infoT, _, _ = _getAcqInfo()
+    infoT, _, _ = _getAcqInfo(tn)
     if amplitude is not None:
         infoT["amplitude"] = amplitude
     fileList = osu.getFileList(tn)
@@ -481,7 +482,7 @@ def getRegFileMatrix(tn):
         It has shape (registration_modes, n_push_pull).
     """
     fileList = osu.getFileList(tn)
-    _, infoR, _ = _getAcqInfo()
+    _, infoR, _ = _getAcqInfo(tn)
     timing = read_iffconfig.getTiming()
     trigFrame = getTriggerFrame(tn)
     if infoR["zeros"] == 0 and len(infoR["modes"]) == 0:
@@ -511,7 +512,7 @@ def getIffFileMatrix(tn):
         It has shape (modes, n_push_pull)
     """
     fileList = osu.getFileList(tn)
-    _, _, infoIF = _getAcqInfo()
+    _, _, infoIF = _getAcqInfo(tn)
     regEnd, _ = getRegFileMatrix(tn)
     iffList = fileList[regEnd + infoIF["zeros"] :]
     iffMat = np.reshape(iffList, (len(infoIF["modes"]), len(infoIF["template"])))
