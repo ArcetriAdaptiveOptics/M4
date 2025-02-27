@@ -391,13 +391,13 @@ class IFFCapturePreparation:
 
     def _createHadamardMat(self):
         """
-
+        Create the hadamard matrix to use as modal base, with size
+        (nacts, nacts), removed of piston mode.
 
         Returns
         -------
-        cmdBase : TYPE
-            DESCRIPTION.
-
+        cmdBase : ndarray
+            The Hadamard matrix.
         """
         from scipy.linalg import hadamard
         import math
