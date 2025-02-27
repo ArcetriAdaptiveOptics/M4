@@ -20,7 +20,7 @@ from m4.configuration.read_iffconfig import copyConfingFile
 
 
 def iffDataAcquisition(
-    dm, interf, modesList=None, amplitude=None, template=None, shuffle=False
+    dm, interf, modesList=None, amplitude=None, template=None, shuffle=False, *dmargs
 ):
     """
     This is the user-lever function for the acquisition of the IFF data, given a
@@ -45,6 +45,9 @@ def iffDataAcquisition(
         identifier of the modal base to be used
     shuffle: bool , optional
         if True, shuffle the modes before acquisition
+    *dmargs: list
+        additional arguments to be passed to the deformable mirror's `runCmdHistory`
+        method.
 
     Returns
     -------
@@ -54,8 +57,6 @@ def iffDataAcquisition(
     ifc = ifa.IFFCapturePreparation(dm)
     tch = ifc.createTimedCmdHistory(modesList, amplitude, template, shuffle)
     info = ifc.getInfoToSave()
-    dm.uploadCmdHistory(tch)
-    tn = dm.runCmdHistory(interf)
     iffpath = os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)
     if not os.path.exists(iffpath):
         os.mkdir(iffpath)
@@ -71,6 +72,8 @@ def iffDataAcquisition(
     except KeyError as e:
         print(f"KeyError: {key}, {e}")
     copyConfingFile(tn)
+    dm.uploadCmdHistory(tch)
+    tn = dm.runCmdHistory(interf, *dmargs)
     return tn
 
 
