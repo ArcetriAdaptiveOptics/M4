@@ -267,7 +267,9 @@ class AlpaoDm(BaseDeformableMirror):
                 os.mkdir(datafold)
             for i,cmd in enumerate(self.cmdHistory.T):
                 print(f"{i+1}/{self.cmdHistory.shape[-1]}", end="\r", flush=True)
-                self.set_shape(cmd, differential=differential)
+                if differential:
+                    cmd = cmd+s
+                self.set_shape(cmd)
                 if interf is not None:
                     img = interf.acquire_phasemap()
                     path = os.path.join(datafold, f"image_{i:05d}.fits")
