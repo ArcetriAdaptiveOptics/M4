@@ -13,10 +13,12 @@ given a deformable mirror and an interferometer.
 """
 
 import os
-from m4.ground import read_data as rd
+from m4.ground import read_data as rd, timestamp
 from m4.configuration import config_folder_names as fn
 from m4.dmutils import iff_acquisition_preparation as ifa
 from m4.configuration.read_iffconfig import copyConfingFile
+
+_ts = timestamp.Timestamp()
 
 
 def iffDataAcquisition(
@@ -57,6 +59,7 @@ def iffDataAcquisition(
     ifc = ifa.IFFCapturePreparation(dm)
     tch = ifc.createTimedCmdHistory(modesList, amplitude, template, shuffle)
     info = ifc.getInfoToSave()
+    tn = _ts.now()
     iffpath = os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn)
     if not os.path.exists(iffpath):
         os.mkdir(iffpath)
@@ -73,7 +76,7 @@ def iffDataAcquisition(
         print(f"KeyError: {key}, {e}")
     copyConfingFile(tn)
     dm.uploadCmdHistory(tch)
-    tn = dm.runCmdHistory(interf, *dmargs)
+    dm.runCmdHistory(interf, save=tn, *dmargs)
     return tn
 
 
