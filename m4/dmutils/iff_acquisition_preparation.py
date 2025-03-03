@@ -197,7 +197,6 @@ class IFFCapturePreparation:
         else:
             mlist = mlist
             infoIF["modes"] = mlist
-            read_iffconfig.updateConfigFile("IFFUNC", infoIF)
         modesAmp = modesAmp if modesAmp is not None else infoIF.get("amplitude")
         template = template if template is not None else infoIF.get("template")
         zeroScheme = infoIF["zeros"]

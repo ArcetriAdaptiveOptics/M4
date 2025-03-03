@@ -186,12 +186,13 @@ def stackCubes(tnlist):
     """
     new_tn = timestamp.Timestamp.now()
     stacked_cube_fold = os.path.join(fn.INTMAT_ROOT_FOLDER, new_tn)
-    os.mkdir(stacked_cube_fold)
+    if not os.path.exists(stacked_cube_fold):
+        os.mkdir(stacked_cube_fold)
     cube_parameters = _getCubeList(tnlist)
     flag = _checkStackedCubes(tnlist)
     # Stacking the cube and the matrices
     stacked_cube = np.ma.dstack(cube_parameters[0])
-    stacked_cmat = np.dstack(cube_parameters[1])
+    stacked_cmat = np.hstack(cube_parameters[1])
     stacked_mvec = np.dstack(cube_parameters[2])
     # Saving everithing to a new file into a new tn
     save_cube = os.path.join(stacked_cube_fold, cubeFile)
@@ -540,15 +541,23 @@ def _getCubeList(tnlist):
     cubeList = []
     matrixList = []
     modesVectList = []
+    rebins = []
     for tn in tnlist:
         fold = os.path.join(intMatFold, tn)
         cube_name = os.path.join(fold, "IMCube.fits")
         matrix_name = os.path.join(fold, "cmdMatrix.fits")
         modesVec_name = os.path.join(fold, "modesVector.fits")
+        flag_file = os.path.join(fold, "flag.txt")
         cubeList.append(rd.readFits_data(cube_name))
         matrixList.append(rd.readFits_data(matrix_name))
         modesVectList.append(rd.readFits_data(modesVec_name))
-    return cubeList, matrixList, modesVectList
+        with open(flag_file, "r", encoding="UTF-8") as f:
+            flag = f.readlines()
+        rebins.append(int(flag[1].split("=")[1].strip()))
+    if not all([rebin == rebins[0] for rebin in rebins]):
+        raise ValueError("Cubes have different rebinning factors")
+    rebin = rebins[0]
+    return cubeList, matrixList, modesVectList, rebin
 
 
 def _getAcqPar(tn):
@@ -628,7 +637,7 @@ def _checkStackedCubes(tnlist):
         Dictionary containing the flagging information about the stacked cube,
         to be later dump into the 'flag.txt' file.
     """
-    _, _, modesVectList = _getCubeList(tnlist)
+    _,_,modesVectList,rebin = _getCubeList(tnlist)
     nmodes = len(modesVectList[0])
     nvects = len(modesVectList)
     for i in range(nvects):
@@ -636,15 +645,15 @@ def _checkStackedCubes(tnlist):
             common_modes = set(modesVectList[i]).intersection(modesVectList[j])
     c_nmodes = len(common_modes)
     if c_nmodes in range(1, nmodes):
-        flag = __shared_modes(tnlist, modesVectList)
+        flag = __flag(tnlist, modesVectList, rebin, 2)
     elif c_nmodes == nmodes:
-        flag = __averaged(tnlist, modesVectList)
+        flag = __flag(tnlist, modesVectList, rebin, 1)
     else:
-        flag = __stacked(tnlist, modesVectList)
+        flag = __flag(tnlist, modesVectList, rebin, 0)
     return flag
 
 
-def __stacked(tnlist, modesVectList):
+def __flag(tnlist, modesVectList, rebin, type:int):
     """
     Creates the dictionary to dump into the 'flag.txt' file accordingly to
     sequentially stacked cubes with no repeated modes.
@@ -655,88 +664,34 @@ def __stacked(tnlist, modesVectList):
         List containing the tracking number of the cubes to stack.
     modesVectList : list of ndarray
         A list containing the modes vectors for each cube.
+    type : int
+        Type of stacked cube created. 
+        0 for sequential, 1 for mean, 2 for shared modes.
 
     Returns
     -------
     config : dict
         Dictionary containing the flagging information about the stacked cube.
     """
-    c_type = "Sequentially stacked cubes"
+    c_type = [
+        "Sequentially stacked cubes",
+        "Mean of cubes",
+        "!!!Warning: repeated modes in stacked cube"
+    ]
     text = ""
     for i, tn in enumerate(tnlist):
-        text += f"""{tn}, modes {list(modesVectList[i])} \\
-           """
+        if np.array_equal(modesVectList[i], np.arange(modesVectList[i][0], modesVectList[i][-1]+1, 1)):
+            text += \
+f"""
+{tn}, modes {modesVectList[i][0]} to {modesVectList[i][-1]}"""
+        else:
+            text += \
+f"""
+{tn}, modes {list(modesVectList[i])}"""
     flag = {
         "Flag": {
-            "Cube type": c_type,
-            "Source cubes": text,
-        }
-    }
-    config["Flag"] = {}
-    for key, value in flag["Flag"].items():
-        config["Flag"][key] = value
-    return config
-
-
-def __averaged(tnlist, modesVectList):
-    """
-    Creates the dictionary to dump into the 'flag.txt' file accordingly to
-    averaged cubes with same commanded modes.
-
-    Parameters
-    ----------
-    tnlist : list of str
-        List containing the tracking number of the cubes to stack.
-    modesVectList : list of ndarray
-        A list containing the modes vectors for each cube.
-
-    Returns
-    -------
-    config : dict
-        Dictionary containing the flagging information about the stacked cube.
-    """
-    c_type = "Mean of cubes"
-    text = ""
-    for i, tn in enumerate(tnlist):
-        text += f"""{tn}, modes {list(modesVectList[i])} \\
-           """
-    flag = {
-        "Flag": {
-            "Cube type": c_type,
-            "Source cubes": text,
-        }
-    }
-    config["Flag"] = {}
-    for key, value in flag["Flag"].items():
-        config["Flag"][key] = value
-    return config
-
-
-def __shared_modes(tnlist, modesVectList):
-    """
-    Creates the dictionary to dump into the 'flag.txt' file accordingly to
-    stacked cubes with some shared mode, which should be treated carefully.
-
-    Parameters
-    ----------
-    tnlist : list of str
-        List containing the tracking number of the cubes to stack.
-    modesVectList : list of ndarray
-        A list containing the modes vectors for each cube.
-
-    Returns
-    -------
-    config : dict
-        Dictionary containing the flagging information about the stacked cube.
-    """
-    c_type = "!!!Warning: repeated modes in stacked cube"
-    text = ""
-    for i, tn in enumerate(tnlist):
-        text += f"""{tn}, modes {list(modesVectList[i])} \\
-           """
-    flag = {
-        "Flag": {
-            "Cube type": c_type,
+            "Rebin": str(rebin),
+            "Cube type": c_type[type],
             "Source cubes": text,
         }
     }

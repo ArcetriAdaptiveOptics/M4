@@ -85,7 +85,7 @@ class Flattening:
         self._flatteningModes   = None
 
     def applyFlatCommand(
-        self, dm, interf, modes2flat, nframes: int = 5, modes2discard=3
+        self, dm, interf, modes2flat, nframes: int = 5, modes2discard=None
     ):
         f"""
         Computes, applies and saves the computed flat command to the DM, given
@@ -132,7 +132,7 @@ class Flattening:
             info.write(f"Flattened with `{self.tn}` data")
         print(f"Flat command saved in {'/'.join(fold.split('/')[-2:])}")
 
-    def computeFlatCmd(self, n_modes, save: bool = False):
+    def computeFlatCmd(self, n_modes):
         """
         Compute the command to apply to flatten the input shape.
 
@@ -144,11 +144,13 @@ class Flattening:
         img = np.ma.masked_array(self.shape2flat, mask=self._getMasterMask())
         _cmd = -np.dot(img.compressed(), self._recMat)
         if isinstance(n_modes, int):
-            flat_cmd = self._cmdMat[:, :n_modes] @ _cmd
+            flat_cmd = self._cmdMat[:, :n_modes] @ _cmd[:n_modes]
         elif isinstance(n_modes, list):
             _cmdMat = np.zeros((self._cmdMat.shape[1], len(n_modes)))
+            _scmd = np.zeros(_cmd.shape[0])
             for i, mode in enumerate(n_modes):
                 _cmdMat.T[i] = self._cmdMat.T[mode]
+                _scmd[i] = _cmd[mode]
             flat_cmd = _cmdMat @ _cmd
         else:
             raise TypeError("n_modes must be either an int or a list of int")

@@ -14,15 +14,15 @@ given a deformable mirror and an interferometer.
 
 import os
 from m4.ground import read_data as rd, timestamp
+from m4.configuration import read_iffconfig as rif
 from m4.configuration import config_folder_names as fn
 from m4.dmutils import iff_acquisition_preparation as ifa
-from m4.configuration.read_iffconfig import copyConfingFile
 
 _ts = timestamp.Timestamp()
 
 
 def iffDataAcquisition(
-    dm, interf, modesList=None, amplitude=None, template=None, shuffle=False, *dmargs
+    dm, interf, modesList=None, amplitude=None, template=None, shuffle=False
 ):
     """
     This is the user-lever function for the acquisition of the IFF data, given a
@@ -74,9 +74,13 @@ def iffDataAcquisition(
                 )
     except KeyError as e:
         print(f"KeyError: {key}, {e}")
-    copyConfingFile(tn)
+    rif.copyConfingFile(tn)
+    for param, value in zip(['modeid', 'modeamp', 'template'], [modesList, amplitude, template]):
+        if value is not None:
+            rif.updateConfigFile('IFFUNC', param, value, bpath=iffpath)
+    delay = rif.getCmdDelay()
     dm.uploadCmdHistory(tch)
-    dm.runCmdHistory(interf, save=tn, *dmargs)
+    dm.runCmdHistory(interf, save=tn, delay=delay)
     return tn
 
 

@@ -20,6 +20,7 @@ modeIdName      = 'modeid'
 modeAmpName     = 'modeamp'
 templateName    = 'template'
 modalBaseName   = 'modalbase'
+items = [nzeroName, modeIdName, modeAmpName, templateName, modalBaseName]
 
 def getConfig(key, bpath=cfoldname):
     """
@@ -88,10 +89,11 @@ def copyConfingFile(tn, old_path=cfoldname):
     fname = os.path.join(old_path, iff_configFile)
     nfname= os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn, iff_configFile)
     res = shutil.copy2(fname, nfname)
-    return f"{iff_configFile} copied to {res}"
+    print(f"{iff_configFile} copied to {res}")
+    return nfname
 
 
-def updateConfigFile(key, info, bpath=cfoldname):
+def updateConfigFile(key: str, item: str, value, bpath=cfoldname):
     """
     Updates the configuration file for the IFF acquisition.
     The key passed is the block of information to update
@@ -103,29 +105,34 @@ def updateConfigFile(key, info, bpath=cfoldname):
             - 'TRIGGER'
             - 'REGISTRATION'
             - 'IFFUNC'
-    info : dict
+    item : str
         A dictionary containing all the configuration file's info:
             - nzeros
             - modeId
             - modeAmp 
             - template
             - modalBase 
+    value : any
+        Value to update in the configuration file.
     bpath : str, OPTIONAL
         Base path of the file to read. Default points to the Configuration root
         folder
     """
-    fname = os.path.join(bpath, iff_configFile)
-    fnameBck = os.path.join(bpath, 'iffConfig_backup.ini')
-    shutil.copyfile(fname, fnameBck)  # Create a backup of the original file
-    config.read(fname)
-    cc = config[key]
-    cc[nzeroName]       = str(info['zeros'])
-    cc[modeIdName]      = json.dumps(info['modes'].tolist())
-    cc[modeAmpName]     = str(info['amplitude'])
-    cc[modalBaseName]   = info['modalBase']
-    cc[templateName]    = json.dumps(info['template'].tolist())
+    if not iff_configFile in bpath:
+        fname = os.path.join(bpath, iff_configFile)
+        # Create a backup of the original file if it is the one in the configuration root folder
+        if bpath == cfoldname:
+            fnameBck = os.path.join(bpath, 'iffConfig_backup.ini')
+            shutil.copyfile(fname, fnameBck)
+    else:
+        fname = bpath
+    content = getConfig(key, bpath)
+    if not item in items:
+        raise KeyError(f"Item `{item}` not found in the configuration file")
     with open(fname, 'w') as configfile:
+        config[key][item] = str(value)
         config.write(configfile)
+
 
 def getNActs_fromConf(bpath=cfoldname):
     """
@@ -171,3 +178,24 @@ def getTiming(bpath=cfoldname):
     cc = config['DM']
     timing = int(cc['Timing'])
     return timing
+
+def getCmdDelay(bpath=cfoldname):
+    """
+    Retrieves the command delay information from the iffConfig.ini file.
+
+    Parameters
+    ----------
+    bpath : str, OPTIONAL
+        Base path of the file to read. Default points to the Configuration root\
+        folder
+
+    Returns
+    -------
+    cmdDelay : int
+        Command delay for the synchronization with the interferometer.
+    """
+    fname = os.path.join(bpath, iff_configFile)
+    config.read(fname)
+    cc = config['DM']
+    cmdDelay = float(cc['delay'])
+    return cmdDelay
