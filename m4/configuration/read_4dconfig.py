@@ -1,14 +1,14 @@
-import configparser
 import numpy as np
+import configparser
 config=configparser.ConfigParser()
 
 hw4d_configfile = '4DSettings.ini'
-cameraname = 'ACA2440'
-namewidth = 'ImageWidthInPixels'
-nameheigth    = 'ImageHeightInPixels'
-nameoffx  = 'OffsetX'
-nameoffy  = 'OffsetY'
-namefreq  = 'FrameRate'
+cameraname      = 'ACA2440'
+namewidth       = 'ImageWidthInPixels'
+nameheigth      = 'ImageHeightInPixels'
+nameoffx        = 'OffsetX'
+nameoffy        = 'OffsetY'
+namefreq        = 'FrameRate'
 
 def getCameraConfig(path):
     config.read(path+'/'+hw4d_configfile)

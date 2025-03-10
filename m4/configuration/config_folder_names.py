@@ -1,6 +1,7 @@
 """
 Author(s)
-    - Chiara Selmi: written in 2021
+---------
+- Chiara Selmi: written in 2021
 
 Description
 -----------

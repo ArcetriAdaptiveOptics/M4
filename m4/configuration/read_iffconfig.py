@@ -22,6 +22,7 @@ templateName    = 'template'
 modalBaseName   = 'modalbase'
 items = [nzeroName, modeIdName, modeAmpName, templateName, modalBaseName]
 
+
 def getConfig(key, bpath=cfoldname):
     """
     Reads the configuration file for the IFF acquisition.
@@ -67,6 +68,7 @@ def getConfig(key, bpath=cfoldname):
             'modalBase': modalBase
         }
     return info
+
 
 def copyConfingFile(tn, old_path=cfoldname):
     """
@@ -157,6 +159,7 @@ def getNActs_fromConf(bpath=cfoldname):
     nacts = int(cc['NActs'])
     return nacts
 
+
 def getTiming(bpath=cfoldname):
     """
     Retrieves the timing information from the iffConfig.ini file
@@ -178,6 +181,7 @@ def getTiming(bpath=cfoldname):
     cc = config['DM']
     timing = int(cc['Timing'])
     return timing
+
 
 def getCmdDelay(bpath=cfoldname):
     """
