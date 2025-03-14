@@ -120,7 +120,7 @@ class IFFCapturePreparation:
         modesList : int | ArrayLike
             List of selected modes to use. Default is None, that means all modes
             of the base command matrix are used.
-        modesAmp : float
+        modesAmp : float | ArrayLike
             Amplitude of the modes. Default is None, that means the value is
             loaded from the 'iffconfig.ini' file
         template : int | ArrayLike
@@ -175,7 +175,7 @@ class IFFCapturePreparation:
 
         Parameters
         ----------
-        modesAmp : float
+        modesAmp : float | ArrayLike
             Amplitude of the modes to be commanded. If no argument is passed,
             it will be loaded from the configuration file iffConfig.ini
         template : int | ArrayLike
@@ -354,7 +354,7 @@ class IFFCapturePreparation:
                 mbasename
             )  # this is expected to be a tracknum
 
-    def _createUserMat(self, tracknum: str = None):
+    def _createUserMat(self, modalBaseName: str = None):
         """
 
 
@@ -369,9 +369,8 @@ class IFFCapturePreparation:
             DESCRIPTION.
 
         """
-        print("Reading modal base from tracknum: " + tracknum)
-        modalBaseFileName = "Standard modal base file name"  # !!! RE-DEFINE THIS
-        mbfile = os.path.join(fn.MODALBASE_ROOT_FOLDER, tracknum, modalBaseFileName)
+        print(f"Reading {modalBaseName}")
+        mbfile = os.path.join(fn.MODALBASE_ROOT_FOLDER, modalBaseName)
         cmdBase = rd.readFits_data(mbfile)
         return cmdBase
 

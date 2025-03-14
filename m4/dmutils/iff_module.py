@@ -39,7 +39,7 @@ def iffDataAcquisition(
         The initialized interferometer object to take measurements
     modesList: int | list, array like , optional
         list of modes index to be measured, relative to the command matrix to be used
-    amplitude: float , optional
+    amplitude: float | ArrayLike , optional
         command amplitude
     template: string , oprional
         template file for the command matrix
