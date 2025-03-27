@@ -13,6 +13,7 @@ given a deformable mirror and an interferometer.
 """
 
 import os
+import numpy as np
 from m4.ground import read_data as rd, timestamp
 from m4.configuration import read_iffconfig as rif
 from m4.configuration import config_folder_names as fn
@@ -65,10 +66,13 @@ def iffDataAcquisition(
         os.mkdir(iffpath)
     try:
         for key, value in info.items():
+            print(key)
             if key == "shuffle":
                 with open(os.path.join(iffpath, f"{key}.dat"), "w") as f:
                     f.write(str(value))
             else:
+                if isinstance(value, list):
+                    value = np.array(value)
                 rd.saveFits_data(
                     os.path.join(iffpath, f"{key}.fits"), value, overwrite=True
                 )
