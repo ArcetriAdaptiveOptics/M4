@@ -1,11 +1,7 @@
-import os
 import numpy as np
-from astropy.io import fits as pyfits
-from m4.configuration import config_folder_names as fold_name
 from photutils.centroids import centroid_2dg
 from m4.ground import geo
 from m4.utils import image_registration_lib as imgreg
-from m4.devices import deformable_mirror as dm
 center_act = 313
 
 def findFrameCoord(imglist, actlist, actcoord):

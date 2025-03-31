@@ -62,6 +62,7 @@ def marker_remap(cghf,ottf):
     base_cgh = pfr._expandbase(cghf[0,:], cghf[1,:])
     cghf_tra = np.transpose(np.dot(np.transpose(base_cgh),np.transpose(polycoeff)))
     return cghf_tra
+
 def marker_general_remap(cghf,ottf,pos2t):
     '''
         transforms the pos2t coordinates, using the cghf and ottf coordinates to create the trnasformation
