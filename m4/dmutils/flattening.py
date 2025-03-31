@@ -105,13 +105,15 @@ class Flattening:
             Number of modes to discard when computing the reconstruction matrix. Default is 3.
         """
         new_tn = _ts()
-        imgstart = interf.acquire_phasemap(nframes, rebin=self.rebin)
+        imgstart = interf.acquire_map(nframes, rebin=self.rebin)
         self.loadImage2Shape(imgstart)
         self.computeRecMat(modes2discard)
-        deltacmd = self.computeFlatCmd(modes2flat)
-        cmd = deltacmd + dm.get_shape()
-        dm.set_shape(cmd)
-        imgflat = interf.acquire_phasemap(nframes, rebin=self.rebin)
+        #self._rec._setAnalysisMask() # DEBUG
+        deltacmd = self.computeFlatCmd(modes2flat) #this is already negative
+        #cmd = deltacmd + dm.get_shape()
+        cmd = dm.get_shape()
+        dm.set_shape(deltacmd,differential =True)
+        imgflat = interf.acquire_map(nframes, rebin=self.rebin)
         files = [
             "flatCommand.fits",
             "flatDeltaCommand.fits",
@@ -146,7 +148,7 @@ class Flattening:
         if isinstance(n_modes, int):
             flat_cmd = self._cmdMat[:, :n_modes] @ _cmd[:n_modes]
         elif isinstance(n_modes, list):
-            _cmdMat = np.zeros((self._cmdMat.shape[1], len(n_modes)))
+            _cmdMat = np.zeros((self._cmdMat.shape[0], len(n_modes)))
             _scmd = np.zeros(_cmd.shape[0])
             for i, mode in enumerate(n_modes):
                 _cmdMat.T[i] = self._cmdMat.T[mode]

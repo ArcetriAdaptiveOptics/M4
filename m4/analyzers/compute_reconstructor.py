@@ -169,7 +169,7 @@ class ComputeReconstructor:
             if self._imgMask is None:
                 analysisMask = self._cubeMask
             else:
-                analysisMask = np.logical_or(self._cubeMask, self._imgMask)
+                analysisMask = np.logical_or(self._imgMask, self._cubeMask)
         except Exception as e:
             raise e
         self._analysisMask = analysisMask
@@ -211,6 +211,7 @@ class ComputeReconstructor:
             cube_mask = np.logical_or(
                 mask, self._intMatCube[:, :, i].mask
             )
+            mask = cube_mask
         return cube_mask
 
 # ______________________________________________________________________________
