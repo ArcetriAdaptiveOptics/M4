@@ -66,7 +66,6 @@ def iffDataAcquisition(
         os.mkdir(iffpath)
     try:
         for key, value in info.items():
-            print(key)
             if key == "shuffle":
                 with open(os.path.join(iffpath, f"{key}.dat"), "w") as f:
                     f.write(str(value))

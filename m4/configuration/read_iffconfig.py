@@ -91,7 +91,7 @@ def copyConfingFile(tn, old_path=cfoldname):
     fname = os.path.join(old_path, iff_configFile)
     nfname= os.path.join(fn.IFFUNCTIONS_ROOT_FOLDER, tn, iff_configFile)
     res = shutil.copy2(fname, nfname)
-    print(f"{iff_configFile} copied to {res}")
+    print(f"{iff_configFile} copied to {res.split('/iffConfig.ini')[0]}")
     return nfname
 
 
