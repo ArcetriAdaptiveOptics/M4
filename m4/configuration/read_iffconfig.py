@@ -132,7 +132,7 @@ def updateConfigFile(key: str, item: str, value, bpath=cfoldname):
     if not item in items:
         raise KeyError(f"Item `{item}` not found in the configuration file")
     with open(fname, 'w') as configfile:
-        config[key][item] = str(value)
+        config[key][item] = str(value) if not isinstance(value, np.ndarray) else str(value.tolist())
         config.write(configfile)
 
 
