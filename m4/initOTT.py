@@ -2,10 +2,10 @@
 Author(s):
 ----------
 Written by:
-        - Marco Xompero
-        - Chiara Selmi
-Modified by
-        - Pietro Ferraiuolo, 2024
+- Marco Xompero
+- Chiara Selmi
+Modified by:
+- Pietro Ferraiuolo
 
 Desctiption
 ===========
@@ -206,10 +206,10 @@ text = \
     |  |   |X|    |/  \| |X|
  ___|__|___|X|____ ---- _|X|_____
 
-Type help() for information on the available operations."""
+Type docs() for information on the available operations."""
 print(text)
 
-def docs(arg=None):
+def docs(arg: str = None):
     """
     Prints the software documentation.
 
@@ -404,4 +404,3 @@ Classes that talk directly to the OPCUA, thus relative to its reference frame.
             print(line)
         print(HIGH_LEVEL_USAGE)
         print(LOW_LEVEL_USAGE)
-
