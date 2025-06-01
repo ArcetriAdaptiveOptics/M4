@@ -67,28 +67,31 @@ no option : Initialize an ipython3 --pylab='qt' shell
                 print(f"Error: {ose}")
                 sys.exit(1)
         if '--create' in sys.argv:
-            from opticalib.core.root import create_configuration_file
-            create_configuration_file(config_path, data_path=True)
-            # load the created configuiration file and write in it 
-            # the setting for simulated devices
-            from ruamel.yaml import YAML as _YAML
-            _gyml = _YAML()
-            _gyml.preserve_quotes = True
-            with open(config_path, 'r') as f:
-                config = _gyml.load(f)
-            config['SYSTEM']['simulated.devices']['dm'] = True
-            config['SYSTEM']['simulated.devices']['interferometer'] = True
-            config['SYSTEM']['simulated.devices']['accelerometers'] = True
-            config['SYSTEM']['simulated.devices']['angleRotator'] = True
-            config['SYSTEM']['simulated.devices']['m4Exapode'] = True
-            config['SYSTEM']['simulated.devices']['dp'] = True
-            config['SYSTEM']['simulated.devices']['parSlider'] = True
-            config['SYSTEM']['simulated.devices']['par'] = True
-            config['SYSTEM']['simulated.devices']['rmSlider'] = True
-            config['SYSTEM']['simulated.devices']['rm'] = True
-            config['SYSTEM']['simulated.devices']['tempSensors'] = True
-            with open(config_path, 'w') as f:
-                _gyml.dump(config, f)
+            if os.path.exists(config_path):
+                print(f"The configuration file {config_path} already exists. Loading it...")
+            else:
+                from opticalib.core.root import create_configuration_file
+                create_configuration_file(config_path, data_path=True)
+                # Loads the created configuiration file and write in it 
+                # the setting for simulated devices
+                from ruamel.yaml import YAML as _YAML
+                _gyml = _YAML()
+                _gyml.preserve_quotes = True
+                with open(config_path, 'r') as f:
+                    config = _gyml.load(f)
+                config['SYSTEM']['simulated.devices']['dm'] = True
+                config['SYSTEM']['simulated.devices']['interferometer'] = True
+                config['SYSTEM']['simulated.devices']['accelerometers'] = True
+                config['SYSTEM']['simulated.devices']['angleRotator'] = True
+                config['SYSTEM']['simulated.devices']['m4Exapode'] = True
+                config['SYSTEM']['simulated.devices']['dp'] = True
+                config['SYSTEM']['simulated.devices']['parSlider'] = True
+                config['SYSTEM']['simulated.devices']['par'] = True
+                config['SYSTEM']['simulated.devices']['rmSlider'] = True
+                config['SYSTEM']['simulated.devices']['rm'] = True
+                config['SYSTEM']['simulated.devices']['tempSensors'] = True
+                with open(config_path, 'w') as f:
+                    _gyml.dump(config, f)
         if '--ott' in sys.argv:
             initializer = initOtt
         elif '--analysis' in sys.argv:
