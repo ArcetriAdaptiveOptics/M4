@@ -1,9 +1,9 @@
 conf='/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
 #conf = '/home/marco/work/git/M4/m4/configuration/myConfig.yaml'
-from m4.configuration import start
+from m4.configuration import ott
 import numpy as np
 import matplotlib.pyplot as plt
-ott, interf, dm = start.create_ott(conf)
+ott, interf, dm = ott.create_ott(conf)
 from m4.configuration.ott_parameters import Interferometer
 from m4.mini_OTT import timehistory as th
 from m4.analyzers.noise_data_analyzer import Noise

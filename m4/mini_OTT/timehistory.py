@@ -8,6 +8,7 @@ import scipy.fft
 import scipy.stats as stats
 from astropy.io import fits as pyfits
 from m4.configuration import update_folder_paths as ufp
+
 foldname = ufp.folders
 from m4.ground import zernike, geo, read_data
 from m4.ground.read_data import InterferometerConverter
@@ -89,10 +90,12 @@ def findTracknum(tn):
                 result = i
                 return result
 
+
 def _sortFunc4D(elem):
     iid = os.path.basename(elem)[:-3]
     iis = "%5.5i" % int(iid)
     return iis
+
 
 def fileList(tn, fold=None, name=None):
     """
@@ -230,6 +233,7 @@ def averageFrames(first, last, fileList, thresh=None, fsel=None):
         image = np.ma.masked_array(img, mask=mmask)
 
     return aveimg
+
 
 def saveAverage(tn, id0=0, id1=None):
     fold = th.findTracknum(tn)
@@ -517,8 +521,7 @@ def readFrameCrop(tn):
     path = a + "/" + fold + "/" + tn
     print(path)
     w, h, x, y, fr = readconf4d.getCameraConfig(path)
-    return np.array([w, h, x, y], dtype=np.int64)  #modRB20240518, was dtype=int64
-
+    return np.array([w, h, x, y], dtype=np.int64)  # modRB20240518, was dtype=int64
 
 
 def readFrameRate(tn):

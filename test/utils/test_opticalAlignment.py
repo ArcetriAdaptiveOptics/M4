@@ -7,11 +7,11 @@ import unittest
 import os
 import numpy as np
 from m4.utils.influence_functions_maker import IFFunctionsMaker
-from m4.configuration.start import create_ott
-from m4.ott_sim.fake_interferometer import FakeInterferometer
+from m4.configuration.ott import create_ott
+from m4.simulator.fake_interferometer import FakeInterferometer
 from m4.utils.optical_calibration import OpticalCalibration
 from m4.configuration.create_ott import OTT as ottobj
-from m4.ott_sim.fake_deformable_mirror import FakeM4DM
+from m4.simulator.fake_deformable_mirror import FakeM4DM
 from m4.utils.optical_alignment import OpticalAlignment
 import mock
 from unittest.mock import MagicMock

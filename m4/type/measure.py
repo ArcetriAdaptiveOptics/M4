@@ -14,19 +14,18 @@ from datetime import datetime as dt
 from m4.ground import zernike
 
 
-class SurfaceMeasure():
-    '''
+class SurfaceMeasure:
+    """
     Class to handle the interferometer data in a time series
-    '''
+    """
 
     def __init__(self, surface, overview, temperatures=None, zernikes=None):
         self._surface = surface
         self._zernikes = zernikes
         self._temperatures = temperatures
         self._overview = overview
-        self._timestamp = datetime.datetime.strptime(
-            overview['TN'], '%Y%m%d_%H%M%S')
-        self._timestamp = Timestamp.fromString(overview['TN']).datetime
+        self._timestamp = datetime.datetime.strptime(overview["TN"], "%Y%m%d_%H%M%S")
+        self._timestamp = Timestamp.fromString(overview["TN"]).datetime
 
     def __repr__(self):
         return pprint.PrettyPrinter().pformat(self.overview)
@@ -53,7 +52,7 @@ class SurfaceMeasure():
 
     @property
     def tn(self):
-        return self.overview['TN']
+        return self.overview["TN"]
 
     @property
     def timestamp(self):
@@ -61,7 +60,7 @@ class SurfaceMeasure():
 
     @property
     def n_meas(self):
-        return int(self.overview['N_MEAS'])
+        return int(self.overview["N_MEAS"])
 
     def save(self, filepath):
         # os.makedirs(os.path.dirname(filepath), exist_ok=True)
@@ -75,20 +74,19 @@ class SurfaceMeasure():
         current_meas = str(filename.name)
         current_path = str(filename.parent)
         overview = Snapshotable.from_fits_header(fits.getheader(filename))
-        if 'N_MEAS' not in list(overview.keys()):
-            overview['N_MEAS'] = list(
-                Path(current_path).iterdir()).index(filename)
-        overview['TN'] = current_meas[0:15]
+        if "N_MEAS" not in list(overview.keys()):
+            overview["N_MEAS"] = list(Path(current_path).iterdir()).index(filename)
+        overview["TN"] = current_meas[0:15]
 
         imas = read_phasemap(str(filename))
         tmp = SurfaceMeasure.load_temperatures(current_path)
         if tmp is not None:
-            temperatures = tmp[overview['N_MEAS'], :]
+            temperatures = tmp[overview["N_MEAS"], :]
         else:
             temperatures = None
         tmp = SurfaceMeasure.load_zernikes(current_path)
         if tmp is not None:
-            zernikes = tmp[overview['N_MEAS'], :]
+            zernikes = tmp[overview["N_MEAS"], :]
         else:
             zernikes = None
 
@@ -97,7 +95,7 @@ class SurfaceMeasure():
     @staticmethod
     @functools.cache
     def load_temperatures(filepath):
-        tfile = Path(filepath, 'temperature.fits')
+        tfile = Path(filepath, "temperature.fits")
         if Path.exists(tfile):
             with fits.open(tfile) as hdul:
                 return hdul[0].data
@@ -107,7 +105,7 @@ class SurfaceMeasure():
     @staticmethod
     @functools.cache
     def load_zernikes(filepath):
-        zfile = Path(filepath, 'zernike.fits')
+        zfile = Path(filepath, "zernike.fits")
         if Path.exists(zfile):
             with fits.open(zfile) as hdul:
                 return hdul[0].data
@@ -115,8 +113,8 @@ class SurfaceMeasure():
             return None
 
 
-class SurfaceSequence():
-    '''
+class SurfaceSequence:
+    """
     Class to handle a sequence of surface measurements
     Usage:
 
@@ -150,7 +148,7 @@ class SurfaceSequence():
         plt.plot(time, stf)
 
 
-    '''
+    """
 
     def __init__(self, root_dirs):
 
@@ -165,8 +163,7 @@ class SurfaceSequence():
             for root_dir in root_dirs:
                 if root_dir == root_dirs[0]:
                     self._root_dir = root_dir
-                    self._filenames = list(
-                        Path(root_dir).rglob('????????_??????.fits'))
+                    self._filenames = list(Path(root_dir).rglob("????????_??????.fits"))
                     print("found  %d frames" % len(self._filenames))
                     tmp_tmp = SurfaceMeasure.load_temperatures(root_dir)
                     if tmp_tmp is not None:
@@ -176,20 +173,38 @@ class SurfaceSequence():
                     if tmp_zn is not None:
                         self._zernike = pd.DataFrame(tmp_zn)
 
-                    self._tau_vector = np.array(list(map(lambda l: dt.strptime(
-                        l.name[0:15], '%Y%m%d_%H%M%S'), self._filenames)))
+                    self._tau_vector = np.array(
+                        list(
+                            map(
+                                lambda l: dt.strptime(l.name[0:15], "%Y%m%d_%H%M%S"),
+                                self._filenames,
+                            )
+                        )
+                    )
                 else:
                     self._filenames += list(
-                        Path(root_dir).rglob('????????_??????.fits'))
+                        Path(root_dir).rglob("????????_??????.fits")
+                    )
                     print("found  %d frames" % len(self._filenames))
                     tmp_tmp = SurfaceMeasure.load_temperatures(root_dir)
                     self._temperature = pd.concat(
-                        [self._temperature, pd.DataFrame(tmp_tmp)])
+                        [self._temperature, pd.DataFrame(tmp_tmp)]
+                    )
                     tmp_zn = SurfaceMeasure.load_zernikes(root_dir)
-                    self._zernike = pd.concat(
-                        [self._zernike, pd.DataFrame(tmp_zn)])
-                    self._tau_vector = np.concatenate(self._tau_vector, np.array(list(map(lambda l: dt.strptime(
-                        str(l.name)[0:15], '%Y%m%d_%H%M%S'), self._filenames))))
+                    self._zernike = pd.concat([self._zernike, pd.DataFrame(tmp_zn)])
+                    self._tau_vector = np.concatenate(
+                        self._tau_vector,
+                        np.array(
+                            list(
+                                map(
+                                    lambda l: dt.strptime(
+                                        str(l.name)[0:15], "%Y%m%d_%H%M%S"
+                                    ),
+                                    self._filenames,
+                                )
+                            )
+                        ),
+                    )
             self._intersetion_mask = None
             print("Sequence loaded with %d frames" % len(self))
 
@@ -220,19 +235,19 @@ class SurfaceSequence():
     def __str__(self):
         return self.__repr__()
 
-    @ property
+    @property
     def temperture(self):
         return self._temperture
 
-    @ property
+    @property
     def zernike(self):
         return self._zernike
 
-    @ property
+    @property
     def tau_vector(self):
         return self._tau_vector
 
-    @ property
+    @property
     def tau_vector_as_timestamp(self):
         return np.array(list(map(lambda l: dt.timestamp(l), self._tau_vector)))
 
@@ -240,18 +255,16 @@ class SurfaceSequence():
         if not isinstance(tau_vector, np.ndarray):
             raise TypeError("tau_vector must be a numpy array")
         if not isinstance(tau_vector[0], dt):
-            raise TypeError(
-                "tau_vector must be a numpy array of datetime objects")
+            raise TypeError("tau_vector must be a numpy array of datetime objects")
         if len(tau_vector) != len(self):
-            raise ValueError(
-                "tau_vector must have the same length as the sequence")
+            raise ValueError("tau_vector must have the same length as the sequence")
 
         self._tau_vector = tau_vector
 
     def set_intersection_mask(self, mask):
         self._intersetion_mask = mask
 
-    @ property
+    @property
     def intersection_mask(self):
         return self._intersetion_mask
 
@@ -264,17 +277,17 @@ class SurfaceSequence():
                 self._intersetion_mask = self._intersetion_mask | ff.surface.mask
 
     def compute_time_stf_bulk(self, nzern=3):
-        '''Compute the structure function of the sequence of surfaces fitting the first nzern zernike polynomials'''
+        """Compute the structure function of the sequence of surfaces fitting the first nzern zernike polynomials"""
 
         if nzern is not None:
             zv = np.arange(nzern) + 1
 
         dtime = self.tau_vector_as_timestamp
         xx, yy = np.meshgrid(dtime, dtime)
-        dd = np.sqrt((xx-xx.T)**2 + (yy-yy.T)**2)
+        dd = np.sqrt((xx - xx.T) ** 2 + (yy - yy.T) ** 2)
         datalen = len(self)
-        stf = np.zeros(datalen-1)
-        time = np.zeros(datalen-1)
+        stf = np.zeros(datalen - 1)
+        time = np.zeros(datalen - 1)
 
         stf_mat = np.zeros((datalen, datalen))
         for i in range(datalen):
@@ -288,35 +301,35 @@ class SurfaceSequence():
             else:
                 ima_i = self[i].surface
 
-            for j in range(datalen-i):
+            for j in range(datalen - i):
                 if nzern is not None:
-                    coeff, mat = zernike.zernikeFit(self[i+j].surface, zv)
-                    sur = zernike.zernikeSurface(self[i+j].surface, coeff, mat)
-                    ima_ij = self[i+j].surface - sur
+                    coeff, mat = zernike.zernikeFit(self[i + j].surface, zv)
+                    sur = zernike.zernikeSurface(self[i + j].surface, coeff, mat)
+                    ima_ij = self[i + j].surface - sur
 
                 else:
-                    ima_ij = self[i+j].surface
-                dd[i+j, j] = 0
-                stf_mat[i, i+j] = np.ma.std(ima_i - ima_ij)**2
+                    ima_ij = self[i + j].surface
+                dd[i + j, j] = 0
+                stf_mat[i, i + j] = np.ma.std(ima_i - ima_ij) ** 2
             # calculate the structure function as the average of the elements of the matrix which distance is the same
-        for i in range(datalen-1):
+        for i in range(datalen - 1):
             stf[i] = np.sqrt(np.mean(stf_mat[dd == dd[0, i]]))
             time[i] = dd[0, i]
 
         return time, stf
 
     def compute_fast_time_stf(self, nzern=3):
-        '''Compute the structure function of the sequence of surfaces fitting the first nzern zernike polynomials on intersection mask'''
+        """Compute the structure function of the sequence of surfaces fitting the first nzern zernike polynomials on intersection mask"""
 
         if nzern is not None:
             zv = np.arange(nzern) + 1
 
         dtime = self.tau_vector_as_timestamp
         xx, yy = np.meshgrid(dtime, dtime)
-        dd = np.sqrt((xx-xx.T)**2 + (yy-yy.T)**2)
+        dd = np.sqrt((xx - xx.T) ** 2 + (yy - yy.T) ** 2)
         datalen = len(self)
-        stf = np.zeros(datalen-1)
-        time = np.zeros(datalen-1)
+        stf = np.zeros(datalen - 1)
+        time = np.zeros(datalen - 1)
 
         stf_mat = np.zeros((datalen, datalen))
         if self._intersetion_mask is None and nzern is not None:
@@ -332,7 +345,8 @@ class SurfaceSequence():
             if nzern is not None:
 
                 data = np.ma.masked_array(
-                    self[i].surface.data, mask=self._intersetion_mask)
+                    self[i].surface.data, mask=self._intersetion_mask
+                )
                 if i == 0:
                     coeff, mat = zernike.zernikeFit(data, zv)
                     mat_pinv = np.linalg.pinv(mat)
@@ -344,39 +358,40 @@ class SurfaceSequence():
             else:
                 ima_i = data
 
-            for j in range(datalen-i):
+            for j in range(datalen - i):
                 if nzern is not None:
 
                     data = np.ma.masked_array(
-                        self[i+j].surface.data, mask=self._intersetion_mask)
+                        self[i + j].surface.data, mask=self._intersetion_mask
+                    )
                     coeff = np.dot(mat_pinv, data[data.mask == False])
 
                     sur = zernike.zernikeSurface(data, coeff, mat)
                     ima_ij = data - sur
 
                 else:
-                    ima_ij = self[i+j].surface
-                dd[i+j, j] = 0
-                stf_mat[i, i+j] = np.ma.std(ima_i - ima_ij)**2
+                    ima_ij = self[i + j].surface
+                dd[i + j, j] = 0
+                stf_mat[i, i + j] = np.ma.std(ima_i - ima_ij) ** 2
             # calculate the structure function as the average of the elements of the matrix which distance is the same
-        for i in range(datalen-1):
+        for i in range(datalen - 1):
             stf[i] = np.sqrt(np.mean(stf_mat[dd == dd[0, i]]))
             time[i] = dd[0, i]
 
         return time, stf
 
     def compute_time_stf_w_preloaded_data(self, nzern=3):
-        '''Compute the structure function of the sequence of surfaces using intersection mask and zernike coefficients from the folder'''
+        """Compute the structure function of the sequence of surfaces using intersection mask and zernike coefficients from the folder"""
 
         if nzern is not None:
             zv = np.arange(nzern) + 1
 
         dtime = self.tau_vector_as_timestamp
         xx, yy = np.meshgrid(dtime, dtime)
-        dd = np.sqrt((xx-xx.T)**2 + (yy-yy.T)**2)
+        dd = np.sqrt((xx - xx.T) ** 2 + (yy - yy.T) ** 2)
         datalen = len(self)
-        stf = np.zeros(datalen-1)
-        time = np.zeros(datalen-1)
+        stf = np.zeros(datalen - 1)
+        time = np.zeros(datalen - 1)
 
         stf_mat = np.zeros((datalen, datalen))
         if self._intersetion_mask is None and nzern is not None:
@@ -393,7 +408,8 @@ class SurfaceSequence():
             if nzern is not None:
 
                 data = np.ma.masked_array(
-                    self[i].surface.data, mask=self._intersetion_mask)
+                    self[i].surface.data, mask=self._intersetion_mask
+                )
                 if i == 0:
                     coeff, mat = zernike.zernikeFit(data, zv)
                     # print(coeff)
@@ -404,31 +420,33 @@ class SurfaceSequence():
                     plt.imshow(data)
                     try:
                         np.testing.assert_allclose(
-                            coeff, zern_coeff[i, 0:nzern], rtol=0.1)
+                            coeff, zern_coeff[i, 0:nzern], rtol=0.1
+                        )
                     except AssertionError:
                         print(
-                            "WARNING: Zernike coefficients in folder are not consistent with the data")
+                            "WARNING: Zernike coefficients in folder are not consistent with the data"
+                        )
                 sur = zernike.zernikeSurface(data, zern_coeff[i, 0:nzern], mat)
                 ima_i = data - sur
 
             else:
                 ima_i = data
 
-            for j in range(datalen-i):
+            for j in range(datalen - i):
                 if nzern is not None:
 
                     data = np.ma.masked_array(
-                        self[i+j].surface.data, mask=self._intersetion_mask)
-                    sur = zernike.zernikeSurface(
-                        data, zern_coeff[i+j, 0:nzern], mat)
+                        self[i + j].surface.data, mask=self._intersetion_mask
+                    )
+                    sur = zernike.zernikeSurface(data, zern_coeff[i + j, 0:nzern], mat)
                     ima_ij = data - sur
 
                 else:
-                    ima_ij = self[i+j].surface
-                dd[i+j, j] = 0
-                stf_mat[i, i+j] = np.ma.std(ima_i - ima_ij)**2
+                    ima_ij = self[i + j].surface
+                dd[i + j, j] = 0
+                stf_mat[i, i + j] = np.ma.std(ima_i - ima_ij) ** 2
             # calculate the structure function as the average of the elements of the matrix which distance is the same
-        for i in range(datalen-1):
+        for i in range(datalen - 1):
             stf[i] = np.sqrt(np.mean(stf_mat[dd == dd[0, i]]))
             time[i] = dd[0, i]
 

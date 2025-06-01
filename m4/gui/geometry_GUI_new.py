@@ -6,11 +6,13 @@ Authors
 import sys
 import time
 import numpy as np
-from m4.ott_sim.ott_images import OttImages
+from m4.simulator.ott_images import OttImages
 from guietta import Gui, G, MA, _, ___, III, HB
 from m4.ground.package_data import data_root_dir
-#from m4.devices.optical_beam import 
+
+# from m4.devices.optical_beam import
 from m4.configuration.ott_parameters import OttParameters
+
 # from guietta import Empty, Exceptions
 
 
@@ -36,7 +38,7 @@ class Runner:
         self.ott = ott
         self.paroffset = OttParameters.PAR_SLIDER_KIN_OFFSET
         self.rmoffset = OttParameters.RM_SLIDER_KIN_OFFSET
-        
+
     def _setUp(self):
 
         def setPlot(gui, image):
@@ -50,14 +52,18 @@ class Runner:
 
         def getstatus(gui):
             """Function to reload tower data and image"""
-            
+
             if self.ott:
                 gui.parpos = self.ott.parabola.getPosition()
                 gui.rmpos = self.ott.referenceMirror.getPosition()
                 gui.m4pos = self.ott.m4Exapode.getPosition()
-                gui.pslider = self.ott.parabolaSlider.getPosition()+self.paroffset*1000
+                gui.pslider = (
+                    self.ott.parabolaSlider.getPosition() + self.paroffset * 1000
+                )
                 gui.anglepos = self.ott.angleRotator.getPosition()
-                gui.rslider = self.ott.referenceMirrorSlider.getPosition()+self.rmoffset*1000
+                gui.rslider = (
+                    self.ott.referenceMirrorSlider.getPosition() + self.rmoffset * 1000
+                )
 
             ottIma = OttImages(self.ott)
             image = ottIma.ott_view()
@@ -191,8 +197,9 @@ class Runner:
 
 
 def main():
-    from m4.configuration import start
-    ott, _,_ = start.create_ott()
+    from m4.configuration import ott
+
+    ott, _, _ = ott.create_ott()
     runner = Runner(ott)
     sys.exit(runner.run())
 

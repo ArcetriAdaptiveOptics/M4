@@ -1,7 +1,7 @@
-'''
+"""
 Authors
   - C. Selmi:  written in September 2020
-'''
+"""
 
 import logging
 import numpy as np
@@ -13,7 +13,7 @@ from m4.configuration.ott_parameters import OpcUaParameters
 server = OpcUaParameters.server
 
 
-class OpcUaController():
+class OpcUaController:
     """
     Function for test tower management via OpcUa
 
@@ -22,12 +22,13 @@ class OpcUaController():
         from m4.devices.opc_ua_controller import OpcUaController
         opcUa = OpcUaController()
     """
+
     STOP_NODE = "ns=7;s=MAIN.b_StopCmd"
     TEMPERATURE_NODE = "ns=7;s=MAIN.i_Temperature_Sensor"
 
     def __init__(self):
-        """The constructor """
-        self._logger = logging.getLogger('OPCUA:')
+        """The constructor"""
+        self._logger = logging.getLogger("OPCUA:")
         self._client = Client(url=server)
 
     def stop(self):
@@ -37,8 +38,8 @@ class OpcUaController():
         self._client.connect()
         stop_node = self._client.get_node(self.STOP_NODE)
         stop_type = stop_node.get_data_type_as_variant_type()
-#         import pdb
-#         pdb.set_trace()
+        #         import pdb
+        #         pdb.set_trace()
         stop_node.set_value(ua.DataValue(ua.Variant(True, stop_type)))
         self._client.disconnect()
 
@@ -51,7 +52,7 @@ class OpcUaController():
         """
         self._client.connect()
         temperature_node = self._client.get_node(self.TEMPERATURE_NODE)
-        temperature_vector = np.array(temperature_node.get_value()) / 100.
+        temperature_vector = np.array(temperature_node.get_value()) / 100.0
         self._client.disconnect()
         return temperature_vector
 
@@ -71,7 +72,7 @@ class OpcUaController():
         self._client.disconnect()
         return np.array(var_list)
 
-### Command for object ###
+    ### Command for object ###
     def get_position(self, int_number):
         """
         Parameters
@@ -85,10 +86,12 @@ class OpcUaController():
                     position of the requested object
         """
         self._client.connect()
-        node = self._client.get_node("ns=7;s=MAIN.Drivers_input.f_PosAct[%d]" % int_number)
+        node = self._client.get_node(
+            "ns=7;s=MAIN.Drivers_input.f_PosAct[%d]" % int_number
+        )
         position = node.get_value()
         self._client.disconnect()
-        self._logger.debug('Position = %f', position)
+        self._logger.debug("Position = %f", position)
         return position
 
     def set_target_position(self, int_number, value):
@@ -107,12 +110,14 @@ class OpcUaController():
                     (not applied)
         """
         self._client.connect()
-        node = self._client.get_node("ns=7;s=MAIN.f_TargetPosition_input[%d]" % int_number)
+        node = self._client.get_node(
+            "ns=7;s=MAIN.f_TargetPosition_input[%d]" % int_number
+        )
         type_node = node.get_data_type_as_variant_type()
         node.set_value(ua.DataValue(ua.Variant(value, type_node)))
         target_position = node.get_value()
         self._client.disconnect()
-        self._logger.debug('Target position = %f', target_position)
+        self._logger.debug("Target position = %f", target_position)
         return target_position
 
     def move_object(self, int_number):
@@ -129,7 +134,7 @@ class OpcUaController():
         node_type = node.get_data_type_as_variant_type()
         node.set_value(ua.DataValue(ua.Variant(True, node_type)))
         self._client.disconnect()
-        self._logger.debug('Object moved successfully')
+        self._logger.debug("Object moved successfully")
 
     def _get_command_state(self, int_number):
         """
@@ -164,7 +169,7 @@ class OpcUaController():
             value = self._get_command_state(int_number)
 
     def readActsPositions(self, n1, n2, n3):
-        '''
+        """
         Function to read actuators positions
 
         Parameters
@@ -176,14 +181,14 @@ class OpcUaController():
         -------
             acts: numpy array
                 vector of actuators position
-        '''
+        """
         act1 = self.get_position(n1)
         act2 = self.get_position(n2)
         act3 = self.get_position(n3)
         return np.array([act1, act2, act3])
 
     def setActsPositions(self, n1, n2, n3, v1, v2, v3):
-        '''
+        """
         Function to set actuators positions
 
         Parameters
@@ -197,20 +202,19 @@ class OpcUaController():
         -------
             acts: numpy array
                 vector of actuators position
-        '''
+        """
         act1 = self._setAct(n1, v1)
         act2 = self._setAct(n2, v2)
         act3 = self._setAct(n3, v3)
         return np.array([act1, act2, act3])
 
     def _setAct(self, number, value):
-        ''' specific function for actuators because on these
+        """specific function for actuators because on these
         does not work the wait for stop (not set the transition
-        from true to false by ads)'''
+        from true to false by ads)"""
         self.set_target_position(number, value)
         self.move_object(number)
         time.sleep(10)
         # self.wait_for_stop(number)
         act = self.get_position(number)
         return act
-

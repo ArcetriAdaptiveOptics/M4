@@ -3,11 +3,11 @@
 # ./library/mycode.py
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-'''
+"""
 Authors
   - C. Selmi: written in 2020
   - C- Selmi: modified in 2022
-'''
+"""
 
 import time
 import os
@@ -26,41 +26,43 @@ from m4.ground.timestamp import Timestamp
 import playsound
 from m4.configuration import ott_status
 
-class Measurements():
-    '''
-        HOW TO USE IT::
 
-        from m4.configuration import start
-        ott, interf = start.create_ott(conf='.../youConf.yaml')
-        from m4.mini_OTT.measurements import Measurements
-        meas = Measurements(ott, interf)
-    '''
+class Measurements:
+    """
+    HOW TO USE IT::
+
+    from m4.configuration import start
+    ott, interf = start.create_ott(conf='.../youConf.yaml')
+    from m4.mini_OTT.measurements import Measurements
+    meas = Measurements(ott, interf)
+    """
 
     def __init__(self, ott, interf):
-        """The constructor """
-        self._logger = logging.getLogger('mOTT_MEAS:')
+        """The constructor"""
+        self._logger = logging.getLogger("mOTT_MEAS:")
         self._ott = ott
         self._interf = interf
         self._ottca = OttCalibAndAlign(ott, interf)
         self._opc = OpcUaController()
 
     def ParAlign(self, n_frames=5):
-        '''
+        """
         Alignment of tip, titl and focus using a standard tracking number
 
         Parameters
         ----------
         n_frames: int
             number of images to acquire
-        '''
-        tnc = '20230113_102942'
-        zern2corrf = np.array([0,1,2]) #TipTilt focus
-        dofidf = np.array([0,1,2])# parpist, ParTip, ParTilt
-        tna = main.align_PARAndRM(self._ott, self._interf, tnc, zern2corrf, dofidf, n_frames)
+        """
+        tnc = "20230113_102942"
+        zern2corrf = np.array([0, 1, 2])  # TipTilt focus
+        dofidf = np.array([0, 1, 2])  # parpist, ParTip, ParTilt
+        tna = main.align_PARAndRM(
+            self._ott, self._interf, tnc, zern2corrf, dofidf, n_frames
+        )
 
-
-    def opticalMonitoring(self, n_images, delay, start_delay = 0):
-        '''
+    def opticalMonitoring(self, n_images, delay, start_delay=0):
+        """
         Acquisition of images for monitoring
 
         Parameters
@@ -70,26 +72,31 @@ class Measurements():
         delay: int [s]
             waiting time (in seconds) between two image acquisitions
         start_delay: int[s]
-            waiting time before starting the measure (in seconds) 
+            waiting time before starting the measure (in seconds)
 
         Returns
         ------
         tt: string
             tracking number of measurements
-        '''
+        """
         if Sound.PLAY is True:
-            playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, 'monitoring-started.mp3'))
+            playsound.playsound(
+                os.path.join(Sound.AUDIO_FILE_PATH, "monitoring-started.mp3")
+            )
         store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
-        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
+            store_in_folder
+        )
         print(tt)
         shutil.copy(Interferometer.SETTINGS_CONF_FILE_M4OTT_PC, dove)
-        shutil.move(os.path.join(dove, 'AppSettings.ini'),
-                    os.path.join(dove, '4DSettings.ini'))
-        ott_status.save_positions(dove, self._ott) #saving the ott status
+        shutil.move(
+            os.path.join(dove, "AppSettings.ini"), os.path.join(dove, "4DSettings.ini")
+        )
+        ott_status.save_positions(dove, self._ott)  # saving the ott status
 
-        print('waiting {:n} s...'.format(start_delay))
+        print("waiting {:n} s...".format(start_delay))
         time.sleep(start_delay)
-        print('start measuring')
+        print("start measuring")
         zer_list = []
         temp_list = []
         t0 = time.time()
@@ -98,7 +105,7 @@ class Measurements():
             dt = ti - t0
             masked_ima = self._interf.acquire_phasemap(1)
             temp_vect = self._ott.temperature.getTemperature()
-            name = Timestamp.now() + '.fits'
+            name = Timestamp.now() + ".fits"
             fits_file_name = os.path.join(dove, name)
             pyfits.writeto(fits_file_name, masked_ima.data)
             pyfits.append(fits_file_name, masked_ima.mask.astype(np.uint8))
@@ -108,16 +115,16 @@ class Measurements():
             zer_list.append(vect)
             temp_list.append(temp_vect)
 
-            fits_file_name = os.path.join(dove, 'zernike.fits')
+            fits_file_name = os.path.join(dove, "zernike.fits")
             pyfits.writeto(fits_file_name, np.array(zer_list), overwrite=True)
-            fits_file_name = os.path.join(dove, 'temperature.fits')
+            fits_file_name = os.path.join(dove, "temperature.fits")
             pyfits.writeto(fits_file_name, np.array(temp_list), overwrite=True)
 
             time.sleep(delay)
         return tt
 
     def diffOpticalMonitoring(self, n_repetition, delayshort, delaylong):
-        '''
+        """
         unction for the acquisition of two measurements close to each other
         with a long wait compared to the next two
 
@@ -134,9 +141,11 @@ class Measurements():
         ------
         tt: string
             tracking number of measurements
-        '''
+        """
         store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
-        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
+            store_in_folder
+        )
 
         zer_list = []
         temp_list = []
@@ -147,7 +156,7 @@ class Measurements():
                 dt = ti - t0
                 masked_ima = self._interf.acquire_phasemap(1)
                 temp_vect = self._ott.temperature.getTemperature()
-                name = Timestamp.now() + '.fits'
+                name = Timestamp.now() + ".fits"
                 fits_file_name = os.path.join(dove, name)
                 pyfits.writeto(fits_file_name, masked_ima.data)
                 pyfits.append(fits_file_name, masked_ima.mask.astype(int))
@@ -157,21 +166,20 @@ class Measurements():
                 zer_list.append(vect)
                 temp_list.append(temp_vect)
 
-                fits_file_name = os.path.join(dove, 'zernike.fits')
+                fits_file_name = os.path.join(dove, "zernike.fits")
                 pyfits.writeto(fits_file_name, np.array(zer_list), overwrite=True)
-                fits_file_name = os.path.join(dove, 'temperature.fits')
+                fits_file_name = os.path.join(dove, "temperature.fits")
                 pyfits.writeto(fits_file_name, np.array(temp_list), overwrite=True)
-                print('Waiting for next frame in pair')
+                print("Waiting for next frame in pair")
                 time.sleep(delayshort)
 
-            print('Waiting for next iterations')
+            print("Waiting for next iterations")
             time.sleep(delaylong)
 
         return tt
 
-
     def actsRepeatability(self, n_meas, piston_value, n_frames):
-        '''
+        """
         Parameters
         ----------
         n_meas: int
@@ -185,9 +193,11 @@ class Measurements():
         ------
         tt: string
             tracking number of measurements
-        '''
+        """
         store_in_folder = fold_name.REPEATABILITY_ROOT_FOLDER
-        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
+            store_in_folder
+        )
 
         piston = np.array([0, 0, piston_value, 0, 0, 0])
         pos_par = self._ott.parabola.getPosition()
@@ -199,28 +209,34 @@ class Measurements():
         for i in range(n_meas):
             self._ott.parabola.setPosition(pos_par)
             self._ott.referenceMirror.setPosition(pos_rm)
-            par0 = self._readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2,
-                             OpcUaParameters.PAR3)
-            rm0 = self._readActs(OpcUaParameters.RM1, OpcUaParameters.RM2,
-                            OpcUaParameters.RM3)
+            par0 = self._readActs(
+                OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3
+            )
+            rm0 = self._readActs(
+                OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3
+            )
             masked_ima0 = self._interf.acquire_phasemap(n_frames)
 
             self._ott.parabola.setPosition(pos_par + piston)
             # ott.refflat(pos_rm + piston)
 
-            par1 = self._readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2,
-                             OpcUaParameters.PAR3)
-            rm1 = self._readActs(OpcUaParameters.RM1, OpcUaParameters.RM2,
-                            OpcUaParameters.RM3)
+            par1 = self._readActs(
+                OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3
+            )
+            rm1 = self._readActs(
+                OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3
+            )
             masked_ima1 = self._interf.acquire_phasemap(n_frames)
 
             self._ott.parabola.setPosition(pos_par - piston)
             # ott.refflat(pos_rm - piston)
 
-            par2 = self._readActs(OpcUaParameters.PAR1, OpcUaParameters.PAR2,
-                             OpcUaParameters.PAR3)
-            rm2 = self._readActs(OpcUaParameters.RM1, OpcUaParameters.RM2,
-                            OpcUaParameters.RM3)
+            par2 = self._readActs(
+                OpcUaParameters.PAR1, OpcUaParameters.PAR2, OpcUaParameters.PAR3
+            )
+            rm2 = self._readActs(
+                OpcUaParameters.RM1, OpcUaParameters.RM2, OpcUaParameters.RM3
+            )
             masked_ima2 = self._interf.acquire_phasemap(n_frames)
 
             par = np.array([par0, par1, par2])
@@ -233,22 +249,23 @@ class Measurements():
 
             par_list.append(par)
             rm_list.append(rm)
-            pyfits.writeto(os.path.join(dove, 'par.fits'),
-                           np.array(par_list), overwrite=True)
-            pyfits.writeto(os.path.join(dove, 'rm.fits'),
-                           np.array(rm_list), overwrite=True)
-            pyfits.writeto(os.path.join(dove, 'images.fits'),
-                           cube.data, overwrite=True)
-            pyfits.append(os.path.join(dove, 'images.fits'),
-                          cube.mask.astype(int), overwrite=True)
+            pyfits.writeto(
+                os.path.join(dove, "par.fits"), np.array(par_list), overwrite=True
+            )
+            pyfits.writeto(
+                os.path.join(dove, "rm.fits"), np.array(rm_list), overwrite=True
+            )
+            pyfits.writeto(os.path.join(dove, "images.fits"), cube.data, overwrite=True)
+            pyfits.append(
+                os.path.join(dove, "images.fits"), cube.mask.astype(int), overwrite=True
+            )
 
         self._ott.parabola.setPosition(pos_par)
         self._ott.referenceMirror.setPosition(pos_rm)
         return tt
 
-
     def scanAstigmComa(self, stepamp, nstep, nframes=10):  # by RB 20210117.
-        '''
+        """
         Parameters
         ----------
         stepamp: int
@@ -262,10 +279,12 @@ class Measurements():
         ------
         tt: string
             tracking number of measurements
-        '''
+        """
         # goal: to measure coma and astigmatism at different PAR position, spanning 500 arcsec
         store_in_folder = fold_name.CALIBRATION_ROOT_FOLDER
-        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
+            store_in_folder
+        )
         par2rm = -2.05
         zern_vect = []
         parpos = []
@@ -275,7 +294,7 @@ class Measurements():
         n2move = np.array([3, 4])
         thedirection = np.array([-1, 1])
         n_frames_alignment = 3
-        tt_for_align = '20210111_152430'
+        tt_for_align = "20210111_152430"
 
         for k in n2move:
             for v in thedirection:
@@ -284,26 +303,28 @@ class Measurements():
                     par1 = par0.copy()
                     parmove = stepamp * i * v
                     par1[k] += parmove
-                    print('Moving PAR[%d] by %d' % (k, parmove))
+                    print("Moving PAR[%d] by %d" % (k, parmove))
                     self._ott.parabola.setPosition(par1)
                     rm1 = rm0.copy()
                     rmmove = stepamp * i * v * par2rm
                     rm1[k] += rmmove
                     self._ott.referenceMirror.setPosition(rm1)
-                    print('Moving RM[%d] by %d' % (k, rmmove))
-                    par_cmd, rm_cmd = self._ottca.par_and_rm_aligner(True,
-                                                                     tt_for_align,
-                                                                     n_frames_alignment,
-                                                                     np.array([0, 1]),
-                                                                     np.array([3, 4]))
-#                     a.ott_alignment(n_frames_alignment, 1,
-#                                                       np.array([0, 1]),
-#                                                       np.array([3, 4]),
-#                                                       tt_for_align)
+                    print("Moving RM[%d] by %d" % (k, rmmove))
+                    par_cmd, rm_cmd = self._ottca.par_and_rm_aligner(
+                        True,
+                        tt_for_align,
+                        n_frames_alignment,
+                        np.array([0, 1]),
+                        np.array([3, 4]),
+                    )
+                    #                     a.ott_alignment(n_frames_alignment, 1,
+                    #                                                       np.array([0, 1]),
+                    #                                                       np.array([3, 4]),
+                    #                                                       tt_for_align)
                     par2 = self._ott.parabola.getPosition()
                     rm2 = self._ott.referenceMirror.getPosition()
                     masked_ima = self._interf.acquire_phasemap(nframes)
-                    name = Timestamp.now() + '.fits'
+                    name = Timestamp.now() + ".fits"
                     fits_file_name = os.path.join(dove, name)
                     pyfits.writeto(fits_file_name, masked_ima.data)
                     pyfits.append(fits_file_name, masked_ima.mask.astype(int))
@@ -313,20 +334,16 @@ class Measurements():
                     parpos.append(par2)
                     rmpos.append(rm2)
 
-                    fits_file_name = os.path.join(dove, 'zernike.fits')
-                    pyfits.writeto(fits_file_name, np.array(zern_vect),
-                                   overwrite=True)
-                    fits_file_name = os.path.join(dove, 'PAR_positions.fits')
-                    pyfits.writeto(fits_file_name, np.array(parpos),
-                                   overwrite=True)
-                    fits_file_name = os.path.join(dove, 'RM_positions.fits')
-                    pyfits.writeto(fits_file_name, np.array(rmpos),
-                                   overwrite=True)
+                    fits_file_name = os.path.join(dove, "zernike.fits")
+                    pyfits.writeto(fits_file_name, np.array(zern_vect), overwrite=True)
+                    fits_file_name = os.path.join(dove, "PAR_positions.fits")
+                    pyfits.writeto(fits_file_name, np.array(parpos), overwrite=True)
+                    fits_file_name = os.path.join(dove, "RM_positions.fits")
+                    pyfits.writeto(fits_file_name, np.array(rmpos), overwrite=True)
 
         self._ott.parabola.setPosition(par0)
         self._ott.referenceMirror.setPosition(rm0)
         return tt
-
 
     def _readActs(self, n1, n2, n3):
         act1 = self._opc.get_position(n1)
@@ -334,9 +351,8 @@ class Measurements():
         act3 = self._opc.get_position(n3)
         return np.array([act1, act2, act3])
 
-
     def parPistonTest(self, piston_value, deltapos_filepath, amp, tt_for_align):
-        '''
+        """
         Parameters
         ----------
         piston_value: int
@@ -352,13 +368,15 @@ class Measurements():
         -------
         tt: string
             tracking number of measurements
-        '''
-            # '/home/m4/pardeltapos.fits'
+        """
+        # '/home/m4/pardeltapos.fits'
         hduList = pyfits.open(deltapos_filepath)
         deltapos = hduList[0].data
         dx = deltapos[:, 0] * amp
         dy = deltapos[:, 1] * amp
-        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(fold_name.PISTON_TEST_ROOT_FOLDER)
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
+            fold_name.PISTON_TEST_ROOT_FOLDER
+        )
         par0 = self._ott.parabola.getPosition()
         rm0 = self._ott.referenceMirror.getPosition()
         n_frames_meas = 10
@@ -370,9 +388,9 @@ class Measurements():
         rm_list = []
         for i in range(dx.size):
             if i == 0:
-                print('Iteration 0')
+                print("Iteration 0")
             else:
-                print('Iteration %d' % i)
+                print("Iteration %d" % i)
                 par_new = par0.copy()
                 rm_new = rm0.copy()
                 par_new[3] += dx[i]
@@ -381,15 +399,17 @@ class Measurements():
                 rm_new[4] += rmcoeff * dy[i]
                 self._ott.parabola.setPosition(par_new)
                 self._ott.referenceMirror.setPosition(rm_new)
-                par_cmd, rm_cmd = self._ottca.par_and_rm_aligner(True,
-                                                                tt_for_align,
-                                                                n_frames_alignment,
-                                                                np.array([0, 1]),
-                                                                np.array([3, 4]))
-#                 a.ott_alignment(n_frames_alignment, 1,
-#                                                   np.array([0, 1]),
-#                                                   np.array([3, 4]),
-#                                                   tt_for_align)
+                par_cmd, rm_cmd = self._ottca.par_and_rm_aligner(
+                    True,
+                    tt_for_align,
+                    n_frames_alignment,
+                    np.array([0, 1]),
+                    np.array([3, 4]),
+                )
+            #                 a.ott_alignment(n_frames_alignment, 1,
+            #                                                   np.array([0, 1]),
+            #                                                   np.array([3, 4]),
+            #                                                   tt_for_align)
 
             par = self._ott.parabola.getPosition()
             rm = self._ott.referenceMirror.getPosition()
@@ -402,22 +422,21 @@ class Measurements():
             par[2] -= piston_value
             self._ott.parabola.setPosition(par)
             diff = masked_ima1 - masked_ima0
-            name = 'diff_%04d.fits' % i
+            name = "diff_%04d.fits" % i
             self._interf.save_phasemap(dove, name, diff)
             coef, mat = zernike.zernikeFit(diff, np.arange(10) + 1)
             coef_list.append(coef)
 
-            fits_file_name = os.path.join(dove, 'Zernike.fits')
+            fits_file_name = os.path.join(dove, "Zernike.fits")
             pyfits.writeto(fits_file_name, np.array(coef_list), overwrite=True)
-            fits_file_name = os.path.join(dove, 'PAR_Positions.fits')
+            fits_file_name = os.path.join(dove, "PAR_Positions.fits")
             pyfits.writeto(fits_file_name, np.array(par_list), overwrite=True)
-            fits_file_name = os.path.join(dove, 'RM_Positions.fits')
+            fits_file_name = os.path.join(dove, "RM_Positions.fits")
             pyfits.writeto(fits_file_name, np.array(rm_list), overwrite=True)
         return tt
 
-
     def parTiltTest(self, act, val_vec):
-        '''
+        """
         Parameters
         ----------
         act: int
@@ -435,7 +454,7 @@ class Measurements():
             start image
         delta_list: list
             different from start image
-        '''
+        """
         image0 = self._interf.acquire_phasemap(10)
         delta_list = []
         sum_list = []
@@ -450,12 +469,11 @@ class Measurements():
             sum = np.sqrt(coef[1] ** 2 + coef[2] ** 2)
             sum_list.append(sum)
         quad = np.array(sum_list)
-        plt.plot(val_vec, quad, '-o')
+        plt.plot(val_vec, quad, "-o")
         return quad, np.array(coef_list), image0, delta_list
 
-
     def mappingPar(self, shift, n_iter, tt_for_align):
-        '''
+        """
         Parameters
         ----------
         shift: numpy array
@@ -469,7 +487,7 @@ class Measurements():
         -------
         tt: string
             tracking number of measurements
-        '''
+        """
         n_frames_alignment = 1
         par0 = self._ott.parabola.getPosition()
         rm0 = self._ott.referenceMirror.getPosition()
@@ -479,20 +497,22 @@ class Measurements():
         delta_object2 = []
         delta_object3 = []
 
-        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(fold_name.MAPPING_TEST_ROOT_FOLDER)
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
+            fold_name.MAPPING_TEST_ROOT_FOLDER
+        )
         if shift[2] != 0:
             shift[0] = shift[1] = 0
-            object_to_move = 'ANGLE'
+            object_to_move = "ANGLE"
         if shift[1] != 0:
             shift[0] = shift[2] = 0
-            object_to_move = 'RM'
+            object_to_move = "RM"
         if shift[0] != 0:
             shift[1] = shift[0]
             shift[2] = 0
-            object_to_move = 'PAR + RM'
+            object_to_move = "PAR + RM"
 
-        file = open(os.path.join(dove, 'MappingInfo.txt'), "a")
-        file.write('Mapping object: ' + object_to_move + '\n')
+        file = open(os.path.join(dove, "MappingInfo.txt"), "a")
+        file.write("Mapping object: " + object_to_move + "\n")
         file.close()
         slide0 = self._ott.parabolaSlider.getPosition()
         rslide0 = self._ott.referenceMirrorSlider.getPosition()
@@ -502,27 +522,35 @@ class Measurements():
         angle = -1
         for i in range(n_iter):
             if shift[0] != 0:
-                slide = self._ott.parabolaSlider.setPosition(slide0 + ((i + 1) * shift[0]))
-    #             if slide==0:
-    #                 raise Exception('HOMING! PAR WIN')
+                slide = self._ott.parabolaSlider.setPosition(
+                    slide0 + ((i + 1) * shift[0])
+                )
+            #             if slide==0:
+            #                 raise Exception('HOMING! PAR WIN')
             if shift[1] != 0:
-                rslide = self._ott.referenceMirrorSlider.setPosition(rslide0 + ((i + 1) * shift[1]))
-    #             if rslide==0:
-    #                 raise Exception('HOMING! RM WIN')
+                rslide = self._ott.referenceMirrorSlider.setPosition(
+                    rslide0 + ((i + 1) * shift[1])
+                )
+            #             if rslide==0:
+            #                 raise Exception('HOMING! RM WIN')
             if shift[2] != 0:
-                angle = self._ott.angleRotator.setPosition(angle0 + ((i + 1) * shift[2]))
+                angle = self._ott.angleRotator.setPosition(
+                    angle0 + ((i + 1) * shift[2])
+                )
 
             time.sleep(5)
-            par_cmd, rm_cmd = self._ottca.par_and_rm_aligner(True,
-                                                                tt_for_align,
-                                                                n_frames_alignment,
-                                                                np.array([0, 1]),
-                                                                np.array([3, 4]))
-#             a.ott_alignment(n_frames_alignment, 1,
-#                                               np.array([0, 1]), np.array([3, 4]),
-#                                               tt_for_align)
+            par_cmd, rm_cmd = self._ottca.par_and_rm_aligner(
+                True,
+                tt_for_align,
+                n_frames_alignment,
+                np.array([0, 1]),
+                np.array([3, 4]),
+            )
+            #             a.ott_alignment(n_frames_alignment, 1,
+            #                                               np.array([0, 1]), np.array([3, 4]),
+            #                                               tt_for_align)
             image = self._interf.acquire_phasemap(1)
-            name = 'image_%04d.fits' % i
+            name = "image_%04d.fits" % i
             self._interf.save_phasemap(dove, name, image)
             par = self._ott.parabola.getPosition()
             rm = self._ott.referenceMirror.getPosition()
@@ -532,21 +560,21 @@ class Measurements():
             delta_object2.append(rslide - rslide0)
             delta_object3.append(angle - angle0)
 
-            fits_file_name = os.path.join(dove, 'delta_slide.fits')
+            fits_file_name = os.path.join(dove, "delta_slide.fits")
             pyfits.writeto(fits_file_name, np.array(delta_object), overwrite=True)
-            fits_file_name = os.path.join(dove, 'delta_rslide.fits')
+            fits_file_name = os.path.join(dove, "delta_rslide.fits")
             pyfits.writeto(fits_file_name, np.array(delta_object2), overwrite=True)
-            fits_file_name = os.path.join(dove, 'delta_PAR_positions.fits')
+            fits_file_name = os.path.join(dove, "delta_PAR_positions.fits")
             pyfits.writeto(fits_file_name, np.array(delta_par), overwrite=True)
-            fits_file_name = os.path.join(dove, 'delta_RM_positions.fits')
+            fits_file_name = os.path.join(dove, "delta_RM_positions.fits")
             pyfits.writeto(fits_file_name, np.array(delta_rm), overwrite=True)
-            fits_file_name = os.path.join(dove, 'delta_ANGLE_positions.fits')
+            fits_file_name = os.path.join(dove, "delta_ANGLE_positions.fits")
             pyfits.writeto(fits_file_name, np.array(delta_object3), overwrite=True)
 
         return tt
 
     def alignTest(self, tt, n_images, perturbation_vec, pre=False):
-        '''
+        """
         Parameters
         ---------
         tt: string
@@ -567,14 +595,12 @@ class Measurements():
             zernike coefficients matrix for all the images
         tt: string
             tracking number of measurements
-        '''
+        """
         # Homing the system
-        self._ottca.par_and_rm_aligner(True,
-                                       tt,
-                                       n_images,
-                                       np.array([0, 1]),
-                                       np.array([3, 4]))
-        #a.ott_alignment(n_images, 1, np.array([0,1]), np.array([3,4]), tt)
+        self._ottca.par_and_rm_aligner(
+            True, tt, n_images, np.array([0, 1]), np.array([3, 4])
+        )
+        # a.ott_alignment(n_images, 1, np.array([0,1]), np.array([3,4]), tt)
         par0 = self._ott.parabola.getPosition()
         rm0 = self._ott.referenceMirror.getPosition()
         # Set perturbation from perturbation_vec
@@ -586,8 +612,8 @@ class Measurements():
         par1[3] += tip
         par1[4] += tilt
         rm1 = np.copy(rm0)
-        rm1[3] += -tip*2.05
-        rm1[4] += -tilt*2.05
+        rm1[3] += -tip * 2.05
+        rm1[4] += -tilt * 2.05
         # Initialization
         zern_vec = np.arange(1, 12, 1)
         coeff = []
@@ -602,32 +628,26 @@ class Measurements():
         coeff.append(pippo[0])
         # TipTilt pre-alignment
         if pre is True:
-            self._ottca.par_and_rm_aligner(True,
-                                       tt,
-                                       n_images,
-                                       np.array([0, 1]),
-                                       np.array([3, 4]))
-            #a.ott_alignment(n_images, 1, np.array([0,1]), np.array([3,4]), tt)
+            self._ottca.par_and_rm_aligner(
+                True, tt, n_images, np.array([0, 1]), np.array([3, 4])
+            )
+            # a.ott_alignment(n_images, 1, np.array([0,1]), np.array([3,4]), tt)
             image = self._interf.acquire_phasemap(2)
             pippo = zernike.zernikeFit(image, zern_vec)
             coeff.append(pippo[0])
         # First alignment
-        self._ottca.par_and_rm_aligner(True,
-                                       tt,
-                                       n_images,
-                                       np.array([0, 1]),
-                                       np.array([3, 4]))
-        #a.ott_alignment(n_images, 1, np.array([0,1,2,3,4]), np.array([0,1,2,3,4]), tt)
+        self._ottca.par_and_rm_aligner(
+            True, tt, n_images, np.array([0, 1]), np.array([3, 4])
+        )
+        # a.ott_alignment(n_images, 1, np.array([0,1,2,3,4]), np.array([0,1,2,3,4]), tt)
         image = self._interf.acquire_phasemap(2)
         pippo = zernike.zernikeFit(image, zern_vec)
         coeff.append(pippo[0])
         # Second alignment
-        self._ottca.par_and_rm_aligner(True,
-                                       tt,
-                                       n_images,
-                                       np.array([0, 1]),
-                                       np.array([3, 4]))
-        #a.ott_alignment(n_images, 1, np.array([0,1]), np.array([3,4]), tt)
+        self._ottca.par_and_rm_aligner(
+            True, tt, n_images, np.array([0, 1]), np.array([3, 4])
+        )
+        # a.ott_alignment(n_images, 1, np.array([0,1]), np.array([3,4]), tt)
         image = self._interf.acquire_phasemap(n_images)
         pippo = zernike.zernikeFit(image, zern_vec)
         coeff.append(pippo[0])
@@ -636,17 +656,19 @@ class Measurements():
         pippo = zernike.zernikeFit(image, zern_vec)
         coeff.append(pippo[0])
 
-        coeff_matrix = np.array(coeff)*1e9
+        coeff_matrix = np.array(coeff) * 1e9
         parend = self._ott.parabola.getPosition()
 
-        store_in_folder = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER,
-                                       'Alignment')
-        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(store_in_folder)
-        fits_file_name = os.path.join(dove, 'zernike.fits')
+        store_in_folder = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER, "Alignment")
+        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
+            store_in_folder
+        )
+        fits_file_name = os.path.join(dove, "zernike.fits")
         pyfits.writeto(fits_file_name, coeff_matrix, overwrite=True)
 
-        print(parend-par0)
+        print(parend - par0)
         return coeff_matrix, tt
+
 
 # def testCalib(commandAmpVector, n_repetition=15):
 #     '''
@@ -657,7 +679,7 @@ class Measurements():
 #         of the 5 degrees of freedom
 #     n_repetition: int
 #         number of calibration acquisition and analysis to repeat
-# 
+#
 #     Returns
 #     ------
 #     ttAmpVector: numpy array
@@ -677,7 +699,7 @@ class Measurements():
 #         print(tt_tower)
 #         file.write('%s' % tt_tower)
 #     file.close()
-# 
+#
 #     tt_list.append(commandAmpVector)
 #     ttAmpVector = np.array(tt_list)
 #     return ttAmpVector

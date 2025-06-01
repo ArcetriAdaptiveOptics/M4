@@ -5,7 +5,7 @@ Authors
 import unittest
 import numpy as np
 from numpy import testing
-from m4.ott_sim.fake_reference_mirror import FakeReferenceMirror
+from m4.simulator.fake_reference_mirror import FakeReferenceMirror
 
 class TestFakeReferenceMirror(unittest.TestCase):
 

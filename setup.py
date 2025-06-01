@@ -107,9 +107,9 @@ setup(name=NAME,
       },
       include_package_data=True,
       entry_points={
-          'gui_scripts': [
-              'ott_geometry=m4.ground.GUI:main',
-          ],
+        'console_scripts': [
+            'pyott=__init_scripts_.pyott:main',
+        ],
       },
       test_suite='test',
       cmdclass={'upload': UploadCommand, },

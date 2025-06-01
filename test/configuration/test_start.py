@@ -5,9 +5,9 @@ Authors
 import os
 import unittest
 import mock
-from m4.configuration.start import create_ott
-from m4.ott_sim.fake_parabola_slider import FakeParabolaSlider
-from m4.ott_sim.fake_interferometer import FakeInterferometer
+from m4.configuration.ott import create_ott
+from m4.simulator.fake_parabola_slider import FakeParabolaSlider
+from m4.simulator.fake_interferometer import FakeInterferometer
 from test.helper_test_library import testDataRootDir
 
 

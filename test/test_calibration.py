@@ -24,9 +24,9 @@ class TestCalc(unittest.TestCase):
     @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
     @mock.patch('numpy.load', autospec=True)
     def _createOttAndInterf(self, mock_rd, mock_load, mockFilepath):
-        from m4.configuration.start import create_ott
-        from m4.ott_sim.fake_parabola_slider import FakeParabolaSlider
-        from m4.ott_sim.fake_interferometer import FakeInterferometer
+        from m4.configuration.ott import create_ott
+        from m4.simulator.fake_parabola_slider import FakeParabolaSlider
+        from m4.simulator.fake_interferometer import FakeInterferometer
         ott, interf, dm = create_ott(os.path.join(testDataRootDir(), 'base',
                                               'Configurations', 'testConf.yaml'))
         self.assertIsInstance(ott.parabolaSlider, FakeParabolaSlider)

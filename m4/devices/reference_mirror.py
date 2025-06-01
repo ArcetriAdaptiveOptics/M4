@@ -6,10 +6,9 @@ Authors
 import logging
 import numpy as np
 from m4.configuration.ott_parameters import OpcUaParameters, OttParameters
-from m4.devices.base_reference_mirror import BaseReferenceMirror
 
 
-class OpcUaReferenceMirror(BaseReferenceMirror):
+class OpcUaReferenceMirror:
     """Class for reference mirror control via opc ua
 
 

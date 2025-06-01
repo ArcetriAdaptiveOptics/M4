@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import unittest
-from m4.ott_sim.fake_parabola_slider import FakeParabolaSlider
+from m4.simulator.fake_parabola_slider import FakeParabolaSlider
 
 
 class TestFakeParabolaSlider(unittest.TestCase):

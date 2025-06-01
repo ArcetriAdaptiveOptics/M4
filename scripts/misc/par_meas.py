@@ -3,7 +3,7 @@ Authors
   - ?. ?: written in 2022
 '''
 
-from m4.configuration import start
+from m4.configuration import ott
 from m4.ground import zernike as zern
 from m4.ground import geo as geo
 from matplotlib.pyplot import *
@@ -21,7 +21,7 @@ import os
 
 
 conf='/mnt/m4storage/Data/SYSCONFData/m4Config.yaml'
-ott, interf, dm = start.create_ott(conf)
+ott, interf, dm = ott.create_ott(conf)
 ts = timestamp.Timestamp()
 
 #salva sul computer locale

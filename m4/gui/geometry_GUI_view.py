@@ -2,15 +2,17 @@
 Authors
   - C. Selmi: written in 2021
 """
+
 import os
 import sys
 import time
 import numpy as np
-from m4.ott_sim.ott_images import OttImages
+from m4.simulator.ott_images import OttImages
 from guietta import Gui, G, MA, _, ___, III, HB
 from m4.ground.package_data import data_root_dir
 from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
-conf = os.environ['PYOTTCONF']
+
+conf = os.environ["PYOTTCONF"]
 
 # from guietta import Empty, Exceptions
 
@@ -34,9 +36,9 @@ class Runner:
         ott: object
             tower object
         """
-        self.ott    = ott
-        self.truss  = Parabola(ott)
-        self.rm     = ReferenceMirror(ott)
+        self.ott = ott
+        self.truss = Parabola(ott)
+        self.rm = ReferenceMirror(ott)
         self.angrot = AngleRotator(ott)
 
     def _setUp(self):
@@ -56,14 +58,14 @@ class Runner:
                 gui.parpos = self.ott.parabola.getPosition()
                 gui.rmpos = self.ott.referenceMirror.getPosition()
                 gui.m4pos = self.ott.m4Exapode.getPosition()
-                #gui.pslider = self.ott.parabolaSlider.getPosition()+1
+                # gui.pslider = self.ott.parabolaSlider.getPosition()+1
                 gui.pslider = self.truss.trussGetPosition()
-                #gui.anglepos = self.ott.angleRotator.getPosition()
+                # gui.anglepos = self.ott.angleRotator.getPosition()
                 gui.anglepos = self.angrot.getPosition()
-                #gui.rslider = self.ott.referenceMirrorSlider.getPosition()+1
+                # gui.rslider = self.ott.referenceMirrorSlider.getPosition()+1
                 gui.rslider = self.rm.rmGetPosition()
-                #gui.psliderM4 = self.ott.parabolaSlider.getPosition()+self.paroffset*1000
-                #gui.rsliderM4 = self.ott.referenceMirrorSlider+self.rmoffset*1000
+                # gui.psliderM4 = self.ott.parabolaSlider.getPosition()+self.paroffset*1000
+                # gui.rsliderM4 = self.ott.referenceMirrorSlider+self.rmoffset*1000
             ottIma = OttImages(self.ott)
             image = ottIma.ott_m4view()
             setPlot(gui, image)
@@ -183,7 +185,7 @@ class Runner:
 
         gui_image.timer_start(getstatus, 1)
 
-        self.gui = Gui([G("OTT")])#, G("Control")])
+        self.gui = Gui([G("OTT")])  # , G("Control")])
         self.gui_control = control_gui
         self.gui_image = gui_image
         self.gui.OTT = gui_image
@@ -200,8 +202,9 @@ class Runner:
 
 
 def main():
-    from m4.configuration import start
-    ott, interf, dm = start.create_ott()
+    from m4.configuration import ott
+
+    ott, interf, dm = ott.create_ott()
 
     runner = Runner(ott)
     sys.exit(runner.run())

@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "m4"
+description = "A suite of tools to calibrate ELT M4 deformable mirror"
+readme = "README.md"
+version = "0.5.1"  # Will be dynamically loaded from m4/__version__.py if needed
+requires-python = ">=3.11"
+authors = [
+    { name = "Marco Xompero" },
+    { name = "Chiara Selmi" },
+    { name = "Pietro Ferraiuolo"},
+]
+license = { file = "LICENSE" }
+keywords = [
+    "Adaptive Optics", "Astrophysics", "INAF", "Arcetri"
+]
+classifiers = [
+    "Programming Language :: Python :: 3"
+]
+dependencies = [
+    "numpy",
+    "arte",
+    "astropy",
+    "h5py",
+    "scikit-image>=0.19",
+    "IPython",
+    "opcua",
+    "mock",
+    "zmq",
+    "py-zabbix",
+    "psutil",
+    "photutils",
+    "guietta",
+    "pyyaml",
+    "serial",
+    "pandas",
+    "playsound==1.2.2",
+    "jdcal",
+    "matplotlib"
+]
+
+[project.urls]
+Homepage = "https://github.com/ArcetriAdaptiveOptics/M4"
+
+[project.optional-dependencies]
+# Add any extras here if needed
+
+[project.scripts]
+pyott = ".__init_scripts__.pyott:main"
+
+
+[tool.setuptools.packages.find]
+where = ["m4"]
+include = [
+    "m4",
+    "m4.analyzers",
+    "m4.configuration",
+    "m4.devices",
+    "m4.dmutils",
+    "m4.ground",
+    "m4.gui",
+    "m4.mini_OTT",
+    "m4.simulator",
+    "m4.type",
+    "m4.utils"
+]
+
+[tool.setuptools.test]
+test-suite = "test"

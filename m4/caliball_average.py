@@ -1,8 +1,8 @@
-'''
+"""
 Authors
   - G. Pariani, R.Briguglio: written in 2016
   - C. Selmi: ported to Python in 2020
-'''
+"""
 
 import os
 import logging
@@ -15,7 +15,8 @@ from m4.configuration import config_folder_names as fold_name
 from m4.ground.read_data import InterferometerConverter
 from m4.misc import tip_tilt_interf_fit
 
-class Caliball():
+
+class Caliball:
     """
     Class for data analysis.
 
@@ -30,38 +31,37 @@ class Caliball():
     """
 
     def __init__(self, folder_name):
-        """The constructor """
+        """The constructor"""
         self._folderName = folder_name
-        self._maskthreshold = 1000 #5
+        self._maskthreshold = 1000  # 5
         self._rmsthreshold = 3
-        self._logger = logging.getLogger('CALIBALL:')
+        self._logger = logging.getLogger("CALIBALL:")
         self._ic = InterferometerConverter()
         self._ttd = TipTiltDetrend()
 
         self._cube = None
         self._cube_ttr = None
 
-
     @staticmethod
     def _storageFolder():
-        """ Creates the path for measurement data"""
+        """Creates the path for measurement data"""
         return fold_name.CALIBALL_ROOT_FOLDER
 
     def createDataForAnalysis(self):
-        '''Create file fits for data analysis
+        """Create file fits for data analysis
 
         Returns
         ----------
         self._folderName: string
                         folder name for data
-        '''
+        """
         self._cube = self._createMeasurementCube()
         self._cube_ttr = self._createCubeTTrFromCube()
         rs_ima = self._createRsImgFile()
         return self._folderName
 
     def validMaskPoint(self):
-        '''Create the cumulative plot of mask valid points
+        """Create the cumulative plot of mask valid points
         (valid points within each frames)
 
         Returns
@@ -70,9 +70,9 @@ class Caliball():
                     worst measurement data
         bad_mask: numpy array
                     worst mask
-        '''
+        """
         cube = self._readCube()
-        #cube_ttr = self._readCube(1)
+        # cube_ttr = self._readCube(1)
         mask_point = np.zeros(cube.shape[2])
         for i in range(mask_point.shape[0]):
             mask_point[i] = np.sum(np.invert(cube[:, :, i].mask))
@@ -81,15 +81,17 @@ class Caliball():
         bad_dataset = cube[:, :, aa]
         bad_mask = cube[:, :, aa].mask
 
-        plt.plot(np.arange(mask_point.shape[0]), mask_ord, 'o'); plt.xscale('log')
-        plt.ylabel('# valid points'); plt.xlabel('# frames')
-        plt.title('Cumulative plot of mask valid points')
+        plt.plot(np.arange(mask_point.shape[0]), mask_ord, "o")
+        plt.xscale("log")
+        plt.ylabel("# valid points")
+        plt.xlabel("# frames")
+        plt.title("Cumulative plot of mask valid points")
         return bad_dataset, bad_mask
 
     def validFrames(self):
-        '''Create the plot of individual RMS of each frames
+        """Create the plot of individual RMS of each frames
         (without tip/tilt) together with RMS of the average frame
-        '''
+        """
         rs_img = self._readRsImg()
         coef, mat = zernike.zernikeFit(rs_img, np.array([2, 3]))
         surf = zernike.zernikeSurface(rs_img, coef, mat)
@@ -102,15 +104,19 @@ class Caliball():
             rs_vect[j] = cube_ttr[:, :, j].std()
 
         plt.figure()
-        plt.plot(np.arange(cube_ttr.shape[2]), rs_vect, label='Data'); plt.yscale('log')
-        plt.plot(np.zeros(cube_ttr.shape[2]) + r0, label='Average')
-        plt.ylabel('m RMS'); plt.xlabel('# frames')
-        plt.title('Images WFE'); plt.legend()
-    #plot(x, mask_ord, 'o'); pyplot.xscale('log'); plt.ylabel('# valid points');
-    #plt.xlabel('# frames'); plt.title('Cumulative plot of mask valid points')
+        plt.plot(np.arange(cube_ttr.shape[2]), rs_vect, label="Data")
+        plt.yscale("log")
+        plt.plot(np.zeros(cube_ttr.shape[2]) + r0, label="Average")
+        plt.ylabel("m RMS")
+        plt.xlabel("# frames")
+        plt.title("Images WFE")
+        plt.legend()
+
+    # plot(x, mask_ord, 'o'); pyplot.xscale('log'); plt.ylabel('# valid points');
+    # plt.xlabel('# frames'); plt.title('Cumulative plot of mask valid points')
 
     def pixel_std(self):
-        '''
+        """
         Create the plot of single pixel stdev and mean along the sequence
 
         Returns
@@ -119,20 +125,22 @@ class Caliball():
                 single pixel stdev along the sequence
         mean_image: masked array
                 mean along the sequence
-        '''
+        """
         cube_ttr = self._readCube(1)
         std_image = cube_ttr.std(axis=2)
         mean_image = cube_ttr.mean(axis=2)
 
-        plt.imshow(std_image, origin='lower'); plt.colorbar()
-        plt.title('Pixel StDev')
+        plt.imshow(std_image, origin="lower")
+        plt.colorbar()
+        plt.title("Pixel StDev")
         plt.figure()
-        plt.imshow(mean_image, origin='lower'); plt.colorbar()
-        plt.title('RS average value')
+        plt.imshow(mean_image, origin="lower")
+        plt.colorbar()
+        plt.title("RS average value")
         return std_image, mean_image
 
     def dataSelectionAndAnalysis(self):
-        '''
+        """
         Create the plot of pixel stdev and mean after
         rejecting the frames whit bad mask
 
@@ -142,7 +150,7 @@ class Caliball():
                 stdev along the sequence
         mean_image: masked array
                 mean along the sequence
-        '''
+        """
         cube_ttr = self._readCube(1)
         mask_point = np.zeros(cube_ttr.shape[2])
         for i in range(mask_point.shape[0]):
@@ -153,7 +161,7 @@ class Caliball():
         for i in range(idx[0].shape[0]):
             rs_std[i] = np.std(cube_ttr[:, :, idx[0][i]])
 
-        rthresh = np.mean(rs_std)+self._rmsthreshold*np.std(rs_std)
+        rthresh = np.mean(rs_std) + self._rmsthreshold * np.std(rs_std)
         idr = np.where(rs_std < rthresh)
 
         idxr = idr
@@ -165,19 +173,22 @@ class Caliball():
         r_image = np.ma.masked_array(r_img[:, :, 0], mask=mask[:, :, 0])
         std_image = np.ma.masked_array(std_img[:, :, 0], mask=mask[:, :, 0])
 
-        plt.imshow(r_image, origin='lower'); plt.colorbar()
-        plt.title('RS measurement error')
+        plt.imshow(r_image, origin="lower")
+        plt.colorbar()
+        plt.title("RS measurement error")
         plt.figure()
-        plt.imshow(std_image, origin='lower'); plt.colorbar()
-        plt.title('Pixel StDev, thresh = %d' %self._rmsthreshold)
+        plt.imshow(std_image, origin="lower")
+        plt.colorbar()
+        plt.title("Pixel StDev, thresh = %d" % self._rmsthreshold)
         return r_image, std_image
+
     # non deve starci idr ma gli idx[idr]
 
-###
+    ###
 
     def _createCubeTTrFromCube(self, fitEx=None):
         # ci mette un eternit a fare l estenzione dell immagine
-        #cube = self._readCube()
+        # cube = self._readCube()
         cube_ttr = None
         if fitEx is None:
             for i in range(self._cube.shape[2]):
@@ -198,7 +209,7 @@ class Caliball():
                 else:
                     cube_ttr = np.ma.dstack((cube_ttr, image_ttr))
 
-        self._saveCube(cube_ttr, 'Total_Cube_ttr.fits')
+        self._saveCube(cube_ttr, "Total_Cube_ttr.fits")
         return cube_ttr
 
     def _createRsImgFile(self):
@@ -212,24 +223,26 @@ class Caliball():
         mask = np.prod(cube[:, :, idx].mask, 3)
         rs_img = np.ma.masked_array(image[:, :, 0], mask=mask)
 
-        fits_file_name = os.path.join(Caliball._storageFolder(), self._folderName, 'rs_img.fits')
+        fits_file_name = os.path.join(
+            Caliball._storageFolder(), self._folderName, "rs_img.fits"
+        )
         pyfits.writeto(fits_file_name, rs_img.data)
         pyfits.append(fits_file_name, rs_img.mask.astype(int))
         return rs_img
 
     def _createMeasurementCube(self):
         cube = None
-        fold = os.path.join(Caliball._storageFolder(), self._folderName, 'hdf5')
+        fold = os.path.join(Caliball._storageFolder(), self._folderName, "hdf5")
         list = os.listdir(fold)
-        for i in range(len(list)-1):
-            name = 'img_%04d.h5' %i
+        for i in range(len(list) - 1):
+            name = "img_%04d.h5" % i
             file_name = os.path.join(fold, name)
             ima = self._ic.fromPhaseCam4020(file_name)
             if cube is None:
                 cube = ima
             else:
                 cube = np.ma.dstack((cube, ima))
-        self._saveCube(cube, 'Total_Cube.fits')
+        self._saveCube(cube, "Total_Cube.fits")
         return cube
 
     def _saveCube(self, total_cube, name):
@@ -239,22 +252,23 @@ class Caliball():
 
     def _readCube(self, ttr=None):
         if ttr is None:
-            file_name = os.path.join(Caliball._storageFolder(), self._folderName,
-                                     'Total_Cube.fits')
+            file_name = os.path.join(
+                Caliball._storageFolder(), self._folderName, "Total_Cube.fits"
+            )
         else:
-            #file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube_ttr_runa.fits')
-            file_name = os.path.join(Caliball._storageFolder(), self._folderName,
-                                     'Total_Cube_ttr.fits')
+            # file_name = os.path.join(Caliball._storageFolder(), 'Total_Cube_ttr_runa.fits')
+            file_name = os.path.join(
+                Caliball._storageFolder(), self._folderName, "Total_Cube_ttr.fits"
+            )
         hduList = pyfits.open(file_name)
-        cube = np.ma.masked_array(hduList[0].data,
-                                  hduList[1].data.astype(bool))
+        cube = np.ma.masked_array(hduList[0].data, hduList[1].data.astype(bool))
         return cube
 
     def _readRsImg(self):
-        file_name = os.path.join(Caliball._storageFolder(), self._folderName,
-                                 'rs_img.fits')
-        #file_name = '/mnt/cargo/data/M4/OTT-Review/CaliBallTest/RS-img.fits'
+        file_name = os.path.join(
+            Caliball._storageFolder(), self._folderName, "rs_img.fits"
+        )
+        # file_name = '/mnt/cargo/data/M4/OTT-Review/CaliBallTest/RS-img.fits'
         hduList = pyfits.open(file_name)
-        rs_img = np.ma.masked_array(hduList[0].data,
-                                    hduList[1].data.astype(bool))
+        rs_img = np.ma.masked_array(hduList[0].data, hduList[1].data.astype(bool))
         return rs_img

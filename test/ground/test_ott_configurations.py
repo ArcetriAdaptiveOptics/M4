@@ -18,7 +18,7 @@ class TestCalc(unittest.TestCase):
     @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
     @mock.patch('numpy.load', autospec=True)
     def createOtt(self,  mock_rd, mock_load):
-        from m4.configuration.start import create_ott
+        from m4.configuration.ott import create_ott
         ott, interf, dm = create_ott()#os.path.join(testDataRootDir(), 'base',
                                        #        'Configurations', 'testConf.yaml'))
         return ott

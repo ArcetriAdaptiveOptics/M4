@@ -6,7 +6,7 @@ Authors
 import os
 import unittest
 import mock
-from m4.ott_sim.fake_accelerometers import FakeAccelerometers
+from m4.simulator.fake_accelerometers import FakeAccelerometers
 from test.helper_test_library import testDataRootDir
 
 

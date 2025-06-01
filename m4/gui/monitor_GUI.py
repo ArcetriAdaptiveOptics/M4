@@ -258,11 +258,14 @@ class Runner:
         self._setUp()
         self.gui.run()
 
+
 def main():
-    from m4.configuration import start
-    ott, interf, dm = start.create_ott()
+    from m4.configuration import ott
+
+    ott, interf, dm = ott.create_ott()
     runner = Runner()
     sys.exit(runner.run())
+
 
 if __name__ == "__main__":
     main()

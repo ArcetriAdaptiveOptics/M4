@@ -20,17 +20,20 @@ Once the ott object has been created:
     >>> flat    = ReferenceMirror(ott, conf)
     >>> angrot  = AngleRotator(ott, conf)
 """
+
 import numpy as np
 from m4.configuration.ott_parameters import OttParameters
 from m4.configuration import update_folder_paths as ufp
+
 config = ufp.folders
+
 
 class Parabola:
     """
-    Class for moving the parabola slider, i.e. the Truss, with respect to M4's 
+    Class for moving the parabola slider, i.e. the Truss, with respect to M4's
     optical center, and to command the parabola itself, with piston, tip and ti
     lt.
-    
+
     Methods
     =======
     Truss Methods
@@ -48,18 +51,19 @@ class Parabola:
         Applies a piston mode to the parabola.
     parabolaTipTilt(tt):
         Applies tip and tilt to the parabola.
-        
+
     More information on the specific functions uses can be found in the functio
     ns documentation.
     """
+
     def __init__(self, ott):
         """The Constructor"""
-        self._par=ott.parabola
+        self._par = ott.parabola
         self._slider = ott.parabolaSlider
         self._pos = self._slider.getPosition()
 
         try:
-            if hasattr(config, 'simulated_parSlider'):
+            if hasattr(config, "simulated_parSlider"):
                 self._config = config.simulated_parSlider
             else:
                 raise KeyError("Parameter not found")
@@ -87,14 +91,14 @@ class Parabola:
             sed to the OPCUA.
         """
         if get is False:
-            new_pos = pos + OttParameters.PAR_SLIDER_KIN_OFFSET*1000
+            new_pos = pos + OttParameters.PAR_SLIDER_KIN_OFFSET * 1000
         else:
-            new_pos = pos - OttParameters.PAR_SLIDER_KIN_OFFSET*1000
+            new_pos = pos - OttParameters.PAR_SLIDER_KIN_OFFSET * 1000
         return new_pos
 
     def trussGetPosition(self) -> float:
         """
-        Returns the current position, in metrs, of the Truss (parabola slider) 
+        Returns the current position, in metrs, of the Truss (parabola slider)
         relative to M4's centre.
 
         Returns
@@ -152,7 +156,7 @@ class Parabola:
             The current position of the Truss in meters.
         """
         old_pos = self._slider.getPosition()
-        new_pos = old_pos + change_in_m*1000
+        new_pos = old_pos + change_in_m * 1000
         self._slider.setPosition(new_pos)
         current_pos = self._pos = self.trussGetPosition()
         return current_pos
@@ -196,8 +200,10 @@ class Parabola:
         """
         tt = np.array(tt)
         if tt.shape != (2,):
-            raise ValueError(f"The input array has shape {tt.shape}, but shape\
-                             (2,) is expected!")
+            raise ValueError(
+                f"The input array has shape {tt.shape}, but shape\
+                             (2,) is expected!"
+            )
         coords = self._par.getPosition()
         coords[3] += tt[0]
         coords[4] += tt[1]
@@ -214,12 +220,13 @@ class Parabola:
         """
         return self._par.getPosition()
 
+
 class ReferenceMirror:
     """
-    Class for moving the reference mirror slider with respect to M4's optical 
+    Class for moving the reference mirror slider with respect to M4's optical
     center, and to command the reference mirror itself, with piston, tip and ti
     lt.
-    
+
     Methods
     =======
     RM Slider Methods
@@ -231,7 +238,7 @@ class ReferenceMirror:
         Sets the position of the reference mirror slider at the desired locatio
         n.
     moveRmBy(change_in_m):
-        Move the reference mirror slider by a relative amount from the current 
+        Move the reference mirror slider by a relative amount from the current
         position.
     Reference Mirror Methods
     ------------------------
@@ -239,17 +246,18 @@ class ReferenceMirror:
         Applies a piston mode to the reference mirror.
     rmTipTilt(tt):
         Applies tip and tilt to the reference mirror.
-        
+
     More information on the specific functions uses can be found in the functio
     ns documentation.
     """
+
     def __init__(self, ott):
-        """"The Constructor"""
+        """ "The Constructor"""
         self._rm = ott.referenceMirror
         self._slider = ott.referenceMirrorSlider
         self._pos = self._slider.getPosition()
         try:
-            if hasattr(config, 'simulated_rmSlider'):
+            if hasattr(config, "simulated_rmSlider"):
                 self._config = config.simulated_rmSlider
             else:
                 raise KeyError("Parameter not found")
@@ -277,9 +285,9 @@ class ReferenceMirror:
             sed to the OPCUA.
         """
         if get is False:
-            new_pos = pos + OttParameters.RM_SLIDER_KIN_OFFSET*1000
+            new_pos = pos + OttParameters.RM_SLIDER_KIN_OFFSET * 1000
         else:
-            new_pos = pos - OttParameters.RM_SLIDER_KIN_OFFSET*1000
+            new_pos = pos - OttParameters.RM_SLIDER_KIN_OFFSET * 1000
         return new_pos
 
     def rmsGetPosition(self) -> float:
@@ -341,7 +349,7 @@ class ReferenceMirror:
             Current position, in meters, of the reference mirror slider.
         """
         old_pos = self._slider.getPosition()
-        new_pos = old_pos + change_in_m*1000
+        new_pos = old_pos + change_in_m * 1000
         self._slider.setPosition(new_pos)
         current_pos = self._pos = self.rmGetPosition()
         return current_pos
@@ -364,14 +372,16 @@ class ReferenceMirror:
         """
         tt = np.array(tt)
         if tt.shape != (2,):
-            raise ValueError(f"The input array has shape {tt.shape}, but shape\
-                             (2,) is expected!")
+            raise ValueError(
+                f"The input array has shape {tt.shape}, but shape\
+                             (2,) is expected!"
+            )
         coords = self._rm.getPosition()
         coords[3] += tt[0]
         coords[4] += tt[1]
         self._rm.setPosition(coords)
         return self._rm.getPosition()[3:5]
-    
+
     def rmGetPosition(self):
         """
         Returns the current position of the reference mirror in meters.
@@ -383,10 +393,11 @@ class ReferenceMirror:
         """
         return self._rm.getPosition()
 
+
 class AngleRotator:
     """
     Class for the control of the exapode angle rotator.
-    
+
     Methods
     -------
     getPosition():
@@ -397,16 +408,17 @@ class AngleRotator:
     rotateBy(rel_deg):
         Rotates the exapode, in the counter-clockwise direction, by a specific
         amount
-        
+
     More information on the specific functions uses can be found in the functio
     ns documentation.
     """
+
     def __init__(self, ott):
-        """"The Constructor"""
+        """ "The Constructor"""
         self._rotator = ott.angleRotator
         self._pos = ott.angleRotator.getPosition()
         try:
-            if hasattr(config, 'simulated_angleRotator'):
+            if hasattr(config, "simulated_angleRotator"):
                 self._config = config.simulated_angleRotator
             else:
                 raise KeyError("Parameter not found")
@@ -444,7 +456,7 @@ class AngleRotator:
 
     def rotateBy(self, rel_deg) -> float:
         """
-        Rotates the exapode, from the current angular position, by a desired 
+        Rotates the exapode, from the current angular position, by a desired
         amount counter-clockwise
 
         Parameters

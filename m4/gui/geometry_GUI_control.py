@@ -2,15 +2,17 @@
 Authors
   - C. Selmi: written in 2021
 """
+
 import os
 import sys
 import time
 import numpy as np
-from m4.ott_sim.ott_images import OttImages
+from m4.simulator.ott_images import OttImages
 from guietta import Gui, G, MA, _, ___, III, HB
 from m4.ground.package_data import data_root_dir
 from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
-conf = os.environ['PYOTTCONF']
+
+conf = os.environ["PYOTTCONF"]
 
 # from guietta import Empty, Exceptions
 
@@ -34,9 +36,9 @@ class Runner:
         ott: object
             tower object
         """
-        self.ott    = ott
-        self.truss  = Parabola(ott)
-        self.rm     = ReferenceMirror(ott)
+        self.ott = ott
+        self.truss = Parabola(ott)
+        self.rm = ReferenceMirror(ott)
         self.angrot = AngleRotator(ott)
 
     def _setUp(self):
@@ -194,8 +196,9 @@ class Runner:
 
 
 def main():
-    from m4.configuration import start
-    ott, interf, dm = start.create_ott()
+    from m4.configuration import ott
+
+    ott, interf, dm = ott.create_ott()
 
     runner = Runner(ott)
     sys.exit(runner.run())

@@ -25,6 +25,7 @@ from m4.configuration import config_folder_names as config
 from m4.configuration.ott_parameters import Interferometer
 from m4.analyzers.noise_data_analyzer import Noise
 
+
 def _path_noise_results(data_file_path, h5_or_fits=None):
     """Function to get tt"""
     results_path = os.path.join(config.OUT_FOLDER, "Noise")
@@ -119,7 +120,9 @@ def noise_vibrations(data_file_path, numbers_array, tidy_or_shuffle=0, show=True
             overwrite=True,
         )
         pyfits.writeto(
-            os.path.join(dove, "ptv_%d.fits" % tidy_or_shuffle), ptv_medio, overwrite=True
+            os.path.join(dove, "ptv_%d.fits" % tidy_or_shuffle),
+            ptv_medio,
+            overwrite=True,
         )
         plt.clf()
         # WFE = 2*rms_medio
@@ -189,8 +192,14 @@ def spectrumFromData(data_file_path):
     plt.savefig(name)
 
 
-def convection_noise(data_file_path, tau_vector, freq=Interferometer.BURST_FREQ,
-                                   fits_analysis=False, nzern=None, show=True):
+def convection_noise(
+    data_file_path,
+    tau_vector,
+    freq=Interferometer.BURST_FREQ,
+    fits_analysis=False,
+    nzern=None,
+    show=True,
+):
     """
     Parameters
     ----------
@@ -226,10 +235,18 @@ def convection_noise(data_file_path, tau_vector, freq=Interferometer.BURST_FREQ,
             decorr_time = -1
             fit = rms_nm.copy() * 0
         if show:
-            pyfits.writeto(os.path.join(dove, "rms_vector_conv.fits"), rms, overwrite=True)
-            pyfits.writeto(os.path.join(dove, "tiptilt_vector_conv.fits"), quad, overwrite=True)
-            pyfits.writeto(os.path.join(dove, "tau_vector.fits"), tau_vector, overwrite=True)
-            pyfits.writeto(os.path.join(dove, "time_vector_conv.fits"), x, overwrite=True)
+            pyfits.writeto(
+                os.path.join(dove, "rms_vector_conv.fits"), rms, overwrite=True
+            )
+            pyfits.writeto(
+                os.path.join(dove, "tiptilt_vector_conv.fits"), quad, overwrite=True
+            )
+            pyfits.writeto(
+                os.path.join(dove, "tau_vector.fits"), tau_vector, overwrite=True
+            )
+            pyfits.writeto(
+                os.path.join(dove, "time_vector_conv.fits"), x, overwrite=True
+            )
             plt.figure()
             plt.clf()
             plt.plot(x, rms * 1e9, "-o", label="meas")
@@ -238,7 +255,11 @@ def convection_noise(data_file_path, tau_vector, freq=Interferometer.BURST_FREQ,
             plt.plot(x, fit, "-", label="fit")
             plt.grid()
             plt.plot(
-                [x[0], x[-1]], [pp[2], pp[2]], "--r", linewidth=3, label="%.2f [nm]" % pp[2]
+                [x[0], x[-1]],
+                [pp[2], pp[2]],
+                "--r",
+                linewidth=3,
+                label="%.2f [nm]" % pp[2],
             )
             plt.legend()
             tt = data_file_path.split("/")[-1]
@@ -253,7 +274,9 @@ def convection_noise(data_file_path, tau_vector, freq=Interferometer.BURST_FREQ,
         time_diff = _time_for_plot(data_file_path)
         x = tau_vector * time_diff
         if show:
-            pyfits.writeto(os.path.join(dove, "time_vector_conv.fits"), x, overwrite=True)
+            pyfits.writeto(
+                os.path.join(dove, "time_vector_conv.fits"), x, overwrite=True
+            )
             plt.figure()
             plt.clf()
             plt.plot(x, rms * 1e9, "-o", label="time_diff = %d" % time_diff)
@@ -268,8 +291,9 @@ def convection_noise(data_file_path, tau_vector, freq=Interferometer.BURST_FREQ,
             if os.path.isfile(name):
                 os.remove(name)
             plt.savefig(name)
-        return [rms, quad, n_meas]            
-            
+        return [rms, quad, n_meas]
+
+
 # stimare tc dal grafico e usare 2*tau_c = epsilon_c / np.sqrt(n) n = 4000
 #     tau_c = 30 * (1/27.58)
 #     epsilon_c = 2 * tau_c * np.sqrt(n_meas)
@@ -305,6 +329,7 @@ def _funFit(x, a, b, c):
 
 def _curvFit(param, x, rms_nm):
     from scipy.optimize import curve_fit
+
     pp, pcov = curve_fit(_funFit, x, rms_nm, param)
     fit = _funFit(x, *pp)
     return pp, fit

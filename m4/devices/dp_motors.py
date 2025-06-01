@@ -40,13 +40,12 @@ import numpy as np
 from m4.configuration import config_folder_names as fn
 from m4.ground import logger_set_up as logger
 from m4.configuration.ott_parameters import OttParameters
-from m4.devices.base_m4_exapode import BaseM4Exapode
 
 
-class ZmqDpMotors(BaseM4Exapode):
+class ZmqDpMotors:
     """
     Class for controlling the DP motors actuators, via ZMQ Pair protocol.
-    
+
     Attributes
     ----------
     remote_ip : str
@@ -60,7 +59,7 @@ class ZmqDpMotors(BaseM4Exapode):
         Function to get the current position of the actuators.
     setPosition(absolute_position_in_mm)
         Function to set the position of the DP actuators.
-    
+
     Usefull Private Methods
     -----------------------
     _send_message(acts_pos_in_um)
@@ -82,9 +81,9 @@ class ZmqDpMotors(BaseM4Exapode):
         self.remote_ip = "192.168.22.51"  # final?
         self.remote_port = 6660  # final?
         self._m4dof = slice(OttParameters.M4_DOF[0], OttParameters.M4_DOF[1] + 1)
-        self._minVel = 30 # um/s
-        self._timeout = 120 # seconds
-        #logger.set_up_logger(fn.LOG_ROOT_FOLDER+'/dpMotors.log', 10)
+        self._minVel = 30  # um/s
+        self._timeout = 120  # seconds
+        # logger.set_up_logger(fn.LOG_ROOT_FOLDER+'/dpMotors.log', 10)
 
     def getPosition(self):
         """
@@ -117,7 +116,7 @@ class ZmqDpMotors(BaseM4Exapode):
         pos : list or ArrayLike
             The current position of the actuators.
         """
-        if isinstance(absolute_position_in_mm, list):        
+        if isinstance(absolute_position_in_mm, list):
             v = np.array(absolute_position_in_mm[2:5])
         elif isinstance(absolute_position_in_mm, np.ndarray):
             v = np.array([c for c in absolute_position_in_mm[2:5]])
@@ -140,7 +139,7 @@ class ZmqDpMotors(BaseM4Exapode):
             self._recconnectBusBox()
         reading = self._send_read_message()
         positions = self._extract_motor_position(reading)
-        positions =  [p*1e-3 for p in positions]  # conversion in mm
+        positions = [p * 1e-3 for p in positions]  # conversion in mm
         self._disconnectBusBox()
         return positions
 
@@ -159,7 +158,7 @@ class ZmqDpMotors(BaseM4Exapode):
         response : dict
             The response from the BusBox.
         """
-        pos = np.array([c*1000 for c in motorcmd], dtype=int)  # conversion in um
+        pos = np.array([c * 1000 for c in motorcmd], dtype=int)  # conversion in um
         connected = self._connectBusBox()
         if connected is not True:
             self._recconnectBusBox()
@@ -272,24 +271,30 @@ class ZmqDpMotors(BaseM4Exapode):
         success : bool
             True if the actuation was successful, False otherwise.
         """
-        act_pos = [b['actual_position'] for b in [c for c in response['actuators']]][:3]
-        act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3]
+        act_pos = [b["actual_position"] for b in [c for c in response["actuators"]]][:3]
+        act_enc_pos = [
+            b["encoder_position"] for b in [c for c in response["actuators"]]
+        ][:3]
         tot_time = 3
         pos_err = np.max(np.abs(target_pos - act_enc_pos))
         timeout = self._timeout
         while pos_err > 1:
             stime = time.time()
-            waittime = np.min([pos_err/self._minVel, 3])
-            print("waiting",waittime, "s...")
+            waittime = np.min([pos_err / self._minVel, 3])
+            print("waiting", waittime, "s...")
             out = self._send(cmd)
             time.sleep(waittime)
             response = self._decode_message(out)
-            act_pos = [b['actual_position'] for b in [c for c in response['actuators']]][:3]
-            act_enc_pos = [b['encoder_position'] for b in [c for c in response['actuators']]][:3] 
+            act_pos = [
+                b["actual_position"] for b in [c for c in response["actuators"]]
+            ][:3]
+            act_enc_pos = [
+                b["encoder_position"] for b in [c for c in response["actuators"]]
+            ][:3]
             pos_err = np.max(np.abs(target_pos - act_enc_pos))
             print(f"ActPos: {act_pos} ; EncPos: {act_enc_pos}\n")
             ftime = time.time()
-            tot_time += (ftime - stime)
+            tot_time += ftime - stime
             self._timeout_check(tot_time, timeout)
         return True
 
@@ -340,7 +345,7 @@ class ZmqDpMotors(BaseM4Exapode):
             The decoded message.
         """
         act_struct = "hhib3bH"  # short*2, int, char, 3-char array, unsigned short
-        struct_size = struct.calcsize("Bbbb") # 1 unsigned char, 3 char
+        struct_size = struct.calcsize("Bbbb")  # 1 unsigned char, 3 char
         outer_data = struct.unpack("Bbbb", message[:struct_size])
         heart_beat_counter, voltage, temperature, status = outer_data
         actuators = []
@@ -358,7 +363,7 @@ class ZmqDpMotors(BaseM4Exapode):
                 *status_bytes,
                 bus_voltage,
             ) = struct.unpack(act_struct, message[start:end])
-            status_hex = status_bytes # bytearray([b for b in status_bytes])
+            status_hex = status_bytes  # bytearray([b for b in status_bytes])
             actuators.append(
                 {
                     "actual_position": actual_position,
@@ -402,9 +407,8 @@ class ZmqDpMotors(BaseM4Exapode):
                 pass
             else:
                 raise ConnectionError("Reconnection failed, exiting...")
-        if total_time > 2*timeout:
+        if total_time > 2 * timeout:
             raise ConnectionError("Something's wrong. Exiting...")
-        
 
     def _connectBusBox(self):
         """
@@ -417,9 +421,9 @@ class ZmqDpMotors(BaseM4Exapode):
             self._socket.connect(f"tcp://{self.remote_ip}:{self.remote_port}")
             return True
         except Exception as e:
-            #logger.log(f"ConnectZMQ: {e}")
+            # logger.log(f"ConnectZMQ: {e}")
             return False
-        
+
     def _recconnectBusBox(self):
         """
         Reconnection to the BusBox controlling the DP motors actuators.
@@ -448,7 +452,7 @@ class ZmqDpMotors(BaseM4Exapode):
             self._context.term()
             return True
         except Exception as e:
-            #logger.log(f"DisconnectZMQ: {e}")
+            # logger.log(f"DisconnectZMQ: {e}")
             return False
 
 

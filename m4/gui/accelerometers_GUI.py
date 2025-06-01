@@ -4,7 +4,6 @@ Authors
 """
 
 import numpy as np
-from m4.ground.package_data import data_root_dir
 from m4.analyzers.accelerometers_data_analyzer import AccelerometersDataAnalyzer
 from guietta import Gui, G, _, ___, HB, MA
 import sys
@@ -103,10 +102,10 @@ class Runner:
 
 
 def main():
-    from m4.configuration import start
+    from m4.configuration import ott
 
     conf = "/mnt/m4storage/Data/SYSCONFData/m4Config.yaml"
-    ott, interf, dm = start.create_ott(conf)
+    ott, interf, dm = ott.create_ott(conf)
 
     runner = Runner(ott)
     sys.exit(runner.run())

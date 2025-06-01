@@ -1,4 +1,4 @@
-__version__= "$Id$"
+__version__ = "$Id$"
 
 from abc import abstractmethod
 from functools import wraps
@@ -14,16 +14,14 @@ from arte.utils.logger import Logger
 
 class Task(object):
 
-    __metaclass__= abc.ABCMeta
+    __metaclass__ = abc.ABCMeta
 
     @abstractmethod
     def perform(self):
         assert False, "abstract base clase"
 
-
     def name(self):
         return "unspecified"
-
 
     def __repr__(self):
         return "Task(%r)" % self.name()
@@ -35,26 +33,24 @@ class FunctionTaskException(Exception):
 
 class FunctionTask(Task):
 
-    NO_RESULT= object()
+    NO_RESULT = object()
 
     def __init__(self, func, *args, **kwds):
-        self._func= func
-        self._args= args
-        self._kwds= kwds
+        self._func = func
+        self._args = args
+        self._kwds = kwds
 
-        self._result= self.NO_RESULT
-        self._exception= None
-        self._name= None
-
+        self._result = self.NO_RESULT
+        self._exception = None
+        self._name = None
 
     @override
     def perform(self):
         try:
-            self._result= self._func(*self._args, **self._kwds)
+            self._result = self._func(*self._args, **self._kwds)
         except Exception as e:
-            self._exception= e
+            self._exception = e
             raise
-
 
     @override
     def name(self):
@@ -63,26 +59,20 @@ class FunctionTask(Task):
 
         return "%s" % self._func
 
-
     def __repr__(self):
         return "FunctionTask(%r)" % self.name()
 
-
     def withName(self, name):
-        self._name= name
+        self._name = name
         return self
-
 
     def getResult(self):
         if self._result is self.NO_RESULT:
-            raise FunctionTaskException(
-                "No result available for %s" % self.name())
+            raise FunctionTaskException("No result available for %s" % self.name())
         return self._result
-
 
     def getException(self):
         return self._exception
-
 
     def reraiseExceptionIfAny(self):
         if self._exception:
@@ -90,22 +80,19 @@ class FunctionTask(Task):
 
 
 class TaskControl(object):
-    __metaclass__= abc.ABCMeta
+    __metaclass__ = abc.ABCMeta
 
     @abstractmethod
     def isDone(self):
         assert False, "abstract base class"
 
-
     @abstractmethod
     def isRunning(self):
         assert False, "abstract base class"
 
-
     @abstractmethod
     def waitForCompletion(self, timeoutSec):
         assert False, "abstract base class"
-
 
 
 class TaskTimeoutError(Exception):
@@ -119,45 +106,42 @@ class FutureTaskControl(TaskControl):
     def __init__(self, future, taskName, logger):
         TaskControl.__init__(self)
         assert taskName is not None
-        self._future= future
-        self._taskName= taskName
-        self._logger= logger
-
+        self._future = future
+        self._taskName = taskName
+        self._logger = logger
 
     @override
     def isDone(self):
         return self._future.done()
 
-
     @override
     def isRunning(self):
         return self._future.running()
-
 
     def _printStackTraceInCaseOfError(self):
         try:
             self._future.result()
         except Exception as e:
-            self._logger.error("Task '%s' failed: %s" % (
-                               self._taskName, str(e)))
+            self._logger.error("Task '%s' failed: %s" % (self._taskName, str(e)))
             traceback.print_exc()
-            self._logger.debug("Details to %s: %s" % (
-                               self._taskName, traceback.format_exc()))
-
+            self._logger.debug(
+                "Details to %s: %s" % (self._taskName, traceback.format_exc())
+            )
 
     @override
-    def waitForCompletion(self, timeoutSec= None):
-        doneFutures, _= futures.wait([self._future], timeout= timeoutSec)
+    def waitForCompletion(self, timeoutSec=None):
+        doneFutures, _ = futures.wait([self._future], timeout=timeoutSec)
         if self._future in doneFutures:
             self._printStackTraceInCaseOfError()
         else:
-            raise TaskTimeoutError("Wait for completion"
-                                   " of task '%s' failed" % self._taskName)
+            raise TaskTimeoutError(
+                "Wait for completion" " of task '%s' failed" % self._taskName
+            )
 
 
 class Executor(object):
 
-    __metaclass__= abc.ABCMeta
+    __metaclass__ = abc.ABCMeta
 
     @abstractmethod
     def execute(self, task):
@@ -170,23 +154,20 @@ class DoneTaskControl(TaskControl):
     def isDone(self):
         return True
 
-
     @override
     def isRunning(self):
         return False
 
-
     @override
     def waitForCompletion(self, timeoutSec):
-            pass
+        pass
 
 
 class SerialExecutor(Executor):
 
-    def __init__(self, logger= Logger.of("SerialExecutor")):
+    def __init__(self, logger=Logger.of("SerialExecutor")):
         Executor.__init__(self)
-        self._logger= logger
-
+        self._logger = logger
 
     @override
     def execute(self, task):
@@ -202,55 +183,54 @@ class SerialExecutor(Executor):
 
 class MultiThreadExecutor(Executor):
 
-    def __init__(self, maxThreads, logger= Logger.of("MultiThreadExecutor")):
+    def __init__(self, maxThreads, logger=Logger.of("MultiThreadExecutor")):
         Executor.__init__(self)
-        self._logger= logger
-        self._executor= futures.ThreadPoolExecutor(max_workers= maxThreads)
-
+        self._logger = logger
+        self._executor = futures.ThreadPoolExecutor(max_workers=maxThreads)
 
     @override
     def execute(self, task):
         assert task is not None
         self._logger.debug("Executing task '%s'" % task.name())
-        future= self._executor.submit(task.perform)
+        future = self._executor.submit(task.perform)
         return FutureTaskControl(future, task.name(), self._logger)
 
 
 class SingleThreadExecutor(MultiThreadExecutor):
 
-    def __init__(self, logger= Logger.of("SingleThreadExecutor")):
-        MultiThreadExecutor.__init__(self, maxThreads= 1, logger= logger)
+    def __init__(self, logger=Logger.of("SingleThreadExecutor")):
+        MultiThreadExecutor.__init__(self, maxThreads=1, logger=logger)
 
 
 class BusyExecutorException(Exception):
 
     def __init__(self, message, nameOfCurrentTask):
         Exception.__init__(self, message)
-        self.nameOfCurrentTask= nameOfCurrentTask
+        self.nameOfCurrentTask = nameOfCurrentTask
 
 
 class SingleThreadImmediateExecutor(Executor):
 
     def __init__(self, singleThreadExecutor):
-        self._executor= singleThreadExecutor
-        self._idle= True
-        self._mutex= threading.RLock()
-        self._currentTask= None
-
+        self._executor = singleThreadExecutor
+        self._idle = True
+        self._mutex = threading.RLock()
+        self._currentTask = None
 
     @override
     @synchronized("_mutex")
     def execute(self, task):
         if not self._idle:
-            taskName= self._currentTask.name()
+            taskName = self._currentTask.name()
             raise BusyExecutorException(
-                "Executor is busy by task '%s'" % (taskName), taskName)
+                "Executor is busy by task '%s'" % (taskName), taskName
+            )
 
         class TrackedTask(Task):
             def __init__(self, task, onCompletionCallbackFunction):
                 Task.__init__(self)
-                self._task= task
-                self._onCompletionCallback= onCompletionCallbackFunction
+                self._task = task
+                self._onCompletionCallback = onCompletionCallbackFunction
 
             @override
             def perform(self):
@@ -263,16 +243,14 @@ class SingleThreadImmediateExecutor(Executor):
             def name(self):
                 return self._task.name()
 
-        self._idle= False
-        self._currentTask= task
+        self._idle = False
+        self._currentTask = task
         return self._executor.execute(TrackedTask(task, self._onCompletion))
-
 
     @synchronized("_mutex")
     def _onCompletion(self):
-        self._currentTask= None
-        self._idle= True
-
+        self._currentTask = None
+        self._idle = True
 
     @synchronized("_mutex")
     def isIdle(self):
@@ -281,25 +259,20 @@ class SingleThreadImmediateExecutor(Executor):
 
 class DelayedTaskControl(TaskControl):
 
-
     def __init__(self):
         super(DelayedTaskControl, self).__init__()
-        self._done= False
-
+        self._done = False
 
     @override
     def isDone(self):
         return self._done
 
-
     def markAsDone(self):
-        self._done= True
-
+        self._done = True
 
     @override
     def isRunning(self):
         return False
-
 
     @override
     def waitForCompletion(self, timeoutSec):
@@ -308,32 +281,28 @@ class DelayedTaskControl(TaskControl):
 
 class TaskDelayingExecutor(Executor):
 
-
     def __init__(self):
         super(TaskDelayingExecutor, self).__init__()
-        self._delayedTasks= []
+        self._delayedTasks = []
 
     @override
     def execute(self, task):
         class WrappedTask(Task):
             def __init__(self, task, delayedTaskControl):
                 super(WrappedTask, self).__init__()
-                self._task= task
-                self._taskControl= delayedTaskControl
+                self._task = task
+                self._taskControl = delayedTaskControl
 
             def perform(self):
                 self._task.perform()
                 self._taskControl.markAsDone()
 
-
-        taskCtrl= DelayedTaskControl()
+        taskCtrl = DelayedTaskControl()
         self._delayedTasks.append(WrappedTask(task, taskCtrl))
         return taskCtrl
 
-
     def getDelayedTasks(self):
         return self._delayedTasks
-
 
     def executeDelayedTasks(self):
         for each in self._delayedTasks:
@@ -342,23 +311,21 @@ class TaskDelayingExecutor(Executor):
 
 class ExecutorFactory(object):
 
-
     @staticmethod
     def buildMultiThreadExecutor(maxNumThreads):
         return MultiThreadExecutor(maxNumThreads)
 
-
     @staticmethod
-    def buildSingleThreadExecutor(logger= Logger.of("SingleThreadExecutor")):
+    def buildSingleThreadExecutor(logger=Logger.of("SingleThreadExecutor")):
         return SingleThreadExecutor(logger)
-
 
     @staticmethod
     def buildSingleThreadImmediateExecutor(
-            logger= Logger.of("SingleThreadImmediateExecutor")):
+        logger=Logger.of("SingleThreadImmediateExecutor"),
+    ):
         return SingleThreadImmediateExecutor(
-            ExecutorFactory.buildSingleThreadExecutor(logger))
-
+            ExecutorFactory.buildSingleThreadExecutor(logger)
+        )
 
 
 def logTaskFailure(func):
@@ -367,7 +334,7 @@ def logTaskFailure(func):
         try:
             return func(self, *args, **kwds)
         except Exception as e:
-            message= "Task failed: %s" % str(e)
+            message = "Task failed: %s" % str(e)
             self._logger.error(message)
             raise
 

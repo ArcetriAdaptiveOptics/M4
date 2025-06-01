@@ -3,7 +3,7 @@ Authors
   - C. Selmi: written in 2021
 '''
 import unittest
-from m4.ott_sim.fake_reference_mirror_slider import FakeReferenceMirrorSlider
+from m4.simulator.fake_reference_mirror_slider import FakeReferenceMirrorSlider
 
 
 class TestFakeReferenceMirrorSlider(unittest.TestCase):

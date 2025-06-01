@@ -6,10 +6,9 @@ Authors
 import logging
 import numpy as np
 from m4.configuration.ott_parameters import OpcUaParameters, OttParameters
-from m4.devices.base_parabola import BaseParabola
 
 
-class OpcUaParabola(BaseParabola):
+class OpcUaParabola:
     """Class for parabola control via opc ua
 
     HOW TO USE IT::
