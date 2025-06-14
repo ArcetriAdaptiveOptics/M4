@@ -16,6 +16,8 @@ from m4.devices.base_deformable_mirror import BaseDeformableMirror
 from m4.ground import logger_set_up as lsu, timestamp, read_data as rd
 
 #put the imports from Mic Library
+from Microgate.adopt.AOClient import AO_CLIENT
+#this import reads automatically the HW configuration of the system, as a TN conf passed. in the TN all the relevant data are stored
 
 #here we define the M4 class. 
 #implement it properly!!!
@@ -57,15 +59,63 @@ class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror  #forse
     
     """
 
-    def __init__(self, tracknum):
+    def __init__(self, tracknum=None):
         """The constructor"""
+        """
         print(f"Initializing the M4AU with configuration: '{os.path.join(fn.MIRROR_FOLDER,tracknum)}'")
         self.dmConf      = os.path.join(fn.MIRROR_FOLDER,tracknum)
         self.nActs       = self._initNActuators()
         self.mirrorModes = self._initMirrorModes()
         self.actCoord    = self._initActCoord()
         self.workingActs = self._initWorkingActs()
+        """
+        self._aoClient = AO_CLIENT(tracknum)
+        ffm = (self._aoClient.aoSystem.sysConf.gen.FFWDSvdMatrix)[0]# 
+        ff  = self._aoClient.aoSystem.sysConf.gen.FFWDMatrix
 
+        print('init the DM with no configurations')
+
+    def getCounter(self):
+        """
+        Function which returns the current shape of the mirror.
+
+        Returns
+        -------
+        shape: numpy.ndarray
+            Current shape of the mirror.
+        """
+        fc = self._aoClient.getCounters()
+        skipByCommand = fc.skipByCommand
+        #.....
+        return skipByCommand
+
+    def get_shape(self):
+        """
+        Function which returns the current shape of the mirror.
+
+        Returns
+        -------
+        shape: numpy.ndarray
+            Current shape of the mirror.
+        """
+        #micLibrary.get_position()
+        pos = self._aoClient.getPosition()
+        return pos
+
+
+    def get_force(self):
+        """
+        Function which returns the current force applied to the mirror.
+
+        Returns
+        -------
+        force: numpy.ndarray
+            Current force applied to the mirror actuators.
+
+        """
+        #micLibrary.getForce()
+        force = self._aoClient.getForce()
+        return force
 
     def set_shape(self, cmd):#cmd, segment=None):
         """
@@ -84,6 +134,7 @@ class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror  #forse
 
         """
         #micLibrary.mirrorCommand(cmd)
+        self._aoClient.mirrorCommand(cmd)
         print('Command applied')
 
 
@@ -117,35 +168,6 @@ class AdOpticaDM(BaseDeformableMirror):  #ereditare BaseDeformableMirror  #forse
 
         """
         print('Command history running...')
-
-
-    def get_shape(self):
-        """
-        Function which returns the current shape of the mirror.
-        
-        Returns
-        -------
-        shape: numpy.ndarray
-            Current shape of the mirror.
-        """
-        #micLibrary.get_position()
-        shape = 3
-        return shape
-        
-
-    def get_force(self):
-        """
-        Function which returns the current force applied to the mirror.
-
-        Returns
-        -------
-        force: numpy.ndarray
-            Current force applied to the mirror actuators.
-
-        """
-        #micLibrary.getForce()
-        force = 3
-        return force
 
 
     def _initNActuators(self):
