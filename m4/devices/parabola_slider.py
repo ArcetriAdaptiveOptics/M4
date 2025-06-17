@@ -35,7 +35,7 @@ class OpcUaParabolaSlider:
         self._logger.debug("Position = %g" % current_pos)
         return current_pos
 
-    def setPosition(self, absolute_position_in_mm):
+    def setPosition(self, absolute_position_in_mm: int):
         """Function to set the absolute position of the parabola slider
 
         Parameters
@@ -53,7 +53,7 @@ class OpcUaParabolaSlider:
         self._opcUa.wait_for_stop(OpcUaParameters.ST)
         return self.getPosition()
 
-    def _checkSlide(self, slide):
+    def _checkSlide(self, slide: int):
         """Function for input parameter control"""
         if slide <= OpcUaParameters.min_slide or slide >= OpcUaParameters.max_slide:
             raise ValueError(

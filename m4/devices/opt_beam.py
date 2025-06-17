@@ -56,7 +56,7 @@ class Parabola:
     ns documentation.
     """
 
-    def __init__(self, ott):
+    def __init__(self, ott: object):
         """The Constructor"""
         self._par = ott.parabola
         self._slider = ott.parabolaSlider
@@ -70,7 +70,7 @@ class Parabola:
         except Exception as e:
             raise e
 
-    def _conversion(self, pos: float, get=False) -> float:
+    def _conversion(self, pos: float, get: bool = False) -> float:
         """
         Internal function which handles the offsets beetween M4's optical centr
         e and the OPCUA reference frame.
@@ -161,7 +161,7 @@ class Parabola:
         current_pos = self._pos = self.trussGetPosition()
         return current_pos
 
-    def parabolaPiston(self, intensity):
+    def parabolaPiston(self, intensity: int):
         """
         Applies a relative piston command to the parabola. For absolute positio
         n movements, refer to ''ott.parabola''.
@@ -182,7 +182,7 @@ class Parabola:
         self._par.setPosition(coords)
         return self._par.getPosition()[2]
 
-    def parabolaTipTilt(self, tt):
+    def parabolaTipTilt(self, tt: int):
         """
         Applies a relative tip/tilt command to the parabola. For asbolute posit
         ioning, refer to ott.parabola.
@@ -251,7 +251,7 @@ class ReferenceMirror:
     ns documentation.
     """
 
-    def __init__(self, ott):
+    def __init__(self, ott: object):
         """ "The Constructor"""
         self._rm = ott.referenceMirror
         self._slider = ott.referenceMirrorSlider
@@ -264,7 +264,7 @@ class ReferenceMirror:
         except Exception as e:
             raise e
 
-    def _conversion(self, pos: float, get=False) -> float:
+    def _conversion(self, pos: float, get: bool = False) -> float:
         """
         Internal function which handles the offsets beetween M4's optical centr
         e and the OPCUA reference frame.
@@ -354,7 +354,7 @@ class ReferenceMirror:
         current_pos = self._pos = self.rmGetPosition()
         return current_pos
 
-    def rmTipTilt(self, tt):
+    def rmTipTilt(self, tt: int):
         """
         Applies a relative tip/tilt command to the reference mirror. For absolu
         te positioning, refer to ott.referenceMirror
@@ -413,7 +413,7 @@ class AngleRotator:
     ns documentation.
     """
 
-    def __init__(self, ott):
+    def __init__(self, ott: object):
         """ "The Constructor"""
         self._rotator = ott.angleRotator
         self._pos = ott.angleRotator.getPosition()
@@ -454,7 +454,7 @@ class AngleRotator:
         self._rotator.setPosition(absolute_deg)
         return self.getPosition()
 
-    def rotateBy(self, rel_deg) -> float:
+    def rotateBy(self, rel_deg: float) -> float:
         """
         Rotates the exapode, from the current angular position, by a desired
         amount counter-clockwise

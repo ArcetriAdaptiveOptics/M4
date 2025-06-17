@@ -1,9 +1,11 @@
 """
-Authors
-  - C. Selmi: written in 2020
+Author(s)
+---------
+- Chiara Selmi: written in 2020
+- Pietro Ferraiuolo : refactored in 2025
 """
 
-import logging
+from opticalib.ground import logger as _l
 from m4.configuration.ott_parameters import OpcUaParameters
 
 
@@ -20,10 +22,10 @@ class OpcUaAngleRotator:
         pos = ang.setPosition(absolute_position_in_deg)
     """
 
-    def __init__(self, opcUa):
+    def __init__(self, opcUa: object):
         """The constructor"""
         self._opcUa = opcUa
-        self._logger = logging.getLogger("OpcUaAngleRotator")
+        self._logger = _l.set_up_logger("OpcUaAngleRotator")
 
     def getPosition(self):
         """Function to get the rotating ring angle
@@ -37,7 +39,7 @@ class OpcUaAngleRotator:
         self._logger.debug("Position = %g" % current_pos)
         return current_pos
 
-    def setPosition(self, absolute_position_in_deg):
+    def setPosition(self, absolute_position_in_deg: float):
         """Function to set the rotating ring angle (range: 0 to 360)
 
         Parameters
@@ -56,7 +58,7 @@ class OpcUaAngleRotator:
         self._opcUa.wait_for_stop(OpcUaParameters.RA)
         return self.getPosition()
 
-    def _checkAngle(self, angle):
+    def _checkAngle(self, angle: float):
         """Function for input parameter control"""
         if angle <= OpcUaParameters.min_angle or angle >= OpcUaParameters.max_angle:
             raise OSError(" The required angle is incorrect: %d" % angle)

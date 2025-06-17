@@ -1,7 +1,6 @@
 import logging
 import numpy as np
-from m4.utils import roi
-from m4.ground import zernike
+from opticalib.ground import roi, zernike
 
 
 class TipTiltDetrend:

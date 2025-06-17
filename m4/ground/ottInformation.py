@@ -6,7 +6,9 @@ Authors
 import time
 import os
 import numpy as np
-from m4.configuration import config_folder_names as fold_name
+from opticalib.ground.logger import txtLogger as _l
+from opticalib import folders as _fn
+from opticalib import typings as _ot
 from m4.configuration.ott_parameters import OpcUaParameters
 
 
@@ -20,7 +22,7 @@ class OttInformation:
         info = OttInformation(ott, interf)
     """
 
-    def __init__(self, ott, interf):
+    def __init__(self, ott: _ot.GenericDevice, interf: _ot.InterferometerDevice):
         """The constructor"""
         self._ott = ott
         self._interf = interf
@@ -42,7 +44,7 @@ class OttInformation:
 
         self._informationLog()
 
-    def temperatureTimeHistory(self, n_measure, delay_in_seconds):
+    def temperatureTimeHistory(self, n_measure: int, delay_in_seconds: int = 1) -> _ot.MatrixLike:
         """
         Parameters
         ----------
@@ -62,7 +64,7 @@ class OttInformation:
             time.sleep(delay_in_seconds)
         return temp_matrix
 
-    def interferogramTimeHistory(self, n_measure, delay_in_seconds):
+    def interferogramTimeHistory(self, n_measure: int, delay_in_seconds: int) -> _ot.CubeData:
         """
         Parameters
         ----------
@@ -86,24 +88,30 @@ class OttInformation:
 
     def _informationLog(self):
         """Function for logging"""
-        file_name = os.path.join(fold_name.LOG_ROOT_FOLDER, "OttInformationsLog.txt")
-        file = open(file_name, "a+")
-        file.write("Angle = %f " % self._angle)
-        file.write("\n")
-        file.write("RM slide = %f " % self._rslide)
-        file.write("\n")
-        file.write("PAR slide = %f " % self._slide)
-        file.write("\n")
-        file.write("RM position =")
-        for i in range(self._rm.size):
-            file.write(" %f " % self._rm[i])
-        file.write("\n")
-        file.write("PAR position =")
-        for i in range(self._par.size):
-            file.write(" %f " % self._par[i])
-        file.write("\n")
-        file.write("Temperature =")
-        for i in range(self._temperature.size):
-            file.write(" %f " % self._temperature[i])
-        file.write("\n")
-        file.close()
+        logger = _l(_fn.LOGGING_ROOT_FOLDER, "OttInformationsLog.txt")
+        logger.log("Angle = %f" % self._angle)
+        logger.log("RM slide = %f" % self._rslide)
+        logger.log("PAR slide = %f" % self._slide)
+        logger.log("RM position = %s" % " ".join(f"{x:.2f}" for x in self._rm))
+        logger.log("PAR position = %s" % " ".join(f"{x:.2f}" for x in self._par))
+        logger.log("Temperature = %s" % " ".join(f"{x:.2f}" for x in self._temperature))
+        # file = open(file_name, "a+")
+        # file.write("Angle = %f " % self._angle)
+        # file.write("\n")
+        # file.write("RM slide = %f " % self._rslide)
+        # file.write("\n")
+        # file.write("PAR slide = %f " % self._slide)
+        # file.write("\n")
+        # file.write("RM position =")
+        # for i in range(self._rm.size):
+            # file.write(" %f " % self._rm[i])
+        # file.write("\n")
+        # file.write("PAR position =")
+        # for i in range(self._par.size):
+        #     file.write(" %f " % self._par[i])
+        # file.write("\n")
+        # file.write("Temperature =")
+        # for i in range(self._temperature.size):
+        #     file.write(" %f " % self._temperature[i])
+        # file.write("\n")
+        # file.close()

@@ -1,6 +1,6 @@
 """
 Authors
-  - C. Selmi:  written in 2022
+- Chiara Selmi:  written in 2022
 """
 
 
@@ -14,22 +14,22 @@ class OttConfigurations:
         oc = OttConfigurations(ott)
     """
 
-    def __init__(self, ott):
+    def __init__(self, ott: object):
         """The constructor"""
         self._ott = ott
         self._angle = None
         self._rslide = None
         self._pslide = None
 
-    def move_to_segment_view(self, number_of_segment, RM_in):
+    def move_to_segment_view(self, number_of_segment: int, RM_in: bool):
         """move the ott configuration to a specific section of the DM
 
         Parameters
         ----------
-            number_of_segment: integer
-                number of the target section
-            RM: boolean
-                Reference mirror in (True) or not (False)
+        number_of_segment: integer
+            number of the target section
+        RM: boolean
+            Reference mirror in (True) or not (False)
         """
         self._ott.parabolaSlider.setPosition(844)
         if RM_in == True:
@@ -40,13 +40,14 @@ class OttConfigurations:
         self._ott.angleRotator.setPosition(30 + 60 * (number_of_segment - 1))
         return
 
-    def move_to_central_view(self, RM_in):
-        """move the ott configuration in the central view
+    def move_to_central_view(self, RM_in: bool):
+        """
+        Move the ott configuration in the central view
 
         Parameters
         ----------
-            RM: boolean
-                Reference mirror in (True) or not (False)
+        RM: boolean
+            Reference mirror in (True) or not (False)
         """
         self._ott.parabolaSlider.setPosition(0)
         if RM_in == True:

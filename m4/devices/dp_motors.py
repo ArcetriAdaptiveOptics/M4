@@ -32,14 +32,12 @@ The utilization is straightforward.
 
 Then just call what you need, really only `getPosition` and `setPosition`.
 """
-
-import zmq
-import time
-import struct
-import numpy as np
-from m4.configuration import config_folder_names as fn
-from m4.ground import logger_set_up as logger
-from m4.configuration.ott_parameters import OttParameters
+from typing import Any as _any
+import zmq as _zmq
+import time as _time
+import struct as _struct
+import numpy as _np
+from m4.configuration.ott_parameters import OttParameters as _otp
 
 
 class ZmqDpMotors:
@@ -74,13 +72,13 @@ class ZmqDpMotors:
 
     def __init__(self):
         """The constructor"""
-        self._kinematrix = np.array([[1, 1, 1], [0, -1, 1], [1, -1, -1]]).T
-        self._invkinematrix = np.linalg.inv(self._kinematrix)
+        self._kinematrix = _np.array([[1, 1, 1], [0, -1, 1], [1, -1, -1]]).T
+        self._invkinematrix = _np.linalg.inv(self._kinematrix)
         self._context = None
         self._socket = None
         self.remote_ip = "192.168.22.51"  # final?
         self.remote_port = 6660  # final?
-        self._m4dof = slice(OttParameters.M4_DOF[0], OttParameters.M4_DOF[1] + 1)
+        self._m4dof = slice(_otp.M4_DOF[0], _otp.M4_DOF[1] + 1)
         self._minVel = 30  # um/s
         self._timeout = 120  # seconds
         # logger.set_up_logger(fn.LOG_ROOT_FOLDER+'/dpMotors.log', 10)
@@ -96,11 +94,11 @@ class ZmqDpMotors:
         """
         pp = self._getMotorPosition()
         kk = self._motor2kinematics(pp)
-        pos = np.array([0, 0] + kk + [0])
+        pos = _np.array([0, 0] + kk + [0])
         print(pos)
         return pos
 
-    def setPosition(self, absolute_position_in_mm: list):
+    def setPosition(self, absolute_position_in_mm: list[float]):
         """
         Function to set the position of the DP actuators.
 
@@ -117,9 +115,9 @@ class ZmqDpMotors:
             The current position of the actuators.
         """
         if isinstance(absolute_position_in_mm, list):
-            v = np.array(absolute_position_in_mm[2:5])
-        elif isinstance(absolute_position_in_mm, np.ndarray):
-            v = np.array([c for c in absolute_position_in_mm[2:5]])
+            v = _np.array(absolute_position_in_mm[2:5])
+        elif isinstance(absolute_position_in_mm, _np.ndarray):
+            v = _np.array([c for c in absolute_position_in_mm[2:5]])
         vm = self._kinematics2motor(v)
         self._setMotorPosition(vm)
         return self.getPosition()
@@ -143,7 +141,7 @@ class ZmqDpMotors:
         self._disconnectBusBox()
         return positions
 
-    def _setMotorPosition(self, motorcmd):
+    def _setMotorPosition(self, motorcmd: list[float]) -> None:
         """
         Middle level function to set the position of the actuators.
 
@@ -158,7 +156,7 @@ class ZmqDpMotors:
         response : dict
             The response from the BusBox.
         """
-        pos = np.array([c * 1000 for c in motorcmd], dtype=int)  # conversion in um
+        pos = _np.array([c * 1000 for c in motorcmd], dtype=int)  # conversion in um
         connected = self._connectBusBox()
         if connected is not True:
             self._recconnectBusBox()
@@ -166,7 +164,7 @@ class ZmqDpMotors:
         self._disconnectBusBox()
         return
 
-    def _motor2kinematics(self, pos):
+    def _motor2kinematics(self, pos: list[float]) -> list[float]:
         """
         Function to convert the absolute positions of the actuators from motor
         to zernike positions.
@@ -182,10 +180,10 @@ class ZmqDpMotors:
             The 3-component only vector containing the kinematic positions of the
             Motors.
         """
-        kin = np.dot(pos, self._kinematrix)
+        kin = _np.dot(pos, self._kinematrix)
         return kin
 
-    def _kinematics2motor(self, pos):
+    def _kinematics2motor(self, pos: list[float]) -> list[float]:
         """
         Function to convert the absolute positions of the actuators from zernike
         to motor positions.
@@ -201,10 +199,10 @@ class ZmqDpMotors:
         motor_pos: list
             The 3-component only vector containing the motor encoder positions.
         """
-        motor_pos = np.dot(pos, self._invkinematrix)
+        motor_pos = _np.dot(pos, self._invkinematrix)
         return motor_pos
 
-    def _extract_motor_position(self, response):
+    def _extract_motor_position(self, response: dict[str,_any]) -> list[float]:
         """
         Function to extract the motor position from the response of the BusBox.
 
@@ -222,7 +220,7 @@ class ZmqDpMotors:
         position = [response["actuators"][act]["encoder_position"] for act in range(3)]
         return position
 
-    def _send_message(self, acts_pos_in_um: list):
+    def _send_message(self, acts_pos_in_um: int|list[int]) -> bytearray:
         """
         Function wich comunicates with the BusBox for moving the actuators.
 
@@ -237,13 +235,13 @@ class ZmqDpMotors:
         response : bytearray
             The 116 bytes response from the BusBox, to be decoded.
         """
-        act_positions = np.array([pos for pos in acts_pos_in_um], dtype=int)
-        cmd = struct.pack(
+        act_positions = _np.array([pos for pos in acts_pos_in_um], dtype=int)
+        cmd = _struct.pack(
             "<BBBhhh", 17, 7, 7, act_positions[0], act_positions[1], act_positions[2]
         )
         cmd += bytearray(10)
         out = self._send(cmd)
-        time.sleep(3)
+        _time.sleep(3)
         response = self._decode_message(out)
         print(f"{response['actuators'][0]['target_position']}")
         check = self._check_actuation_success(act_positions, cmd, response)
@@ -253,7 +251,7 @@ class ZmqDpMotors:
         else:
             return self._send_read_message()
 
-    def _check_actuation_success(self, target_pos, cmd, response):
+    def _check_actuation_success(self, target_pos: list[int], cmd: bytearray, response: dict[str,_any]) -> bool:
         """
         Function to check if the actuation was successful.
 
@@ -276,14 +274,14 @@ class ZmqDpMotors:
             b["encoder_position"] for b in [c for c in response["actuators"]]
         ][:3]
         tot_time = 3
-        pos_err = np.max(np.abs(target_pos - act_enc_pos))
+        pos_err = _np.max(_np.abs(target_pos - act_enc_pos))
         timeout = self._timeout
         while pos_err > 1:
-            stime = time.time()
-            waittime = np.min([pos_err / self._minVel, 3])
+            stime = _time.time()
+            waittime = _np.min([pos_err / self._minVel, 3])
             print("waiting", waittime, "s...")
             out = self._send(cmd)
-            time.sleep(waittime)
+            _time.sleep(waittime)
             response = self._decode_message(out)
             act_pos = [
                 b["actual_position"] for b in [c for c in response["actuators"]]
@@ -291,14 +289,14 @@ class ZmqDpMotors:
             act_enc_pos = [
                 b["encoder_position"] for b in [c for c in response["actuators"]]
             ][:3]
-            pos_err = np.max(np.abs(target_pos - act_enc_pos))
+            pos_err = _np.max(_np.abs(target_pos - act_enc_pos))
             print(f"ActPos: {act_pos} ; EncPos: {act_enc_pos}\n")
-            ftime = time.time()
+            ftime = _time.time()
             tot_time += ftime - stime
             self._timeout_check(tot_time, timeout)
         return True
 
-    def _send_read_message(self):
+    def _send_read_message(self) -> bytearray:
         """
         Function wich comunicates with the BusBox for reading the actuators
         position, done through a null byte command.
@@ -313,7 +311,7 @@ class ZmqDpMotors:
         response = self._decode_message(out)
         return response
 
-    def _send(self, bytestream):
+    def _send(self, bytestream: bytearray) -> bytearray|bool:
         """
         Function wich comunicates with the BusBox.
 
@@ -326,11 +324,11 @@ class ZmqDpMotors:
             self._socket.send(bytestream)
             out = self._socket.recv()
             return out
-        except zmq.ZMQError as ze:
+        except _zmq.ZMQError as ze:
             print(ze)
             return False
 
-    def _decode_message(self, message):
+    def _decode_message(self, message: bytearray) -> dict[str,_any]:
         """
         Function which decodes the message from the BusBox into human readable format.
 
@@ -345,16 +343,16 @@ class ZmqDpMotors:
             The decoded message.
         """
         act_struct = "hhib3bH"  # short*2, int, char, 3-char array, unsigned short
-        struct_size = struct.calcsize("Bbbb")  # 1 unsigned char, 3 char
-        outer_data = struct.unpack("Bbbb", message[:struct_size])
+        struct_size = _struct.calcsize("Bbbb")  # 1 unsigned char, 3 char
+        outer_data = _struct.unpack("Bbbb", message[:struct_size])
         heart_beat_counter, voltage, temperature, status = outer_data
         actuators = []
-        act_size = struct.calcsize(act_struct)
+        act_size = _struct.calcsize(act_struct)
         # Unpack each inner struct
         for i in range(3):
             start = struct_size + i * act_size
             end = start + act_size
-            status_bytes = np.zeros(3, dtype=int)
+            status_bytes = _np.zeros(3, dtype=int)
             (
                 actual_position,
                 target_position,
@@ -362,7 +360,7 @@ class ZmqDpMotors:
                 actual_velocity,
                 *status_bytes,
                 bus_voltage,
-            ) = struct.unpack(act_struct, message[start:end])
+            ) = _struct.unpack(act_struct, message[start:end])
             status_hex = status_bytes  # bytearray([b for b in status_bytes])
             actuators.append(
                 {
@@ -383,7 +381,7 @@ class ZmqDpMotors:
         }
         return decodified_out_message
 
-    def _timeout_check(self, total_time, timeout):
+    def _timeout_check(self, total_time: float, timeout: float) -> None:
         """
         Function to check if the timeout is reached.
 
@@ -410,21 +408,21 @@ class ZmqDpMotors:
         if total_time > 2 * timeout:
             raise ConnectionError("Something's wrong. Exiting...")
 
-    def _connectBusBox(self):
+    def _connectBusBox(self) -> bool:
         """
         Connection to the BusBox controlling the DP motors actuators, via
         ZMQ Pair protocol.
         """
         try:
-            self._context = zmq.Context()
-            self._socket = self._context.socket(zmq.PAIR)
+            self._context = _zmq.Context()
+            self._socket = self._context.socket(_zmq.PAIR)
             self._socket.connect(f"tcp://{self.remote_ip}:{self.remote_port}")
             return True
         except Exception as e:
             # logger.log(f"ConnectZMQ: {e}")
             return False
 
-    def _recconnectBusBox(self):
+    def _recconnectBusBox(self) -> bool:
         """
         Reconnection to the BusBox controlling the DP motors actuators.
         """
@@ -436,13 +434,13 @@ class ZmqDpMotors:
                 connected = self._connectBusBox()
                 if connected is True:
                     break
-                time.sleep(1)
+                _time.sleep(1)
         if connected is False:
             print("Connection failed")
             return False
         return True
 
-    def _disconnectBusBox(self):
+    def _disconnectBusBox(self) -> bool:
         """
         Disconnection from the BusBox controlling the DP motors actuators.
         """

@@ -11,7 +11,7 @@ import numpy as np
 from m4.ground import read_data, tracking_number_folder
 from m4.configuration import config_folder_names as fold_name
 from astropy.io import fits
-from m4.ground.timestamp import Timestamp
+from opticalib.ground import newtn as ts
 
 # conf='G:\Il mio Drive\Lavoro_brera\M4\LucaConfig.yaml'
 # ott, interf, dm = start.create_ott(conf)
@@ -44,13 +44,8 @@ class ActuatorPositionGenerator:
         CONTROLLARE CHE FUNZIONI SUGLI ATTUATORI AL BORDO!!!
         """
         self.move2petalo(num=6, RM=0)
-
-        # date=datetime.datetime.now()
-        ts = Timestamp()
-        date = ts.now()
-        # name = str(date.year)+str(date.month)+str(date.day)
         dir0 = fold_name.SIMUL_DATA_CALIB_DM_FOLDER + "\\PositionActuators"
-        dir, tt = tracking_number_folder.createFolderToStoreMeasurements(dir0)
+        dir, _ = tracking_number_folder.createFolderToStoreMeasurements(dir0)
 
         act_pos_matrix = np.zeros([512 * 512, self._dm.getNActs()])
         act_zonal = np.zeros([512 * 512, self._dm.getNActs()])
@@ -75,42 +70,33 @@ class ActuatorPositionGenerator:
         hdu.writeto(os.path.join(dir, "PositionActuator_mask.fits"))
         hdu = fits.PrimaryHDU(act_zonal)
         hdu.writeto(os.path.join(dir, "PositionActuator_data.fits"))
-
-        #    np.save(os.path.join(dir, 'PositionActuator_mask'),act_pos_matrix)
-        #    np.save(os.path.join(dir, 'PositionActuator_data'),act_zonal)
-
         return act_pos_matrix, act_zonal
 
     def check_actposition(self, directory, cartella, N, arg=1):
         name = cartella
-        # dir0 = 'G:/Il mio Drive/Lavoro_brera/M4/'
         if arg == 1:
             dir = os.path.join(directory, name, "PositionActuator_data.fits")
         if arg == 0:
             dir = os.path.join(directory, name, "PositionActuator_mask.fits")
-
         act_pos_matrix = read_data.readFits_data(dir)
-
         im = act_pos_matrix[:, N - 1].reshape([512, 512])
-
         return im
 
     def move2petalo(self, num=1, RM=0):
-        """move the interferometer to a specific section of the DM
+        """
+        Move the interferometer to a specific section of the DM
 
         Parameters
-            ----------
-            num: integer
-                number of the target section
-            RM: integer
-                Reference mirror in(1) or not(0)
+        ----------
+        num: integer
+            number of the target section
+        RM: integer
+            Reference mirror in(1) or not(0)
         """
         self._ott.parabolaSlider.setPosition(844)
         if RM == 1:
             self._ott.referenceMirrorSlider.setPosition(844)
         if RM == 0:
             self._ott.referenceMirrorSlider.setPosition(0)
-
         self._ott.angleRotator.setPosition(30 + 60 * (num - 1))
-
         return

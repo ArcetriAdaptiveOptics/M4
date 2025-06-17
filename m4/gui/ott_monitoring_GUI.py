@@ -29,11 +29,10 @@ from guietta import Gui, _, ___, III, M, G, P, execute_in_main_thread
 from m4 import noise
 from m4.configuration import update_folder_paths as ufp
 from m4.configuration import userconfig as uc
-from m4.ground.timestamp import Timestamp
-from m4.ground import zernike as zern, read_data as rd
-from m4.utils import osutils as osu
+from opticalib.ground.osutils import newtn as ts
+from opticalib.ground import zernike as zern
+from opticalib.ground import osutils as osu
 
-ts = Timestamp()
 fn = ufp.folders
 
 
@@ -402,8 +401,8 @@ class SystemMonitoring:
         tt = self._abs_tilt_analysis(self.slow_data_path)
         slist = []
         for i in range(0, npoints):
-            q0 = rd.read_phasemap(fl[i * gap])
-            q1 = rd.read_phasemap(fl[i * gap + 1])
+            q0 = osu.read_phasemap(fl[i * gap])
+            q1 = osu.read_phasemap(fl[i * gap + 1])
             diff = zern.removeZernike(q1 - q0)
             slist.append(diff.std())
         svec = np.array(slist)
@@ -431,7 +430,7 @@ class SystemMonitoring:
         nf = len(fl)
         tt = np.zeros([nf, 2])
         for i in range(0, nf):
-            q = rd.read_phasemap(fl[i])
+            q = osu.read_phasemap(fl[i])
             coeff, _ = zern.zernikeFit(q, [1, 2, 3])
             tt[i, :] = coeff[1:]
         return tt
