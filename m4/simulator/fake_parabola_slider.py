@@ -4,10 +4,9 @@ Authors
   """
 
 import logging
-from m4.devices.base_parabola_slider import BaseParabolaSlider
 
 
-class FakeParabolaSlider(BaseParabolaSlider):
+class FakeParabolaSlider():
     """Class for parabola slider simulation (range: -0.9 m +0.9 m)
 
     HOW TO USE IT::

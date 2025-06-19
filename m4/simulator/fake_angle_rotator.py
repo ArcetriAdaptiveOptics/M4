@@ -4,10 +4,9 @@ Authors
 """
 
 import logging
-from m4.devices.base_angle_rotator import BaseAngleRotator
 
 
-class FakeAngleRotator(BaseAngleRotator):
+class FakeAngleRotator():
     """Class for ring angle rotation simulation (range: 0 to 360)
 
     HOW TO USE IT::

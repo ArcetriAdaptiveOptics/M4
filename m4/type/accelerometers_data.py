@@ -6,7 +6,7 @@ Authors
 import os
 import numpy as np
 import h5py
-from m4.ground import rebinner
+from opticalib.analyzer import modeRebinner as rebinner
 from m4.configuration.ott_parameters import OpcUaParameters
 from opticalib import folders as fold_name
 

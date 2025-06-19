@@ -4,10 +4,9 @@ Authors
 """
 
 import logging
-from m4.devices.base_reference_mirror_slider import BaseReferenceMirrorSlider
 
 
-class FakeReferenceMirrorSlider(BaseReferenceMirrorSlider):
+class FakeReferenceMirrorSlider():
     """Class for reference mirror slider simulation (range: -0.05 m to 0.4 m)
 
     HOW TO USE IT::

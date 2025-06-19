@@ -5,10 +5,9 @@ Authors
 
 import logging
 import numpy as np
-from m4.devices.base_reference_mirror import BaseReferenceMirror
 
 
-class FakeReferenceMirror(BaseReferenceMirror):
+class FakeReferenceMirror():
     """Class for reference mirror simulation
 
     HOW TO USE IT::

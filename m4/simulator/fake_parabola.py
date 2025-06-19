@@ -5,10 +5,9 @@ Authors
 
 import logging
 import numpy as np
-from m4.devices.base_parabola import BaseParabola
 
 
-class FakeParabola(BaseParabola):
+class FakeParabola():
     """Class for parabola simulation
 
     HOW TO USE IT::

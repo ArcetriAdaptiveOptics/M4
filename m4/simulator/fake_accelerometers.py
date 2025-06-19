@@ -7,13 +7,12 @@ import logging
 import os
 import numpy as np
 import h5py
-from m4.configuration import config_folder_names as fold_name
-from m4.ground.timestamp import Timestamp
+from opticalib import folders as fold_name
+from opticalib.ground.osutils import newtn
 from m4.configuration.ott_parameters import OpcUaParameters
-from m4.devices.base_accelerometers import BaseAccelerometers
 
 
-class FakeAccelerometers(BaseAccelerometers):
+class FakeAccelerometers():
     """Class for simulated accelerometers control
 
     HOW TO USE IT::
@@ -53,7 +52,7 @@ class FakeAccelerometers(BaseAccelerometers):
             else:
                 signal = np.column_stack((signal, vector))
 
-        tt = Timestamp.now()
+        tt = newtc()
         name = tt + ".h5"
         final_destination = os.path.join(fold_name.ACC_ROOT_FOLDER, name)
         # simulatore non rebinnato
