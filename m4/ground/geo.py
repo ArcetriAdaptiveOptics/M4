@@ -255,7 +255,7 @@ def spiral_pos(nstep, step):
     p = np.array([0,0])
     pp = []
     for i in range(nstep):
-            direct = (-1)**i
+            direct = (-1)**i*step
             mov = i+1
             for j in range(mov):
                     p = p+np.array([direct,0])

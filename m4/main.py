@@ -246,17 +246,18 @@ def getOttConfigurator(ott):
 def spiralize(ott, npos, step):
     p = geo.spiral_pos(npos, step)
     npos = int(len(p) / 2)
+    p0 = ott.parabola.getPosition()
     for i in range(npos):
-        p0 = ott.parabola.getPosition()
+        #p0 = ott.parabola.getPosition()
         p1 = p0 + np.array([0, 0, 0, p[i, 0], p[i, 1], 0])
         print("New Par command:")
         print(p1)
         ott.parabola.setPosition(p1)
-        r0 = ott.referenceMirror.getPosition()
-        r1 = r0 + np.array([0, 0, 0, -2 * p[i, 0], -2 * p[i, 1], 0])
-        print("New RM command:")
-        print(r1)
-        ott.referenceMirror.setPosition(r1)
+        #r0 = ott.referenceMirror.getPosition()
+        #r1 = r0 + np.array([0, 0, 0, -2 * p[i, 0], -2 * p[i, 1], 0])
+        #print("New RM command:")
+        #print(r1)
+        #ott.referenceMirror.setPosition(r1)
 
 
 ### ROTATION FOR ALIGNMENT (ASSE OTTICO E ASSE MECCANICO)
