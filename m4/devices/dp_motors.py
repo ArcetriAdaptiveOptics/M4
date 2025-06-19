@@ -94,7 +94,7 @@ class ZmqDpMotors:
         """
         pp = self._getMotorPosition()
         kk = self._motor2kinematics(pp)
-        pos = _np.array([0, 0] + kk + [0])
+        pos = _np.array([0, 0] + kk.tolist() + [0])
         print(pos)
         return pos
 
