@@ -1,1 +1,1 @@
-from root import folders
+from .root import folders

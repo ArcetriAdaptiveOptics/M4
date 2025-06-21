@@ -40,9 +40,11 @@ from m4.simulator.fake_angle_rotator import FakeAngleRotator
 from m4.devices.parabola_slider import OpcUaParabolaSlider
 from m4.devices.reference_mirror import OpcUaReferenceMirror
 from m4.simulator.fake_accelerometers import FakeAccelerometers
+from m4.simulator.fake_interferometer import FakeInterferometer
 from m4.simulator.fake_parabola_slider import FakeParabolaSlider
 from m4.simulator.fake_reference_mirror import FakeReferenceMirror
 from m4.devices.temperature_sensors import OpcUaTemperatureSensors
+from m4.simulator.fake_deformable_mirror import FakeDeformableMirror
 from m4.simulator.fake_temperature_sensors import FakeTemperatureSensors
 from m4.devices.reference_mirror_slider import OpcUaReferenceMirrorSlider
 from m4.simulator.fake_reference_mirror_slider import FakeReferenceMirrorSlider
@@ -153,8 +155,20 @@ def create_ott() -> object:
     if Sound.PLAY is True:
         playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, "ott-ini.mp3"))
         playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, "ott-conf.mp3"))
+    
+    if config['dm'] is True:
+        dm = FakeDeformableMirror()
+    else:
+        from opticalib import AdOpticaDm
+        dm = AdOpticaDm()
+    
+    if config['interferometer'] is True:
+        interf = FakeInterferometer(ott, dm)
+    else:
+        from opticalib import PhaseCam
+        interf = PhaseCam('6110')
 
-    return ott
+    return ott, dm, interf
 
 
 class OTT:
