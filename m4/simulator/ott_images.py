@@ -10,14 +10,13 @@ Input (loaded from create_ott) is sensitivity matrices for the various elements
 (from Zemax) and mechanical dimensions of items
 pixel scale is selected to have output images of 512,512import numpy as np
 """
-import os
 import numpy as np
+from os.path import join as _join
 from m4.configuration import folders as conf
 from m4.configuration.ott_parameters import Interferometer, OttParameters
-from m4.ground import zernike, geo
-from m4.ground import read_data
+from opticalib.ground import zernike, geo
+from opticalib import load_fits as _lf
 import matplotlib.pyplot as plt
-from astropy.io import fits as pyfits
 
 
 class OttImages:
@@ -45,23 +44,15 @@ class OttImages:
                 (2 * OttParameters.rflat_radius * OttParameters.pscale).astype(int),
             )
         )
-        self.m4pupil = read_data.readFits_data(
-            os.path.join(
-                conf.MIRROR_FOLDER, conf.mirror_conf, "m4_mech_pupil-bin2.fits"
-            )
+        self.m4pupil = _lf(
+            _join(conf.MIRROR_FOLDER, conf.mirror_conf, "m4_mech_pupil-bin2.fits")
         )
         self.m4ima = self.m4pupil * 0.0
-        self.mask = read_data.readFits_data(
-            os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf, "ott_mask.fits")
-        )
+        self.mask = _lf(_join(conf.MIRROR_FOLDER, conf.mirror_conf, "ott_mask.fits"))
         self.parmask = np.ma.make_mask(
-            read_data.readFits_data(
-                os.path.join(conf.OPTICAL_FOLDER, conf.optical_conf, "ottmask.fits")
-            )
+            _lf(_join(conf.OPTICAL_FOLDER, conf.optical_conf, "ottmask.fits"))
         )
-        self.zmat = read_data.readFits_data(
-            os.path.join(conf.OPTICAL_FOLDER, conf.optical_conf, "Zmat.fits")
-        )
+        self.zmat = _lf(_join(conf.OPTICAL_FOLDER, conf.optical_conf, "Zmat.fits"))
 
     def ott_smap(self, offset=None, quant=None, show: bool = False):
         """
@@ -442,9 +433,7 @@ class OttImages:
         mat : numpy array
             The matrix for parable positions to Zernike coefficients.
         """
-        file_name = os.path.join(
-            conf.OPTICAL_FOLDER, conf.optical_conf, "PAR_pos2z.txt"
-        )
+        file_name = _join(conf.OPTICAL_FOLDER, conf.optical_conf, "PAR_pos2z.txt")
         mat = self._readMatFromTxt(file_name)
         return mat
 
@@ -457,7 +446,7 @@ class OttImages:
         mat : numpy array
             The matrix for reference flat positions to Zernike coefficients.
         """
-        file_name = os.path.join(conf.OPTICAL_FOLDER, conf.optical_conf, "M4_pos2z.txt")
+        file_name = _join(conf.OPTICAL_FOLDER, conf.optical_conf, "M4_pos2z.txt")
         mat = self._readMatFromTxt(file_name)
         return mat
 
@@ -470,7 +459,7 @@ class OttImages:
         mat : numpy array
             The matrix for deformable mirror positions to Zernike coefficients.
         """
-        file_name = os.path.join(conf.OPTICAL_FOLDER, conf.optical_conf, "M4_pos2z.txt")
+        file_name = _join(conf.OPTICAL_FOLDER, conf.optical_conf, "M4_pos2z.txt")
         mat = self._readMatFromTxt(file_name)
         return mat
 
@@ -488,7 +477,7 @@ class OttImages:
         zmat : numpy array
             The Zernike matrix.
         """
-        load = read_data.readFits_data(file_name)
+        load = _lf(file_name)
         final_mask = np.invert(load.astype(bool))
         prova = np.ma.masked_array(
             np.ones(

@@ -27,6 +27,7 @@ from opticalib.core.read_config import load_yaml_config as _lyc
 
 config = _lyc()["SYSTEM"]["simulated.devices"]
 
+
 class Parabola:
     """
     Class for moving the parabola slider, i.e. the Truss, with respect to M4's

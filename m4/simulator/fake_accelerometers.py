@@ -12,7 +12,7 @@ from opticalib.ground.osutils import newtn
 from m4.configuration.ott_parameters import OpcUaParameters
 
 
-class FakeAccelerometers():
+class FakeAccelerometers:
     """Class for simulated accelerometers control
 
     HOW TO USE IT::

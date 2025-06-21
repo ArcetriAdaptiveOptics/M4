@@ -7,7 +7,7 @@ import logging
 import numpy as np
 
 
-class FakeReferenceMirror():
+class FakeReferenceMirror:
     """Class for reference mirror simulation
 
     HOW TO USE IT::

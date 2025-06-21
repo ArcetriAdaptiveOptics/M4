@@ -6,7 +6,7 @@ Authors
 import logging
 
 
-class FakeReferenceMirrorSlider():
+class FakeReferenceMirrorSlider:
     """Class for reference mirror slider simulation (range: -0.05 m to 0.4 m)
 
     HOW TO USE IT::

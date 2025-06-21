@@ -4,18 +4,22 @@ Authors
   - L. Oggioni: added some functionalities
 """
 
-import os
+import os as _os
+_join = _os.path.join
 import logging
 import numpy as np
 from m4.configuration.ott_parameters import M4Parameters
 from m4.configuration import folders as conf
-from m4.ground import read_data, timestamp
 from opticalib.analyzer import modeRebinner
+from opticalib.ground.osutils import (
+    newtn as _ts, 
+    load_fits as _lf,
+    save_fits as _sf
+)
 
-_ts = timestamp.Timestamp()
 
 
-class FakeM4DM():
+class FakeM4DM:
     """
     HOW TO USE IT::
 
@@ -31,23 +35,23 @@ class FakeM4DM():
         self.cmdHistory = None
         self._actPos = np.zeros(M4Parameters.N_ACT_SEG)
         self._logger = logging.getLogger("FakeM4DM")
-        self._conf = os.path.join(conf.MIRROR_ROOT_FOLDER, conf.mirror_conf)
-        self.m4pupil = read_data.readFits_data(
-            os.path.join(self._conf, "m4_mech_pupil-bin2.fits")
+        self._conf = _join(conf.MIRROR_ROOT_FOLDER, conf.mirror_conf)
+        self.m4pupil = _lf(
+            _join(self._conf, "m4_mech_pupil-bin2.fits")
         )
         self.m4ima = self.m4pupil * 0.0
-        self.CapsensGain = np.load(os.path.join(self._conf, "CapsensGain.npy"))
-        self._ifmat = read_data.readFits_data(
-            os.path.join(self._conf, "if_sect4_rot-bin2.fits")
+        self.CapsensGain = np.load(_join(self._conf, "CapsensGain.npy"))
+        self._ifmat = _lf(
+            _join(self._conf, "if_sect4_rot-bin2.fits")
         )
         self.ifmat = lambda ifMat: self.getNActs() ** (-0.5) * (
             self._ifmat / np.abs(self._ifmat).max()
         )
-        self.ifidx = read_data.readFits_data(
-            os.path.join(self._conf, "if_idx4_rot-bin2.fits")
+        self.ifidx = _lf(
+            _join(self._conf, "if_idx4_rot-bin2.fits")
         )
-        self.vmat = read_data.readFits_data(
-            os.path.join(self._conf, "ff_v_matrix.fits")
+        self.vmat = _lf(
+            _join(self._conf, "ff_v_matrix.fits")
         )
 
     def get_shape(self):
@@ -95,17 +99,17 @@ class FakeM4DM():
         else:
             tn = _ts.now()
             print(f"{tn} - {self.cmdHistory.shape[-1]} images to go.")
-            datafold = os.path.join(baseDataPath, tn)
-            if not os.path.exists(datafold):
-                os.mkdir(datafold)
+            datafold = _join(baseDataPath, tn)
+            if not _os.path.exists(datafold):
+                _os.mkdir(datafold)
             for i, cmd in enumerate(self.cmdHistory.T):
                 print(f"{i+1}/{self.cmdHistory.shape[-1]}", end="\r", flush=True)
                 self.set_shape(cmd)
                 if interf is not None:
                     img = interf.acquire_phasemap()
                     img = modeRebinner(img, rebin)
-                    path = os.path.join(datafold, f"image_{i:05d}.fits")
-                    read_data.save_phasemap(path, img)
+                    path = _join(datafold, f"image_{i:05d}.fits")
+                    _sf(path, img)
         self.set_shape(np.zeros(self.nActs))
         return tn
 
@@ -197,7 +201,7 @@ class FakeM4DM():
             cap sens complete file path
         """
         gain = np.ones(self.getNActs()) + np.random.rand(self.getNActs()) * 0.1 - 0.05
-        file_path = os.path.join(self._conf, file_name)
+        file_path = _join(self._conf, file_name)
         np.save(file_path, gain)
         return file_path
 

@@ -8,7 +8,7 @@ import numpy as np
 from m4.configuration.ott_parameters import OpcUaParameters
 
 
-class FakeTemperatureSensors():
+class FakeTemperatureSensors:
     """Class for PT simulation
 
 

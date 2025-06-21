@@ -32,6 +32,7 @@ The utilization is straightforward.
 
 Then just call what you need, really only `getPosition` and `setPosition`.
 """
+
 from typing import Any as _any
 import zmq as _zmq
 import time as _time
@@ -202,7 +203,7 @@ class ZmqDpMotors:
         motor_pos = _np.dot(pos, self._invkinematrix)
         return motor_pos
 
-    def _extract_motor_position(self, response: dict[str,_any]) -> list[float]:
+    def _extract_motor_position(self, response: dict[str, _any]) -> list[float]:
         """
         Function to extract the motor position from the response of the BusBox.
 
@@ -220,7 +221,7 @@ class ZmqDpMotors:
         position = [response["actuators"][act]["encoder_position"] for act in range(3)]
         return position
 
-    def _send_message(self, acts_pos_in_um: int|list[int]) -> bytearray:
+    def _send_message(self, acts_pos_in_um: int | list[int]) -> bytearray:
         """
         Function wich comunicates with the BusBox for moving the actuators.
 
@@ -251,7 +252,9 @@ class ZmqDpMotors:
         else:
             return self._send_read_message()
 
-    def _check_actuation_success(self, target_pos: list[int], cmd: bytearray, response: dict[str,_any]) -> bool:
+    def _check_actuation_success(
+        self, target_pos: list[int], cmd: bytearray, response: dict[str, _any]
+    ) -> bool:
         """
         Function to check if the actuation was successful.
 
@@ -311,7 +314,7 @@ class ZmqDpMotors:
         response = self._decode_message(out)
         return response
 
-    def _send(self, bytestream: bytearray) -> bytearray|bool:
+    def _send(self, bytestream: bytearray) -> bytearray | bool:
         """
         Function wich comunicates with the BusBox.
 
@@ -328,7 +331,7 @@ class ZmqDpMotors:
             print(ze)
             return False
 
-    def _decode_message(self, message: bytearray) -> dict[str,_any]:
+    def _decode_message(self, message: bytearray) -> dict[str, _any]:
         """
         Function which decodes the message from the BusBox into human readable format.
 

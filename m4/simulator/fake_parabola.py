@@ -7,7 +7,7 @@ import logging
 import numpy as np
 
 
-class FakeParabola():
+class FakeParabola:
     """Class for parabola simulation
 
     HOW TO USE IT::

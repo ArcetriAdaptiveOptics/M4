@@ -6,7 +6,7 @@ Authors
 import logging
 
 
-class FakeParabolaSlider():
+class FakeParabolaSlider:
     """Class for parabola slider simulation (range: -0.9 m +0.9 m)
 
     HOW TO USE IT::

@@ -36,7 +36,7 @@ class OpcUaParabola:
         self._logger.debug("Position = %s" % current_pos)
         return current_pos
 
-    def setPosition(self, absolute_position_in_mm: list[float|int]) -> list[float]:
+    def setPosition(self, absolute_position_in_mm: list[float | int]) -> list[float]:
         """Function to set the absolute position of the parabola
 
         Parameters

@@ -7,7 +7,7 @@ import numpy as np
 import logging
 
 
-class FakeM4Exapode():
+class FakeM4Exapode:
     """Class for M4 simulation
 
     HOW TO USE IT::

@@ -44,7 +44,9 @@ class OttInformation:
 
         self._informationLog()
 
-    def temperatureTimeHistory(self, n_measure: int, delay_in_seconds: int = 1) -> _ot.MatrixLike:
+    def temperatureTimeHistory(
+        self, n_measure: int, delay_in_seconds: int = 1
+    ) -> _ot.MatrixLike:
         """
         Parameters
         ----------
@@ -64,7 +66,9 @@ class OttInformation:
             time.sleep(delay_in_seconds)
         return temp_matrix
 
-    def interferogramTimeHistory(self, n_measure: int, delay_in_seconds: int) -> _ot.CubeData:
+    def interferogramTimeHistory(
+        self, n_measure: int, delay_in_seconds: int
+    ) -> _ot.CubeData:
         """
         Parameters
         ----------
@@ -104,7 +108,7 @@ class OttInformation:
         # file.write("\n")
         # file.write("RM position =")
         # for i in range(self._rm.size):
-            # file.write(" %f " % self._rm[i])
+        # file.write(" %f " % self._rm[i])
         # file.write("\n")
         # file.write("PAR position =")
         # for i in range(self._par.size):
