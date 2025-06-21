@@ -35,7 +35,7 @@ class FakeM4DM:
         self.cmdHistory = None
         self._actPos = np.zeros(M4Parameters.N_ACT_SEG)
         self._logger = logging.getLogger("FakeM4DM")
-        self._conf = _join(conf.MIRROR_ROOT_FOLDER, conf.mirror_conf)
+        self._conf = _join(conf.MIRROR_FOLDER, conf.mirror_conf)
         self.m4pupil = _lf(
             _join(self._conf, "m4_mech_pupil-bin2.fits")
         )
