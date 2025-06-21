@@ -11,7 +11,7 @@ from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from m4.utils.image_reducer import TipTiltDetrend
 from m4.ground import zernike
-from m4.configuration import config_folder_names as fold_name
+from m4.configuration import folders as fold_name
 from m4.ground.read_data import InterferometerConverter
 from m4.misc import tip_tilt_interf_fit
 

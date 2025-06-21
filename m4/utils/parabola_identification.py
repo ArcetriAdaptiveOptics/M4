@@ -14,7 +14,7 @@ from skimage.draw import disk as draw_circle
 from m4.configuration.ott_parameters import OttParameters
 
 from m4.ground import tracking_number_folder
-from m4.configuration import config_folder_names as fold_name
+from m4.configuration import folders as fold_name
 import time
 
 
@@ -239,7 +239,7 @@ class ParabolaActivities:
             cube of measurements save
         """
         dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
-            fold_name.PARABOLA_CGH_FOLDER
+            fold_name.PARCGH_ROOT_FOLDER
         )
 
         cube_list = []

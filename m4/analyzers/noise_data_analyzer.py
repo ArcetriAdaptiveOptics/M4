@@ -8,7 +8,7 @@ import logging
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.ground import tracking_number_folder
-from m4.configuration import config_folder_names as fold_name
+from m4.configuration import folders as fold_name
 from m4.utils import osutils as osu
 from m4.configuration.ott_parameters import Interferometer
 from m4.ground.read_data import InterferometerConverter

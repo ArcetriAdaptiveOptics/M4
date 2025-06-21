@@ -13,7 +13,7 @@ from skimage.draw import disk as draw_circle
 from m4.ground import zernike
 from scipy.ndimage import shift
 from m4.ground import read_data
-from m4.configuration import config_folder_names as config
+from m4.configuration import folders as config
 from matplotlib import pyplot as plt
 
 

@@ -6,7 +6,7 @@ from opticalib.ground import logger as _l
 import os as _os
 import time as _time
 import zmq as _zmq
-from opticalib import folders as _fn
+from m4.configuration import folders as _fn
 from opticalib.ground.osutils import newtn as _ntn
 from m4.configuration.ott_parameters import OpcUaParameters as _opcua
 from m4.type.accelerometers_data import AccelerometersData as _ad
@@ -56,7 +56,7 @@ class ZmqAccelerometers:
         h5_file_name = lista[len(lista) - 1]
         tt = _ntn()
         name = tt + ".h5"
-        final_destination = _os.path.join(_fn.ACC_ROOT_FOLDER, name)
+        final_destination = _os.path.join(_fn.ACCELEROMETERS_ROOT_FOLDER, name)
         print("To %s" % final_destination)
         start = _os.path.join(_opcua.accelerometers_data_folder, h5_file_name)
 

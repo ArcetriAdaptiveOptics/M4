@@ -1,9 +1,9 @@
 import configparser
 import json
-from m4.configuration import config_folder_names as foldname
+from m4.configuration.root import folders as foldname
 
-basepath = foldname.OPT_DATA_FOLDER
-calibfold = foldname.OTT_CALIB_CONF_FOLDER
+basepath = foldname.OPT_DATA_ROOT_FOLDER
+calibfold = foldname.OTTCALIB_ROOT_FOLDER
 parname = "PAR"
 ncgh_tn_marker = "cgh_tn_marker"
 ncgh_tn_img = "cgh_tn_img"

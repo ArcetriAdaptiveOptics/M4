@@ -7,7 +7,7 @@ import time
 import os
 import numpy as np
 from opticalib.ground.logger import txtLogger as _l
-from opticalib import folders as _fn
+from m4.configuration import folders as _fn
 from opticalib import typings as _ot
 from m4.configuration.ott_parameters import OpcUaParameters
 

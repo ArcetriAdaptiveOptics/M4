@@ -21,14 +21,14 @@ import glob
 import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
-from m4.configuration import config_folder_names as config
+from m4.configuration import folders as config
 from m4.configuration.ott_parameters import Interferometer
 from m4.analyzers.noise_data_analyzer import Noise
 
 
 def _path_noise_results(data_file_path, h5_or_fits=None):
     """Function to get tt"""
-    results_path = os.path.join(config.OUT_FOLDER, "Noise")
+    results_path = os.path.join(config.NOISE_ROOT_FOLDER, "Noise")
     x = data_file_path.split("/")
     if h5_or_fits is None:
         dove = os.path.join(results_path, x[len(x) - 1])  # da controllare il path

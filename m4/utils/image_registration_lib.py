@@ -4,10 +4,10 @@ import shutil
 import matplotlib.pyplot as plt
 from astropy.io import fits as pyfits
 from arte.utils import rebin
-from m4.configuration import config_folder_names as foldname
+from m4.configuration import folders as foldname
 from m4.analyzers import timehistory as th
 from m4.ground import geo, zernike as zern, read_data as rd, read_ottcalib_conf as roc
-from m4.ground.timestamp import Timestamp
+from opticalib.ground.osutils import newtn
 from m4.ground import read_ottcalib_conf
 from m4.utils import osutils as osu
 import m4.utils.parabola_footprint_registration as pr
@@ -320,7 +320,7 @@ def register_par_only(tnconf, show=False, forder=10):
 
 
 def save_registration(img, tnconf):  # (img,cgh_tn_img,cgh_tn_marker,ott_tn_marker):
-    tn = Timestamp.now()
+    tn = newtn()
     print(tn)
     fold = foldname.PARABOLA_REMAPPED_FOLDER + "/" + tn + "/"
     os.mkdir(fold)

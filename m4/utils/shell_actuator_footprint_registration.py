@@ -6,7 +6,7 @@ Authors
 import os
 import numpy as np
 from astropy.io import fits as pyfits
-from m4.configuration import config_folder_names as fold_name
+from m4.configuration import folders as fold_name
 from photutils.centroids import fit_2dgaussian
 
 
@@ -20,7 +20,7 @@ class ShellActuatorFootprintRegistration:
     @staticmethod
     def _storageFolder():
         """Creates the path where to save measurement data"""
-        return fold_name.GEOTRANSFORM_ROOT_FOLDER
+        return fold_name.GEOTRANSF_ROOT_FOLDER
 
     def peak_coord_finder(self, image, n_point_to_find):
         """

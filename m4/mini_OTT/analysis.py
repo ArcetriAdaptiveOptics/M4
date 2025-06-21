@@ -9,7 +9,7 @@ import numpy as np
 import logging
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
-from m4.configuration import config_folder_names as fold_name
+from m4.configuration import folders as fold_name
 from m4.configuration.ott_parameters import Interferometer
 from m4.ground import read_data
 from m4.ground import zernike

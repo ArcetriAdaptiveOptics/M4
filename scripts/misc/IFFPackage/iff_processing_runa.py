@@ -18,7 +18,7 @@ from m4.ground import zernike as zern
 from m4.configuration import read_iffconfig
 from m4.mini_OTT import timehistory as th
 from m4.ground import read_data as rd
-from m4.configuration import config_folder_names as fn
+from m4.configuration import folders as fn
 #from m4.devices import deformable_mirror as dm
 #from scripts.misc.IFFPackage import iff_acquisition_preparation
 

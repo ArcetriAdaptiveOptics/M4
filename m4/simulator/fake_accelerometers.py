@@ -7,7 +7,7 @@ import logging
 import os
 import numpy as np
 import h5py
-from opticalib import folders as fold_name
+from m4.configuration import folders as fold_name
 from opticalib.ground.osutils import newtn
 from m4.configuration.ott_parameters import OpcUaParameters
 
@@ -54,7 +54,7 @@ class FakeAccelerometers():
 
         tt = newtc()
         name = tt + ".h5"
-        final_destination = os.path.join(fold_name.ACC_ROOT_FOLDER, name)
+        final_destination = os.path.join(fold_name.ACCELEROMETERS_ROOT_FOLDER, name)
         # simulatore non rebinnato
         hf = h5py.File(final_destination, "w")
         hf.create_dataset("Accelerometers", data=signal[:, 1:])

@@ -8,7 +8,7 @@ import numpy as np
 import h5py
 from opticalib.analyzer import modeRebinner as rebinner
 from m4.configuration.ott_parameters import OpcUaParameters
-from opticalib import folders as fold_name
+from m4.configuration import folders as fold_name
 
 
 class AccelerometersData:
@@ -130,7 +130,7 @@ class AccelerometersData:
         """
         theObject = AccelerometersData()
         theObject.tt = tt
-        theObject._h5_file_path = os.path.join(fold_name.ACC_ROOT_FOLDER, tt + ".h5")
+        theObject._h5_file_path = os.path.join(fold_name.ACCELEROMETERS_ROOT_FOLDER, tt + ".h5")
         hf = h5py.File(theObject._h5_file_path, "r")
         try:
             theObject.dt = hf.attrs["DT"]

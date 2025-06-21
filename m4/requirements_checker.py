@@ -11,7 +11,7 @@ HOW TO USE IT::
 import os
 import numpy as np
 from matplotlib import pyplot as plt
-from m4.configuration import config_folder_names as config
+from m4.configuration import folders as config
 from m4.analyzers import requirement_analyzer as req_check
 
 
@@ -40,7 +40,7 @@ def analysis_req(data_file_path, zernike_vector_to_subtract, step=None, offset=N
     else:
         tt = data_file_path.split("/")[-1]
 
-    results_path = os.path.join(config.OUT_FOLDER, "Req")
+    results_path = os.path.join(config.NOISE_ROOT_FOLDER, "Req")
     dove = os.path.join(results_path, tt)
     if os.path.exists(dove):
         dove = dove

@@ -11,10 +11,9 @@ import time
 import numpy as np
 import configparser
 from m4.utils import osutils as osu
-from m4.configuration import update_folder_paths
+from m4.configuration import folders as foldname
 
-foldname = update_folder_paths.folders
-basepath = foldname.OPT_DATA_FOLDER
+basepath = foldname.OPT_DATA_ROOT_FOLDER
 statusfilename = "OTTStatus.ini"
 
 

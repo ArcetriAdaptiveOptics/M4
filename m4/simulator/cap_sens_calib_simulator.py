@@ -9,7 +9,7 @@ import numpy as np
 # from m4.configuration import start
 from matplotlib import pyplot as plt
 from m4.ground import read_data, tracking_number_folder
-from m4.configuration import config_folder_names as fold_name
+from m4.configuration import folders as fold_name
 from m4 import noise
 
 # conf='G:\Il mio Drive\Lavoro_brera\M4\LucaConfig.yaml'

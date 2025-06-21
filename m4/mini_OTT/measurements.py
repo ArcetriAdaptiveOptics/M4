@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 from m4 import main
 from m4.configuration.ott_parameters import OpcUaParameters, Interferometer, Sound
 from m4.devices.opc_ua_controller import OpcUaController
-from m4.configuration import config_folder_names as fold_name
+from m4.configuration import folders as fold_name
 from m4.ott_calibrator_and_aligner import OttCalibAndAlign
 from m4.ground import tracking_number_folder, zernike
 from m4.ground.timestamp import Timestamp
@@ -194,7 +194,7 @@ class Measurements:
         tt: string
             tracking number of measurements
         """
-        store_in_folder = fold_name.REPEATABILITY_ROOT_FOLDER
+        store_in_folder = fold_name.REPEAT_ROOT_FOLDER
         dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
             store_in_folder
         )
@@ -375,7 +375,7 @@ class Measurements:
         dx = deltapos[:, 0] * amp
         dy = deltapos[:, 1] * amp
         dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
-            fold_name.PISTON_TEST_ROOT_FOLDER
+            fold_name.PISTONTEST_ROOT_FOLDER
         )
         par0 = self._ott.parabola.getPosition()
         rm0 = self._ott.referenceMirror.getPosition()
@@ -498,7 +498,7 @@ class Measurements:
         delta_object3 = []
 
         dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
-            fold_name.MAPPING_TEST_ROOT_FOLDER
+            fold_name.MAPPING_ROOT_FOLDER
         )
         if shift[2] != 0:
             shift[0] = shift[1] = 0
@@ -659,7 +659,7 @@ class Measurements:
         coeff_matrix = np.array(coeff) * 1e9
         parend = self._ott.parabola.getPosition()
 
-        store_in_folder = os.path.join(fold_name.REPEATABILITY_ROOT_FOLDER, "Alignment")
+        store_in_folder = os.path.join(fold_name.REPEAT_ROOT_FOLDER, "Alignment")
         dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
             store_in_folder
         )

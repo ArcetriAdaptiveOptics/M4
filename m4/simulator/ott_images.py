@@ -12,7 +12,7 @@ pixel scale is selected to have output images of 512,512import numpy as np
 """
 import os
 import numpy as np
-from m4.configuration import config_folder_names as conf
+from m4.configuration import folders as conf
 from m4.configuration.ott_parameters import Interferometer, OttParameters
 from m4.ground import zernike, geo
 from m4.ground import read_data

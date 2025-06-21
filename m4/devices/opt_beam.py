@@ -23,10 +23,9 @@ Once the ott object has been created:
 
 import numpy as np
 from m4.configuration.ott_parameters import OttParameters
-from m4.configuration import update_folder_paths as ufp
+from opticalib.core.read_config import load_yaml_config as _lyc
 
-config = ufp.folders
-
+config = _lyc()["SYSTEM"]["simulated.devices"]
 
 class Parabola:
     """

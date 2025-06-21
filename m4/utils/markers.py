@@ -1,10 +1,8 @@
 import numpy as np
 import os
 from m4.ground import read_data
-from m4.ground.timestamp import Timestamp
-from m4.mini_OTT import timehistory as th
-from m4.ground import geo
-from m4.configuration import config_folder_names as foldname
+from opticalib.ground.osutils import newtn
+from m4.configuration import folders as foldname
 import configparser
 
 config = configparser.ConfigParser()
@@ -16,7 +14,7 @@ pa = ParabolaActivities()
 phasemapname = "surfMap.fits"
 fringesname = "fringesImage.fits"
 markcentername = "markerCenter.ini"
-markersPath = os.path.join(foldname.BASE_PATH, foldname.MARKERS_ROOT_FOLDER)
+markersPath = foldname.MARKERS_ROOT_FOLDER  # folder where markers data are saved
 # modificare interferometer per aggiungere loadConfiguration
 markersConfig = "D:/config/20240608_negativeMarkersMask50mm.ini"  # negative mask (pass inside marker area)
 markersDiam = 10
@@ -41,7 +39,7 @@ def acquireMarkersData(interf):
     tn: string
         tracking number where data are saved
     """
-    tn = Timestamp.now()
+    tn = newtn()
     fold = os.path.join(markersPath, tn)
     interf.loadConfiguration(
         markersConfig

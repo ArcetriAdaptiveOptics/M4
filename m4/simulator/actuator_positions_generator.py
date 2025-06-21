@@ -9,7 +9,7 @@ import numpy as np
 # from m4.configuration import start
 # from matplotlib import pyplot as plt
 from m4.ground import read_data, tracking_number_folder
-from m4.configuration import config_folder_names as fold_name
+from m4.configuration import folders as fold_name
 from astropy.io import fits
 from opticalib.ground import newtn as ts
 
@@ -44,7 +44,7 @@ class ActuatorPositionGenerator:
         CONTROLLARE CHE FUNZIONI SUGLI ATTUATORI AL BORDO!!!
         """
         self.move2petalo(num=6, RM=0)
-        dir0 = fold_name.SIMUL_DATA_CALIB_DM_FOLDER + "\\PositionActuators"
+        dir0 = fold_name.SIMDATACALIB_ROOT_FOLDER + "\\PositionActuators"
         dir, _ = tracking_number_folder.createFolderToStoreMeasurements(dir0)
 
         act_pos_matrix = np.zeros([512 * 512, self._dm.getNActs()])

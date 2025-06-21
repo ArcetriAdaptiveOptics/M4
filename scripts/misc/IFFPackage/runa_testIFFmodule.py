@@ -52,7 +52,7 @@ tm = ifc.createTimedCmdHistory(mlist,1e-7)
 
 #### test processing
 from scripts.misc.IFFPackage import iff_processing_runa as ifp
-from m4.configuration import config_folder_names as fn
+from m4.configuration import folders as fn
 from importlib import reload
 tn = '20160516_114916'
 

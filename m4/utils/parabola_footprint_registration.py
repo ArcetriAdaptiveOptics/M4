@@ -4,14 +4,14 @@ Authors
 """
 
 import numpy as _np
-import os
+import os as _os
 import scipy.linalg
 from matplotlib import pyplot as plt
 from astropy.io import fits
 import pandas as pd
 from skimage.measure import label, regionprops, regionprops_table
-from m4.configuration import config_folder_names as fold_name
-from m4.ground import tracking_number_folder
+from m4.configuration import folders as fold_name
+from opticalib.ground.osutils import newtn as _newtn
 
 
 class ParabolaFootprintRegistration:
@@ -40,7 +40,7 @@ class ParabolaFootprintRegistration:
     @staticmethod
     def _storageFolder():
         """Folder for data"""
-        return fold_name.PARABOLA_CGH_FOLDER
+        return fold_name.PARCGH_ROOT_FOLDER
         # return '/Volumes/My Passport/M4/Data/M4Data'
 
     def main(self):
@@ -335,8 +335,8 @@ class ParabolaFootprintRegistration:
 
         # f1 = 'CCD_PAR_test_21markers_5mm_grid_shell_0deg.txt'
 
-        cgh_path = os.path.join(self._storageFolder(), f1)
-        ott_path = os.path.join(self._storageFolder(), f2)
+        cgh_path = _os.path.join(self._storageFolder(), f1)
+        ott_path = _os.path.join(self._storageFolder(), f2)
         cgh_image = _np.loadtxt(cgh_path)
         ott_image = _np.loadtxt(ott_path)
 
@@ -386,7 +386,7 @@ class ParabolaFootprintRegistration:
         dove = _os.path.join(self._storageFolder(), tn)
 
         # info
-        fits_file_name = os.path.join(dove, "final rms.txt")
+        fits_file_name = _os.path.join(dove, "final rms.txt")
         file = open(fits_file_name, "w+")
         file.write(
             " Ott_image rms = %g\n gch_image rms = %g\n Difference rms = %g"
@@ -394,5 +394,5 @@ class ParabolaFootprintRegistration:
         )
         file.close()
         # data
-        fits_file_name = os.path.join(dove, "cgh_on_ott.fits")
+        fits_file_name = _os.path.join(dove, "cgh_on_ott.fits")
         fits.writeto(fits_file_name, cgh_on_ott)

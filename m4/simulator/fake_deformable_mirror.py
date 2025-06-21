@@ -8,9 +8,9 @@ import os
 import logging
 import numpy as np
 from m4.configuration.ott_parameters import M4Parameters
-from m4.configuration import config_folder_names as conf
+from m4.configuration import folders as conf
 from m4.ground import read_data, timestamp
-from m4.ground.rebinner import modeRebinner
+from opticalib.analyzer import modeRebinner
 
 _ts = timestamp.Timestamp()
 
@@ -31,7 +31,7 @@ class FakeM4DM():
         self.cmdHistory = None
         self._actPos = np.zeros(M4Parameters.N_ACT_SEG)
         self._logger = logging.getLogger("FakeM4DM")
-        self._conf = os.path.join(conf.MIRROR_FOLDER, conf.mirror_conf)
+        self._conf = os.path.join(conf.MIRROR_ROOT_FOLDER, conf.mirror_conf)
         self.m4pupil = read_data.readFits_data(
             os.path.join(self._conf, "m4_mech_pupil-bin2.fits")
         )
