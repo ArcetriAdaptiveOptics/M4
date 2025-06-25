@@ -84,7 +84,7 @@ class FakeM4DM:
         """
         self.cmdHistory = cmdHist
 
-    def runCmdHist(self, interf=None, rebin: int = 1):
+    def runCmdHistory(self, interf=None, rebin: int = 1):
         """
         Run command history
 

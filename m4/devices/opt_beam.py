@@ -63,8 +63,8 @@ class Parabola:
         self._pos = self._slider.getPosition()
 
         try:
-            if hasattr(config, "simulated_parSlider"):
-                self._config = config.simulated_parSlider
+            if "parSlider" in config.keys():
+                self._config = config['parSlider']
             else:
                 raise KeyError("Parameter not found")
         except Exception as e:
@@ -257,8 +257,8 @@ class ReferenceMirror:
         self._slider = ott.referenceMirrorSlider
         self._pos = self._slider.getPosition()
         try:
-            if hasattr(config, "simulated_rmSlider"):
-                self._config = config.simulated_rmSlider
+            if "rmSlider" in config.keys():
+                self._config = config['rmSlider']
             else:
                 raise KeyError("Parameter not found")
         except Exception as e:
@@ -418,8 +418,8 @@ class AngleRotator:
         self._rotator = ott.angleRotator
         self._pos = ott.angleRotator.getPosition()
         try:
-            if hasattr(config, "simulated_angleRotator"):
-                self._config = config.simulated_angleRotator
+            if "angleRotator" in config.keys():
+                self._config = config['angleRotator']
             else:
                 raise KeyError("Parameter not found")
         except Exception as e:

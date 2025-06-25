@@ -28,7 +28,7 @@ class FakeInterferometer:
         self._dm = dm
         self._ottIma = OttImages(self._ott)
 
-    def acquire_phasemap(self, n_frames=1, delay=0, rebin: int = 1, indet=False):
+    def acquire_map(self, n_frames=1, delay=0, rebin: int = 1, indet=False):
         """
         Parameters
         ----------
@@ -105,6 +105,24 @@ class FakeInterferometer:
         fullimg[offx : offx + sx, offy : offy + sy] = img.data
         fullmask[offx : offx + sx, offy : offy + sy] = img.mask
         fullimg = np.ma.masked_array(fullimg, fullmask)
+        return fullimg
+
+    def acquireFullFrame(self, **args):
+        """
+        Acquire a full interferometer frame, with the current DM and OTT settings.
+
+        Parameters
+        ----------
+        args: dict
+            additional arguments (not used)
+
+        Returns
+        -------
+        masked_ima: numpy masked array
+            interferometer image
+        """
+        img = self.acquire_map(**args)
+        fullimg = self.intoFullFrame(img)
         return fullimg
 
     def save_phasemap(self):
