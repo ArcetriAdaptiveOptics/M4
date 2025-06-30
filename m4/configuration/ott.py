@@ -156,12 +156,17 @@ def create_ott() -> object:
         playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, "ott-ini.mp3"))
         playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, "ott-conf.mp3"))
 
-    if config["dm"] is True:
-        dm = FakeM4DM()
-    else:
-        from opticalib import AdOpticaDm
+    try:
+        if config["dm"] is True:
+            dm = FakeM4DM()
+        else:
+            from opticalib import AdOpticaDm
+    
+            dm = AdOpticaDm()
+    except Exception as e:
+        print(f"'{e}'")
+        dm = None
 
-        dm = AdOpticaDm()
 
     if config["interferometer"] is True:
         interf = FakeInterferometer(ott, dm)
