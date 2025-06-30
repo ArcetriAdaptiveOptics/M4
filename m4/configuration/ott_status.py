@@ -5,15 +5,13 @@ Author(s):
 - Pietro Ferraiuolo: modified in 2024
 """
 
-import os
-import json
-import time
-import numpy as np
-import configparser
-from m4.utils import osutils as osu
-from m4.configuration import folders as foldname
+from os import join as _join
+import json as _j
+import time as _t
+import numpy as _np
+import configparser as _cp
+from opticalib.ground import osutils as _osu
 
-basepath = foldname.OPT_DATA_ROOT_FOLDER
 statusfilename = "OTTStatus.ini"
 
 
@@ -32,16 +30,16 @@ def read_positions(tn: str) -> dict[str, float]:
     positions : dict
         A dictionary containing the positions of the OTT devices.
     """
-    fold = osu.findTracknum(tn, complete_path=True)
-    f2read = os.path.join(fold, tn, statusfilename)
-    config = configparser.ConfigParser()
+    fold = _osu.findTracknum(tn, complete_path=True)
+    f2read = _join(fold, tn, statusfilename)
+    config = _cp.ConfigParser()
     print(f" Reading {f2read}...")
     config.read(f2read)
     # OTT
     pp = config["OTT"]
     positions = {
         key: (
-            np.array(json.loads(pp[key]))
+            _np.array(_j.loads(pp[key]))
             if key in ["PAR", "RM", "M4", "DP"]
             else float(pp[key])
         )
@@ -76,13 +74,12 @@ def save_positions(basepath, ott):
     str
         A message indicating the status file has been saved.
     """
-    fname = os.path.join(basepath, statusfilename)
+    fname = _join(basepath, statusfilename)
     f = open(fname, "w")
     f.write("[OTT]\n")
     par = ott.parabola.getPosition()
     rm = ott.referenceMirror.getPosition()
     m4 = ott.m4Exapode.getPosition()
-    dp = ott.dp.getPosition()
     ps = ott.parabolaSlider.getPosition()
     rs = ott.referenceMirrorSlider.getPosition()
     ang = ott.angleRotator.getPosition()
@@ -91,28 +88,33 @@ def save_positions(basepath, ott):
     f.write("ROT_ANGLE  = " + str(ang) + "\n")
     f.write(
         "PAR        = "
-        + np.array2string(
+        + _np.array2string(
             par, separator=",", formatter={"float_kind": lambda x: "%.2f" % x}
         )
         + "\n"
     )
     f.write(
         "RM         = "
-        + np.array2string(
+        + _np.array2string(
             rm, separator=",", formatter={"float_kind": lambda x: "%.2f" % x}
         )
         + "\n"
     )
-    f.write(
-        "DP         = "
-        + np.array2string(
-            dp, separator=",", formatter={"float_kind": lambda x: "%.2f" % x}
+    try:
+        dp = ott.dp.getPosition()
+        f.write(
+            "DP         = "
+            + _np.array2string(
+                dp, separator=",", formatter={"float_kind": lambda x: "%.2f" % x}
+            )
+            + "\n"
         )
-        + "\n"
-    )
+    except AttributeError:
+        dp = "DP not available"
+        f.write("DP         = " + dp + "\n")
     f.write(
         "M4         = "
-        + np.array2string(
+        + _np.array2string(
             m4, separator=",", formatter={"float_kind": lambda x: "%.2f" % x}
         )
         + "\n"
@@ -138,6 +140,7 @@ def go_to_geometry(tn, ott):
     str
         A message indicating the geometry positions have been set.
     """
+    import time
     positions = read_positions(tn)
     ps = positions["parabolaSlider"]
     rs = positions["referenceMirrorSlider"]
