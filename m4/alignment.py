@@ -19,14 +19,14 @@ class OttAligner(_al.Alignment):
         """The Initializer"""
         super().__init__(ott, interf)
         self._parabolatn = _al._sc.fitting_surface.split('/')[-2]
+        self._txt = _al._logger.txtLogger(_al._os.path.join(_fn.ALIGNMENT_ROOT_FOLDER, 'AlignmentLog.txt'))
 
 
     def correct_alignment(
         self,
         modes2correct: _ot.ArrayLike,
         zern2correct: _ot.ArrayLike,
-        tn: _ot.Optional[str] = None,
-        apply: bool = False,
+        applycmd: bool = False,
         n_frames: int = 15,
     ) -> str | _ot.ArrayLike:
         """
@@ -63,8 +63,8 @@ class OttAligner(_al.Alignment):
         correction command or returns it.
         """
         coeffs_i = self._zern_routine(self._acquire[0](nframes=1))
-        f_cmd = super().correct_alignment(modes2correct, zern2correct, tn, n_frames)
-        if apply:
+        f_cmd = super().correct_alignment(modes2correct=modes2correct, zern2correct=zern2correct, apply=False, n_frames=n_frames)
+        if applycmd:
             ntn = _newtn()
             print("Applying correction command...")
             self._apply_command(f_cmd)
@@ -72,10 +72,12 @@ class OttAligner(_al.Alignment):
             self._write_correction_log(modes2correct, zern2correct, ntn, coeffs_i, coeffs_f)
             dirr = _join(_fn.ALIGN_RESULTS_ROOT_FOLDER, ntn)
             if not _exists(dirr):
-                _fn.makedirs(dirr)
+                _al._os.makedirs(dirr)
             _otts.save_positions(dirr, self.mdev)
             self.read_positions()
             return
+        else:
+            self._write_correction_log([-1], zern2correct, coeffs_i, coeffs_i)
         return f_cmd
 
 
@@ -88,8 +90,7 @@ class OttAligner(_al.Alignment):
         initpos : list
             List of the starting positions of the devices, as _Command classes.
         """
-        cis, cfs, m2cs, z2cs = self._array_formatter([ci,cf, m2c, z2c])
-        cfs = self._array_formatter(cf)
+        cis, cfs, m2cs, z2cs = _ot.array_str_formatter([ci,cf, m2c, z2c])
         logdict = {
             '': ['Calibration', 'Correction', 'Parabola'], # Rows Names
             'TN':[self._calibtn, newtn, self._parabolatn], # Tracking Numbers

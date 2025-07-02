@@ -41,3 +41,4 @@ finally:
 
 
 from m4.configuration.ott import create_ott
+from .alignment import OttAligner
