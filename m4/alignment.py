@@ -22,6 +22,24 @@ class OttAligner(_al.Alignment):
         self._txt = _al._logger.txtLogger(_al._os.path.join(_fn.ALIGNMENT_ROOT_FOLDER, 'AlignmentLog.txt'))
 
 
+    def _zern_routine(self, imglist: list[_ot.ImageData]|_ot.CubeData, roi: _ot.Optional[int|tuple[int,int]] = None) -> _ot.MatrixLike:
+        """
+        Routine to calculate Zernike coefficients from an image.
+
+        Parameters
+        ----------
+        imglist : CubeData or list of ImageData
+            The input image list from which to calculate Zernike coefficients.
+        roi: tuple of ints | int, optional
+            Region of interest for Zernike calculation. 
+        
+        Returns
+        -------
+        intMat : MatrixLike
+            The interactiona matrix computed from the images.
+        """
+        super()._zern_routine(imglist)
+
     def correct_alignment(
         self,
         modes2correct: _ot.ArrayLike,
