@@ -95,8 +95,8 @@ class OttIffAcquisition:
         else:
             self._fileAcqManager(tn, modesList, amplitude, template)
             return self._oldIffDataAcquisition(tn, tch)
-    
-    
+
+
     def _prepareSegmentsRoi(self):
         """
         This function prepares and labels the ROIs for the M4 (DP) segments
@@ -105,6 +105,8 @@ class OttIffAcquisition:
         
         img = self._interf.acquire_map()
         rois = roi.roiGenerator(img, 3)
+        ... # TODO: complete
+
 
     def process(self, **kwargs: dict[str,ot.Any]):
         """
