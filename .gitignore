@@ -2,7 +2,7 @@ m4/data/
 m4/configuration/myConfig.yaml
 m4/**/__pycache__/
 sandbox
-
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
