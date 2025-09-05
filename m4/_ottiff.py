@@ -1,10 +1,49 @@
 import os as _os
 import numpy as _np
-from opticalib.core.root import folders as _fn
-from opticalib.core import read_config as _rif
-from opticalib.dmutils import iff_acquisition_preparation as _ifa, iff_processing as ipf
 from opticalib import typings as ot
-from opticalib.ground.osutils import newtn as _ts, save_fits as _sf
+from opticalib.core import read_config as _rif
+from opticalib.core.root import folders as _fn
+from opticalib.ground.osutils import (
+    newtn as _ts, save_fits as _sf, load_fits as _lf
+)
+from opticalib.ground import roi as _roi
+from opticalib.dmutils import (
+    iff_acquisition_preparation as _ifa, iff_processing as ipf
+)
+
+
+def stack_cubes(tnlist: list[str], tn_active_roi: list[int]) -> ot.CubeData:
+    """
+    This function stacks multiple IFF cubes into a single one, for easier processing.
+    It uses the opticalib.iff_processing.stackCubes function.
+
+    Parameters
+    ----------
+    tnlist: list[str]
+        List of tracking numbers of the cubes to be stacked.
+    tn_active_roi: list[int]
+        Ordered list of the TN's active ROI, labeled as integers (e.g. [0,1] means
+        TN1 has ROI 0 active, TN2 has ROI 1 active, for a total of 2 ROIs).
+
+    Returns
+    -------
+    cube : CubeData
+        The output cube.
+    """
+    if not len(tnlist) == len(tn_active_roi):
+        raise ValueError("`tnlist` and `tn_active_roi` must have the same length")
+    for tn, roi in zip(tnlist, tn_active_roi):
+        cube = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tn, "IMCube.fits"))
+        _roi.roiGenerator(cube[:,:,0], len(tn_active_roi))
+        ncube = []
+        for img in cube.transpose(2,0,1):
+            img = img*roi - _np.mean(img*roi)
+            ncube.append(img)
+        ncube = _np.ma.dstack(ncube)
+        _sf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tn, "IMCube_roi.fits"), ncube, overwrite=True)
+    final_cube = ipf.stackCubes(tnlist)
+    return final_cube
+
 
 
 class OttIffAcquisition:
