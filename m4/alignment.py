@@ -38,7 +38,8 @@ class OttAligner(_al.Alignment):
         intMat : MatrixLike
             The interactiona matrix computed from the images.
         """
-        super()._zern_routine(imglist)
+        cz = super()._zern_routine(imglist)
+        return cz
 
     def correct_alignment(
         self,
