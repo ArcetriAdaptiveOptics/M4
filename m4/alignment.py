@@ -95,7 +95,8 @@ class OttAligner(_al.Alignment):
             self.read_positions()
             return
         else:
-            self._write_correction_log([-1], zern2correct, coeffs_i, coeffs_i)
+            ntn = 'Nothing to save'
+            self._write_correction_log([-1], zern2correct, ntn,coeffs_i, coeffs_i)
         return f_cmd
 
 
