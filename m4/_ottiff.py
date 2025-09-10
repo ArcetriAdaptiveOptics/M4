@@ -38,21 +38,24 @@ def stackRoiCubes(tnlist: list[str], tn_active_roi: list[int]) -> ot.CubeData:
         cube = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tn, "IMCube.fits"))
         rois = _roi.roiGenerator(cube[:,:,0], len(tn_active_roi))
         ncube = []
+        rr = tn_active_roi[r]
         for img in cube.transpose(2,0,1):
-            uimg = img.copy()
+            fin_img = img.copy()
             # POSSIBILE ASTRAZIONE: la shell attiva è la `r`-esima, mentre quelle
             # non attive sono tutte le altre, e quindi ciclo su ROIS con 
             # if roi==r continue, così che si crea una lista di non active shells
             # da poi unire nell'immagine finale
-            active_shell = _np.ma.masked_array(uimg.data, mask=rois[r])
-            nonactive_shell = _np.ma.masked_array(uimg.data, mask=rois[1-r])
-            active_shell -= active_shell.mean()
-            nonactive_shell[rois[1-r]==0] = 1
-            total_data = _np.zeros(uimg.shape)
-            total_data[rois[1-r]] = nonactive_shell[rois[1-r]]
-            total_data[rois[r]] = active_shell[rois[r]]
-            total_mask = _np.logical_xor(rois[r], rois[1-r])
-            fin_img = _np.ma.masked_array(total_data, mask=_np.invert(total_mask))
+            nonactiveroi = rois[1-rr]
+            fin_img[nonactiveroi==0] = 0
+#            active_shell = _np.ma.masked_array(uimg.data, mask=rois[r])
+#            nonactive_shell = _np.ma.masked_array(uimg.data, mask=rois[1-r])
+#            active_shell -= active_shell.mean()
+#            nonactive_shell[rois[1-r]==0] = 0
+#            total_data = _np.zeros(uimg.shape)
+#            total_data[rois[1-r]] = nonactive_shell[rois[1-r]]
+#            total_data[rois[r]] = active_shell[rois[r]]
+#            total_mask = _np.logical_xor(rois[r], rois[1-r])
+#            fin_img = _np.ma.masked_array(total_data, mask=_np.invert(total_mask))
             ncube.append(fin_img)
         ncube = _np.ma.dstack(ncube)
         # fare la maschera del cubo, così che venga salvata
