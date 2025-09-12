@@ -279,7 +279,7 @@ class ZmqDpMotors:
         tot_time = 3
         pos_err = _np.max(_np.abs(target_pos - act_enc_pos))
         timeout = self._timeout
-        while pos_err > 1:
+        while pos_err > 3:
             stime = _time.time()
             waittime = _np.min([pos_err / self._minVel, 3])
             print("waiting", waittime, "s...")
