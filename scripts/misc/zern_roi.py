@@ -55,11 +55,6 @@ cc, mat =zern.zernikeFitAuxmask(w, mm, [1,2,3])
 q=roizern(imgf, [1,2,3],mm, [0,1])
 
 def roizern(img, z2fit, auxmask =None, roiid=None, local =True):
-    '''
-    to compute Zernike over all the passed roiid.
-    local  --> ALL the zernike (computed over all the rois) are returned
-    global --> the average of the Zernike is returned
-    '''
     if roiid is not None:  #
         roiimg = roi.roiGenerator(img) #non è disponibile un parametro passato per dire QUANTE roi cercare. funziona anche senza?
         nroi = len(roiid)

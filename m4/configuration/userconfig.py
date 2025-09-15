@@ -1,6 +1,8 @@
 # 4D Configurations
 phasecam_markerconfig = "D:/config/20240608_negativeMarkersMask50mm.4Dini"
-phasecam_alignmentconfig = "D:/config/alignmentConf-noMask-dataFill-lowModThr.4Dini"
+#phasecam_alignmentconfig = "D:/config/alignmentConf-noMask-dataFill-lowModThr.4Dini"
+phasecam_alignmentconfig = "D:/config/20250909_RMAlignment.4Dini"  #20250717_RMAlignment.4Dini
+phasecam_dmconfig        = "D:/config/20250910_AllSegments-nospl.4Dini"
 phasecam_noiseconfig = "D:/config/20240608_negativeMarkersMask50mm.4Dini"
 phasecam_monitorconfig = "D:/config/20240722_monitoringZoomRmCenter_Quarter.4Dini"
 phasecam_baseconfig = "D:/config/20240719_2000x2000_RMCenter.4Dini"
@@ -29,3 +31,9 @@ noise_difftemplate = np.array([3, 11, 25, 37, 51])
 # items translation
 refMirror_maxstepBeforeAlignment = 100
 truss_maxstepBeforeAlignment = 100
+
+#RM and PAR sliders configuration
+parslider4segment = 0.757   #corresponds to current configuration with DP
+rmslider4alignment= 0.4
+rmsliderout= -0.1
+

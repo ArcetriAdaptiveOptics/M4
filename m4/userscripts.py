@@ -1,13 +1,14 @@
 import numpy as np
 from m4.configuration import userconfig as myconf
-from m4 import main, noise  # main is no longer required for alignment
-from m4 import noise
-from m4 import main  # this is to be removed
-from m4.configuration import update_folder_paths as ufp
+#from m4 import main, noise  # main is no longer required for alignment
+#from m4 import noise
+#from m4 import main  # this is to be removed
+#from m4.configuration import update_folder_paths as ufp
 from m4.utils import markers as mrk
 from m4.mini_OTT import measurements
 from m4.analyzers import timehistory as th
 from m4.utils.alignment import Alignment
+from m4.devices import opt_beam
 
 fn = ufp.folders
 
@@ -32,6 +33,20 @@ class OTTScripts:
         self._dm = dm
         self._meas = measurements.Measurements(ott, interf)
         self.alignment = Alignment(ott, interf)
+        self.collimator= opt_beam.Parabola(ott)
+        self.refMirror = opt_beam.ReferenceMirror(ott)
+
+    def configureOTT4Alignment():
+        print('Moving Reference Mirror to '+str(rmslider4alignment))
+        self.refMirror.moveRmsTo(rmslider4alignment)
+
+    def configureOTTrefMirrorOut():
+        print('Moving Reference Mirror outside the beam to'+str(rmsliderout))
+        self.refMirror.moveRmsTo(rmsliderout)
+
+    def configureOTT4Segment():
+        print('Moving Truss to '+str(parslider4segment))
+        self.collimator.moveTrussTo(parslider4segment)
 
     def generalAlignment(self, zz, dof, nframes, move=0, removePar=True):
         self.config4D4Alignment()
@@ -94,7 +109,7 @@ class OTTScripts:
                                   dofidf, nframes, doit, tnPar)
     """
 
-    def calibrateAlignment(self, nPushPull=2, n_frames=20, removePar=True):
+    def calibrateAlignment(self, cmdAmp, n_frames, save=True):
         doit, tnPar = self._checkAlignmInfo(1, removePar)
         par_pist = myconf.alignCal_parPist
         par_tip, par_tilt = myconf.alignCal_parTip, myconf.alignCal_parTilt
@@ -105,16 +120,8 @@ class OTTScripts:
         )
         print(command_amp_vector)
         print(tnPar)
-        tnc = main.calibrate_PARAndRM(
-            self._ott,
-            self._interf,
-            command_amp_vector,
-            nPushPull,
-            n_frames,
-            delay=0,
-            tnPar=tnPar,
-        )
-        return tnc
+        tncal = al.calibrate_PARAndRM( command_amp_vector,  n_frames   )
+        return tncal
 
     def config4D4Alignment(self):
         print("Applying 4D configuration file: " + myconf.phasecam_alignmentconfig)
