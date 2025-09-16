@@ -36,15 +36,15 @@ class OTTScripts:
         self.collimator= opt_beam.Parabola(ott)
         self.refMirror = opt_beam.ReferenceMirror(ott)
 
-    def configureOTT4Alignment():
+    def configureOTT4Alignment(self):
         print('Moving Reference Mirror to '+str(rmslider4alignment))
         self.refMirror.moveRmsTo(rmslider4alignment)
 
-    def configureOTTrefMirrorOut():
+    def configureOTTrefMirrorOut(self):
         print('Moving Reference Mirror outside the beam to'+str(rmsliderout))
         self.refMirror.moveRmsTo(rmsliderout)
 
-    def configureOTT4Segment():
+    def configureOTT4Segment(self):
         print('Moving Truss to '+str(parslider4segment))
         self.collimator.moveTrussTo(parslider4segment)
 
