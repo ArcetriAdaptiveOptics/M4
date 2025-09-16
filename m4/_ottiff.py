@@ -145,6 +145,7 @@ class OttIffAcquisition:
         """
         if dp is True:
             modeslist = [_np.arange(0,111,1), _np.arange(111,222,1)]
+            ampvec = [amplitude[:111], amplitude[111:]]
             tns = []
             for k in range(2):
                 tns.append(ifm.iffDataAcquisition(

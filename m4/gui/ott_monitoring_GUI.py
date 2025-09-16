@@ -1,7 +1,7 @@
 """
 Author(s)
 ---------
-    - Pietro Ferraiuolo : written in 2024
+- Pietro Ferraiuolo : written in 2024
 
 Description
 -----------
@@ -27,13 +27,11 @@ import time, os, shutil, threading, numpy as np
 from matplotlib.pyplot import tight_layout
 from guietta import Gui, _, ___, III, M, G, P, execute_in_main_thread
 from m4 import noise
-from m4.configuration import update_folder_paths as ufp
+from m4.configuration.root import folders as fn
 from m4.configuration import userconfig as uc
 from opticalib.ground.osutils import newtn as ts
 from opticalib.ground import zernike as zern
 from opticalib.ground import osutils as osu
-
-fn = ufp.folders
 
 
 class SystemMonitoring:
