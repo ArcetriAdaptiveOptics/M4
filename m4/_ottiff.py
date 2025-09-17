@@ -178,3 +178,48 @@ class OttIffAcquisition:
         rois = roi.roiGenerator(img, 3)
         ... # TODO: complete
 
+
+    def iff_tiltDetrend(tn, auxmask, roi2Calc, roi2Remove):
+        '''
+        '''
+        #per tutte le immagini nel cubo:
+        # v=tiltDetrend(img,auxmask, [roi2calc],[roi2remove])#le ROI ID vanno sapute in partenza
+        pass
+
+    def roizern(img, z2fit, auxmask =None, roiid=None, local =True):
+        if roiid is not None:  #
+            roiimg = _roi.roiGenerator(img) #non è disponibile un parametro passato per dire QUANTE roi cercare. funziona anche senza?
+            nroi = len(roiid)
+        else:
+            nroi=1
+        if auxmask is None:
+            auxmask2use = img.mask
+        else:
+            auxmask2use = auxmask
+        zcoeff = np.zeros([nroi, len(z2fit)])
+        zsurf  = []
+        for i in range(nroi):
+            img2fit = np.ma.masked_array(img.data, roiimg[i])
+            cc, _ =zern.zernikeFitAuxmask(img2fit, auxmask2use, z2fit)
+            zcoeff[i,:] = cc
+        if local is False:
+            zcoeff = zcoeff.mean(axis=0)
+        return zcoeff
+
+    def _tiltDetrend(img, auxmask, roi2Calc, roi2Remove):
+       '''
+        computes the Zernikes (PTT only)  over the roi2Calc, then produces the corresponding shape over the roi2Remove mask, and subtract it.
+        USAGE:
+        v=tiltDetrend(imgf,mm, [0],[1]) # 0 is the Id of the non-active ROI; 1 is the Id of the active ROI
+        '''
+        roiimg = _roi.roiGenerator(img)
+        zcoeff = roizern(img, [1,2,3], auxmask, roiid=roi2Calc, local=True) #returns the global PTT evaluated over the roi2Calc areas
+        am = np.ma.masked_array(auxmask, auxmask==0)
+        _, zmat = zern.zernikeFit(am,[1,2,3]) #returns the ZernMat created over the entire circular pupil
+        surf2Remove = zern.zernikeSurface( am,zcoeff[roi2Calc,:], zmat)
+        #surf2Remove[roiimg[roi2Remove==0]] =0
+        #surf2Remove = np.ma.masked_array(surf2remove.data, roi2Remove.mask)
+        detrendedImg = imgf - surf2Remove
+        return detrendedImg
+
+
