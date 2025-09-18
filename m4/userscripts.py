@@ -45,6 +45,9 @@ from m4.configuration import userconfig as myconf
 #from m4.utils.alignment import Alignment
 from opticalib import alignment
 from m4.devices import opt_beam
+from opticalib.dmutils import iff_module as ifm, iff_processing as ifp, iff_acquisition_preparation as ifa
+from opticalib.dmutils.flattening import Flattening
+
 
 #fn = ufp.folders
 
@@ -55,9 +58,24 @@ class OTTScripts:
 
     Methods
     =======
-    alignTT
-    alignFocus
+    configureOTT4Alignment
+    configureOTTrefMirrorOut
+    configureOTT4Segment
+    whereisRef
+    whereisBeam
+    alignM4TT
+    alignOTT
     alignComa
+    alignFocus
+    calibrateOTTAlignment
+    calibrateM4Alignment
+    config4D4Alignment
+    config4D4Markers
+
+    acquireNoise
+    acquireTimeAverage
+    analyzeTimeAverage
+    acquireCurrentFootprint
 
     """
 
@@ -107,6 +125,33 @@ class OTTScripts:
         """
         print('Moving Truss to '+str(myconf.parslider4segment))
         self.collimator.moveTrussTo(myconf.parslider4segment)
+
+    def whereisRef(self):
+        """
+        This function moves the Parabolic Mirror to the defined position in the OTT to view the M4 segment.
+        Parameters
+        ----------
+
+        Returns
+        -------
+        """
+        pp = self.refMirror.rmsGetPosition()
+        print(str(pp))
+        return pp
+
+    def whereisBeam(self):
+        """
+        This function moves the Parabolic Mirror to the defined position in the OTT to view the M4 segment.
+        Parameters
+        ----------
+
+        Returns
+        -------
+        """        
+        self.collimator.trussGetPosition()
+        print(str(pp))
+        return pp
+
 
     def generalAlignment(self, zz, dof, nframes, move=0, removePar=True):
         """
@@ -221,52 +266,63 @@ e to be corrected
         dd = np.array([0])
         self.generalAlignment(zz, dd, nframes, move, removePar)
 
-    """
-    def alignTT(self, nframes, move=0, removePar=True):
-        self.config4D4Alignment()
-        doit, tnPar = self._checkAlignmInfo(move, removePar)
-        zern2corrf = np.array([0,1])
-        dofidf = np.array([3,4])
-        if removePar == True: 
-            self.alignment.reloadCalibratedParabola(tnPar)
-        self.alignment.correct_alignment(dofidf, zern2corrf, move, nframes)
-
-        #tna = main.align_PARAndRM(self._ott, self._interf,                                  myconf.alignmentCalibration_tn, zern2corrf,                                  dofidf, nframes, doit, tnPar)  #obsolete
-
-    def alignFocus(self, nframes, move=0, removePar=True):
-        doit, tnPar = self._checkAlignmInfo(move, removePar)
-        zern2corrf = np.array([2])
-        dofidf = np.array([0])
-        tna = main.align_PARAndRM(self._ott, self._interf,
-                                  myconf.alignmentCalibration_tn, zern2corrf,
-                                  dofidf, nframes, doit, tnPar)
-
-    def alignComa(self, nframes, move=0, removePar=True):
-        if nframes < 5:
-            print('The requested number of frames is not enough to guarantee a\
-                  robust alignment. Trying...')
-        doit, tnPar = self._checkAlignmInfo(move, removePar)
-        zern2corrf = np.array([3,4])
-        dofidf = np.array([1,2,3,4])
-        tna = main.align_PARAndRM(self._ott, self._interf,
-                                  myconf.alignmentCalibration_tn, zern2corrf,
-                                  dofidf, nframes, doit, tnPar)
-    """
 
     def calibrateOTTAlignment(self, cmdAmp, n_frames, save=True):
         """
-        xxx
+        This function measures the alignment calibration for the OTT, as the Zernike amplitude (fotted over the RefMirror area and with the PAR as pupil, corresponding to the displacement of each relevant DoF in the OTT. In particular, the PAR dZ, rX and rY and RefMirr rX and rY are moved, while measuring tip, tilt, focus and both comaX and comaY.
         Parameters
         ----------
+        cmdAmp     :   list
+            Amplitude, in natural dimensions for the PLC [mm and arcsec], for each DoF. M4 tip tilt are zeroed to skip the execution of M4 hexapod commands.
+        n_frames   :   int
+            Number of frames to be averaged to acquire the image for computing the Zernik
+e to be corrected
+        save      :  bool
+            Flag to indicate whether to save or not the data
+
 
         Returns
         -------
         """
         doit, tnPar = self._checkAlignmInfo(1, removePar)
-        par_pist = myconf.alignCal_parPist
-        par_tip, par_tilt = myconf.alignCal_parTip, myconf.alignCal_parTilt
-        rm_tip, rm_tilt = myconf.alignCal_rmTip, myconf.alignCal_rmTilt
-        command_amp_vector = np.array([par_pist, par_tip, par_tilt, rm_tip, rm_tilt])
+        par_pist = myconf.alignCal_parPist 
+        par_tip, par_tilt = myconf.alignCal_parTip, myconf.alignCal_parTilt 
+        rm_tip, rm_tilt = myconf.alignCal_rmTip, myconf.alignCal_rmTilt 
+        m4_tip, m4_tilt = myconf.alignCal_m4Tip *0, myconf.alignCal_m4Tilt *0
+
+        command_amp_vector = np.array([par_pist, par_tip, par_tilt, rm_tip, rm_tilt,m4_tip, m4_tilt])
+        print(
+            "Calibrating the OTT alignment, with the following command amplitudes and Parabola removal option:"
+        )
+        print(command_amp_vector)
+        print(tnPar)
+        print('Add here the command for OTT alignment calibration == PAR + RM')
+        #tncal = al.calibrate_PARAndRM( command_amp_vector,  n_frames   )
+        return tncal
+
+    def calibrateM4Alignment(self, cmdAmp, n_frames, save=True):
+        """
+        This function measures the alignment calibration for the OTT, as the Zernike amplitude (fotted over the RefMirror area and with the PAR as pupil, corresponding to the displacement of each relevant DoF in the OTT. In particular, the PAR dZ, rX and rY and RefMirr rX and rY are moved, while measuring tip, tilt, focus and both comaX and comaY.
+        Parameters
+        ----------
+        cmdAmp     :   list
+            Amplitude, in natural dimensions for the PLC [mm and arcsec], for each DoF. PAR and RefMirr Dof are zeroed to skip the execution of the associated commands.
+        n_frames   :   int
+            Number of frames to be averaged to acquire the image for computing the Zernik
+e to be corrected
+        save      : bool
+            Flag to indicate whether to save or not the data
+
+        Returns
+        -------
+        """
+        doit, tnPar = self._checkAlignmInfo(1, removePar)
+        par_pist = myconf.alignCal_parPist *0
+        par_tip, par_tilt = myconf.alignCal_parTip *0, myconf.alignCal_parTilt *0
+        rm_tip, rm_tilt = myconf.alignCal_rmTip *0 , myconf.alignCal_rmTilt *0
+        m4_tip, m4_tilt = myconf.alignCal_m4Tip, myconf.alignCal_m4Tilt
+
+        command_amp_vector = np.array([par_pist, par_tip, par_tilt, rm_tip, rm_tilt, m4_tip, m4_tilt])
         print(
             "Calibrating the OTT alignment, with the following command amplitudes and Parabola removal option:"
         )
@@ -344,20 +400,40 @@ e to be corrected
             tnPar = None
         return doit, tnPar
 
-    def prepareFlat(self, tniff):
-        # self._flat=flattening(tniff)
-        # return self._flat
-        pass
 
-    def flattening(self, tniff, nmodes, nframes, zern2remove=[1, 2, 3]):
-        # flatclass=flattening(tniff)
-        # tn = self.acquireTimeAverage(self, nframes)
-        # img = self.analyzeTimeAverage(self, tn, zern2remove)
-        # flatcmd = flatclass.(tniff, img, nmodes, zern2remove)
-        # flatcmd is the ampl vector referred to the IFF cmdmatrix
-        # cmdMat2use = flatclass._cmdMat[:,0:nmodes]....
 
-        # command = cmdmat2use @ flatcmd
-        # now command is just nmodes. ---> fill the entire command vector???
-        # dm.mirrorCommand(-flatcmd)
+class M4Scripts:
+    """
+    xxx
+
+    Methods
+    =======
+    loadFlat
+    acquireIff
+
+    """
+
+    def __init__(self, dm=None, interf=None):
+        """The Constructor"""
+        #       print('Tell me, Master')
+        
+        self.interf = interf
+        self.dm = dm
+
+
+    def loadFlat(tn):
+        """
+        The function loads the actuator positions corresponding to a save flattening vector and applies the command to the DM after checking the bias vectors.
+        Parameters
+        ----------
+        tn     :   str
+            the Tracking number where the data are saved
+
+        Returns
+        -------
+        """
+        basefold = ''
+        #dm.applyFlat(tn)
         pass
+    
+

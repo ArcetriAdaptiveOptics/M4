@@ -7,7 +7,11 @@ from m4 import userscripts
 ottuser = OTTScripts(ott, interf, None)
 
 
+ottuser.whereisRef()
+ottuser.whereisBeam()
 
+ottuser.config4D4Alignment()
+#ottuser.refMirror.rmTipTilt([1,1])
 
 
 par      = opt_beam.Parabola(ott)
