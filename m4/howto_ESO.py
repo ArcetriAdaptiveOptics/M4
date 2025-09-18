@@ -3,6 +3,12 @@ import m4
 from m4.devices import opt_beam
 
 ott,_,interf=m4.create_ott()
+from m4 import userscripts
+ottuser = OTTScripts(ott, interf, None)
+
+
+
+
 
 par      = opt_beam.Parabola(ott)
 refmirr = opt_beam.ReferenceMirror(ott)
