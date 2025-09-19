@@ -340,7 +340,7 @@ e to be corrected
 
     def config4D4Alignment(self):
         """
-        xxx
+        The function communicates with the 4D Focus SW to load the interferometer configuration file to enable the optical alignment.
         Parameters
         ----------
 
@@ -352,7 +352,8 @@ e to be corrected
 
     def config4D4Markers(self):
         """
-        xxx
+        The function communicates with the 4D Focus SW to load the interferometer configuration file to enable the acquisition of the markers.
+
         Parameters
         ----------
 
