@@ -128,12 +128,14 @@ class OTTScripts:
 
     def whereisRef(self):
         """
-        This function moves the Parabolic Mirror to the defined position in the OTT to view the M4 segment.
+        This function returns the position of the Ref Mirror in the OTT in M4-centered coordinates.
         Parameters
         ----------
 
         Returns
         -------
+        pp    :  float
+            RefMirror position
         """
         pp = self.refMirror.rmsGetPosition()
         print(str(pp))
@@ -141,11 +143,14 @@ class OTTScripts:
 
     def whereisBeam(self):
         """
-        This function moves the Parabolic Mirror to the defined position in the OTT to view the M4 segment.
+        This function returns the position of the Parabolic mirror mount (Truss) in the OTT in M4-centered coordinates.
+
         Parameters
         ----------
 
         Returns
+        pp    : float
+            PAR mirror position
         -------
         """        
         self.collimator.trussGetPosition()
@@ -211,7 +216,7 @@ class OTTScripts:
 
     def alignOTT(self, nframes, move=0, removePar=True):
         """
-        This function moves the Parabolic Mirror to the defined position in the OTT to view the M4 segment.
+        This function correct the RefMirror orientation to minimioze the tilt as seen on the RefMirror footprint.
         Parameters
         ----------
         nframes   :  int
@@ -230,7 +235,7 @@ e to be corrected
 
     def alignComa(self, nframes, move=0, removePar=True):
         """
-        This function moves the Parabolic Mirror to the defined position in the OTT to view the M4 segment.
+        This function corrects the Parabola and Ref Mirror orientations to minimize Tilt and Coma, as measured over the RefMirror footprint.
         Parameters
         ----------
         nframes   :  int
@@ -249,7 +254,8 @@ e to be corrected
 
     def alignFocus(self, nframes, move=0, removePar=True):
         """
-        This function moves the Parabolic Mirror to the defined position in the OTT to view the M4 segment.
+        This function corrects the vertical (piston) position of the Parabola to minimize the focus as measured over the Ref Mirror footprint.
+
         Parameters
         ----------
         nframes   :  int
