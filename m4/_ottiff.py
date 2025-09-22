@@ -179,15 +179,74 @@ class OttIffAcquisition:
         ... # TODO: complete
 
 
-    def iff_tiltDetrend(tn, auxmask, roi2Calc, roi2Remove):
+    def iff_roiProcessing(tn, auxmask, activeRoiID, auxRoiID, detrend=False, roinull=False, roicosmetic=False):
         '''
-        '''
-        #per tutte le immagini nel cubo:
-        # v=tiltDetrend(img,auxmask, [roi2calc],[roi2remove])#le ROI ID vanno sapute in partenza
-        pass
+        This function groups together some image manipulations in presence of Region Of Interest (ROI). We assume thatwe have in the image an activeRoi, with given I, corresponding to the region of the actuated segment; and one or more auxiliaryRosi, corresponding to the regions of the non-actuated segments, to be used as an optical reference.
 
-    def roizern(img, z2fit, auxmask =None, roiid=None, local =True):
-        if roiid is not None:  #
+        Parameters
+        ----------
+        tn     :    str
+            The tracking number of the dataset (expected: the IFF cube, saved by the iff_process script)
+        auxmask       :  
+            The circular mask to create the Zernike modes
+        activeRoiID   :
+            The ID of the region 
+        auxRoiID      :
+            
+        detrend       :
+            
+        roinull       :
+            
+        roicosmetic   :
+            
+        Returns
+        -------
+
+        '''
+        #qui legge il cubo da TN, trova il num di immagini e altro.
+        # supponiamo che il cubo si chiami cube e che possa indicizzarlo come cube[i] e che contenga nframes.
+        # supponiamo che legga una master-mask, ossia intersezione di tutte le maschere di tutte le immagini.
+        #      master_mask = TBD
+        nrois2search = len([activeRoiID,auxRoiID])
+        rois = roi.roiGenerator(master_mask,nrois2search)
+        newcube = []
+        for i in range(nframes):
+            img = cube[i]
+            if detrend is not False:
+                v=tiltDetrend(img,auxmask, auxRoiID,activeRoiID, rois)
+            if roinull is not False:
+                v = roinull(v, auxRoiID, rois)
+            if roicosmetic is not False:
+                v = roicosmetics(img)
+            newcube.append(v)
+            
+
+        newcube = np.ma.masked_array(newcube)
+        #qui salvare il newcube
+                    
+
+    def roicosmetics(img, params=None):
+
+        return img
+
+    def roiId(img):
+        roiimg = _roi.roiGenerator(img)
+        print('N. of ROIs found:')
+        print(len(roiimg)
+            for i in roiimg:
+                imshow(i)
+                title(str(i))
+
+
+    def roinull(img, roi2null, roiimg = None):
+        if roiimg is None:
+            roiimg = _roi.roiGenerator(img)
+        for i in roi2null:
+            img[i==0]=0
+        return img
+
+    def roizern(img, z2fit, auxmask =None, roiid=None, local =True, roiimg = None):
+        if ((roiid is not None) and (roiimg is None)):  #
             roiimg = _roi.roiGenerator(img) #non è disponibile un parametro passato per dire QUANTE roi cercare. funziona anche senza?
             nroi = len(roiid)
         else:
@@ -206,14 +265,15 @@ class OttIffAcquisition:
             zcoeff = zcoeff.mean(axis=0)
         return zcoeff
 
-    def _tiltDetrend(img, auxmask, roi2Calc, roi2Remove):
+    def _tiltDetrend(img, auxmask, roi2Calc, roi2Remove, roiimg=None):
        '''
         computes the Zernikes (PTT only)  over the roi2Calc, then produces the corresponding shape over the roi2Remove mask, and subtract it.
         USAGE:
         v=tiltDetrend(imgf,mm, [0],[1]) # 0 is the Id of the non-active ROI; 1 is the Id of the active ROI
         '''
-        roiimg = _roi.roiGenerator(img)
-        zcoeff = roizern(img, [1,2,3], auxmask, roiid=roi2Calc, local=True) #returns the global PTT evaluated over the roi2Calc areas
+        if roiimg is None:
+            roiimg = _roi.roiGenerator(img)
+        zcoeff = roizern(img, [1,2,3], auxmask, roiid=roi2Calc, local=True, roiimg) #returns the global PTT evaluated over the roi2Calc areas
         am = np.ma.masked_array(auxmask, auxmask==0)
         _, zmat = zern.zernikeFit(am,[1,2,3]) #returns the ZernMat created over the entire circular pupil
         surf2Remove = zern.zernikeSurface( am,zcoeff[roi2Calc,:], zmat)
