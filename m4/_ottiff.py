@@ -205,7 +205,7 @@ class OttIffAcquisition:
         '''
         #qui legge il cubo da TN, trova il num di immagini e altro.
         # supponiamo che il cubo si chiami cube e che possa indicizzarlo come cube[i] e che contenga nframes.
-        # supponiamo che legga una master-mask, ossia intersezione di tutte le maschere di tutte le immagini.
+        # supponiamo tutto il cubo sia mascherato con la maschera intersezione. la master-mask corrisponde quindi alla maschera di un frame qualsiasi
         #      master_mask = TBD
         nrois2search = len([activeRoiID,auxRoiID])
         rois = roi.roiGenerator(master_mask,nrois2search)
