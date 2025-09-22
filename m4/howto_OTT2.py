@@ -2,7 +2,7 @@
 
 import m4
 from m4.devices import opt_beam
-
+from opticalib.core import root as fname
 ott,_,interf=m4.create_ott()
 
 par = opt_beam.Parabola(ott)
