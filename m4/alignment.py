@@ -86,7 +86,9 @@ class OttAligner(_al.Alignment):
         if applycmd:
             ntn = _newtn()
             print("Applying correction command...")
-            self._apply_command(f_cmd)
+            # self._apply_command(f_cmd)
+            # Tentativo 1
+            super()._apply_command(f_cmd)
             coeffs_f = self._zern_routine(self._acquire[0](nframes=n_frames))
             self._write_correction_log(modes2correct, zern2correct, ntn, coeffs_i, coeffs_f)
             dirr = _join(_fn.ALIGN_RESULTS_ROOT_FOLDER, ntn)
