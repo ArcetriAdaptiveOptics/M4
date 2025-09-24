@@ -167,6 +167,7 @@ class OttIffAcquisition:
                           tns: list[str], 
                           auxmask: ot.ImageData,
                           activeRoiID: list[int],
+                          auxRoiID: list[int],
                           detrend: bool = False,
                           roinull: bool = False,
                           roicosmetic: bool = False
@@ -234,11 +235,11 @@ class OttIffAcquisition:
             auxmask2use = img.mask
         else:
             auxmask2use = auxmask
-        zcoeff = np.zeros([nroi, len(z2fit)])
+        zcoeff = _np.zeros([nroi, len(z2fit)])
         zsurf  = []
         for i in range(nroi):
-            img2fit = np.ma.masked_array(img.data, roiimg[i])
-            cc, _ =zern.zernikeFitAuxmask(img2fit, auxmask2use, z2fit)
+            img2fit = _np.ma.masked_array(img.data, roiimg[i])
+            cc, _ = _zern.zernikeFitAuxmask(img2fit, auxmask2use, z2fit)
             zcoeff[i,:] = cc
         if local is False:
             zcoeff = zcoeff.mean(axis=0)
@@ -258,7 +259,7 @@ class OttIffAcquisition:
         surf2Remove = _zern.zernikeSurface( am,zcoeff[roi2Calc,:], zmat)
         #surf2Remove[roiimg[roi2Remove==0]] =0
         #surf2Remove = np.ma.masked_array(surf2remove.data, roi2Remove.mask)
-        detrendedImg = imgf - surf2Remove
+        detrendedImg = img - surf2Remove
         return detrendedImg
 
 
