@@ -3,16 +3,19 @@ import numpy as _np
 from opticalib import typings as ot
 from opticalib.core import read_config as _rif
 from opticalib.core.root import folders as _fn
-from opticalib.ground.osutils import (
-    newtn as _ts, save_fits as _sf, load_fits as _lf
+from opticalib.ground import (
+    osutils as _osu,
+    roi as _roi,
+    zernike as _zern
 )
-from opticalib.ground import roi as _roi
 from opticalib.dmutils import (
     iff_acquisition_preparation as _ifa, 
     iff_processing as ipf,
     iff_module as ifm
 )
 
+_lf = _osu.load_fits
+_sf = _osu.save_fits
 
 def stackRoiCubes(tnlist: list[str], tn_active_roi: list[int]) -> ot.CubeData:
     """
@@ -47,15 +50,6 @@ def stackRoiCubes(tnlist: list[str], tn_active_roi: list[int]) -> ot.CubeData:
             # da poi unire nell'immagine finale
             nonactiveroi = rois[1-rr]
             fin_img[nonactiveroi==0] = 0
-#            active_shell = _np.ma.masked_array(uimg.data, mask=rois[r])
-#            nonactive_shell = _np.ma.masked_array(uimg.data, mask=rois[1-r])
-#            active_shell -= active_shell.mean()
-#            nonactive_shell[rois[1-r]==0] = 0
-#            total_data = _np.zeros(uimg.shape)
-#            total_data[rois[1-r]] = nonactive_shell[rois[1-r]]
-#            total_data[rois[r]] = active_shell[rois[r]]
-#            total_mask = _np.logical_xor(rois[r], rois[1-r])
-#            fin_img = _np.ma.masked_array(total_data, mask=_np.invert(total_mask))
             ncube.append(fin_img)
         ncube = _np.ma.dstack(ncube)
         # fare la maschera del cubo, così che venga salvata
@@ -146,17 +140,18 @@ class OttIffAcquisition:
         tns: list[str]
             The tracking number of the dataset acquired, saved in the OPDImages folder
         """
+        amplitude = kwargs.pop('amplitude', _np.full(222, 500e-9))
         if dp is True:
             modeslist = [_np.arange(0,111,1), _np.arange(111,222,1)]
             ampvec = [amplitude[:111], amplitude[111:]]
             tns = []
             for k in range(2):
                 tns.append(ifm.iffDataAcquisition(
-                    dm=self._dm, interf=self._interf, modesList=modeslist[k], **kwargs
+                    dm=self._dm, interf=self._interf, modesList=modeslist[k], amplitude=ampvec[k], **kwargs
                 ))
             return tns
         else:
-            return ifm.iffDataAcquisition(dm=self._dm, interf=self._interf, **kwargs)
+            return ifm.iffDataAcquisition(dm=self._dm, interf=self._interf, amplitude=amplitude, **kwargs)
 
     def process(self, **kwargs: dict[str,ot.Any]):
         """
@@ -168,84 +163,68 @@ class OttIffAcquisition:
             ipf.process(tn = t, **kwargs)
 
 
-    def _prepareSegmentsRoi(self):
+    def iffRoiProcessing(self, 
+                          tns: list[str], 
+                          auxmask: ot.ImageData,
+                          activeRoiID: list[int],
+                          detrend: bool = False,
+                          roinull: bool = False,
+                          roicosmetic: bool = False
+                          ):
         """
-        This function prepares and labels the ROIs for the M4 (DP) segments
-        """
-        from opticalib.ground import roi
-        
-        img = self._interf.acquire_map()
-        rois = roi.roiGenerator(img, 3)
-        ... # TODO: complete
-
-
-    def iff_roiProcessing(tn, auxmask, activeRoiID, auxRoiID, detrend=False, roinull=False, roicosmetic=False):
-        '''
-        This function groups together some image manipulations in presence of Region Of Interest (ROI). We assume thatwe have in the image an activeRoi, with given I, corresponding to the region of the actuated segment; and one or more auxiliaryRosi, corresponding to the regions of the non-actuated segments, to be used as an optical reference.
+        This function groups together some image manipulations in presence of 
+        Region Of Interest (ROI). We assume that we have in the image an
+        activeRoi, with given I, corresponding to the region of the actuated
+        segment; and one or more auxiliaryRosi, corresponding to the regions
+        of the non-actuated segments, to be used as an optical reference.
 
         Parameters
         ----------
-        tn     :    str
-            The tracking number of the dataset (expected: the IFF cube, saved by the iff_process script)
-        auxmask       :  
-            The circular mask to create the Zernike modes
-        activeRoiID   :
-            The ID of the region 
-        auxRoiID      :
-            
-        detrend       :
-            
-        roinull       :
-            
-        roicosmetic   :
-            
-        Returns
-        -------
-
-        '''
-        #qui legge il cubo da TN, trova il num di immagini e altro.
-        # supponiamo che il cubo si chiami cube e che possa indicizzarlo come cube[i] e che contenga nframes.
-        # supponiamo tutto il cubo sia mascherato con la maschera intersezione. la master-mask corrisponde quindi alla maschera di un frame qualsiasi
-        #      master_mask = TBD
-        nrois2search = len([activeRoiID,auxRoiID])
-        rois = roi.roiGenerator(master_mask,nrois2search)
+        tn: str
+            The tracking number of the dataset to be processed.
+        auxmask: 2D array-like
+            The auxiliary mask, with value 1 in the region of interest, 0 elsewhere.
+        activeRoiID: list[int]
+            The ID of the active ROI, corresponding to the actuated segment.
+        auxRoiID: list[int]
+            The ID(s) of the auxiliary ROIs, corresponding to the non-actuated segments.
+        detrend: bool, optional
+            If True, perform a tilt detrend over the activeRoi, using the auxRoi as reference.
+        roinull: bool, optional
+            If True, set to zero the pixels outside the activeRoi.
+        roicosmetic: bool, optional
+            If True, perform cosmetic operations on the image (e.g. remove bad pixels).
+        """
+        newtn = _osu.newtn() # ??
+        cube = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tns, "IMCube.fits")).rollaxis(2)
+        nframes = cube.shape[0]
+        rois = _roi.roiGenerator(cube[0].mask)
         newcube = []
         for i in range(nframes):
             img = cube[i]
             if detrend is not False:
-                v=tiltDetrend(img,auxmask, auxRoiID,activeRoiID, rois)
+                v = self._tiltDetrend(img, auxmask, auxRoiID, activeRoiID, rois)
             if roinull is not False:
-                v = roinull(v, auxRoiID, rois)
+                v = self.roinull(v, auxRoiID, rois)
             if roicosmetic is not False:
-                v = roicosmetics(img)
+                v = self.roicosmetics(img)
             newcube.append(v)
-            
+        newcube = _np.ma.masked_array(newcube)
+        _osu.save_fits(_os.path.join(_fn.INTMAT_ROOT_FOLDER, newtn, "IMCube_roiProc.fits"), newcube, overwrite=True)
+        
 
-        newcube = np.ma.masked_array(newcube)
-        #qui salvare il newcube
-                    
-
-    def roicosmetics(img, params=None):
-
+    def roicosmetics(self, img, params=None):
         return img
+    
 
-    def roiId(img):
-        roiimg = _roi.roiGenerator(img)
-        print('N. of ROIs found:')
-        print(len(roiimg)
-            for i in roiimg:
-                imshow(i)
-                title(str(i))
-
-
-    def roinull(img, roi2null, roiimg = None):
+    def roinull(self, img, roi2null, roiimg = None):
         if roiimg is None:
             roiimg = _roi.roiGenerator(img)
         for i in roi2null:
             img[i==0]=0
         return img
 
-    def roizern(img, z2fit, auxmask =None, roiid=None, local =True, roiimg = None):
+    def roizern(self, img, z2fit, auxmask =None, roiid=None, local =True, roiimg = None):
         if ((roiid is not None) and (roiimg is None)):  #
             roiimg = _roi.roiGenerator(img) #non è disponibile un parametro passato per dire QUANTE roi cercare. funziona anche senza?
             nroi = len(roiid)
@@ -265,18 +244,18 @@ class OttIffAcquisition:
             zcoeff = zcoeff.mean(axis=0)
         return zcoeff
 
-    def _tiltDetrend(img, auxmask, roi2Calc, roi2Remove, roiimg=None):
-       '''
+    def _tiltDetrend(self, img, auxmask, roi2Calc, roi2Remove, roiimg=None):
+        '''
         computes the Zernikes (PTT only)  over the roi2Calc, then produces the corresponding shape over the roi2Remove mask, and subtract it.
         USAGE:
-        v=tiltDetrend(imgf,mm, [0],[1]) # 0 is the Id of the non-active ROI; 1 is the Id of the active ROI
+        v=self._tiltDetrend(imgf,mm, [0],[1]) # 0 is the Id of the non-active ROI; 1 is the Id of the active ROI
         '''
         if roiimg is None:
             roiimg = _roi.roiGenerator(img)
-        zcoeff = roizern(img, [1,2,3], auxmask, roiid=roi2Calc, local=True, roiimg) #returns the global PTT evaluated over the roi2Calc areas
-        am = np.ma.masked_array(auxmask, auxmask==0)
-        _, zmat = zern.zernikeFit(am,[1,2,3]) #returns the ZernMat created over the entire circular pupil
-        surf2Remove = zern.zernikeSurface( am,zcoeff[roi2Calc,:], zmat)
+        zcoeff = self.roizern(img, [1,2,3], auxmask, roiid=roi2Calc, local=True, roiimg=roiimg) #returns the global PTT evaluated over the roi2Calc areas
+        am = _np.ma.masked_array(auxmask, auxmask==0)
+        _, zmat = _zern.zernikeFit(am,[1,2,3]) #returns the ZernMat created over the entire circular pupil
+        surf2Remove = _zern.zernikeSurface( am,zcoeff[roi2Calc,:], zmat)
         #surf2Remove[roiimg[roi2Remove==0]] =0
         #surf2Remove = np.ma.masked_array(surf2remove.data, roi2Remove.mask)
         detrendedImg = imgf - surf2Remove
