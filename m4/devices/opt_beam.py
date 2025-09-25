@@ -91,9 +91,9 @@ class Parabola:
             sed to the OPCUA.
         """
         if get is False:
-            new_pos = pos + OttParameters.PAR_SLIDER_KIN_OFFSET * 1000
+            new_pos = pos*1000 + OttParameters.PAR_SLIDER_KIN_OFFSET * 1000
         else:
-            new_pos = pos - OttParameters.PAR_SLIDER_KIN_OFFSET * 1000
+            new_pos = (pos - OttParameters.PAR_SLIDER_KIN_OFFSET * 1000)
         return new_pos
 
     def trussGetPosition(self) -> float:
@@ -285,9 +285,9 @@ class ReferenceMirror:
             sed to the OPCUA.
         """
         if get is False:
-            new_pos = pos + OttParameters.RM_SLIDER_KIN_OFFSET * 1000
+            new_pos = pos*1000 + OttParameters.RM_SLIDER_KIN_OFFSET * 1000
         else:
-            new_pos = pos - OttParameters.RM_SLIDER_KIN_OFFSET * 1000
+            new_pos = (pos - OttParameters.RM_SLIDER_KIN_OFFSET * 1000)
         return new_pos
 
     def rmsGetPosition(self) -> float:

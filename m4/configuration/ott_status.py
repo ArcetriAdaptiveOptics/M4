@@ -11,6 +11,7 @@ import time as _t
 import numpy as _np
 import configparser as _cp
 from opticalib.ground import osutils as _osu
+from m4.devices import opt_beam
 
 statusfilename = "OTTStatus.ini"
 
@@ -74,6 +75,8 @@ def save_positions(basepath, ott):
     str
         A message indicating the status file has been saved.
     """
+    beam = opt_beam.Parabola(ott)
+    refmirr = opt_beam.ReferenceMirror(ott)
     fname = _join(basepath, statusfilename)
     f = open(fname, "w")
     f.write("[OTT]\n")
@@ -82,10 +85,14 @@ def save_positions(basepath, ott):
     m4 = ott.m4Exapode.getPosition()
     ps = ott.parabolaSlider.getPosition()
     rs = ott.referenceMirrorSlider.getPosition()
+    bb = beam.trussGetPosition()
+    ref= refmirr.rmsGetPosition()
     ang = ott.angleRotator.getPosition()
     f.write("PAR_SLIDER = " + str(ps) + "\n")
     f.write("RM_SLIDER  = " + str(rs) + "\n")
     f.write("ROT_ANGLE  = " + str(ang) + "\n")
+    f.write("OPT_AXIS   = " + str(bb) + "\n")
+    f.write("REFERENCE  = " + str(ref) + "\n")
     f.write(
         "PAR        = "
         + _np.array2string(

@@ -13,6 +13,7 @@ from opticalib.dmutils import (
     iff_processing as ipf,
     iff_module as ifm
 )
+from opticalib.analyzer import cubeRebinner
 
 _lf = _osu.load_fits
 _sf = _osu.save_fits
@@ -66,9 +67,11 @@ def stackRoiCubes(tnlist: list[str], tn_active_roi: list[int]) -> ot.CubeData:
 
 class OttIffAcquisition:
 
-    def __init__(self, dm: ot.DeformableMirrorDevice, interf: ot.InterferometerDevice):
+    def __init__(self, dm: ot.DeformableMirrorDevice = None, interf: ot.InterferometerDevice = None):
         """The constructor"""
-        if ot.isinstance_(dm, "DeformableMirrorDevice"):
+        if dm is None:
+            self._dm = None
+        elif ot.isinstance_(dm, "DeformableMirrorDevice"):
             self._dm = dm
         else:
             if all(
@@ -90,7 +93,9 @@ class OttIffAcquisition:
  - uploadCmdHistory
  - runCmdHistory"""
                 )
-        if ot.isinstance_(interf, "InterferometerDevice"):
+        if interf is None:
+            self._interf = None
+        elif ot.isinstance_(interf, "InterferometerDevice"):
             self._interf = interf
         else:
             if all(
@@ -170,7 +175,8 @@ class OttIffAcquisition:
                           auxRoiID: list[int],
                           detrend: bool = False,
                           roinull: bool = False,
-                          roicosmetic: bool = False
+                          roicosmetic: bool = False,
+                          rebin:int = 1
                           ):
         """
         This function groups together some image manipulations in presence of 
@@ -197,11 +203,11 @@ class OttIffAcquisition:
             If True, perform cosmetic operations on the image (e.g. remove bad pixels).
         """
         newtn = _osu.newtn() # ??
-        cube = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tns, "IMCube.fits")).rollaxis(2)
+        cube = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tns, "IMCube.fits")).transpose(2,0,1)
         nframes = cube.shape[0]
-        rois = _roi.roiGenerator(cube[0].mask)
         newcube = []
         for i in range(nframes):
+            rois = _roi.roiGenerator(cube[i])
             img = cube[i]
             if detrend is not False:
                 v = self._tiltDetrend(img, auxmask, auxRoiID, activeRoiID, rois)
@@ -211,7 +217,8 @@ class OttIffAcquisition:
                 v = self.roicosmetics(img)
             newcube.append(v)
         newcube = _np.ma.masked_array(newcube)
-        _osu.save_fits(_os.path.join(_fn.INTMAT_ROOT_FOLDER, newtn, "IMCube_roiProc.fits"), newcube, overwrite=True)
+        newCube = cubeRebinner(newcube, rebin)
+        _osu.save_fits(_os.path.join(_fn.INTMAT_ROOT_FOLDER, newtn, "IMCube.fits"), newcube, overwrite=True)
         
 
     def roicosmetics(self, img, params=None):
@@ -253,10 +260,14 @@ class OttIffAcquisition:
         '''
         if roiimg is None:
             roiimg = _roi.roiGenerator(img)
+        if auxmask is None:
+            auxmask = img.mask
+        else:
+            auxmask = auxmask
         zcoeff = self.roizern(img, [1,2,3], auxmask, roiid=roi2Calc, local=True, roiimg=roiimg) #returns the global PTT evaluated over the roi2Calc areas
-        am = _np.ma.masked_array(auxmask, auxmask==0)
+        am = _np.ma.masked_array(auxmask, mask=auxmask==0)
         _, zmat = _zern.zernikeFit(am,[1,2,3]) #returns the ZernMat created over the entire circular pupil
-        surf2Remove = _zern.zernikeSurface( am,zcoeff[roi2Calc,:], zmat)
+        surf2Remove = _zern.zernikeSurface(am, zcoeff[roi2Calc,:], zmat)
         #surf2Remove[roiimg[roi2Remove==0]] =0
         #surf2Remove = np.ma.masked_array(surf2remove.data, roi2Remove.mask)
         detrendedImg = img - surf2Remove
