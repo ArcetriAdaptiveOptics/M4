@@ -1,3 +1,4 @@
+import shutil as _sh
 import os as _os
 import numpy as _np
 from opticalib import typings as ot
@@ -204,6 +205,8 @@ class OttIffAcquisition:
         """
         newtn = _osu.newtn() # ??
         cube = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tns, "IMCube.fits")).transpose(2,0,1)
+        mat = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tns, "cmdMatrix.fits"))
+        modesvec = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tns, "modesVector.fits"))
         nframes = cube.shape[0]
         newcube = []
         for i in range(nframes):
@@ -214,25 +217,89 @@ class OttIffAcquisition:
             if roinull is not False:
                 v = self.roinull(v, auxRoiID, rois)
             if roicosmetic is not False:
-                v = self.roicosmetics(img)
+                v = self.roicosmetics(v)
             newcube.append(v)
         newcube = _np.ma.masked_array(newcube)
-        newCube = cubeRebinner(newcube, rebin)
-        _osu.save_fits(_os.path.join(_fn.INTMAT_ROOT_FOLDER, newtn, "IMCube.fits"), newcube, overwrite=True)
-        
+        newcube = cubeRebinner(newcube.transpose(1,2,0), rebin)
+        save_path = _os.path.join(_fn.INTMAT_ROOT_FOLDER, newtn)
+        if not _os.path.exists(save_path):
+            _os.makedirs(save_path)
+        _osu.save_fits(_os.path.join(save_path, "IMCube.fits"), newcube, overwrite=True)
+        _osu.save_fits(_os.path.join(save_path, "cmdMatrix.fits"), mat, overwrite=True)
+        _osu.save_fits(_os.path.join(save_path, "modesVector.fits"), modesvec, overwrite=True)
+        oflag = _os.path.join(_fn.INTMAT_ROOT_FOLDER, tns, "flag.txt")
+        nflag = _os.path.join(save_path, "flag.txt")
+        _sh.copy(oflag, nflag)
+        return newtn 
 
     def roicosmetics(self, img, params=None):
         return img
     
 
-    def roinull(self, img, roi2null, roiimg = None):
+    def roinull(self, img, roiId, roiimg = None):
         if roiimg is None:
             roiimg = _roi.roiGenerator(img)
-        for i in roi2null:
-            img[i==0]=0
+        for i in roiId:
+            img[roiimg[i]==0] = 0
         return img
 
     def roizern(self, img, z2fit, auxmask =None, roiid=None, local =True, roiimg = None):
+        if roiid is None:
+            nroi = 1
+        else:
+            if roiimg is None:
+                print('roizern: searching rois')
+                roiimg = _roi.roiGenerator(img) #non è disponibile un parametro passato per dire QUANTE roi cercare. funziona anche senza?
+            nroi = len(roiid)
+
+        print('nroi')
+        print(nroi)
+        if auxmask is None:
+            auxmask2use = img.mask
+        else:
+            auxmask2use = auxmask
+        #zcoeff = []
+        zcoeff =  _np.zeros([nroi, len(z2fit)])
+        zsurf = []
+        for i in range(nroi):
+            img2fit = _np.ma.masked_array(img.data, roiimg[i])
+            cc, zmat = _zern.zernikeFitAuxmask(img2fit, auxmask2use, z2fit)
+            #qui implementare il return della zsurface
+            #zcoeff.append(cc)
+            zcoeff[i] = cc  #was zcoeff[i,:] = cc
+            zsurf.append(zmat)
+        #zcoeff = _np.array(zcoeff)
+        if (local is False) and (nroi >1):
+            print('Option -global- selected')
+            zcoeff = zcoeff.mean(axis=0)
+        print('zcoeff roizern')
+        print(zcoeff)
+        return zcoeff
+
+    def _tiltDetrend(self, img, auxmask, roi2Calc, roi2Remove, roiimg=None, zsurf=None):
+        '''
+        computes the Zernikes (PTT only)  over the roi2Calc, then produces the corresponding shape over the roi2Remove mask, and subtract it.
+        USAGE:
+        v=self._tiltDetrend(imgf,mm, [0],[1]) # 0 is the Id of the non-active ROI; 1 is the Id of the active ROI
+        '''
+        if roiimg is None:
+            roiimg = _roi.roiGenerator(img)
+        if auxmask is None:
+            auxmask = img.mask
+        else:
+            auxmask = auxmask
+        zcoeff = self.roizern(img, [1,2,3], auxmask, roiid=roi2Calc, local=False, roiimg=roiimg) #returns the global PTT evaluated over the roi2Calc areas
+        am = _np.ma.masked_array(auxmask, mask=auxmask==0)
+        _, zmat = _zern.zernikeFit(am,[1,2,3]) #returns the ZernMat created over the entire circular pupil
+        #      zmat = zsurf[roi2Remove[0]]
+        surf2Remove = _zern.zernikeSurface(am, zcoeff[0], zmat)  #was zcoeff[roi2Calc,:]
+        #surf2Remove[roiimg[roi2Remove==0]] =0
+        #surf2Remove = np.ma.masked_array(surf2remove.data, roi2Remove.mask)
+        detrendedImg = img - surf2Remove
+        detrendedImg[roiimg[roi2Remove[0]]==0] -= detrendedImg[roiimg[roi2Remove[0]]==0].mean()
+        return detrendedImg
+
+    def roizern2(self, img, z2fit, auxmask =None, roiid=None, local =True, roiimg = None):
         if ((roiid is not None) and (roiimg is None)):  #
             roiimg = _roi.roiGenerator(img) #non è disponibile un parametro passato per dire QUANTE roi cercare. funziona anche senza?
             nroi = len(roiid)
@@ -252,7 +319,7 @@ class OttIffAcquisition:
             zcoeff = zcoeff.mean(axis=0)
         return zcoeff
 
-    def _tiltDetrend(self, img, auxmask, roi2Calc, roi2Remove, roiimg=None):
+    def _tiltDetrend2(self, img, auxmask, roi2Calc, roi2Remove, roiimg=None):
         '''
         computes the Zernikes (PTT only)  over the roi2Calc, then produces the corresponding shape over the roi2Remove mask, and subtract it.
         USAGE:
