@@ -249,7 +249,7 @@ class OttIffAcquisition:
         else:
             if roiimg is None:
                 print('roizern: searching rois')
-                roiimg = _roi.roiGenerator(img) #non è disponibile un parametro passato per dire QUANTE roi cercare. funziona anche senza?
+                roiimg = _roi.roiGenerator(img)
             nroi = len(roiid)
 
         print('nroi')

@@ -37,14 +37,14 @@ class TipTiltDetrend:
 
         dx_image = np.ma.masked_array(image.data, mask=roi_dx)
         sx_image = np.ma.masked_array(image.data, mask=roi_sx)
-        coef_dx, mat_dx = zernike.zernikeFit(dx_image, np.arange(10) + 1)
-        coef_sx, mat_sx = zernike.zernikeFit(sx_image, np.arange(10) + 1)
+        coef_dx, _ = zernike.zernikeFit(dx_image, np.arange(10) + 1)
+        coef_sx, _ = zernike.zernikeFit(sx_image, np.arange(10) + 1)
         coef = np.array(
             [(coef_dx[0] + coef_sx[0]) / 2.0, (coef_dx[1] + coef_sx[1]) / 2.0]
         )
 
         central_image = np.ma.masked_array(image.data, mask=roi_c)
-        cc, mat = zernike.zernikeFit(central_image, np.arange(10) + 1)
+        _, mat = zernike.zernikeFit(central_image, np.arange(10) + 1)
         ima_ttr = zernike.zernikeSurface(central_image, coef, mat[:, 1:3])
         return ima_ttr
 

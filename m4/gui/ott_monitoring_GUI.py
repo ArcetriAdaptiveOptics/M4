@@ -32,6 +32,7 @@ from m4.configuration import userconfig as uc
 from opticalib.ground.osutils import newtn as ts
 from opticalib.ground import zernike as zern
 from opticalib.ground import osutils as osu
+from opticalib.typings import InterferometerDevice as _ID
 
 
 class SystemMonitoring:
@@ -60,7 +61,7 @@ class SystemMonitoring:
     >>> mm.rungui()
     """
 
-    def __init__(self, interferometer):
+    def __init__(self, interferometer: _ID):
         """The Constructor"""
         self._llog = os.path.join(fn.MONITORING_ROOT_FOLDER, "Monitor_CompleteLog.txt")
         self._slog = os.path.join(fn.MONITORING_ROOT_FOLDER, "Monitor_ShortLog.txt")
@@ -292,7 +293,7 @@ class SystemMonitoring:
         gui.window().resize(1250, 950)
         gui.run()
 
-    def monitoring(self, progress=None):
+    def monitoring(self, progress = None):
         """
         Monitoring task for the OTT. It performs two types of acquisitions, a
         'fast acquisition' which does a 'capture' of images at the current
@@ -378,7 +379,7 @@ class SystemMonitoring:
         res1 = dict(zip(keys1, par1))
         res2 = dict(zip(keys2, par2))
         tt = self._abs_tilt_analysis(self.fast_data_path)
-        self.fast_tt = tt
+        self.fast_tt = reversed(tt)
         self.fast_results = dict(zip(keys3, (res1, res2)))
 
     def _slow_analysis(self):
@@ -406,23 +407,23 @@ class SystemMonitoring:
         svec = np.array(slist)
         mean = np.mean(svec)
         std = np.std(svec)
-        self.slow_tt = tt
+        self.slow_tt = reversed(tt)
         self.slow_results = [mean, std]
 
-    def _abs_tilt_analysis(self, path):
+    def _abs_tilt_analysis(self, path: str):
         """
-
+        Absolute tip-tilt analysis of the phasemaps in the input path. It fits
+        the first two zernike modes (tip and tilt) and returns a list of the
+        corresponding coefficients.
 
         Parameters
         ----------
-        path : TYPE
-            DESCRIPTION.
-
+        path : str
+            Complete datapath where the phasemaps are stored.
         Returns
         -------
-        tt : TYPE
-            DESCRIPTION.
-
+        tt : list
+            List of tip-tilt coefficients for each phasemap in the input path.
         """
         fl = osu.getFileList(fold=path)
         nf = len(fl)
@@ -450,13 +451,13 @@ class SystemMonitoring:
         total of 5 images. The tn path is stored in the 'slow_data_path' variable.
         """
         n_frames = self.n_frames
-        tn = ts.now()
+        tn = ts()
         self.slow_data_path = os.path.join(fn.OPD_SERIES_ROOT_FOLDER, tn)
         os.mkdir(self.slow_data_path)
         i = 0
         while i < (n_frames + 1):
-            img = self.interf.acquire_phasemap()
-            self.interf.save_phasemap(self.slow_data_path, ts.now() + ".fits", img)
+            img = self.interf.acquire_map()
+            osu.save_fits(os.path.join(self.slow_data_path, ts() + ".fits"), img)
             time.sleep(self.delay)
             i += 1
         print("Slow acquisition completed.")
@@ -500,7 +501,7 @@ class SystemMonitoring:
         """
         Function which writes both the complete and the short monitoring log files.
         """
-        tn = ts.now()
+        tn = ts()
         long_msg = f"""#______________________________________________________________________________
 {tn}
 [Diagnosis]
@@ -522,7 +523,7 @@ def main():
     """
     from m4.configuration.ott import create_ott
 
-    _, interf, _ = create_ott()
+    _, _, interf = create_ott()
     monitoring = SystemMonitoring(interf)
     monitoring.rungui()
 

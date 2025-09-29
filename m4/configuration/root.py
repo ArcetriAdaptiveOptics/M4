@@ -30,6 +30,7 @@ class Folders(_oroot._folds):
         self.optical_conf = "20150730"
         self.SYSDATA_ROOT_FOLDER = _join(self.BASE_DATA_PATH, "SYSCONFData")
         self.SIMDATACALIB_ROOT_FOLDER = _join(self.BASE_DATA_PATH, "SimDataCalibDM")
+        self.MONITORING_ROOT_FOLDER = _join(self.BASE_DATA_PATH, "Monitoring")
         # self.PARTEST_ROOT_FOLDER = _join(self.BASE_DATA_PATH, 'PARTest')
         # self.PISTONTEST_ROOT_FOLDER = _join(self.BASE_DATA_PATH, 'PistonTest')
         # self.PTCALIB_ROOT_FOLDER = _join(self.BASE_DATA_PATH, 'PTCalibration')

@@ -21,8 +21,10 @@ which are:
     
 How to Use it
 -------------
-    >>> from m4.configuration import start
-    >>> ott = start.create_ott()
+
+```python
+import m4
+ott, dm, interf = m4.create_ott()
 """
 
 import os
@@ -51,7 +53,7 @@ from m4.simulator.fake_reference_mirror_slider import FakeReferenceMirrorSlider
 from opticalib.core.read_config import load_yaml_config
 
 
-def create_ott() -> object:
+def create_ott() -> tuple[object,object,object]:
     """
     This function creates and initialize the OTT, creating all the devices, fake
     or real, accordingly to what specified in the .yaml configuration file.
@@ -60,10 +62,16 @@ def create_ott() -> object:
     -------
     ott: object
         The Optical Test Tower, comprehensive of:
-         - the Parabola actuators and slider
-         - the Reference Mirror actuators and slider
-         - the Angle Rotator
-         - M4's Exapode (or DP motors)
+        - the Parabola actuators and slider
+        - the Reference Mirror actuators and slider
+        - the Angle Rotator
+        - M4's Exapode (or DP motors)
+        - Temperature Sensors
+        - Accelerometers
+    dm: object
+        The Deformable Mirror (if available)
+    interf: object
+        The Interferometer (if available)
     """
     config = load_yaml_config()["SYSTEM"]["simulated.devices"]
 

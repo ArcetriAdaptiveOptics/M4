@@ -7,14 +7,29 @@ import os
 import logging
 import numpy as np
 from astropy.io import fits as pyfits
-from m4.ground import tracking_number_folder
-from m4.configuration import folders as fold_name
-from m4.utils import osutils as osu
+from m4.configuration.root import folders as fn
+from opticalib.ground import osutils as osu
 from m4.configuration.ott_parameters import Interferometer
-from m4.ground.read_data import InterferometerConverter
-from m4.analyzers.analyzer_iffunctions import AnalyzerIFF
-from m4.ground import zernike
-from m4.ground import read_data
+from m4.gui._guiAPI.legacy_iff import AnalyzerIFF
+from opticalib.ground import zernike
+
+def createFolderToStoreMeasurements():
+    """
+    Create a folder inside the noise root folder to store the measurements
+    
+    Returns
+    -------
+    tuple
+        dove: string
+            path of the folder created
+        tn: string
+            tracking number of the measurement
+    """
+    tn = osu.newtn()
+    path = os.path.join(fn.NOISE_ROOT_FOLDER, tn)
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path, tn
 
 
 class Noise:
@@ -34,14 +49,10 @@ class Noise:
     def __init__(self):
         """The constructor"""
         self._logger = logging.getLogger("NOISE:")
-        self._ic = InterferometerConverter()
+        self._ic = osu._InterferometerConverter()
         self._numberOfNoiseIma = None
         self._cubeFromAnalysis = None
-
-    @staticmethod
-    def _storageFolder():
-        """Creates the path where to save measurement data"""
-        return fold_name.NOISE_ROOT_FOLDER
+        self._storageFolder = fn.NOISE_ROOT_FOLDER
 
     def _defAnalyzer(
         self,
@@ -129,7 +140,7 @@ class Noise:
             data_file_path, tidy_or_shuffle, template, actsVector, n_push_pull
         )
 
-        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
+        dove, tt = createFolderToStoreMeasurements(
             self._storageFolder()
         )
 
@@ -143,7 +154,7 @@ class Noise:
             dove, tidy_or_shuffle, an._template, an._actsVector, an._nPushPull
         )
 
-        rms_mean, quad_mean, tilt_mean, ptv_mean = self._rmsFromCube(
+        rms_mean, quad_mean, _, ptv_mean = self._rmsFromCube(
             self._cubeFromAnalysis
         )
         self._saveResults(rms_mean, quad_mean, ptv_mean, dove)
@@ -186,15 +197,11 @@ class Noise:
             quad_list.append(quad)
         ptv_vector = np.array(ptv_list)
         rms_vector = np.array(rms_list)
-        tip = np.array(coef_tip_list).mean()
         tilt = np.array(coef_tilt_list).mean()
         quad_tt = np.array(quad_list).mean()
         rms_mean = np.mean(rms_vector)
         ptv_mean = np.mean(ptv_vector)
-        tipvec = np.array(coef_tip_list)
-        tiltvec = np.array(coef_tilt_list)
-        ttvec = np.array([tiltvec, tipvec])
-        return rms_mean, quad_tt, tilt, ptv_mean  # ,ttvec
+        return rms_mean, quad_tt, tilt, ptv_mean
 
     def spectrumAllData(self, data_file_path):
         """
@@ -222,10 +229,10 @@ class Noise:
             name = "img_%04d" % i
             print(name)
             # file_name = os.path.join(data_file_path, name)
-            start_image = image = read_data.read_phasemap(lista[i])
-            coef, mat = zernike.zernikeFit(start_image, np.array([2, 3]))
-            coef_tip_list.append(coef[0])
-            coef_tilt_list.append(coef[1])
+            start_image = osu.read_phasemap(lista[i])
+            coef, _ = zernike.zernikeFit(start_image, np.array([2, 3]))
+            coef_tip_list.append(coef[1])
+            coef_tilt_list.append(coef[0])
         tip = np.array(coef_tip_list)
         tilt = np.array(coef_tilt_list)
 
@@ -446,15 +453,15 @@ class Noise:
                     # k = i * dist * 2
                     # name = 'img_%04d' %k
                     # file_name = os.path.join(data_file_path, name)
-                    image_k = read_data.read_phasemap(lista[k])
+                    image_k = osu.read_phasemap(lista[k])
                     # name = 'img_%04d' %(k+dist)
                     # file_name = os.path.join(data_file_path, name)
 
-                    image_dist = read_data.read_phasemap(lista[k + dist])
+                    image_dist = osu.read_phasemap(lista[k + dist])
 
                 else:
-                    image_k = read_data.readFits_maskedImage(lista[k])
-                    image_dist = read_data.readFits_maskedImage(lista[k + dist])
+                    image_k = osu.load_fits(lista[k])
+                    image_dist = osu.load_fits(lista[k + dist])
 
                 image_diff = image_k - image_dist
                 zernike_coeff_array, mat = zernike.zernikeFit(image_diff, zv)
@@ -506,7 +513,7 @@ class Noise:
         for j in range(image_number):
             # name = 'img_%04d' %j
             # file_name = os.path.join(data_file_path, name)
-            image = image = read_data.read_phasemap(lista[j])
+            image = image = osu.read_phasemap(lista[j])
             zernike_coeff_array, mat = zernike.zernikeFit(image, np.array([2, 3]))
             sur = zernike.zernikeSurface(image, zernike_coeff_array, mat)
             image_ttr = image - sur
@@ -540,7 +547,7 @@ class Noise:
         for j in range(image_number):
             # name = 'img_%04d.h5' %j
             # file_name = os.path.join(data_file_path, name)
-            image = image = read_data.read_phasemap(lista[j])
+            image = image = osu.read_phasemap(lista[j])
             coeff, mat = zernike.zernikeFit(image, np.array([1, 2, 3]))
 
             tt_list.append(coeff)
@@ -564,7 +571,7 @@ class Noise:
     #             lista = th.fileList(None, fold=data_file_path, name="20*.fits")
     #     return lista
 
-    def _createOrdListFromFilePath(self, data_file_path):
+    def _createOrdListFromFilePath(self, data_file_path: str):
         """
         Returns an ordered list of file inside the input path.
 
