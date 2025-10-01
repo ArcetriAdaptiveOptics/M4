@@ -41,7 +41,7 @@ def stackRoiCubes(tnlist: list[str], tn_active_roi: list[int]) -> ot.CubeData:
         raise ValueError("`tnlist` and `tn_active_roi` must have the same length")
     for r, tn in enumerate(tnlist):
         cube = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tn, "IMCube.fits"))
-        rois = _roi.roiGenerator(cube[:,:,0], len(tn_active_roi))
+        rois = _roi.roiGenerator(cube[:,:,0])
         ncube = []
         rr = tn_active_roi[r]
         for img in cube.transpose(2,0,1):
@@ -289,7 +289,7 @@ class OttIffAcquisition:
         else:
             auxmask = auxmask
         zcoeff = self.roizern(img, [1,2,3], auxmask, roiid=roi2Calc, local=False, roiimg=roiimg) #returns the global PTT evaluated over the roi2Calc areas
-        am = _np.ma.masked_array(auxmask, mask=auxmask==0)
+        am = _np.ma.masked_array(auxmask, mask=-1*(auxmask==0)+1)
         _, zmat = _zern.zernikeFit(am,[1,2,3]) #returns the ZernMat created over the entire circular pupil
         #      zmat = zsurf[roi2Remove[0]]
         surf2Remove = _zern.zernikeSurface(am, zcoeff[0], zmat)  #was zcoeff[roi2Calc,:]
