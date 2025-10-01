@@ -4,8 +4,8 @@ phasecam_markerconfig = "D:/config/20240608_negativeMarkersMask50mm.4Dini"
 phasecam_alignmentconfig = "D:/config/20250909_RMAlignment.4Dini"  #20250717_RMAlignment.4Dini
 phasecam_dmconfig        = "D:/config/20250910_AllSegments-nospl.4Dini"
 phasecam_noiseconfig = "D:/config/20240608_negativeMarkersMask50mm.4Dini"
-phasecam_monitorconfig = "D:/config/20240722_monitoringZoomRmCenter_Quarter.4Dini"
-phasecam_baseconfig = "D:/config/20240719_2000x2000_RMCenter.4Dini"
+phasecam_monitorconfig = "D:/config/20251001_monitoring.4Dini"
+phasecam_baseconfig = "D:/config/20250909_RMAlignment.4Dini"
 
 # Parabola registration
 remappedpar_tn = "20240521_161525"

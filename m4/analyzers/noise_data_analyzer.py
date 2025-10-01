@@ -140,9 +140,7 @@ class Noise:
             data_file_path, tidy_or_shuffle, template, actsVector, n_push_pull
         )
 
-        dove, tt = createFolderToStoreMeasurements(
-            self._storageFolder()
-        )
+        dove, tt = createFolderToStoreMeasurements()
 
         self._logger.info("Creating analysis in %s", tt)
         self._cubeFromAnalysis = an.createCubeFromImageFolder(data_file_path)
@@ -277,7 +275,7 @@ class Noise:
         return:
             _cubeFromAnalysis = cube obtained after iff analysis
         """
-        store_in_folder = Noise._storageFolder()
+        store_in_folder = self._storageFolder
         file_path = os.path.join(store_in_folder, tt)
         fits_file_name = os.path.join(file_path, "Cube.fits")
         hduList = pyfits.open(fits_file_name)
@@ -294,7 +292,7 @@ class Noise:
         return:
             n_temp = (int) length of template vector
         """
-        store_in_folder = Noise._storageFolder()
+        store_in_folder = self._storageFolder
         file_path = os.path.join(store_in_folder, tt)
         fits_file_name = os.path.join(file_path, "Info.fits")
         hduList = pyfits.open(fits_file_name)

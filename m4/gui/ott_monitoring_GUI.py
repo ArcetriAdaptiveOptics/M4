@@ -63,8 +63,8 @@ class SystemMonitoring:
 
     def __init__(self, interferometer: _ID):
         """The Constructor"""
-        self._llog = os.path.join(fn.MONITORING_ROOT_FOLDER, "Monitor_CompleteLog.txt")
-        self._slog = os.path.join(fn.MONITORING_ROOT_FOLDER, "Monitor_ShortLog.txt")
+        self._llog = os.path.join(fn.LOGGING_ROOT_FOLDER, "Monitor_CompleteLog.txt")
+        self._slog = os.path.join(fn.LOGGING_ROOT_FOLDER, "Monitor_ShortLog.txt")
         self.template = np.array([3, 5, 7, 9])
         self.delay = 2
         self.n_frames = 5
@@ -112,9 +112,9 @@ class SystemMonitoring:
         """
         gui = Gui(
             [_, _, M("plot1"), ___, ___, G("RESULTS"), ___],
-            [M("plot1"), ___, III, III, III, III, III],
+            [M("plot4"), ___, III, III, III, III, III],
             [III, III, M("plot2"), ___, ___, G("CAMERA INFO"), ___],
-            [M("plot1"), ___, III, III, III, III, III],
+            [M("plot5"), ___, III, III, III, III, III],
             [III, III, M("plot3"), ___, ___, G("CONTROL"), ___],
             [_, _, III, III, III, III, III],
         )
@@ -169,7 +169,7 @@ class SystemMonitoring:
             if not self.is_monitoring:
                 self.is_monitoring = True
                 self.monitoring_thread = threading.Thread(
-                    target=monitoring_loop, args=(gui,)
+                    target=monitoring_loop#, args=(gui,)
                 )
                 self.monitoring_thread.start()
                 gui.widgets["start"].setEnabled(False)
@@ -378,8 +378,8 @@ class SystemMonitoring:
         keys3 = ["vn", "cn"]
         res1 = dict(zip(keys1, par1))
         res2 = dict(zip(keys2, par2))
-        tt = self._abs_tilt_analysis(self.fast_data_path)
-        self.fast_tt = reversed(tt)
+        tt = self._abs_tilt_analysis(self.fast_data_path, key='.4D')
+        self.fast_tt = np.array([x for x in reversed(tt)])
         self.fast_results = dict(zip(keys3, (res1, res2)))
 
     def _slow_analysis(self):
@@ -397,7 +397,7 @@ class SystemMonitoring:
         fl = osu.getFileList(fold=self.slow_data_path)
         nfile = len(fl)
         npoints = int(nfile / gap)
-        tt = self._abs_tilt_analysis(self.slow_data_path)
+        tt = self._abs_tilt_analysis(self.slow_data_path, key='.fits')
         slist = []
         for i in range(0, npoints):
             q0 = osu.read_phasemap(fl[i * gap])
@@ -407,10 +407,10 @@ class SystemMonitoring:
         svec = np.array(slist)
         mean = np.mean(svec)
         std = np.std(svec)
-        self.slow_tt = reversed(tt)
+        self.slow_tt = np.array([x for x in reversed(tt)])
         self.slow_results = [mean, std]
 
-    def _abs_tilt_analysis(self, path: str):
+    def _abs_tilt_analysis(self, path: str, key: str):
         """
         Absolute tip-tilt analysis of the phasemaps in the input path. It fits
         the first two zernike modes (tip and tilt) and returns a list of the
@@ -425,7 +425,7 @@ class SystemMonitoring:
         tt : list
             List of tip-tilt coefficients for each phasemap in the input path.
         """
-        fl = osu.getFileList(fold=path)
+        fl = osu.getFileList(fold=path, key=key)
         nf = len(fl)
         tt = np.zeros([nf, 2])
         for i in range(0, nf):

@@ -220,7 +220,7 @@ def convection_noise(
         h5_or_fits = 7
     n = Noise()
     dove = _path_noise_results(data_file_path, h5_or_fits)
-    rms, quad, n_meas = n.analysis_whit_structure_function(
+    rms, quad, n_meas = n.analysis_with_structure_function(
         data_file_path, tau_vector, h5_or_fits, nzern=nzern
     )
     rms_nm = rms * 1e9
