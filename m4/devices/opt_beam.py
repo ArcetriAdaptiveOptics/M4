@@ -129,7 +129,7 @@ class Parabola:
         current_pos : float
             The current position of the Truss in meters.
         """
-        pos_in_mm = pos_in_m * 1000
+        pos_in_mm = pos_in_m #* 1000
 
         if self._config is False:
             opcua_pos = self._conversion(pos_in_mm, get=False)
@@ -324,7 +324,7 @@ class ReferenceMirror:
             The current position, in meters, of the reference mirror relative t
             o M4's center.
         """
-        pos_in_mm = pos_in_m * 1000
+        pos_in_mm = pos_in_m  # * 1000
         if self._config is False:
             opcua_pos = self._conversion(pos_in_mm, get=False)
         else:
