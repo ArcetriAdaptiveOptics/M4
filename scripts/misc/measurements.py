@@ -5,7 +5,11 @@ import logging
 import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
-from opticalib.core import foldname as fname
+from opticalib.ground.osutils import load_fits, save_fits, newtn
+from opticalib.ground import zernike as zern
+import opticalib as opt
+
+fold_name = opt.core.root.folders
 
 class Measurements:
     """
@@ -17,13 +21,13 @@ class Measurements:
     meas = Measurements(ott, interf)
     """
 
-    def __init__(self, ott, interf):
+    def __init__(self, interf, ott=None):
         """The constructor"""
         self._ott = ott
         self._interf = interf
+        self.basepath = fold_name.BASE_DATA_PATH
 
-
-    def opticalMonitoring(self, n_images, delay, start_delay=0):
+    def opticalMonitoring(self, n_images, delay=0, start_delay=0, fullFrame=False, tracknum = None):
         """
         Acquisition of images for monitoring
 
@@ -41,16 +45,22 @@ class Measurements:
         tt: string
             tracking number of measurements
         """
+
+
         store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
-        dove, tt = tracking_number_folder.createFolderToStoreMeasurements(
-            store_in_folder
-        )
+        if tracknum is None:
+            tt = newtn()
+        else:
+            tt = tracknum
+        savefolder = os.path.join(store_in_folder, tt)
         print(tt)
-        shutil.copy(Interferometer.SETTINGS_CONF_FILE_M4OTT_PC, dove)
-        shutil.move(
-            os.path.join(dove, "AppSettings.ini"), os.path.join(dove, "4DSettings.ini")
-        )
-        ott_status.save_positions(dove, self._ott)  # saving the ott status
+        if os.path.exists(savefolder) == False:
+            os.mkdir(savefolder)
+        self._interf.copy4DSettings(savefolder)
+        #shutil.copy(Interferometer.SETTINGS_CONF_FILE_M4OTT_PC, dove)
+        #shutil.move(os.path.join(dove, "AppSettings.ini"), os.path.join(dove, "4DSettings.ini")
+        #if self._ott is not None:
+        #    ott_status.save_positions(savefolder, self._ott)  # saving the ott status
 
         print("waiting {:n} s...".format(start_delay))
         time.sleep(start_delay)
@@ -61,22 +71,30 @@ class Measurements:
         for i in range(n_images):
             ti = time.time()
             dt = ti - t0
-            masked_ima = self._interf.acquire_phasemap(1)
-            temp_vect = self._ott.temperature.getTemperature()
-            name = Timestamp.now() + ".fits"
-            fits_file_name = os.path.join(dove, name)
-            pyfits.writeto(fits_file_name, masked_ima.data)
-            pyfits.append(fits_file_name, masked_ima.mask.astype(np.uint8))
+#            masked_ima = self._interf.acquire_phasemap(1)
+            masked_ima = self._interf.acquire_map(1)
+            if fullFrame is not False:
+                masked_ima = self._interf.intoFullFrame(1)
+            if self._ott is not None:
+                temp_vect = self._ott.temperature.getTemperature()
+                fits_file_name = os.path.join(savefolder, "temperature.fits")
+                opt.save_fits(fits_file_name, np.array(temp_list), overwrite=True)
 
-            coef, mat = zernike.zernikeFit(masked_ima, np.arange(10) + 1)
+            name = newtn() + ".fits"
+            fits_file_name = os.path.join(savefolder, name)
+            opt.save_fits(fits_file_name, masked_ima)
+ #           pyfits.writeto(fits_file_name, masked_ima.data)
+ #           pyfits.append(fits_file_name, masked_ima.mask.astype(np.uint8))
+
+            coef, mat = zern.zernikeFit(masked_ima, np.arange(10) + 1)
             vect = np.append(dt, coef)
             zer_list.append(vect)
             temp_list.append(temp_vect)
 
-            fits_file_name = os.path.join(dove, "zernike.fits")
-            pyfits.writeto(fits_file_name, np.array(zer_list), overwrite=True)
-            fits_file_name = os.path.join(dove, "temperature.fits")
-            pyfits.writeto(fits_file_name, np.array(temp_list), overwrite=True)
+            fits_file_name = os.path.join(savefolder, "zernike.fits")
+            opt.save_fits(fits_file_name, np.array(zer_list), overwrite=True)
+#            pyfits.writeto(fits_file_name, np.array(zer_list), overwrite=True)
+#            pyfits.writeto(fits_file_name, np.array(temp_list), overwrite=True)
 
             time.sleep(delay)
         return tt

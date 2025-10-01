@@ -5,10 +5,12 @@ import logging
 import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
-from opticalib import measurements as meas
+#from opticalib import measurements as measlib
+from scripts.misc import measurements as measlib
 from opticalib.ground.osutils import load_fits, save_fits, newtn
 from opticalib.ground import zernike as zern
 import opticalib as opt
+from m4.configuration import ott_status
 
 fold_name = opt.core.root.folders
 
@@ -27,7 +29,7 @@ class Measurements:
         self._ott = ott
         self._interf = interf
         self.basepath = fold_name.BASE_DATA_PATH
-        self.meas = meas(interf, ott)
+        self.meas = measlib.Measurements(interf, ott)
 
     def opticalMonitoring(self, n_images, delay=0, start_delay=0, fullFrame=False):
         """
@@ -60,7 +62,7 @@ class Measurements:
         #shutil.move(os.path.join(dove, "AppSettings.ini"), os.path.join(dove, "4DSettings.ini")
         if self._ott is not None:
             ott_status.save_positions(savefolder, self._ott)  # saving the ott status
-        self.meas(opticalMonitoring(n_images, delay, start_delay, fullFrame, tt)
+        self.meas.opticalMonitoring(n_images, delay, start_delay, fullFrame, tt)
         '''
         print("waiting {:n} s...".format(start_delay))
         time.sleep(start_delay)

@@ -12,7 +12,7 @@ remappedpar_tn = "20240521_161525"
 
 
 # alignment
-alignmentCalibration_tn = "20240521_120211"  # calibrated with par subtraction
+alignmentCalibration_tn = "20250923_142114"  #"20240521_120211"  # calibrated with par subtraction
 
 # alignment Calibration
 alignCal_parPist = 0.7

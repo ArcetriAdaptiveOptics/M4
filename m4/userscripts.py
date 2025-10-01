@@ -43,10 +43,12 @@ from m4.configuration import userconfig as myconf
 #from m4.mini_OTT import measurements
 #from m4.analyzers import timehistory as th
 #from m4.utils.alignment import Alignment
-from opticalib import alignment
+#from opticalib import alignment
+from m4 import alignment
 from m4.devices import opt_beam
 from opticalib.dmutils import iff_module as ifm, iff_processing as ifp, iff_acquisition_preparation as ifa
 from opticalib.dmutils.flattening import Flattening
+from scripts.misc import ott_measurements as measurements
 
 
 #fn = ufp.folders
@@ -85,8 +87,8 @@ class OTTScripts:
         self._ott = ott
         self._interf = interf
         self._dm = dm
-        #self._meas = measurements.Measurements(ott, interf)
-        self.alignment = Alignment(ott, interf)
+        self.meas = measurements.Measurements(interf, ott)
+        self.alignment = alignment.OttAligner(ott, interf)
         self.collimator= opt_beam.Parabola(ott)
         self.refMirror = opt_beam.ReferenceMirror(ott)
 
@@ -153,7 +155,7 @@ class OTTScripts:
             PAR mirror position
         -------
         """        
-        self.collimator.trussGetPosition()
+        pp = self.collimator.trussGetPosition()
         print(str(pp))
         return pp
 
@@ -189,11 +191,13 @@ class OTTScripts:
         -------
         """
         self.config4D4Alignment()
+        self.alignment.load_calibration(myconf.alignmentCalibration_tn)
         doit, tnPar = self._checkAlignmInfo(move, removePar)
         # zern2corrf = np.array([0,1])
         # dofidf = np.array([3,4])
         if removePar == True:  # qui bisogna aggiungere il Tn dell'allineamento!!
-            self.alignment.reload_calibrated_parabola(tnPar)
+            print('Reload fitting_surface, ToBeChecked!')
+            #self.alignment.reload_calibrated_parabola(tnPar)
         self.alignment.correct_alignment(dof, zz, move, nframes)
 
     def alignM4TT(self, nframes, move=0, removePar=True):
@@ -383,7 +387,7 @@ e to be corrected
         return tn
 
     def acquireTimeAverage(self, nframes, delay=2):
-        tn = self._meas.opticalMonitoring(nframes, delay)
+        tn = self.meas.opticalMonitoring(nframes, delay)
         return tn
 
     def analyzeTimeAverage(self, tn, zern2remove=[1, 2, 3]):
