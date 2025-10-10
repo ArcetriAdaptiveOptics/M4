@@ -2,6 +2,7 @@ import numpy as _np
 from m4 import folders as _fn
 from opticalib import typings as _ot
 from opticalib import alignment as _al
+from opticalib.ground import zernike as _zern
 from os.path import join as _join, exists as _exists
 from opticalib.ground.osutils import newtn as _newtn
 from tabulate import tabulate as _tbt
@@ -20,26 +21,39 @@ class OttAligner(_al.Alignment):
         super().__init__(ott, interf)
         self._parabolatn = _al._sc.fitting_surface.split('/')[-2]
         self._txt = _al._logger.txtLogger(_al._os.path.join(_fn.ALIGNMENT_ROOT_FOLDER, 'AlignmentLog.txt'))
+        self._zfitter = _zern.ZernikeFitter(self._surface)
 
-
-    def _zern_routine(self, imglist: list[_ot.ImageData]|_ot.CubeData, roi: _ot.Optional[int|tuple[int,int]] = None) -> _ot.MatrixLike:
+    def _zern_routine(
+        self, imglist: list[_ot.ImageData] | _ot.CubeData
+    ) -> _ot.MatrixLike:
         """
-        Routine to calculate Zernike coefficients from an image.
+        Creates the interaction matrix from the provided image list.
 
         Parameters
         ----------
-        imglist : CubeData or list of ImageData
-            The input image list from which to calculate Zernike coefficients.
-        roi: tuple of ints | int, optional
-            Region of interest for Zernike calculation. 
-        
+        imglist : CubeData
+            The list of images used to create the interaction matrix.
+
         Returns
         -------
         intMat : MatrixLike
-            The interactiona matrix computed from the images.
+            The interaction matrix created from the images.
         """
-        cz = super()._zern_routine(imglist)
-        return cz
+        coefflist = []
+        if not isinstance(imglist, list):
+            imglist = [imglist]
+        for img in imglist:
+            if self._surface is None:
+                coeff, _ = _zern.zernikeFit(img, self._zvec2fit)
+            else:
+                if self._correct_cavity is True:
+                    img -= 2 * self._surface
+                coeff, _ = self._zfitter.fitOnROi(img, self._zvec2fit, 'global')
+            coefflist.append(coeff[self._zvec2use])
+        if len(coefflist) == 1:
+            coefflist = _np.array([c for c in coefflist[0]])
+        intMat = _np.array(coefflist).T
+        return intMat
 
     def correct_alignment(
         self,
