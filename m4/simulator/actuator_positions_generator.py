@@ -4,17 +4,11 @@ Authors
 """
 
 import os
+from re import match
 import numpy as np
-
-# from m4.configuration import start
-# from matplotlib import pyplot as plt
-from m4.ground import read_data, tracking_number_folder
 from m4.configuration import folders as fold_name
 from astropy.io import fits
-from opticalib.ground import newtn as ts
-
-# conf='G:\Il mio Drive\Lavoro_brera\M4\LucaConfig.yaml'
-# ott, interf, dm = start.create_ott(conf)
+from opticalib.ground import osutils as osu
 
 
 class ActuatorPositionGenerator:
@@ -44,45 +38,36 @@ class ActuatorPositionGenerator:
         CONTROLLARE CHE FUNZIONI SUGLI ATTUATORI AL BORDO!!!
         """
         self.move2petalo(num=6, RM=0)
-        dir0 = fold_name.SIMDATACALIB_ROOT_FOLDER + "\\PositionActuators"
-        dir, _ = tracking_number_folder.createFolderToStoreMeasurements(dir0)
+        dir0 = os.path.join(fold_name.SIMDATACALIB_ROOT_FOLDER, "PositionActuators", osu.newtn())
+        os.makedirs(dir0, exist_ok=True)
+        self.dir = dir0
 
         act_pos_matrix = np.zeros([512 * 512, self._dm.getNActs()])
         act_zonal = np.zeros([512 * 512, self._dm.getNActs()])
+        amp = (10 * 1e-9) * 1e6
 
         for x in range(0, self._dm.getNActs()):
-            print("step " + str(x + 1) + "/892")
-            ampiezza = (10 * 1e-9) * 1e6
+            print("step " + str(x + 1) + "/892", end='\r', flush=True)
             comm = np.zeros(self._dm.getNActs())
-            comm[x] = ampiezza
-            rel = False
-            self._dm.setActsCommand(comm, rel)
-            indet = False
-            ima = self._interf.acquire_phasemap(indet)
-
+            comm[x] = amp
+            self._dm.set_shape(comm, differential=False)
+            ima = self._interf.acquire_map()
             act_zonal[:, x] = ima.data.flatten()
+            act_pos_matrix[:, x] = np.ma.masked_where(ima < 5e-9, ima).mask.flatten()
 
-            im = np.ma.masked_where(ima < 5e-9, ima)
-            act_mask = im.mask.flatten()
-            act_pos_matrix[:, x] = act_mask
-
-        hdu = fits.PrimaryHDU(act_pos_matrix)
-        hdu.writeto(os.path.join(dir, "PositionActuator_mask.fits"))
-        hdu = fits.PrimaryHDU(act_zonal)
-        hdu.writeto(os.path.join(dir, "PositionActuator_data.fits"))
+        osu.save_fits(os.path.join(dir0, "PositionActuator_mask.fits"), act_pos_matrix)
+        osu.save_fits(os.path.join(dir0, "PositionActuator_data.fits"), act_zonal)
         return act_pos_matrix, act_zonal
 
-    def check_actposition(self, directory, cartella, N, arg=1):
-        name = cartella
-        if arg == 1:
-            dir = os.path.join(directory, name, "PositionActuator_data.fits")
-        if arg == 0:
-            dir = os.path.join(directory, name, "PositionActuator_mask.fits")
-        act_pos_matrix = read_data.readFits_data(dir)
+    def check_actposition(self, file: str, N: int):
+        if not file in ['data','mask']:
+            raise ValueError("file must be 'data' or 'mask'")
+        file = os.path.join(self.dir, f"PositionActuator_{file}.fits")
+        act_pos_matrix = osu.load_fits(file)
         im = act_pos_matrix[:, N - 1].reshape([512, 512])
         return im
 
-    def move2petalo(self, num=1, RM=0):
+    def move2petalo(self, which: int =1, RM_in: bool = False):
         """
         Move the interferometer to a specific section of the DM
 
@@ -94,9 +79,9 @@ class ActuatorPositionGenerator:
             Reference mirror in(1) or not(0)
         """
         self._ott.parabolaSlider.setPosition(844)
-        if RM == 1:
+        if RM_in:
             self._ott.referenceMirrorSlider.setPosition(844)
-        if RM == 0:
+        if not RM_in:
             self._ott.referenceMirrorSlider.setPosition(0)
-        self._ott.angleRotator.setPosition(30 + 60 * (num - 1))
+        self._ott.angleRotator.setPosition(30 + 60 * (which - 1))
         return

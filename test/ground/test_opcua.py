@@ -3,16 +3,16 @@ Authors
   - C. Selmi: written in 2021
 '''
 import unittest
-import mock
+from unittest.mock import patch, MagicMock
 
 
 class TestOpcUaController(unittest.TestCase):
 
-    @mock.patch('opcua.Client', autospec=True)
+    @patch('opcua.Client', autospec=True)
     def setUp(self, mock_client):
         from m4.devices.opc_ua_controller import OpcUaController
         self.opc = OpcUaController()
-        self.client = mock.MagicMock()
+        self.client = MagicMock()
         self.opc._client = self.client
 
     def tearDown(self):

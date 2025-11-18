@@ -6,7 +6,7 @@ import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 from opticalib.ground.osutils import load_fits, save_fits, newtn
-from opticalib.ground import zernike as zern
+from opticalib.ground import modal_decomposer as zern
 import opticalib as opt
 
 fold_name = opt.core.root.folders

@@ -3,15 +3,15 @@ Authors
   - C. Selmi: written in 2021
 '''
 import unittest
-import mock
+from unittest.mock import patch
 
 
 class Test(unittest.TestCase):
 
-    @mock.patch('opcua.Client', autospec=True)
-    @mock.patch('pyzabbix.ZabbixAPI', autospec=True)
-    @mock.patch('pyzabbix.ZabbixSender', autospec=True)
-#    @mock.patch('pyzabbix.ZabbixMetric', autospec=True)
+    @patch('opcua.Client', autospec=True)
+    @patch('pyzabbix.ZabbixAPI', autospec=True)
+    @patch('pyzabbix.ZabbixSender', autospec=True)
+#    @patch('pyzabbix.ZabbixMetric', autospec=True)
     def setUp(self, mock_client, mock_api, mock_sender):
         from m4.ground import zabbix
         self.zabbix = zabbix

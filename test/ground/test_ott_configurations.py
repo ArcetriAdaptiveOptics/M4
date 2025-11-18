@@ -4,7 +4,7 @@ Authors
 '''
 import unittest
 import os
-import mock
+from unittest.mock import patch
 from test.helper_test_library import testDataRootDir
 
 class TestCalc(unittest.TestCase):
@@ -15,8 +15,8 @@ class TestCalc(unittest.TestCase):
     def tearDown(self):
         del self.ott
 
-    @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
-    @mock.patch('numpy.load', autospec=True)
+    @patch('m4.ground.read_data.readFits_data', autospec=True)
+    @patch('numpy.load', autospec=True)
     def createOtt(self,  mock_rd, mock_load):
         from m4.configuration.ott import create_ott
         ott, interf, dm = create_ott()#os.path.join(testDataRootDir(), 'base',
@@ -24,7 +24,7 @@ class TestCalc(unittest.TestCase):
         return ott
 
 
-    @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
+    @patch('m4.ground.read_data.readFits_data', autospec=True)
     def testConfigurations(self, mock_rd):
         from m4.ground.ott_configurations import OttConfigurations
         oc = OttConfigurations(self.ott)

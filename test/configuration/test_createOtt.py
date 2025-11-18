@@ -12,7 +12,7 @@ from m4.simulator.fake_parabola import FakeParabola
 from m4.simulator.fake_reference_mirror import FakeReferenceMirror
 from m4.simulator.fake_m4_exapode import FakeM4Exapode
 from m4.simulator.fake_temperature_sensors import FakeTemperatureSensors
-from m4.configuration.create_ott import OTT
+from m4.configuration.ott import OTT
 from numpy import testing
 from m4.configuration.ott_parameters import OpcUaParameters
 from m4.simulator.fake_accelerometers import FakeAccelerometers

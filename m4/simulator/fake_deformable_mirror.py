@@ -97,7 +97,7 @@ class FakeM4DM:
         if self.cmdHistory is None:
             raise Exception("No Command History to run!")
         else:
-            tn = _ts.now()
+            tn = _ts()
             print(f"{tn} - {self.cmdHistory.shape[-1]} images to go.")
             datafold = _join(baseDataPath, tn)
             if not _os.path.exists(datafold):

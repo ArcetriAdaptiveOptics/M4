@@ -14,7 +14,7 @@ import numpy as np
 from os.path import join as _join
 from m4.configuration import folders as conf
 from m4.configuration.ott_parameters import Interferometer, OttParameters
-from opticalib.ground import zernike, geo
+from opticalib.ground import modal_decomposer as zernike
 from opticalib import load_fits as _lf
 import matplotlib.pyplot as plt
 
@@ -463,7 +463,7 @@ class OttImages:
         mat = self._readMatFromTxt(file_name)
         return mat
 
-    def create_zmat(self, file_name):
+    def create_zmat(self, file_name: str):
         """
         Creates a Zernike matrix from a FITS file.
 
@@ -479,19 +479,8 @@ class OttImages:
         """
         load = _lf(file_name)
         final_mask = np.invert(load.astype(bool))
-        prova = np.ma.masked_array(
-            np.ones(
-                (
-                    (2 * OttParameters.parab_radius * OttParameters.pscale).astype(int),
-                    (2 * OttParameters.parab_radius * OttParameters.pscale).astype(int),
-                )
-            ),
-            mask=final_mask,
-        )
-        zernike_mode = np.arange(10) + 1
-        mm = np.where(final_mask == False)
-        _, _, _, xx, yy = geo.qpupil(final_mask)
-        zmat = zernike._getZernike(xx[mm], yy[mm], zernike_mode)
+        zfitter = zernike.ZernikeFitter(final_mask)
+        _, zmat = zfitter.fit(np.arange(10) + 1)
         return zmat
 
     

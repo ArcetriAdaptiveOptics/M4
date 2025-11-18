@@ -4,7 +4,7 @@ Authors
 '''
 import unittest
 import os
-import mock
+from unittest.mock import patch
 import numpy as np
 from test.helper_test_library import testDataRootDir
 
@@ -17,8 +17,8 @@ class TestCalc(unittest.TestCase):
     def tearDown(self):
         del self.dm
 
-    @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
-    @mock.patch('numpy.load', autospec=True)
+    @patch('m4.ground.read_data.readFits_data', autospec=True)
+    @patch('numpy.load', autospec=True)
     def createDM(self,  mock_rd, mock_load):
         from m4.configuration.ott import create_ott
         ott, interf, dm = create_ott()#os.path.join(testDataRootDir(), 'base',

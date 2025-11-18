@@ -2,7 +2,7 @@
 Authors
   - C. Selmi:  written in 2022
 """
-import mock
+from unittest.mock import patch
 import numpy as np
 from m4.analyzers.compute_reconstructor import ComputeReconstructor
 import random

@@ -4,7 +4,7 @@ Authors
 '''
 import unittest
 import os
-import mock
+from unittest.mock import patch, MagicMock, Mock
 import numpy as np
 import logging
 from m4.devices.i4d import I4D

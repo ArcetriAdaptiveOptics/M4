@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 #from opticalib import measurements as measlib
 from scripts.misc import measurements as measlib
 from opticalib.ground.osutils import load_fits, save_fits, newtn
-from opticalib.ground import zernike as zern
+from opticalib.ground import modal_decomposer as zern
 import opticalib as opt
 from m4.configuration import ott_status
 

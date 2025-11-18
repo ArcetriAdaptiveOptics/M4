@@ -4,7 +4,7 @@ Authors
 '''
 import os
 import unittest
-import mock
+from unittest.mock import patch
 from m4.configuration.ott import create_ott
 from m4.simulator.fake_parabola_slider import FakeParabolaSlider
 from m4.simulator.fake_interferometer import FakeInterferometer
@@ -14,16 +14,16 @@ from test.helper_test_library import testDataRootDir
 
 class TestStart(unittest.TestCase):
 
-    @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
-    @mock.patch('numpy.load', autospec=True)
+    @patch('m4.ground.read_data.readFits_data', autospec=True)
+    @patch('numpy.load', autospec=True)
     def testCreationWithSimulatedDevices(self, mock_rd, mock_load):
         #aFakeConfig.simulated = 1
         ott, interf, dm = create_ott()#os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf.yaml'))
         self.assertIsInstance(ott.parabolaSlider, FakeParabolaSlider)
         self.assertIsInstance(interf, FakeInterferometer)
 
-    #@mock.patch('m4.devices.interferometer.I4d4020', autospec=True)
-    @mock.patch('m4.ground.read_data.readFits_data', autospec=True)
-    @mock.patch('numpy.load', autospec=True)
+    #@patch('m4.devices.interferometer.I4d4020', autospec=True)
+    @patch('m4.ground.read_data.readFits_data', autospec=True)
+    @patch('numpy.load', autospec=True)
     def testCreationWhitFakePathInYaml(self, mock_rd, mock_load):
         ott, interf, dm = create_ott()#os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf2.yaml'))

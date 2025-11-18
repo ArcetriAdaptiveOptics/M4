@@ -11,7 +11,7 @@ from m4.configuration.root import folders as fn
 from opticalib.ground import osutils as osu
 from m4.configuration.ott_parameters import Interferometer
 from m4.gui._guiAPI.legacy_iff import AnalyzerIFF
-from opticalib.ground import zernike
+from opticalib.ground import modal_decomposer as zernike
 
 def createFolderToStoreMeasurements():
     """

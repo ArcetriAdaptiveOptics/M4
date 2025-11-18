@@ -5,7 +5,7 @@ from m4.devices.parabola import OpcUaParabola
 #import mock
 from unittest.mock import Mock, MagicMock
 from m4.configuration.ott_parameters import OpcUaParameters
-from mock.mock import call
+from unittest.mock import call
 from numpy import testing
 
 
