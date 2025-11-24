@@ -42,5 +42,6 @@ finally:
 
 from m4.configuration.ott import create_ott
 from .alignment import OttAligner
+from ._ottiff import OttIffAcquisition
 
-__all__ = ['create_ott', 'OttAligner']
+__all__ = ['create_ott', 'OttAligner', 'OttIffAcquisition']
