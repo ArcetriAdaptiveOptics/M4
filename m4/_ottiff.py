@@ -1,4 +1,5 @@
 import os as _os
+import time as _time
 import shutil as _sh
 import numpy as _np
 from opticalib import typings as ot
@@ -162,11 +163,11 @@ class OttIffAcquisition:
             newcube = []
 
             for i in range(nframes):
-                img = cube[i]
-                rois = _roi.roiGenerator(img)
+                v = cube[i]
+                rois = _roi.roiGenerator(v)
                 activeRoi = rois.pop(activeRoiID[j])
                 if detrend is not False:
-                    v = self._tiltDetrend(img, activeRoi=activeRoi, auxRois=rois)
+                    v = self._tiltDetrend(v, activeRoi=activeRoi, auxRois=rois)
                 if roinull:
                     for auxrois in rois:
                         v[auxrois==0] = 0
@@ -181,6 +182,7 @@ class OttIffAcquisition:
             _osu.save_fits(_os.path.join(save_path, "cmdMatrix.fits"), mat, overwrite=True)
             _osu.save_fits(_os.path.join(save_path, "modesVector.fits"), modesvec, overwrite=True)
             newtns.append(newtn)
+            _time.sleep(1)
         return newtns
 
 
