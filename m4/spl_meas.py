@@ -184,12 +184,18 @@ class SplAnalyzer:
     """
     Class used to analyze the images at different wavelengths acquired with the
     SPL camera and Tunable filter system.
+    
+    Parameters
+    ----------
+    tn: str, optional
+        Tracking number of the fringes to use in the analysis comparison. By default None.
+        It can be set later with the method `setFringesTn`.
     """
 
-    def __init__(self):
+    def __init__(self, tn: str | None = None):
         """The constructor"""
         self._logger = _getLogger()
-        self.tn_fringes = None
+        self.tn_fringes = self.setFringesTn(tn) if tn is not None else None
         self._Qm = None
         self._QmSmooth = None
         self._matrix = None
@@ -205,7 +211,7 @@ class SplAnalyzer:
             tracking number of the fringes to use
         """
         self.tn_fringes = tn
-        self._fringes_fold = _os.path.join(_fn.SPL_ROOT_FOLDER, tn)
+        self._fringes_fold = _os.path.join(_fn.SPL_FRINGES_ROOT_FOLDER, tn)
 
     def analyzer(self, tn: str) -> tuple[int, int]:
         """
