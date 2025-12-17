@@ -184,7 +184,7 @@ class SplAnalyzer:
     """
     Class used to analyze the images at different wavelengths acquired with the
     SPL camera and Tunable filter system.
-    
+
     Parameters
     ----------
     tn: str, optional
@@ -249,7 +249,12 @@ class SplAnalyzer:
 
         return piston, piston_smooth
 
-    def matrix_calc(self, lambda_vector, cube, cube_normalized):
+    def matrix_calc(
+        self,
+        lambda_vector: _ot.ArrayLike,
+        cube: _ot.CubeData,
+        cube_normalized: _ot.CubeData,
+    ) -> tuple[_ot.MatrixLike, _ot.MatrixLike]:
         """
         Calculate the matrix of fringes from the acquired cube of images.
 
