@@ -10,10 +10,7 @@ from opticalib.ground import (
     roi as _roi,
 )
 from opticalib.ground.modal_decomposer import ZernikeFitter as _ZF
-from opticalib.dmutils import (
-    iff_processing as ipf,
-    iff_module as ifm
-)
+from opticalib.dmutils import iff_processing as ipf, iff_module as ifm
 from opticalib.analyzer import cubeRebinner
 from opticalib.alignment import _sc
 
@@ -23,7 +20,11 @@ _sf = _osu.save_fits
 
 class OttIffAcquisition:
 
-    def __init__(self, dm: ot.DeformableMirrorDevice = None, interf: ot.InterferometerDevice = None):
+    def __init__(
+        self,
+        dm: ot.DeformableMirrorDevice = None,
+        interf: ot.InterferometerDevice = None,
+    ):
         """The constructor"""
         if dm is None:
             self._dm = None
@@ -51,15 +52,14 @@ class OttIffAcquisition:
                 )
         self._interf = interf
         self._cavity = (
-            _osu.load_fits(_sc.fitting_surface) if not _sc.fitting_surface == "" else None
+            _osu.load_fits(_sc.fitting_surface)
+            if not _sc.fitting_surface == ""
+            else None
         )
         self._zern = _ZF(self._cavity)
 
-
     def acquireDpIff(
-        self,
-        separate_shells: bool = True,
-        **kwargs: dict[str,ot.Any]
+        self, separate_shells: bool = True, **kwargs: dict[str, ot.Any]
     ) -> str | list[str]:
         """
         This is the user-lever function for the acquisition of the IFF data, given a
@@ -89,45 +89,53 @@ class OttIffAcquisition:
         tns: list[str]
             The tracking number of the dataset acquired, saved in the OPDImages folder
         """
-        ifconfig = _rif.getIffConfig('IFFUNC')
-        amplitude = kwargs.pop('amplitude', _np.full(222, ifconfig.get('amplitude')))
-        modeslist = [_np.arange(0,111,1), _np.arange(111,222,1)]
+        ifconfig = _rif.getIffConfig("IFFUNC")
+        amplitude = kwargs.pop("amplitude", _np.full(222, ifconfig.get("amplitude")))
+        modeslist = [_np.arange(0, 111, 1), _np.arange(111, 222, 1)]
         ampvec = [amplitude[:111], amplitude[111:]]
         if not separate_shells:
-            modeslist = _np.arange(0,222,1)
+            modeslist = _np.arange(0, 222, 1)
             ampvec = amplitude
             return ifm.iffDataAcquisition(
-                dm=self._dm, interf=self._interf, modesList=modeslist, amplitude=ampvec, **kwargs
+                dm=self._dm,
+                interf=self._interf,
+                modesList=modeslist,
+                amplitude=ampvec,
+                **kwargs,
             )
         else:
             tns = []
             for k in range(2):
-                tns.append(ifm.iffDataAcquisition(
-                    dm=self._dm, interf=self._interf, modesList=modeslist[k], amplitude=ampvec[k], **kwargs
-                ))
+                tns.append(
+                    ifm.iffDataAcquisition(
+                        dm=self._dm,
+                        interf=self._interf,
+                        modesList=modeslist[k],
+                        amplitude=ampvec[k],
+                        **kwargs,
+                    )
+                )
             return tns
 
-
-    def process(self, **kwargs: dict[str,ot.Any]):
+    def process(self, **kwargs: dict[str, ot.Any]):
         """
         Standard IFF Data processing, using the opticalib.iff_processing module.
         """
-        tn = kwargs.pop('tn', None)
+        tn = kwargs.pop("tn", None)
         tn = [tn] if isinstance(tn, str) else tn
-        for _,t in enumerate(tn):
-            ipf.process(tn = t, **kwargs)
-
+        for _, t in enumerate(tn):
+            ipf.process(tn=t, **kwargs)
 
     def dpIffRoiProcessing(
-            self, 
-            tns: list[str],
-            activeRoiID: list[int],
-            detrend: bool = False,
-            roinull: bool = False,
-            rebin:int = 1
-        ):
+        self,
+        tns: list[str],
+        activeRoiID: list[int],
+        detrend: bool = False,
+        roinull: bool = False,
+        rebin: int = 1,
+    ):
         """
-        This function groups together some image manipulations in presence of 
+        This function groups together some image manipulations in presence of
         Region Of Interest (ROI). We assume that we have in the image an
         activeRoi, with given I, corresponding to the region of the actuated
         segment; and one or more auxiliaryRois, corresponding to the regions
@@ -145,7 +153,7 @@ class OttIffAcquisition:
             If True, set to zero the pixels outside the activeRoi.
         rebin: int, optional
             Rebin factor for the final cube.
-        
+
         Returns
         -------
         newtn: str
@@ -154,11 +162,15 @@ class OttIffAcquisition:
         if isinstance(tns, str):
             tns = [tns]
         newtns = []
-        for j,tn in enumerate(tns):    
+        for j, tn in enumerate(tns):
             newtn = _osu.newtn()
-            cube = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tn, "IMCube.fits"), True).transpose(2,0,1)
+            cube = _lf(
+                _os.path.join(_fn.INTMAT_ROOT_FOLDER, tn, "IMCube.fits"), True
+            ).transpose(2, 0, 1)
             mat = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tn, "cmdMatrix.fits"))
-            modesvec = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tn, "modesVector.fits"))
+            modesvec = _lf(
+                _os.path.join(_fn.INTMAT_ROOT_FOLDER, tn, "modesVector.fits")
+            )
             nframes = cube.shape[0]
             newcube = []
 
@@ -170,23 +182,30 @@ class OttIffAcquisition:
                     v = self._tiltDetrend(v, activeRoi=activeRoi, auxRois=rois)
                 if roinull:
                     for auxrois in rois:
-                        v[auxrois==0] = 0
+                        v[auxrois == 0] = 0
                 newcube.append(v)
 
             newcube = _np.ma.masked_array(newcube)
-            newcube = cubeRebinner(newcube.transpose(1,2,0), rebin)
+            newcube = cubeRebinner(newcube.transpose(1, 2, 0), rebin)
             save_path = _os.path.join(_fn.INTMAT_ROOT_FOLDER, newtn)
             if not _os.path.exists(save_path):
                 _os.makedirs(save_path)
-            _osu.save_fits(_os.path.join(save_path, "IMCube.fits"), newcube, overwrite=True)
-            _osu.save_fits(_os.path.join(save_path, "cmdMatrix.fits"), mat, overwrite=True)
-            _osu.save_fits(_os.path.join(save_path, "modesVector.fits"), modesvec, overwrite=True)
+            _osu.save_fits(
+                _os.path.join(save_path, "IMCube.fits"), newcube, overwrite=True
+            )
+            _osu.save_fits(
+                _os.path.join(save_path, "cmdMatrix.fits"), mat, overwrite=True
+            )
+            _osu.save_fits(
+                _os.path.join(save_path, "modesVector.fits"), modesvec, overwrite=True
+            )
             newtns.append(newtn)
             _time.sleep(1)
         return newtns
 
-
-    def _tiltDetrend(self, img: ot.ImageData, activeRoi: ot.MaskData, auxRois: ot.MaskData):
+    def _tiltDetrend(
+        self, img: ot.ImageData, activeRoi: ot.MaskData, auxRois: ot.MaskData
+    ):
         """
         This method detrends an image by fitting and subtracting PTT
         (Zernike modes 1, 2, 3) from auxiliary regions of interest (ROIs), and
@@ -219,15 +238,14 @@ class OttIffAcquisition:
         for roi in auxRois:
             r = roi.copy()
             r2rImage = _np.ma.masked_array(img.data, mask=r)
-            surf2Remove = self._zern.makeSurface([1,2,3], r2rImage)
+            surf2Remove = self._zern.makeSurface([1, 2, 3], r2rImage)
             s2rmean = surf2Remove.mean()
-            surf2Remove.data[activeRoi==0] = 0
-            surf2Remove.mask[activeRoi==0] = False
-            
+            surf2Remove.data[activeRoi == 0] = 0
+            surf2Remove.mask[activeRoi == 0] = False
+
             detrendedImg -= surf2Remove
             detrendedImg -= s2rmean
         return detrendedImg
-
 
     # def roizern2(self, img, z2fit, auxmask =None, roiid=None, local =True, roiimg = None):
     #     if ((roiid is not None) and (roiimg is None)):  #
@@ -269,5 +287,3 @@ class OttIffAcquisition:
     #     #surf2Remove = np.ma.masked_array(surf2remove.data, roi2Remove.mask)
     #     detrendedImg = img - surf2Remove
     #     return detrendedImg
-
-

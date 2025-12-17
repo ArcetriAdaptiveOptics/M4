@@ -483,9 +483,8 @@ class OttImages:
         _, zmat = zfitter.fit(np.arange(10) + 1)
         return zmat
 
-    
     def draw_mask(self, img, cx, cy, r, out=0):
-        """ Function to create circular mask
+        """Function to create circular mask
         Created by Runa
 
         Parameters
@@ -513,10 +512,10 @@ class OttImages:
         y = y - cy
         nr = np.size(r)
         if nr == 2:
-            rr = x*x/r[0]**2+y*y/r[1]**2
+            rr = x * x / r[0] ** 2 + y * y / r[1] ** 2
             r1 = 1
         else:
-            rr = x*x+y*y
+            rr = x * x + y * y
             r1 = r**2
         pp = np.where(rr < r1)
         img1 = img.copy()
@@ -524,11 +523,11 @@ class OttImages:
             img1[pp] = 0
         else:
             img1[pp] = 1
-        #plt.imshow(img1)
+        # plt.imshow(img1)
         return img1
-    
+
     def _rotate(self, img, angle):
-        ''' Function to rotate the image
+        """Function to rotate the image
         Created by Runa
 
         Parameters
@@ -542,11 +541,14 @@ class OttImages:
         ------
         img1: numpy array
             The rotated input
-        '''
+        """
         from scipy import ndimage
+
         img1 = ndimage.rotate(img, angle)
         s0 = np.shape(img)
         s1 = np.shape(img1)
-        img1 = img1[int((s1[0]-s0[0])/2):s0[0]+int((s1[0]-s0[0])/2),
-                    int((s1[1]-s0[1])/2):s0[1]+int((s1[1]-s0[1])/2)]
+        img1 = img1[
+            int((s1[0] - s0[0]) / 2) : s0[0] + int((s1[0] - s0[0]) / 2),
+            int((s1[1] - s0[1]) / 2) : s0[1] + int((s1[1] - s0[1]) / 2),
+        ]
         return img1

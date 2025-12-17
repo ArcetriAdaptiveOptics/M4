@@ -139,6 +139,6 @@ def roizern(img, z2fit, auxmask =None, roiid=None, local =True):
     return zcoeff
 
 c3 = load_fits('/data/Arcetri/Data/M4Data/SysConfig/20250909_155400.fits')  #flat 30 modes and local tilt
-dm.set_shape(c3*0.1) .....
+dm.set_shape(c3*0.1)
 
  

@@ -38,7 +38,9 @@ class ActuatorPositionGenerator:
         CONTROLLARE CHE FUNZIONI SUGLI ATTUATORI AL BORDO!!!
         """
         self.move2petalo(num=6, RM=0)
-        dir0 = os.path.join(fold_name.SIMDATACALIB_ROOT_FOLDER, "PositionActuators", osu.newtn())
+        dir0 = os.path.join(
+            fold_name.SIMDATACALIB_ROOT_FOLDER, "PositionActuators", osu.newtn()
+        )
         os.makedirs(dir0, exist_ok=True)
         self.dir = dir0
 
@@ -47,7 +49,7 @@ class ActuatorPositionGenerator:
         amp = (10 * 1e-9) * 1e6
 
         for x in range(0, self._dm.getNActs()):
-            print("step " + str(x + 1) + "/892", end='\r', flush=True)
+            print("step " + str(x + 1) + "/892", end="\r", flush=True)
             comm = np.zeros(self._dm.getNActs())
             comm[x] = amp
             self._dm.set_shape(comm, differential=False)
@@ -60,14 +62,14 @@ class ActuatorPositionGenerator:
         return act_pos_matrix, act_zonal
 
     def check_actposition(self, file: str, N: int):
-        if not file in ['data','mask']:
+        if not file in ["data", "mask"]:
             raise ValueError("file must be 'data' or 'mask'")
         file = os.path.join(self.dir, f"PositionActuator_{file}.fits")
         act_pos_matrix = osu.load_fits(file)
         im = act_pos_matrix[:, N - 1].reshape([512, 512])
         return im
 
-    def move2petalo(self, which: int =1, RM_in: bool = False):
+    def move2petalo(self, which: int = 1, RM_in: bool = False):
         """
         Move the interferometer to a specific section of the DM
 

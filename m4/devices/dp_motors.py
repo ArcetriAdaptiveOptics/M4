@@ -7,7 +7,7 @@ Author(s)
 Description
 -----------
 This module contains the class `ZmqDpMotors`, which is used to control the actuators
-controlling the DP alignment at the OTT. These actuators, connected to a BusBox, 
+controlling the DP alignment at the OTT. These actuators, connected to a BusBox,
 are controlled via ZMQ Pair protocol. The class provides methods to get and set the
 position of the actuators, converting the "motor positions" into "kinematic positions"
 The matrix controlling the kinematics is written in the form (normalization-less):
@@ -18,7 +18,7 @@ The matrix controlling the kinematics is written in the form (normalization-less
  C [ 1   1  -1 ]
 
 with the actuators A, B, C positioned as follows:
-``` 
+```
 ↑ Y         A
 → X
          B     C

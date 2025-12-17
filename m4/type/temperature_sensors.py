@@ -8,7 +8,7 @@ Authors
         from m4.type import temperature_sensor as ts
         folder = ts.PT_calibration(n_meas)
         ts.analyzer_PT_meas(tt)
-        
+
 """
 
 import os

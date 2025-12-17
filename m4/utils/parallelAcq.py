@@ -1,4 +1,4 @@
-""" Da dove viene? A cosa serve?
+"""Da dove viene? A cosa serve?
 RIVEDERE
 """
 

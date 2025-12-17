@@ -15,11 +15,17 @@ class OttAligner(_al.Alignment):
     It is used to perform alignment operations on optical systems.
     """
 
-    def __init__(self, ott: list[_ot.GenericDevice]|_ot.GenericDevice, interf: _ot.InterferometerDevice) -> None:
+    def __init__(
+        self,
+        ott: list[_ot.GenericDevice] | _ot.GenericDevice,
+        interf: _ot.InterferometerDevice,
+    ) -> None:
         """The Initializer"""
         super().__init__(ott, interf)
-        self._parabolatn = _al._sc.fitting_surface.split('/')[-2]
-        self._txt = _al._logger.txtLogger(_al._os.path.join(_fn.ALIGNMENT_ROOT_FOLDER, 'AlignmentLog.txt'))
+        self._parabolatn = _al._sc.fitting_surface.split("/")[-2]
+        self._txt = _al._logger.txtLogger(
+            _al._os.path.join(_fn.ALIGNMENT_ROOT_FOLDER, "AlignmentLog.txt")
+        )
         self._zfitter = _zern.ZernikeFitter(self._surface)
 
     def _zern_routine(
@@ -47,7 +53,7 @@ class OttAligner(_al.Alignment):
             else:
                 if self._correct_cavity is True:
                     img -= 2 * self._surface
-                coeff, _ = self._zfitter.fitOnROi(img, self._zvec2fit, 'global')
+                coeff, _ = self._zfitter.fitOnROi(img, self._zvec2fit, "global")
             coefflist.append(coeff[self._zvec2use])
         if len(coefflist) == 1:
             coefflist = _np.array([c for c in coefflist[0]])
@@ -95,13 +101,20 @@ class OttAligner(_al.Alignment):
         correction command or returns it.
         """
         coeffs_i = self._zern_routine(self._acquire[0](nframes=1))
-        f_cmd = super().correct_alignment(modes2correct=modes2correct, zern2correct=zern2correct, apply=False, n_frames=n_frames)
+        f_cmd = super().correct_alignment(
+            modes2correct=modes2correct,
+            zern2correct=zern2correct,
+            apply=False,
+            n_frames=n_frames,
+        )
         if applycmd:
             ntn = _newtn()
             print("Applying correction command...")
             super()._apply_command(f_cmd)
             coeffs_f = self._zern_routine(self._acquire[0](nframes=n_frames))
-            self._write_correction_log(modes2correct, zern2correct, ntn, coeffs_i, coeffs_f)
+            self._write_correction_log(
+                modes2correct, zern2correct, ntn, coeffs_i, coeffs_f
+            )
             dirr = _join(_fn.ALIGN_RESULTS_ROOT_FOLDER, ntn)
             if not _exists(dirr):
                 _al._os.makedirs(dirr)
@@ -109,12 +122,18 @@ class OttAligner(_al.Alignment):
             self.read_positions()
             return
         else:
-            ntn = 'Nothing to save'
-            self._write_correction_log([-1], zern2correct, ntn,coeffs_i, coeffs_i)
+            ntn = "Nothing to save"
+            self._write_correction_log([-1], zern2correct, ntn, coeffs_i, coeffs_i)
         return f_cmd
 
-
-    def _write_correction_log(self, m2c: list[int], z2c: list[int], newtn: str, ci: list[float], cf: list[float]) -> None:
+    def _write_correction_log(
+        self,
+        m2c: list[int],
+        z2c: list[int],
+        newtn: str,
+        ci: list[float],
+        cf: list[float],
+    ) -> None:
         """
         Writes the log of the allignment correction applied to the OTT devices.
 
@@ -123,13 +142,13 @@ class OttAligner(_al.Alignment):
         initpos : list
             List of the starting positions of the devices, as _Command classes.
         """
-        cis, cfs, m2cs, z2cs = _ot.array_str_formatter([ci,cf, m2c, z2c])
+        cis, cfs, m2cs, z2cs = _ot.array_str_formatter([ci, cf, m2c, z2c])
         logdict = {
-            '': ['Calibration', 'Correction', 'Parabola'], # Rows Names
-            'TN':[self._calibtn, newtn, self._parabolatn], # Tracking Numbers
-            'Zernike Coeffs': [cis, cfs, f'DoF: {m2cs} | Z2C: {z2cs}'],
+            "": ["Calibration", "Correction", "Parabola"],  # Rows Names
+            "TN": [self._calibtn, newtn, self._parabolatn],  # Tracking Numbers
+            "Zernike Coeffs": [cis, cfs, f"DoF: {m2cs} | Z2C: {z2cs}"],
         }
-        string = _tbt(logdict, headers='keys', tablefmt='plain')
+        string = _tbt(logdict, headers="keys", tablefmt="plain")
         self._txt.log(string)
-        self._txt.log("*"*20)
+        self._txt.log("*" * 20)
         return

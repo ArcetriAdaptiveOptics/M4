@@ -11,7 +11,7 @@ eal case are handled passing by the configuration file
 How to Use it
 -------------
 Once the ott object has been created:
-    
+
     >>> from m4.configuration.start import create_ott
     >>> ott, interf, dm = create_ott()
 
@@ -64,7 +64,7 @@ class Parabola:
 
         try:
             if "parSlider" in config.keys():
-                self._config = config['parSlider']
+                self._config = config["parSlider"]
             else:
                 raise KeyError("Parameter not found")
         except Exception as e:
@@ -91,9 +91,9 @@ class Parabola:
             sed to the OPCUA.
         """
         if get is False:
-            new_pos = pos*1000 + OttParameters.PAR_SLIDER_KIN_OFFSET * 1000
+            new_pos = pos * 1000 + OttParameters.PAR_SLIDER_KIN_OFFSET * 1000
         else:
-            new_pos = (pos - OttParameters.PAR_SLIDER_KIN_OFFSET * 1000)
+            new_pos = pos - OttParameters.PAR_SLIDER_KIN_OFFSET * 1000
         return new_pos
 
     def trussGetPosition(self) -> float:
@@ -129,7 +129,7 @@ class Parabola:
         current_pos : float
             The current position of the Truss in meters.
         """
-        pos_in_mm = pos_in_m #* 1000
+        pos_in_mm = pos_in_m  # * 1000
 
         if self._config is False:
             opcua_pos = self._conversion(pos_in_mm, get=False)
@@ -258,7 +258,7 @@ class ReferenceMirror:
         self._pos = self._slider.getPosition()
         try:
             if "rmSlider" in config.keys():
-                self._config = config['rmSlider']
+                self._config = config["rmSlider"]
             else:
                 raise KeyError("Parameter not found")
         except Exception as e:
@@ -285,9 +285,9 @@ class ReferenceMirror:
             sed to the OPCUA.
         """
         if get is False:
-            new_pos = pos*1000 + OttParameters.RM_SLIDER_KIN_OFFSET * 1000
+            new_pos = pos * 1000 + OttParameters.RM_SLIDER_KIN_OFFSET * 1000
         else:
-            new_pos = (pos - OttParameters.RM_SLIDER_KIN_OFFSET * 1000)
+            new_pos = pos - OttParameters.RM_SLIDER_KIN_OFFSET * 1000
         return new_pos
 
     def rmsGetPosition(self) -> float:
@@ -419,7 +419,7 @@ class AngleRotator:
         self._pos = ott.angleRotator.getPosition()
         try:
             if "angleRotator" in config.keys():
-                self._config = config['angleRotator']
+                self._config = config["angleRotator"]
             else:
                 raise KeyError("Parameter not found")
         except Exception as e:

@@ -86,7 +86,7 @@ def save_positions(basepath, ott):
     ps = ott.parabolaSlider.getPosition()
     rs = ott.referenceMirrorSlider.getPosition()
     bb = beam.trussGetPosition()
-    ref= refmirr.rmsGetPosition()
+    ref = refmirr.rmsGetPosition()
     ang = ott.angleRotator.getPosition()
     f.write("PAR_SLIDER = " + str(ps) + "\n")
     f.write("RM_SLIDER  = " + str(rs) + "\n")
@@ -148,6 +148,7 @@ def go_to_geometry(tn, ott):
         A message indicating the geometry positions have been set.
     """
     import time
+
     positions = read_positions(tn)
     ps = positions["parabolaSlider"]
     rs = positions["referenceMirrorSlider"]

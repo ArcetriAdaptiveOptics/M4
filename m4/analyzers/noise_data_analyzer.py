@@ -13,10 +13,11 @@ from m4.configuration.ott_parameters import Interferometer
 from m4.gui._guiAPI.legacy_iff import AnalyzerIFF
 from opticalib.ground import modal_decomposer as zernike
 
+
 def createFolderToStoreMeasurements():
     """
     Create a folder inside the noise root folder to store the measurements
-    
+
     Returns
     -------
     tuple
@@ -152,9 +153,7 @@ class Noise:
             dove, tidy_or_shuffle, an._template, an._actsVector, an._nPushPull
         )
 
-        rms_mean, quad_mean, _, ptv_mean = self._rmsFromCube(
-            self._cubeFromAnalysis
-        )
+        rms_mean, quad_mean, _, ptv_mean = self._rmsFromCube(self._cubeFromAnalysis)
         self._saveResults(rms_mean, quad_mean, ptv_mean, dove)
         return tt
 

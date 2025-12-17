@@ -169,7 +169,7 @@ class SystemMonitoring:
             if not self.is_monitoring:
                 self.is_monitoring = True
                 self.monitoring_thread = threading.Thread(
-                    target=monitoring_loop#, args=(gui,)
+                    target=monitoring_loop  # , args=(gui,)
                 )
                 self.monitoring_thread.start()
                 gui.widgets["start"].setEnabled(False)
@@ -293,7 +293,7 @@ class SystemMonitoring:
         gui.window().resize(1250, 950)
         gui.run()
 
-    def monitoring(self, progress = None):
+    def monitoring(self, progress=None):
         """
         Monitoring task for the OTT. It performs two types of acquisitions, a
         'fast acquisition' which does a 'capture' of images at the current
@@ -378,7 +378,7 @@ class SystemMonitoring:
         keys3 = ["vn", "cn"]
         res1 = dict(zip(keys1, par1))
         res2 = dict(zip(keys2, par2))
-        tt = self._abs_tilt_analysis(self.fast_data_path, key='.4D')
+        tt = self._abs_tilt_analysis(self.fast_data_path, key=".4D")
         self.fast_tt = np.array([x for x in reversed(tt)])
         self.fast_results = dict(zip(keys3, (res1, res2)))
 
@@ -397,7 +397,7 @@ class SystemMonitoring:
         fl = osu.getFileList(fold=self.slow_data_path)
         nfile = len(fl)
         npoints = int(nfile / gap)
-        tt = self._abs_tilt_analysis(self.slow_data_path, key='.fits')
+        tt = self._abs_tilt_analysis(self.slow_data_path, key=".fits")
         slist = []
         for i in range(0, npoints):
             q0 = osu.read_phasemap(fl[i * gap])

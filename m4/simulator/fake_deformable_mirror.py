@@ -5,18 +5,14 @@ Authors
 """
 
 import os as _os
+
 _join = _os.path.join
 import logging
 import numpy as np
 from m4.configuration.ott_parameters import M4Parameters
 from m4.configuration import folders as conf
 from opticalib.analyzer import modeRebinner
-from opticalib.ground.osutils import (
-    newtn as _ts, 
-    load_fits as _lf,
-    save_fits as _sf
-)
-
+from opticalib.ground.osutils import newtn as _ts, load_fits as _lf, save_fits as _sf
 
 
 class FakeM4DM:
@@ -36,23 +32,15 @@ class FakeM4DM:
         self._actPos = np.zeros(M4Parameters.N_ACT_SEG)
         self._logger = logging.getLogger("FakeM4DM")
         self._conf = _join(conf.MIRROR_FOLDER, conf.mirror_conf)
-        self.m4pupil = _lf(
-            _join(self._conf, "m4_mech_pupil-bin2.fits")
-        )
+        self.m4pupil = _lf(_join(self._conf, "m4_mech_pupil-bin2.fits"))
         self.m4ima = self.m4pupil * 0.0
         self.CapsensGain = np.load(_join(self._conf, "CapsensGain.npy"))
-        self._ifmat = _lf(
-            _join(self._conf, "if_sect4_rot-bin2.fits")
-        )
+        self._ifmat = _lf(_join(self._conf, "if_sect4_rot-bin2.fits"))
         self.ifmat = lambda ifMat: self.getNActs() ** (-0.5) * (
             self._ifmat / np.abs(self._ifmat).max()
         )
-        self.ifidx = _lf(
-            _join(self._conf, "if_idx4_rot-bin2.fits")
-        )
-        self.vmat = _lf(
-            _join(self._conf, "ff_v_matrix.fits")
-        )
+        self.ifidx = _lf(_join(self._conf, "if_idx4_rot-bin2.fits"))
+        self.vmat = _lf(_join(self._conf, "ff_v_matrix.fits"))
 
     def get_shape(self):
         """

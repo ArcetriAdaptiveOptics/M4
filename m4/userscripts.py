@@ -29,29 +29,35 @@ Usage Example
 >>> from m4 import userscripts
 >>> ottuser = OTTScripts(ott, interf)
 >>> # everything is ready
->>> 
+>>>
 
 """
+
 import numpy as np
 from m4.configuration import userconfig as myconf
-#from m4 import main, noise  # main is no longer required for alignment
-#from m4 import noise
-#from m4 import main  # this is to be removed
-#from m4.configuration import update_folder_paths as ufp
 
-#from m4.utils import markers as mrk
-#from m4.mini_OTT import measurements
-#from m4.analyzers import timehistory as th
-#from m4.utils.alignment import Alignment
-#from opticalib import alignment
+# from m4 import main, noise  # main is no longer required for alignment
+# from m4 import noise
+# from m4 import main  # this is to be removed
+# from m4.configuration import update_folder_paths as ufp
+
+# from m4.utils import markers as mrk
+# from m4.mini_OTT import measurements
+# from m4.analyzers import timehistory as th
+# from m4.utils.alignment import Alignment
+# from opticalib import alignment
 from m4 import alignment
 from m4.devices import opt_beam
-from opticalib.dmutils import iff_module as ifm, iff_processing as ifp, iff_acquisition_preparation as ifa
+from opticalib.dmutils import (
+    iff_module as ifm,
+    iff_processing as ifp,
+    iff_acquisition_preparation as ifa,
+)
 from opticalib.dmutils.flattening import Flattening
 from scripts.misc import ott_measurements as measurements
 
 
-#fn = ufp.folders
+# fn = ufp.folders
 
 
 class OTTScripts:
@@ -89,19 +95,19 @@ class OTTScripts:
         self._dm = dm
         self.meas = measurements.Measurements(interf, ott)
         self.alignment = alignment.OttAligner(ott, interf)
-        self.collimator= opt_beam.Parabola(ott)
+        self.collimator = opt_beam.Parabola(ott)
         self.refMirror = opt_beam.ReferenceMirror(ott)
 
     def configureOTT4Alignment(self):
         """
-        This function moves the Reference Mirror to the defined position in the OTT to allow the optical alignment. 
+        This function moves the Reference Mirror to the defined position in the OTT to allow the optical alignment.
         Parameters
         ----------
 
         Returns
         -------
         """
-        print('Moving Reference Mirror to '+str(myconf.rmslider4alignment))
+        print("Moving Reference Mirror to " + str(myconf.rmslider4alignment))
         self.refMirror.moveRmsTo(myconf.rmslider4alignment)
 
     def configureOTTrefMirrorOut(self):
@@ -113,7 +119,7 @@ class OTTScripts:
         Returns
         -------
         """
-        print('Moving Reference Mirror outside the beam to'+str(myconf.rmsliderout))
+        print("Moving Reference Mirror outside the beam to" + str(myconf.rmsliderout))
         self.refMirror.moveRmsTo(myconf.rmsliderout)
 
     def configureOTT4Segment(self):
@@ -125,7 +131,7 @@ class OTTScripts:
         Returns
         -------
         """
-        print('Moving Truss to '+str(myconf.parslider4segment))
+        print("Moving Truss to " + str(myconf.parslider4segment))
         self.collimator.moveTrussTo(myconf.parslider4segment)
 
     def whereisRef(self):
@@ -154,11 +160,10 @@ class OTTScripts:
         pp    : float
             PAR mirror position
         -------
-        """        
+        """
         pp = self.collimator.trussGetPosition()
         print(str(pp))
         return pp
-
 
     def generalAlignment(self, zz, dof, nframes, move=0, removePar=True):
         """
@@ -196,8 +201,8 @@ class OTTScripts:
         # zern2corrf = np.array([0,1])
         # dofidf = np.array([3,4])
         if removePar == True:  # qui bisogna aggiungere il Tn dell'allineamento!!
-            print('Reload fitting_surface, ToBeChecked!')
-            #self.alignment.reload_calibrated_parabola(tnPar)
+            print("Reload fitting_surface, ToBeChecked!")
+            # self.alignment.reload_calibrated_parabola(tnPar)
         self.alignment.correct_alignment(dof, zz, move, nframes)
 
     def alignM4TT(self, nframes, move=0, removePar=True):
@@ -213,44 +218,44 @@ class OTTScripts:
             Flag to indicate whether the PAR figure shall be removed or not.
         Returns
         -------
-        """    
+        """
         zz = np.array([0, 1])
         dd = np.array([5, 6])
         self.generalAlignment(zz, dd, nframes, move, removePar)
 
     def alignOTT(self, nframes, move=0, removePar=True):
         """
-        This function correct the RefMirror orientation to minimioze the tilt as seen on the RefMirror footprint.
-        Parameters
-        ----------
-        nframes   :  int
-            Number of frames to be averaged to acquire the image for computing the Zernik
-e to be corrected
-        move      :  int
-           Flag to indicate whether to apply the correction movement (1) or not (0)
-        removePar :  bool
-            Flag to indicate whether the PAR figure shall be removed or not.           
-        Returns
-        -------
-        """  
+                This function correct the RefMirror orientation to minimioze the tilt as seen on the RefMirror footprint.
+                Parameters
+                ----------
+                nframes   :  int
+                    Number of frames to be averaged to acquire the image for computing the Zernik
+        e to be corrected
+                move      :  int
+                   Flag to indicate whether to apply the correction movement (1) or not (0)
+                removePar :  bool
+                    Flag to indicate whether the PAR figure shall be removed or not.
+                Returns
+                -------
+        """
         zz = np.array([0, 1])
         dd = np.array([3, 4])
         self.generalAlignment(zz, dd, nframes, move, removePar)
 
     def alignComa(self, nframes, move=0, removePar=True):
         """
-        This function corrects the Parabola and Ref Mirror orientations to minimize Tilt and Coma, as measured over the RefMirror footprint.
-        Parameters
-        ----------
-        nframes   :  int
-            Number of frames to be averaged to acquire the image for computing the Zernik
-e to be corrected
-        move      :  int
-           Flag to indicate whether to apply the correction movement (1) or not (0)
-        removePar :  bool
-            Flag to indicate whether the PAR figure shall be removed or not.           
-        Returns
-        -------
+                This function corrects the Parabola and Ref Mirror orientations to minimize Tilt and Coma, as measured over the RefMirror footprint.
+                Parameters
+                ----------
+                nframes   :  int
+                    Number of frames to be averaged to acquire the image for computing the Zernik
+        e to be corrected
+                move      :  int
+                   Flag to indicate whether to apply the correction movement (1) or not (0)
+                removePar :  bool
+                    Flag to indicate whether the PAR figure shall be removed or not.
+                Returns
+                -------
         """
         zz = np.array([0, 1, 6, 7])
         dd = np.array([1, 2, 3, 4])
@@ -258,88 +263,91 @@ e to be corrected
 
     def alignFocus(self, nframes, move=0, removePar=True):
         """
-        This function corrects the vertical (piston) position of the Parabola to minimize the focus as measured over the Ref Mirror footprint.
+                This function corrects the vertical (piston) position of the Parabola to minimize the focus as measured over the Ref Mirror footprint.
 
-        Parameters
-        ----------
-        nframes   :  int
-            Number of frames to be averaged to acquire the image for computing the Zernik
-e to be corrected
-        move      :  int
-           Flag to indicate whether to apply the correction movement (1) or not (0)
-        removePar :  bool
-            Flag to indicate whether the PAR figure shall be removed or not.          
-        Returns
-        -------
+                Parameters
+                ----------
+                nframes   :  int
+                    Number of frames to be averaged to acquire the image for computing the Zernik
+        e to be corrected
+                move      :  int
+                   Flag to indicate whether to apply the correction movement (1) or not (0)
+                removePar :  bool
+                    Flag to indicate whether the PAR figure shall be removed or not.
+                Returns
+                -------
         """
         zz = np.array([2])
         dd = np.array([0])
         self.generalAlignment(zz, dd, nframes, move, removePar)
 
-
     def calibrateOTTAlignment(self, cmdAmp, n_frames, save=True):
         """
-        This function measures the alignment calibration for the OTT, as the Zernike amplitude (fotted over the RefMirror area and with the PAR as pupil, corresponding to the displacement of each relevant DoF in the OTT. In particular, the PAR dZ, rX and rY and RefMirr rX and rY are moved, while measuring tip, tilt, focus and both comaX and comaY.
-        Parameters
-        ----------
-        cmdAmp     :   list
-            Amplitude, in natural dimensions for the PLC [mm and arcsec], for each DoF. M4 tip tilt are zeroed to skip the execution of M4 hexapod commands.
-        n_frames   :   int
-            Number of frames to be averaged to acquire the image for computing the Zernik
-e to be corrected
-        save      :  bool
-            Flag to indicate whether to save or not the data
+                This function measures the alignment calibration for the OTT, as the Zernike amplitude (fotted over the RefMirror area and with the PAR as pupil, corresponding to the displacement of each relevant DoF in the OTT. In particular, the PAR dZ, rX and rY and RefMirr rX and rY are moved, while measuring tip, tilt, focus and both comaX and comaY.
+                Parameters
+                ----------
+                cmdAmp     :   list
+                    Amplitude, in natural dimensions for the PLC [mm and arcsec], for each DoF. M4 tip tilt are zeroed to skip the execution of M4 hexapod commands.
+                n_frames   :   int
+                    Number of frames to be averaged to acquire the image for computing the Zernik
+        e to be corrected
+                save      :  bool
+                    Flag to indicate whether to save or not the data
 
 
-        Returns
-        -------
+                Returns
+                -------
         """
         doit, tnPar = self._checkAlignmInfo(1, removePar)
-        par_pist = myconf.alignCal_parPist 
-        par_tip, par_tilt = myconf.alignCal_parTip, myconf.alignCal_parTilt 
-        rm_tip, rm_tilt = myconf.alignCal_rmTip, myconf.alignCal_rmTilt 
-        m4_tip, m4_tilt = myconf.alignCal_m4Tip *0, myconf.alignCal_m4Tilt *0
+        par_pist = myconf.alignCal_parPist
+        par_tip, par_tilt = myconf.alignCal_parTip, myconf.alignCal_parTilt
+        rm_tip, rm_tilt = myconf.alignCal_rmTip, myconf.alignCal_rmTilt
+        m4_tip, m4_tilt = myconf.alignCal_m4Tip * 0, myconf.alignCal_m4Tilt * 0
 
-        command_amp_vector = np.array([par_pist, par_tip, par_tilt, rm_tip, rm_tilt,m4_tip, m4_tilt])
+        command_amp_vector = np.array(
+            [par_pist, par_tip, par_tilt, rm_tip, rm_tilt, m4_tip, m4_tilt]
+        )
         print(
             "Calibrating the OTT alignment, with the following command amplitudes and Parabola removal option:"
         )
         print(command_amp_vector)
         print(tnPar)
-        print('Add here the command for OTT alignment calibration == PAR + RM')
-        #tncal = al.calibrate_PARAndRM( command_amp_vector,  n_frames   )
+        print("Add here the command for OTT alignment calibration == PAR + RM")
+        # tncal = al.calibrate_PARAndRM( command_amp_vector,  n_frames   )
         return tncal
 
     def calibrateM4Alignment(self, cmdAmp, n_frames, save=True):
         """
-        This function measures the alignment calibration for the OTT, as the Zernike amplitude (fotted over the RefMirror area and with the PAR as pupil, corresponding to the displacement of each relevant DoF in the OTT. In particular, the PAR dZ, rX and rY and RefMirr rX and rY are moved, while measuring tip, tilt, focus and both comaX and comaY.
-        Parameters
-        ----------
-        cmdAmp     :   list
-            Amplitude, in natural dimensions for the PLC [mm and arcsec], for each DoF. PAR and RefMirr Dof are zeroed to skip the execution of the associated commands.
-        n_frames   :   int
-            Number of frames to be averaged to acquire the image for computing the Zernik
-e to be corrected
-        save      : bool
-            Flag to indicate whether to save or not the data
+                This function measures the alignment calibration for the OTT, as the Zernike amplitude (fotted over the RefMirror area and with the PAR as pupil, corresponding to the displacement of each relevant DoF in the OTT. In particular, the PAR dZ, rX and rY and RefMirr rX and rY are moved, while measuring tip, tilt, focus and both comaX and comaY.
+                Parameters
+                ----------
+                cmdAmp     :   list
+                    Amplitude, in natural dimensions for the PLC [mm and arcsec], for each DoF. PAR and RefMirr Dof are zeroed to skip the execution of the associated commands.
+                n_frames   :   int
+                    Number of frames to be averaged to acquire the image for computing the Zernik
+        e to be corrected
+                save      : bool
+                    Flag to indicate whether to save or not the data
 
-        Returns
-        -------
+                Returns
+                -------
         """
         doit, tnPar = self._checkAlignmInfo(1, removePar)
-        par_pist = myconf.alignCal_parPist *0
-        par_tip, par_tilt = myconf.alignCal_parTip *0, myconf.alignCal_parTilt *0
-        rm_tip, rm_tilt = myconf.alignCal_rmTip *0 , myconf.alignCal_rmTilt *0
+        par_pist = myconf.alignCal_parPist * 0
+        par_tip, par_tilt = myconf.alignCal_parTip * 0, myconf.alignCal_parTilt * 0
+        rm_tip, rm_tilt = myconf.alignCal_rmTip * 0, myconf.alignCal_rmTilt * 0
         m4_tip, m4_tilt = myconf.alignCal_m4Tip, myconf.alignCal_m4Tilt
 
-        command_amp_vector = np.array([par_pist, par_tip, par_tilt, rm_tip, rm_tilt, m4_tip, m4_tilt])
+        command_amp_vector = np.array(
+            [par_pist, par_tip, par_tilt, rm_tip, rm_tilt, m4_tip, m4_tilt]
+        )
         print(
             "Calibrating the OTT alignment, with the following command amplitudes and Parabola removal option:"
         )
         print(command_amp_vector)
         print(tnPar)
-        print('Add here the command for OTT alignment calibration == PAR + RM')
-        #tncal = al.calibrate_PARAndRM( command_amp_vector,  n_frames   )
+        print("Add here the command for OTT alignment calibration == PAR + RM")
+        # tncal = al.calibrate_PARAndRM( command_amp_vector,  n_frames   )
         return tncal
 
     def config4D4Alignment(self):
@@ -412,7 +420,6 @@ e to be corrected
         return doit, tnPar
 
 
-
 class M4Scripts:
     """
     xxx
@@ -427,10 +434,9 @@ class M4Scripts:
     def __init__(self, dm=None, interf=None):
         """The Constructor"""
         #       print('Tell me, Master')
-        
+
         self.interf = interf
         self.dm = dm
-
 
     def loadFlat(tn):
         """
@@ -443,8 +449,6 @@ class M4Scripts:
         Returns
         -------
         """
-        basefold = ''
-        #dm.applyFlat(tn)
+        basefold = ""
+        # dm.applyFlat(tn)
         pass
-    
-
