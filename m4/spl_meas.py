@@ -7,7 +7,7 @@ from opticalib.ground import osutils as _osu
 from photutils import centroids as _centroids
 from opticalib.devices.cameras import AVTCamera as _cam
 from opticalib.core.fitsarray import fits_array as _fits_array
-from opticalib.ground.logger import getSystemLogger as _getLogger
+from opticalib.ground.logger import SystemLogger as _SL
 
 
 class SplAcquirer:
@@ -20,7 +20,7 @@ class SplAcquirer:
         elif isinstance(camera, str):
             camera = _cam(name=camera)
         self._camera = camera
-        self._logger = _getLogger()
+        self._logger = _SL(__class__)
 
     def acquire(
         self,
@@ -194,7 +194,7 @@ class SplAnalyzer:
 
     def __init__(self, tn: str | None = None):
         """The constructor"""
-        self._logger = _getLogger()
+        self._logger = _SL(__class__)
         self.tn_fringes = self.setFringesTn(tn) if tn is not None else None
         self._Qm = None
         self._QmSmooth = None

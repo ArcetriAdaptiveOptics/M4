@@ -10,7 +10,7 @@ from opticalib.ground import (
     roi as _roi,
 )
 from opticalib.ground.modal_decomposer import ZernikeFitter as _ZF
-from opticalib.dmutils import iff_processing as ipf, iff_module as ifm
+from opticalib.dmutils import iff_processing as ifp, iff_module as ifm
 from opticalib.analyzer import cubeRebinner
 from opticalib.alignment import _sc
 
@@ -56,7 +56,7 @@ class OttIffAcquisition:
             if not _sc.fitting_surface == ""
             else None
         )
-        self._zern = _ZF(self._cavity)
+
 
     def acquireDpIff(
         self, separate_shells: bool = True, **kwargs: dict[str, ot.Any]
@@ -117,14 +117,14 @@ class OttIffAcquisition:
                 )
             return tns
 
-    def process(self, **kwargs: dict[str, ot.Any]):
-        """
-        Standard IFF Data processing, using the opticalib.iff_processing module.
-        """
-        tn = kwargs.pop("tn", None)
-        tn = [tn] if isinstance(tn, str) else tn
-        for _, t in enumerate(tn):
-            ipf.process(tn=t, **kwargs)
+    # def process(self, **kwargs: dict[str, ot.Any]):
+    #     """
+    #     Standard IFF Data processing, using the opticalib.iff_processing module.
+    #     """
+    #     tn = kwargs.pop("tn", None)
+    #     tn = [tn] if isinstance(tn, str) else tn
+    #     for _, t in enumerate(tn):
+    #         ifp.process(tn=t, **kwargs)
 
     def dpIffRoiProcessing(
         self,
@@ -161,91 +161,57 @@ class OttIffAcquisition:
         """
         if isinstance(tns, str):
             tns = [tns]
+        ifp.process(tn=tns, save=True, rebin=rebin)
         newtns = []
         for j, tn in enumerate(tns):
-            newtn = _osu.newtn()
-            cube = _lf(
-                _os.path.join(_fn.INTMAT_ROOT_FOLDER, tn, "IMCube.fits"), True
-            ).transpose(2, 0, 1)
-            mat = _lf(_os.path.join(_fn.INTMAT_ROOT_FOLDER, tn, "cmdMatrix.fits"))
-            modesvec = _lf(
-                _os.path.join(_fn.INTMAT_ROOT_FOLDER, tn, "modesVector.fits")
-            )
-            nframes = cube.shape[0]
-            newcube = []
-
-            for i in range(nframes):
-                v = cube[i]
-                rois = _roi.roiGenerator(v)
-                activeRoi = rois.pop(activeRoiID[j])
-                if detrend is not False:
-                    v = self._tiltDetrend(v, activeRoi=activeRoi, auxRois=rois)
-                if roinull:
-                    for auxrois in rois:
-                        v[auxrois == 0] = 0
-                newcube.append(v)
-
-            newcube = _np.ma.masked_array(newcube)
-            newcube = cubeRebinner(newcube.transpose(1, 2, 0), rebin)
-            save_path = _os.path.join(_fn.INTMAT_ROOT_FOLDER, newtn)
-            if not _os.path.exists(save_path):
-                _os.makedirs(save_path)
-            _osu.save_fits(
-                _os.path.join(save_path, "IMCube.fits"), newcube, overwrite=True
-            )
-            _osu.save_fits(
-                _os.path.join(save_path, "cmdMatrix.fits"), mat, overwrite=True
-            )
-            _osu.save_fits(
-                _os.path.join(save_path, "modesVector.fits"), modesvec, overwrite=True
-            )
+            newtn = ifp.cubeRoiProcessing(tn, activeRoiID[j], detrend, roinull, rebin, fitting_mask=self._cavity)
             newtns.append(newtn)
-            _time.sleep(1)
+            # _time.sleep(1) # WHY? 
         return newtns
 
-    def _tiltDetrend(
-        self, img: ot.ImageData, activeRoi: ot.MaskData, auxRois: ot.MaskData
-    ):
-        """
-        This method detrends an image by fitting and subtracting PTT
-        (Zernike modes 1, 2, 3) from auxiliary regions of interest (ROIs), and
-        applies the correction to both the ROIs and the active ROI area.
+    # def _tiltDetrend(
+    #     self, img: ot.ImageData, activeRoi: ot.MaskData, auxRois: ot.MaskData
+    # ):
+    #     """
+    #     This method detrends an image by fitting and subtracting PTT
+    #     (Zernike modes 1, 2, 3) from auxiliary regions of interest (ROIs), and
+    #     applies the correction to both the ROIs and the active ROI area.
 
-        Parameters
-        ----------
-        img : ot.ImageData
-            The input image data to be detrended.
-        activeRoi : ot.MaskData
-            Mask defining the active region of interest where mean correction
-            will be applied.
-        auxRois : ot.MaskData
-            Collection of auxiliary ROI masks used for tilt estimation. Each ROI
-            is processed independently.
+    #     Parameters
+    #     ----------
+    #     img : ot.ImageData
+    #         The input image data to be detrended.
+    #     activeRoi : ot.MaskData
+    #         Mask defining the active region of interest where mean correction
+    #         will be applied.
+    #     auxRois : ot.MaskData
+    #         Collection of auxiliary ROI masks used for tilt estimation. Each ROI
+    #         is processed independently.
 
-        Returns
-        -------
-        detrendedImg : ot.ImageData
-            The detrended image with tilt removed. For each auxiliary ROI, the
-            fitted surface is subtracted from the entire image, and the mean of
-            the fitted surface is subtracted from areas outside the active ROI.
+    #     Returns
+    #     -------
+    #     detrendedImg : ot.ImageData
+    #         The detrended image with tilt removed. For each auxiliary ROI, the
+    #         fitted surface is subtracted from the entire image, and the mean of
+    #         the fitted surface is subtracted from areas outside the active ROI.
 
-        Notes
-        -----
-        The method uses Zernike polynomials [1, 2, 3] which typically correspond
-        to piston, tip, and tilt modes for the tilt removal operation.
-        """
-        detrendedImg = img.copy()
-        for roi in auxRois:
-            r = roi.copy()
-            r2rImage = _np.ma.masked_array(img.data, mask=r)
-            surf2Remove = self._zern.makeSurface([1, 2, 3], r2rImage)
-            s2rmean = surf2Remove.mean()
-            surf2Remove.data[activeRoi == 0] = 0
-            surf2Remove.mask[activeRoi == 0] = False
+    #     Notes
+    #     -----
+    #     The method uses Zernike polynomials [1, 2, 3] which typically correspond
+    #     to piston, tip, and tilt modes for the tilt removal operation.
+    #     """
+    #     detrendedImg = img.copy()
+    #     for roi in auxRois:
+    #         r = roi.copy()
+    #         r2rImage = _np.ma.masked_array(img.data, mask=r)
+    #         surf2Remove = self._zern.makeSurface([1, 2, 3], r2rImage)
+    #         s2rmean = surf2Remove.mean()
+    #         surf2Remove.data[activeRoi == 0] = 0
+    #         surf2Remove.mask[activeRoi == 0] = False
 
-            detrendedImg -= surf2Remove
-            detrendedImg -= s2rmean
-        return detrendedImg
+    #         detrendedImg -= surf2Remove
+    #         detrendedImg -= s2rmean
+    #     return detrendedImg
 
     # def roizern2(self, img, z2fit, auxmask =None, roiid=None, local =True, roiimg = None):
     #     if ((roiid is not None) and (roiimg is None)):  #
