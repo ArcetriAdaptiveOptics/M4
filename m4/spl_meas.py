@@ -9,16 +9,27 @@ from opticalib.devices.cameras import AVTCamera as _cam
 from opticalib.core.fitsarray import fits_array as _fits_array
 from opticalib.ground.logger import SystemLogger as _SL
 
+def _get_tuneble_filter():
+    """
+    initiate the tunable filter with standard parameters
+    """
+    from plico_motor import motor # type: ignore
+    from opticalib.core.read_config import getInterfConfig
+    
+    ip = getInterfConfig()['ip']
+    return motor(ip, 7200, axis=0)
 
 class SplAcquirer:
 
-    def __init__(self, filter: object, camera: str | _cam | None = None):
+    def __init__(self, filter: object | None = None, camera: str | _cam | None = None):
         """The Constructor"""
         self._filter = filter
         if camera is None:
             camera = "SplCam0"
         elif isinstance(camera, str):
             camera = _cam(name=camera)
+        if camera is None:
+            camera = _get_tuneble_filter()
         self._camera = camera
         self._logger = _SL(__class__)
 
