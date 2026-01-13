@@ -16,21 +16,21 @@ def _get_tuneble_filter():
     from plico_motor import motor # type: ignore
     from opticalib.core.read_config import getInterfConfig
     
-    ip = getInterfConfig()['ip']
+    ip = getInterfConfig('PhaseCam6110')['ip']
     return motor(ip, 7200, axis=0)
 
 class SplAcquirer:
 
-    def __init__(self, filter: object | None = None, camera: str | _cam | None = None):
+    def __init__(self, camera: str | _cam | None = None, tunable_filter: object | None = None):
         """The Constructor"""
-        self._filter = filter
         if camera is None:
             camera = "SplCam0"
         elif isinstance(camera, str):
             camera = _cam(name=camera)
-        if camera is None:
-            camera = _get_tuneble_filter()
+        if tunable_filter is None:
+            tunable_filter = _get_tuneble_filter()
         self._camera = camera
+        self._filter = tunable_filter
         self._logger = _SL(__class__)
 
     def acquire(
@@ -73,9 +73,10 @@ class SplAcquirer:
                 )
                 raise ValueError("Wavelengths must be between 400 and 700 nm")
         else:
-            lambda_vector = _np.arange(400, 701, 20)
+            lambda_vector = _np.arange(440, 721, 20)
 
         tn = _osu.newtn()
+        _os.mkdir(_os.path.join(_fn.OPD_IMAGES_ROOT_FOLDER, tn))
         _osu.save_fits(
             _os.path.join(_fn.OPD_IMAGES_ROOT_FOLDER, tn, "lambda_vector.fits"),
             lambda_vector,
@@ -158,7 +159,7 @@ class SplAcquirer:
         thr = 5 * bin_edges[_np.where(counts == max(counts))]
         img = reference_image.copy()
         cx, cy = _centroids.centroid_com(img, mask=(img < thr))
-        return _np.int(cy), _np.int(cx)
+        return int(_np.round(cy)), int(_np.round(cx))
 
     def _preProcessing(self, image: _ot.ImageData, cy: int, cx: int) -> _ot.FitsData:
         """
