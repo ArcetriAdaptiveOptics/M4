@@ -132,7 +132,7 @@ class SplAcquirer:
             )
             crop = self._preProcessing(image, cy, cx)
             # crop_rot = scin.rotate(crop, 23,  reshape=False)
-            crop.writeto(f"image_{wl}nm.fits", overwrite=True)
+            crop.writeto(_os.path.join(datapath, f"image_{wl}nm.fits"), overwrite=True)
 
         self._filter.move_to(600)
         self._logger.info(
