@@ -62,37 +62,38 @@ class SplAcquirer:
 
         Returns
         -------
-        tt: string
+        tn: string
             Tracking number of measurements, in the `` folder.
         """
         if lambda_vector is not None:
             lambda_vector = _np.asarray(lambda_vector)
             if _np.min(lambda_vector) < 400 or _np.max(lambda_vector) > 700:
                 self._logger.error(
-                    f"[{self.__class__.__qualname__}] AcquisitionError: Wavelengths must be between 400 and 700 nm"
+                    f"AcquisitionError: Wavelengths must be between 400 and 700 nm"
                 )
                 raise ValueError("Wavelengths must be between 400 and 700 nm")
         else:
             lambda_vector = _np.arange(440, 721, 20)
 
-        tn = _osu.newtn()
-        _os.mkdir(_os.path.join(_fn.OPD_IMAGES_ROOT_FOLDER, tn))
+        datapath = _osu.create_data_folder(basepath=_fn.SPL_DATA_ROOT_FOLDER)
+        tn = datapath.split("/")[-1]
+        
         _osu.save_fits(
-            _os.path.join(_fn.OPD_IMAGES_ROOT_FOLDER, tn, "lambda_vector.fits"),
+            _os.path.join(datapath, "lambda_vector.fits"),
             lambda_vector,
         )
         self._logger.info(
-            f"[{self.__class__.__qualname__}] Starting SPL acquisition with tracking number: {tn}"
+            f"Starting SPL acquisition with tracking number: {tn}"
         )
 
         ## find PSF position ##
         self._logger.info(
-            f"[{self.__class__.__qualname__}] Preparing reference image acquisition"
+            f"Preparing reference image acquisition"
         )
         self._filter.move_to(600)
         self._camera.set_exptime(exptime / 2 * 1e3)
         self._logger.info(
-            f"[{self.__class__.__qualname__}] Acquiring reference image at 600 nm with exposure time of {self._camera.get_exptime()/1000} [ms]"
+            f"Acquiring reference image at 600 nm with exposure time of {self._camera.get_exptime()/1000} [ms]"
         )
         img = self._camera.acquire_frames()
         if mask is None:
@@ -100,7 +101,7 @@ class SplAcquirer:
         reference_image = _np.ma.masked_array(img, mask)
         if _np.max(reference_image) > 4000:
             self._logger.warning(
-                f"[{self.__class__.__qualname__}] {_np.max(reference_image)} > 4000 : Saturation detected!"
+                f"{_np.max(reference_image)} > 4000 : Saturation detected!"
             )
 
         # Find barycenter
@@ -112,7 +113,7 @@ class SplAcquirer:
         expgain[_np.where(lambda_vector < 530)] = 2  # 8
         expgain[_np.where(lambda_vector > 650)] = 1  # 3
         expgain[_np.where(lambda_vector > 700)] = 1.5  # 8
-        self._logger.info(f"[{self.__class__.__qualname__}] Acquisition of frames")
+        self._logger.info(f"Acquisition of frames")
 
         for wl, expg in zip(lambda_vector, expgain):
             self._logger.info(
@@ -121,7 +122,7 @@ class SplAcquirer:
             self._filter.move_to(wl)
             self._camera.set_exptime(exptime * expg * 1e3)
             image = _fits_array(
-                data=_np.mean(self._camera.acquire_frames(numframes), 2),
+                data=self._camera.acquire_frames(numframes),
                 mask=mask,
                 header={
                     "EXPTIME": self._camera.get_exptime() / 1000,
@@ -135,7 +136,7 @@ class SplAcquirer:
 
         self._filter.move_to(600)
         self._logger.info(
-            f"[{self.__class__.__qualname__}] Saved tracking number: {tn}"
+            f"Saved tracking number: {tn}"
         )
 
         return tn
@@ -242,12 +243,16 @@ class SplAnalyzer:
             Piston value after smoothing data
         """
 
-        ntn = _osu.create_data_folder(basepath=_fn.SPL_ROOT_FOLDER)
+        ntn = _osu.create_data_folder(basepath=_fn.SPL_RESULTS_ROOT_FOLDER)
         self._logger.info(
-            f"[{self.__class__.__qualname__}] Analysis of tn = {tn} started."
+            f"Analysis of tn = {tn} started."
         )
 
-        lambda_vector = _osu.load_fits(_os.path.join(tn, "lambda_vector.fits"))
+        lambda_vector = _osu.load_fits(
+            _os.path.join(
+                _fn.SPL_DATA_ROOT_FOLDER, tn, "lambda_vector.fits"
+            )
+        )
 
         cube, cube_normalized = self.readMeasurement(tn)
         matrix, matrix_smooth = self.matrix_calc(lambda_vector, cube, cube_normalized)
@@ -374,7 +379,7 @@ class SplAnalyzer:
         cube_normalized: numpy array
             Cube of normalized images [pixels, pixels, n_frames=lambda]
         """
-        cube = _osu.loadCubeFromFilelist(tn, fold=_fn.SPL_ROOT_FOLDER, key="image")
+        cube = _osu.loadCubeFromFilelist(tn, fold=_fn.SPL_DATA_ROOT_FOLDER, key="image")
         cube_normalized = map(
             lambda x: x / _np.sum(x), cube.transpose(2, 0, 1)
         ).transpose(1, 2, 0)
@@ -428,7 +433,7 @@ class SplAnalyzer:
                 piston value
         """
         self._logger.debug(
-            f"[{self.__class__.__qualname__}] Template Comparison with data in {self.tn_fringes}"
+            f"Template Comparison with data in {self.tn_fringes}"
         )
         delta, lambda_synth = self._readDeltaAndLambdaFromFringesFolder()
         idx = _np.isin(lambda_synth, lambda_vector)

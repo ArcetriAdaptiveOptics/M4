@@ -24,7 +24,9 @@ class Folders(_oroot._folds):
         self.PARCALIB_ROOT_FOLDER = _join(self.BASE_DATA_PATH, "ParabolaRemapped")
         self.PARPOS_ROOT_FOLDER = _join(self.BASE_DATA_PATH, "PARPosition")
         self.SPL_ROOT_FOLDER = _join(self.BASE_DATA_PATH, "SPL")
-        self.SPL_FRINGES_ROOT_FOLDER = _join(self.BASE_DATA_PATH, "Fringes")
+        self.SPL_DATA_ROOT_FOLDER = _join(self.SPL_ROOT_FOLDER, "Data")
+        self.SPL_RESULTS_ROOT_FOLDER = _join(self.SPL_ROOT_FOLDER, "Results")
+        self.SPL_FRINGES_ROOT_FOLDER = _join(self.SPL_ROOT_FOLDER, "Fringes")
         self.MIRROR_FOLDER = _join(self.BASE_DATA_PATH, "MIRROR_System")
         self.OPTICAL_FOLDER = _join(self.BASE_DATA_PATH, "OPTICAL_System")
         self.mirror_conf = "20170430"
