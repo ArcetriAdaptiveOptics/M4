@@ -380,9 +380,9 @@ class SplAnalyzer:
             Cube of normalized images [pixels, pixels, n_frames=lambda]
         """
         cube = _osu.loadCubeFromFilelist(tn, fold='SPL',  key="image")
-        cube_normalized = map(
+        cube_normalized = _np.array(list(map(
             lambda x: x / _np.sum(x), cube.transpose(2, 0, 1)
-        ).transpose(1, 2, 0)
+        ))).transpose(1, 2, 0)
         return cube, cube_normalized
 
     def _newThr(self, img: _ot.ImageData) -> list[int]:
