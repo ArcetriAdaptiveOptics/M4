@@ -400,7 +400,7 @@ class SplAnalyzer:
             list of 4 integers defining the crop area
         """
         cx, cy = _centroids.centroid_2dg(img)
-        baricenterCoord = [_np.int(round(cy)), _np.int(round(cx))]
+        baricenterCoord = [_np.int_(round(cy)), _np.int_(round(cx))]
         peak = [
             baricenterCoord[0] - 25,
             baricenterCoord[0] + 25,
