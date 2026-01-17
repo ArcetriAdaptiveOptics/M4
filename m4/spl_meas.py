@@ -380,6 +380,8 @@ class SplAnalyzer:
             Cube of normalized images [pixels, pixels, n_frames=lambda]
         """
         cube = _osu.loadCubeFromFilelist(tn, fold='SPL',  key="image")
+        print('Swapping directions')
+        cube = _np.transpose(cube,[1,0,2])  #modRB20250117 to manage now image orientation
         cube_normalized = _np.array(list(map(
             lambda x: x / _np.sum(x), cube.transpose(2, 0, 1)
         ))).transpose(1, 2, 0)
@@ -399,7 +401,8 @@ class SplAnalyzer:
         peak: list
             list of 4 integers defining the crop area
         """
-        cx, cy = _centroids.centroid_2dg(img)
+        cx, cy = _centroids.centroid_2dg(img) 
+
         baricenterCoord = [_np.int_(round(cy)), _np.int_(round(cx))]
         peak = [
             baricenterCoord[0] - 25,
