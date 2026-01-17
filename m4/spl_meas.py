@@ -489,9 +489,10 @@ class SplAnalyzer:
         delta = _osu.load_fits(
             _os.path.join(self._fringes_fold, "Differential_piston.fits")
         )
-        lambda_synth_from_data = (
-            _osu.load_fits(_os.path.join(self._fringes_fold, "Lambda.fits")) * 1e9
-        ).astype(int)
+        #lambda_synth_from_data = (_osu.load_fits(_os.path.join(self._fringes_fold, "Lambda.fits")) * 1e9  ).astype(int)  #modRB20250117 since astype(int) yields errors
+        lambda_synth_from_data = ( _osu.load_fits(_os.path.join(self._fringes_fold, "Lambda.fits")) * 1e9 )
+        lambda_synth_from_data = (_np.round(lambda_synth_from_data/5)*5).astype(int)  #end of modification
+
         return delta, lambda_synth_from_data
 
     def _savePistonResult(self, tn: str, piston: _ot.Number, piston_smooth: _ot.Number):
