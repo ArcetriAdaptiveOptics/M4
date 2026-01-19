@@ -31,7 +31,49 @@ class SplAcquirer:
             tunable_filter = _get_tuneble_filter()
         self._camera = camera
         self._filter = tunable_filter
+        self._darkFrame1sec= None
         self._logger = _SL(__class__)
+
+    def acquire_darkFrame(self, exptime: float, numframes: int = 1):
+        """
+        Calibrates a dark frame (or better a sky frame) to allow the subtration of the daylight signal
+
+        Parameters:
+        -----------
+        exptime : float
+            the exposure time in millisec
+
+        numframes : int
+            the number of frames to be averaged together
+
+        Returns:
+        --------
+        the dark frames scaled to 1sec exposure time
+        """
+        self._camera.set_exptime(exptime*1e3)
+        img = self._camera.acquire_frames(numframes)
+        self._darkFrame1sec = img/(exptime/1000)
+        return self._darkFrame1sec
+
+    def _removeDarkFrame(self, img, exptime):
+        """
+        Corrects a frame for the dark frame and (when implemented) for sky and RON
+        Parameters:
+        -----------
+        img : OTimageLike
+            image to be corrected
+        exptime : float
+            the exposure time in millisec
+
+        Returns:
+        --------
+        the corrected image
+        """
+
+        if self._darkFrame1sec is not None:
+            imgout = img - self._darkFrame1sec *exptime
+            print('Correcting for the dark frame')
+        return imgout
 
     def acquire(
         self,
@@ -96,6 +138,7 @@ class SplAcquirer:
             f"Acquiring reference image at 600 nm with exposure time of {self._camera.get_exptime()/1000} [ms]"
         )
         img = self._camera.acquire_frames()
+        img = self._removeDarkFrame(img, exptime / 2/1000)
         if mask is None:
             mask = _np.zeros(img.shape)
         reference_image = _np.ma.masked_array(img, mask)
@@ -106,7 +149,7 @@ class SplAcquirer:
 
         # Find barycenter
         cy, cx = self._baricenterCalculator(reference_image)
-
+        print('Baricenter of the reference frame @600 nm found at:'+str(cy)+', '+str(cx))
         # Create the Gain Vector
         expgain = _np.ones(lambda_vector.shape[0]) * 0.5
         expgain[_np.where(lambda_vector < 550)] = 1  # 8
@@ -121,8 +164,10 @@ class SplAcquirer:
             )
             self._filter.move_to(wl)
             self._camera.set_exptime(exptime * expg * 1e3)
+            img = self._camera.acquire_frames(numframes)
+            img = self._removeDarkFrame(img, exptime *expg/1000)
             image = _fits_array(
-                data=self._camera.acquire_frames(numframes),
+                data=img,
                 mask=mask,
                 header={
                     "EXPTIME": self._camera.get_exptime() / 1000,
