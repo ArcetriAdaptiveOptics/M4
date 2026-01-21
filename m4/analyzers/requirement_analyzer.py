@@ -11,10 +11,14 @@ from opticalib.ground import geo #requested for qpupil (available in geo)
 from m4.configuration.ott_parameters import OttParameters
 from astropy.io import fits as pyfits  #can be adjusted to match opticalib standards
 from skimage.draw import disk as draw_circle   #any replacement in opticalib??
-from m4.ground import zernike
+#from m4.ground import zernike
+from opticalib.ground.modal_decomposer import ZernikeFitter as zf
+zernike = zf()
 from scipy.ndimage import shift  #shift has an equivalent in np as np.roll
-from m4.ground import read_data  #opticalib.ground.osutils.read_phasemap. check the other read
-from m4.configuration import folders as config
+#from m4.ground import read_data  # error here  #opticalib.ground.osutils.read_phasemap. check the other read
+from opticalib.ground.osutils import read_phasemap, load_fits
+#from m4.configuration import folders as config
+from opticalib.core.root import folders as config
 from matplotlib import pyplot as plt
 
 
@@ -210,13 +214,15 @@ def tiptilt_fit(ima):
         ima_ttr: numpy masked array
             image without tip and tilt
     """
+    #if ima is not None:
+    #    coef, mat = zernike.zernikeFit(ima, np.array([2, 3]))
+    #    surf = zernike.zernikeSurface(ima, coef, mat)
+    #    new_image = ima - surf
+    #    ima_ttr = np.ma.masked_array(new_image, mask=ima.mask)
+    #    return ima_ttr
     if ima is not None:
-        coef, mat = zernike.zernikeFit(ima, np.array([2, 3]))
-        surf = zernike.zernikeSurface(ima, coef, mat)
-        new_image = ima - surf
-        ima_ttr = np.ma.masked_array(new_image, mask=ima.mask)
-        return ima_ttr
-
+        ima_ttr = zf.removeZernike(ima,[1,2,3])
+    return ima_ttr   #here we removed piston and tiptilt, was tiptilt only
 
 # def curv_fit(image, test_diameter):
 #     '''
@@ -415,6 +421,7 @@ def test243(image, radius_m, pscale=None, step=None, n_patches=None):
     # radius_m = 0.015 or 0.1
     mask = np.invert(image.mask).astype(int)
     x, y, r, xx, yy = geo.qpupil(mask)
+    print('pscale in OTT is 0.00076. pscale to be passed to this function is 1/0.00076')
     if pscale is None:
         pscale = r * (1 / 0.17)
     else:
@@ -523,7 +530,8 @@ def imageOpticOffset(data_file_path, start, stop):
     for name in list:
         # nn = name.split('/')[-1]
         # print(nn)
-        image = read_data.read_phasemap(name)
+        #image = read_data.read_phasemap(name)
+        image = read_phasemap(name)
         if cube is None:
             cube = image
         else:
@@ -582,7 +590,9 @@ def robustImageFromDataSet(
         print("Creating cube 1")
         for name in list1:
             # print(name)
-            image = read_data.read_phasemap(name)
+            #image = read_data.read_phasemap(name)
+            image = read_phasemap(name)
+
             if cube1 is None:
                 cube1 = image
             else:
@@ -592,7 +602,9 @@ def robustImageFromDataSet(
         print("Creating cube 2")
         for name in list2:
             # print(name)
-            image = read_data.read_phasemap(name)
+            #image = read_data.read_phasemap(name)
+            image = read_phasemap(name)
+
             if cube2 is None:
                 cube2 = image
             else:
@@ -605,23 +617,27 @@ def robustImageFromDataSet(
 
     else:
         fits_file_name = os.path.join(config.OUT_FOLDER, "Req", tt, "OptOffset.fits")
-        image_optOffset = read_data.readFits_maskedImage(fits_file_name)
+        #image_optOffset = read_data.readFits_maskedImage(fits_file_name)
+        image_optOffset = load_fits(fits_file_name)
 
         cube = None
         print("Creating cube")
         for name in list:
             # print(name)
-            ima = read_data.read_phasemap(name)
+            #ima = read_data.read_phasemap(name)
+            ima = read_phasemap(name)
+
             image = ima - image_optOffset
             if cube is None:
                 cube = image
             else:
                 cube = np.ma.dstack((cube, image))
         final_image = np.ma.mean(cube, axis=2)
-
-    coef, mat = zernike.zernikeFit(final_image, zernike_vector_to_subtract)
-    surf = zernike.zernikeSurface(final_image, coef, mat)
-    image_ttr = final_image - surf
+    image_ttr = zf.removeZernike(final_image, zernike_vector_to_subtract)
+    #modRB to meet opticalib definitions
+    #coef, mat = zernike.zernikeFit(final_image, zernike_vector_to_subtract)
+    #surf = zernike.zernikeSurface(final_image, coef, mat)
+    #image_ttr = final_image - surf
     return image_ttr
 
 
