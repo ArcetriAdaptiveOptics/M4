@@ -4,16 +4,20 @@ import shutil
 import matplotlib.pyplot as plt
 from astropy.io import fits as pyfits
 from arte.utils import rebin
-from m4.configuration import folders as foldname
+
 import opticalib.analyzer as th # from m4.analyzers import timehistory as th
 # from m4.ground import geo, zernike as zern, read_data as rd
-from opticalib.ground import geometry as geo
-from m4.ground import read_ottcalib_conf as roc
+from opticalib.ground import geometry as geo # from m4.ground import geo
+from opticalib.ground import modal_decomposer as md
 # from opticalib.ground.osutils import newtn
 from opticalib.ground import osutils as osu # from m4.utils import osutils as osu
+
+from m4.configuration import folders as foldname
+from m4.ground import read_ottcalib_conf as roc
 import m4.utils.parabola_footprint_registration as pr
 from m4.utils.parabola_identification import ParabolaActivities
 
+zern = md.ZernikeFitter() # this is a guess, MM260121
 
 pa = ParabolaActivities()
 pfr = pr.ParabolaFootprintRegistration()
@@ -231,8 +235,8 @@ def marker_data_all(
     fl0 = osu.getFileList(tn0, fold=OPDSERIES)
     img0 = th.frame(0, fl0)
     img0 = np.fliplr(img0)
-    fl1 = osu.getFileList(tn1, fold=OPDSERIES)
-    img1 = th.frame(0, fl1)
+    # fl1 = osu.getFileList(tn1, fold=OPDSERIES)
+    # img1 = th.frame(0, fl1)
 
     p0 = getMarkers(tn0, flip=True, diam=24)
     p1 = getMarkers(tn1, diam=28)
@@ -319,7 +323,7 @@ def register_par_only(tnconf, show=False, forder=10):
 
 
 def save_registration(img, tnconf):  # (img,cgh_tn_img,cgh_tn_marker,ott_tn_marker):
-    tn = newtn()
+    tn = osu.newtn()
     print(tn)
     fold = foldname.PARABOLA_REMAPPED_FOLDER + "/" + tn + "/"
     os.mkdir(fold)
