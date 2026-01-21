@@ -6,10 +6,10 @@ from opticalib import typings as _ot
 from opticalib.ground import osutils as _osu
 from photutils import centroids as _centroids
 from opticalib.devices.cameras import AVTCamera as _cam
-from opticalib.core.fitsarray import fits_array as _fits_array
 from opticalib.ground.logger import SystemLogger as _SL
+from opticalib.core.fitsarray import fits_array as _fits_array
 
-def _get_tuneble_filter():
+def _get_tunable_filter():
     """
     initiate the tunable filter with standard parameters
     """
@@ -28,22 +28,22 @@ class SplAcquirer:
         elif isinstance(camera, str):
             camera = _cam(name=camera)
         if tunable_filter is None:
-            tunable_filter = _get_tuneble_filter()
+            tunable_filter = _get_tunable_filter()
         self._camera = camera
         self._filter = tunable_filter
         self._darkFrame1sec= None
         self._logger = _SL(__class__)
 
-    def acquire_darkFrame(self, exptime: float, numframes: int = 1):
+    def acquireDarkFrame(self, exptime: float, nframes: int = 1):
         """
-        Calibrates a dark frame (or better a sky frame) to allow the subtration of the daylight signal
+        Calibrates a dark frame (or better a sky frame) to allow the subtraction
+        of the daylight signal.
 
         Parameters:
         -----------
         exptime : float
             the exposure time in millisec
-
-        numframes : int
+        nframes : int
             the number of frames to be averaged together
 
         Returns:
@@ -51,19 +51,21 @@ class SplAcquirer:
         the dark frames scaled to 1sec exposure time
         """
         self._camera.set_exptime(exptime*1e3)
-        img = self._camera.acquire_frames(numframes)
+        self._logger.info(f'Acquiring Dark frame for {exptime} ms exposure time, averaging {nframes} frames')
+        img = self._camera.acquire_frames(nframes)
         self._darkFrame1sec = img/(exptime/1000)
-        return self._darkFrame1sec
+        return self._darkFrame1sec.copy()
 
-    def _removeDarkFrame(self, img, exptime):
+    def _removeDarkFrame(self, img: _ot.ImageData, exptime: float) -> _ot.ImageData:
         """
         Corrects a frame for the dark frame and (when implemented) for sky and RON
+
         Parameters:
         -----------
-        img : OTimageLike
-            image to be corrected
+        img : ImageData
+            The frame yto which subtract the Dark
         exptime : float
-            the exposure time in millisec
+            The exposure time in millisec
 
         Returns:
         --------
@@ -71,15 +73,15 @@ class SplAcquirer:
         """
 
         if self._darkFrame1sec is not None:
-            imgout = img - self._darkFrame1sec *exptime
-            print('Correcting for the dark frame')
+            imgout = img - self._darkFrame1sec * exptime
+            self._logger.info(f'Subtracting the dark frame scaled for {exptime} ms exposure time')
         return imgout
 
     def acquire(
         self,
         exptime: float,
         lambda_vector: _ot.ArrayLike | None = None,
-        numframes: int = 1,
+        nframes: int = 1,
         mask: _ot.MaskData | None = None,
     ):
         """
@@ -98,7 +100,7 @@ class SplAcquirer:
             By default None.
         nframes : int, optional
             number of frames to average for each wavelength, by default 1
-        mask: MaskData
+        mask: MaskData | None, optional
             Mask to apply to the measurements. By default, an ampty mask
             is applied.
 
@@ -164,8 +166,8 @@ class SplAcquirer:
             )
             self._filter.move_to(wl)
             self._camera.set_exptime(exptime * expg * 1e3)
-            img = self._camera.acquire_frames(numframes)
-            img = self._removeDarkFrame(img, exptime *expg/1000)
+            img = self._camera.acquire_frames(nframes)
+            img = self._removeDarkFrame(img, exptime * expg/1000)
             image = _fits_array(
                 data=img,
                 mask=mask,
