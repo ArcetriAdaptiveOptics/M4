@@ -1,6 +1,7 @@
 import configparser
 import json
 from m4.configuration.root import folders as foldname
+import os.path as _op
 
 basepath = foldname.OPT_DATA_ROOT_FOLDER
 calibfold = foldname.OTTCALIB_ROOT_FOLDER
@@ -47,7 +48,7 @@ def gimmetheconf(tn):
 
     """
     config = configparser.ConfigParser()
-    fname = calibfold + (tn + ".ini")
+    fname = _op.join(calibfold, tn + ".ini")
     print(fname)
     config.read(fname)
     # PAR

@@ -4,22 +4,23 @@ Authors
 """
 
 import numpy as np
-import pandas as pd
+# import pandas as pd
 from skimage.measure import label, regionprops_table
 
 # from m4.ground import zernike
-from m4.ground import geo
+# from m4.ground import geo
+from opticalib.ground import geometry as geo
 from numpy.linalg import eig, inv
 from skimage.draw import disk as draw_circle
 from m4.configuration.ott_parameters import OttParameters
 
-from m4.ground import tracking_number_folder
+# from m4.ground import tracking_number_folder
 from m4.configuration import folders as fold_name
 import time
 
 
 class ParabolaActivities:
-    """Class to be used to determine the position of the parable
+    """Class to be used to determine the position of the parabola
 
     HOW TO USE IT::
 
@@ -58,7 +59,7 @@ class ParabolaActivities:
             OttParameters.INNER_MARKERS_REJECTION_RADIUS,
         )
         imaf = self.fiduciali(image_masked_central_fid)
-        centro, axs, raggio = self._fitEllipse(imaf[0], imaf[1])
+        centro, _, raggio = self._fitEllipse(imaf[0], imaf[1])
         pxs = raggio / OttParameters.RADIUS_FIDUCIAL_POINT
         par_radius = pxs * OttParameters.parab_radius
         circle_mask = self._drawCircle(centro, par_radius, image)
@@ -77,7 +78,7 @@ class ParabolaActivities:
             x and y coordinates for markers
         """
         image = image.mask
-        image_not_blobs = label(image == 0)
+        # image_not_blobs = label(image == 0)
         image_blobs = label(image != 0)
         properties = [
             "area",
@@ -112,7 +113,7 @@ class ParabolaActivities:
             x and y coordinates for markers
         """
         image = image.mask
-        image_not_blobs = label(image == 0)
+        # image_not_blobs = label(image == 0)
         image_blobs = label(image != 0)
         properties = [
             "area",
@@ -132,8 +133,8 @@ class ParabolaActivities:
 
     def filterMarkersPos(self, image_df, mindim, maxdim):
         """Function to filter markers coordinates according to size (pix, diameter)"""
-        areamin = mindim  # (mindim/2)**2*3.14
-        areamax = maxdim  # (maxdim/2)**2*3.14
+        # areamin = mindim  # (mindim/2)**2*3.14
+        # areamax = maxdim  # (maxdim/2)**2*3.14
         sel_image = (image_df["area"] < maxdim) & (image_df["area"] > mindim)
         imaf = np.array(
             [image_df["centroid-0"][sel_image], image_df["centroid-1"][sel_image]]
