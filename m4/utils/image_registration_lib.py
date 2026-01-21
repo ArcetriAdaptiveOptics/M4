@@ -80,8 +80,7 @@ def marker_data(tn_marker, mark_list, diam, flip=False):
     """for ott markers: marker_data(tn,mark_list, 28,flip=False)
     for cgh markers: marker_data(tn,mark_list, 24,flip=True)
     if tn_marker is a tnvector, mark list shall be a 2D vector')"""
-    print(tn_marker,OPDSERIES)
-    fl0 = osu.getFileList(tn_marker, fold=OPDSERIES)
+    fl0 = osu.getFileList(fold=os.path.join(OPDSERIES,tn_marker))
     img0 = th.frame(0, fl0)
     if flip is True:
         img0 = np.fliplr(img0)
