@@ -6,13 +6,14 @@ Authors
 import numpy as np
 import os
 import glob
-from m4.ground import geo
+#from m4.ground import geo
+from opticalib.ground import geo #requested for qpupil (available in geo)
 from m4.configuration.ott_parameters import OttParameters
-from astropy.io import fits as pyfits
-from skimage.draw import disk as draw_circle
+from astropy.io import fits as pyfits  #can be adjusted to match opticalib standards
+from skimage.draw import disk as draw_circle   #any replacement in opticalib??
 from m4.ground import zernike
-from scipy.ndimage import shift
-from m4.ground import read_data
+from scipy.ndimage import shift  #shift has an equivalent in np as np.roll
+from m4.ground import read_data  #opticalib.ground.osutils.read_phasemap. check the other read
 from m4.configuration import folders as config
 from matplotlib import pyplot as plt
 
