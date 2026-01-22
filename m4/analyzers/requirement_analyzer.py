@@ -221,7 +221,7 @@ def tiptilt_fit(ima):
     #    ima_ttr = np.ma.masked_array(new_image, mask=ima.mask)
     #    return ima_ttr
     if ima is not None:
-        ima_ttr = zf.removeZernike(ima,[1,2,3])
+        ima_ttr = zernike.removeZernike(ima,[1,2,3])
     return ima_ttr   #here we removed piston and tiptilt, was tiptilt only
 
 # def curv_fit(image, test_diameter):
