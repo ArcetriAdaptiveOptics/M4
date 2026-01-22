@@ -4,7 +4,7 @@ import shutil
 import matplotlib.pyplot as plt
 from astropy.io import fits as pyfits
 from arte.utils import rebin
-
+import opticalib
 import opticalib.analyzer as th # from m4.analyzers import timehistory as th
 # from m4.ground import geo, zernike as zern, read_data as rd
 from opticalib.ground import geometry as geo # from m4.ground import geo
@@ -74,6 +74,20 @@ def init_data(tnconf):
     return cgh_image, ott_image, cghf, ottf
 
 
+def register_par_only(tnconf, show=False, forder=10):
+    # cgh_tn_marker,ott_tn_marker,mark_cgh_list,mark_ott_list,cgh_tn_img, ott_tn_img, show=False):
+    cgh_image, ott_image, cghf, ottf = init_data(tnconf)
+    if show is not False:
+        view_markers(cghf, ottf)
+    cgh_tra = par_remap_only(cgh_image,  cghf, ottf, forder=forder)
+    cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
+    cgh_tra = zern.removeZernike(cgh_tra, [1, 2, 3, 4])
+    #ott_image = zern.removeZernike(ott_image, [1, 2, 3, 4])
+    # tn = save_registration(cgh_tra,cgh_tn_img,cgh_tn_marker,ott_tn_marker)
+    tn = save_registration(cgh_tra, tnconf)
+    print('Saved a new registration in '+tn)
+    return cgh_tra
+
 def marker_data(tn_marker, mark_list, diam, flip=False):
     """
     usage:
@@ -84,12 +98,15 @@ def marker_data(tn_marker, mark_list, diam, flip=False):
     """for ott markers: marker_data(tn,mark_list, 28,flip=False)
     for cgh markers: marker_data(tn,mark_list, 24,flip=True)
     if tn_marker is a tnvector, mark list shall be a 2D vector')"""
-    fl0 = osu.getFileList(fold=os.path.join(OPDSERIES,tn_marker))
-    img0 = th.frame(0, fl0)
+    #fl0 = osu.getFileList(fold=os.path.join(OPDSERIES,tn_marker))
+    fl0 = osu.getFileList(tn_marker, key='20')
+    img0 = opticalib.read_phasemap(fl0[0])  #th.frame(0, fl0)
     if flip is True:
         img0 = np.fliplr(img0)
         print("flipping the frame")
-    off_marker = (th.readFrameCrop(tn_marker))[2:4]
+    #off_marker = (th.readFrameCrop(tn_marker))[2:4]
+    off_marker = (opticalib.getCameraSettings(tn_marker))[2:4]
+
     p0 = getMarkers(tn_marker, flip, diam)
     p0 = coord2ottcoord(p0, off_marker)
     if mark_list is not None:
@@ -167,7 +184,8 @@ def crop_frame(imgin):
 
 def getMarkers(tn, flip=False, diam=24, thr=0.2):
     npix = 3.14 * (diam / 2) ** 2
-    fl = osu.getFileList(tn, fold=OPDSERIES)
+    #fl = osu.getFileList(tn, fold=OPDSERIES)  modRB
+    fl = osu.getFileList(tn, key='20')
     nf = len(fl)
     pos = np.zeros([2, 25, nf])
     for j in range(nf):
@@ -232,8 +250,9 @@ def marker_data_all(
 ):
     tn0 = cgh_tn_marker
     tn1 = ott_tn_marker
-    fl0 = osu.getFileList(tn0, fold=OPDSERIES)
-    img0 = th.frame(0, fl0)
+    #fl0 = osu.getFileList(tn0, fold=OPDSERIES)  modRB
+    fl0 = osu.getFileList(tn0, key='20')
+    img0 = opticalib.read_phasemap(fl0[0]) #th.frame(0, fl0)
     img0 = np.fliplr(img0)
     # fl1 = osu.getFileList(tn1, fold=OPDSERIES)
     # img1 = th.frame(0, fl1)
@@ -271,12 +290,13 @@ def markers_explorer(tn):
 def image_data(tn_img, flip=False):
     path = foldname.OPD_SERIES_ROOT_FOLDER + "/"
     fname = path + tn_img + "/average.fits"
-    img = rd.read_phasemap(fname)
+    img = opticalib.read_phasemap(fname)
     if flip is True:
         img = np.fliplr(img)
     # offs = (th.readFrameCrop(tn_img))[2:4]
-    conf = osu.getCameraSettings(tn_img)
-    offs = [conf["x-offset"], conf["y-offset"]]
+    conf = opticalib.getCameraSettings(tn_img)
+    #offs = [conf["x-offset"], conf["y-offset"]]
+    offs = conf[2:4]
     img = th.frame2ottFrame(img, offs)
     return img
 

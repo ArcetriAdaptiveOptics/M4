@@ -4,7 +4,7 @@ Authors
 """
 
 import numpy as np
-# import pandas as pd
+import pandas as pd  #was commented
 from skimage.measure import label, regionprops_table
 
 # from m4.ground import zernike
