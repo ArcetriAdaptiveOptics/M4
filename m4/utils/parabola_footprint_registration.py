@@ -9,7 +9,7 @@ import scipy.linalg
 from matplotlib import pyplot as plt
 from astropy.io import fits
 import pandas as pd
-from skimage.measure import label, regionprops, regionprops_table
+from skimage.measure import label, regionprops_table
 from m4.configuration import folders as fold_name
 from opticalib.ground.osutils import newtn as _newtn
 

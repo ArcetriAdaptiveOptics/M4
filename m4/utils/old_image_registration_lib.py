@@ -4,153 +4,19 @@ import shutil
 import matplotlib.pyplot as plt
 from astropy.io import fits as pyfits
 from arte.utils import rebin
-
-import opticalib.analyzer as th # from m4.analyzers import timehistory as th
-# from m4.ground import geo, zernike as zern, read_data as rd
-from opticalib.ground import geometry as geo # from m4.ground import geo
-from opticalib.ground import modal_decomposer as md
-# from opticalib.ground.osutils import newtn
-from opticalib.ground import osutils as osu # from m4.utils import osutils as osu
-
 from m4.configuration import folders as foldname
-from m4.ground import read_ottcalib_conf as roc
+from m4.analyzers import timehistory as th
+from m4.ground import geo, zernike as zern, read_data as rd, read_ottcalib_conf as roc
+from opticalib.ground.osutils import newtn
+from m4.ground import read_ottcalib_conf
+from m4.utils import osutils as osu
 import m4.utils.parabola_footprint_registration as pr
 from m4.utils.parabola_identification import ParabolaActivities
-
-zern = md.ZernikeFitter() # this is a guess, MM260121
 
 pa = ParabolaActivities()
 pfr = pr.ParabolaFootprintRegistration()
 OPDSERIES = foldname.OPD_SERIES_ROOT_FOLDER
 
-
-def init_data(tnconf):
-    # (cgh_tn_marker,ott_tn_marker,mark_cgh_list,mark_ott_list,cgh_tn_img, ott_tn_img):
-    (
-        cgh_tn_marker,
-        ott_tn_marker,
-        mark_cgh_list,
-        mark_ott_list,
-        cgh_tn_img,
-        ott_tn_img,
-    ) = read_init_data(tnconf)
-    cghf = marker_data(cgh_tn_marker, mark_cgh_list, 24, flip=True)
-    # here modified
-    ntn = len(ott_tn_marker)
-    if ntn > 1:
-        print("Multi Tracknum")
-        nlen = []
-        for i in mark_ott_list:
-            nlen.append(len(i))
-        print("N tracknum" + str(ntn))
-        ottf = np.zeros([2, np.sum(nlen)])
-        pos = 0
-        for i in np.arange(ntn):
-            ottf[:, pos : pos + nlen[i]] = marker_data(
-                ott_tn_marker[i], mark_ott_list[i], 28, flip=False
-            )
-            pos = pos + nlen[i]
-    else:
-        ottf = marker_data(ott_tn_marker[0], mark_ott_list, 28, flip=False)
-    """    
-    if ntn < 15:
-        print('Multi Tracknum')
-        nlen=[]
-        for i in mark_ott_list:
-            nlen.append(len(i))
-        print('N tracknum'+str(ntn))
-        ottf = np.zeros([2,np.sum(nlen)])
-        pos = 0
-        for i in np.arange(ntn):
-            ottf[:,pos:pos+nlen[i]] = marker_data(ott_tn_marker[i],mark_ott_list[i], 28,flip=False)
-            pos = pos+nlen[i]
-
-    else:   
-        ottf = marker_data(ott_tn_marker,mark_ott_list, 28,flip=False)
-    """
-    # end of modif, keep the last line, unindented
-    cgh_image = image_data(cgh_tn_img, flip=True)
-    ott_image = image_data(ott_tn_img, flip=False)
-    return cgh_image, ott_image, cghf, ottf
-
-
-def marker_data(tn_marker, mark_list, diam, flip=False):
-    """
-    usage:
-    for ott markers: marker_data(tn,mark_list, 28,flip=False)
-    for cgh markers: marker_data(tn,mark_list, 24,flip=True)
-    if tn_marker is a tnvector, mark list shall be a 2D vector
-    """
-    """for ott markers: marker_data(tn,mark_list, 28,flip=False)
-    for cgh markers: marker_data(tn,mark_list, 24,flip=True)
-    if tn_marker is a tnvector, mark list shall be a 2D vector')"""
-    fl0 = osu.getFileList(fold=os.path.join(OPDSERIES,tn_marker))
-    img0 = th.frame(0, fl0)
-    if flip is True:
-        img0 = np.fliplr(img0)
-        print("flipping the frame")
-    off_marker = (th.readFrameCrop(tn_marker))[2:4]
-    p0 = getMarkers(tn_marker, flip, diam)
-    p0 = coord2ottcoord(p0, off_marker)
-    if mark_list is not None:
-        p0 = p0[:, mark_list]
-    return p0
-
-def view_markers(p0, p1):
-    fig, ax = plt.subplots()  # figure()
-    plt.plot(p0[1, :], p0[0, :], "o")
-    ax.axis("equal")
-    plt.plot(p1[1, :], p1[0, :], "x")
-    for i in range(np.shape(p0)[1]):
-        ax.text(
-            p0[1, i], p0[0, i], str(i)
-        )  # modRB 20240518 was text(p0[1,:],p0[0,:],str(i))
-        ax.text(
-            p1[1, i] + 10, p1[0, i] + 10, str(i)
-        )  # text(p1[1,:]+10,p1[0,:]+10,str(i))
-    plt.title("Markers position comparison")
-    plt.show()
-    p00 = marker_remap(p0, p1)
-    dd = np.sqrt((p00[0, :] - p1[0, :]) ** 2 + (p00[1, :] - p1[1, :]) ** 2)
-    fig, ax, plt.subplots()  # figure()
-    plt.scatter(p1[0, :], p1[1, :], dd * 50, dd)
-    for i in range(np.shape(p0)[1]):
-        ax.text(p1[0, i], p0[1, i], str(i))
-    plt.title("Remapping error")
-    plt.colorbar()
-
-
-def marker_remap(cghf, ottf):
-    polycoeff = pfr.fit_trasformation_parameter(cghf, ottf)
-    base_cgh = pfr._expandbase(cghf[0, :], cghf[1, :])
-    cghf_tra = np.transpose(np.dot(np.transpose(base_cgh), np.transpose(polycoeff)))
-    return cghf_tra
-
-
-def par_remap(cgh_image, ott_image, cghf, ottf, forder=10):
-    _, _, cgh_tra, _ = pfr.image_transformation(
-        cgh_image, ott_image, cghf, ottf, forder=forder
-    )
-    cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
-    # cgh_tra = zern.removeZernike(cgh_tra,[1,2,3,4])
-    return cgh_tra
-
-def register_par(tnconf, show=False, forder=10):
-    # cgh_tn_marker,ott_tn_marker,mark_cgh_list,mark_ott_list,cgh_tn_img, ott_tn_img, show=False):
-    cgh_image, ott_image, cghf, ottf = init_data(tnconf)
-    if show is not False:
-        view_markers(cghf, ottf)
-    cgh_tra = par_remap(cgh_image, ott_image, cghf, ottf, forder=forder)
-    cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
-    cgh_tra = zern.removeZernike(cgh_tra, [1, 2, 3, 4])
-    ott_image = zern.removeZernike(ott_image, [1, 2, 3, 4])
-    # tn = save_registration(cgh_tra,cgh_tn_img,cgh_tn_marker,ott_tn_marker)
-    tn = save_registration(cgh_tra, tnconf)
-    return cgh_tra, ott_image, tn
-
-
-
-#########################################################################################################
 
 def crop_frame(imgin):
     cir = geo.qpupil(-1 * imgin.mask + 1)
@@ -196,6 +62,11 @@ def coord2ottcoord(vec1, off, flipOffset=True):
     return vec
 
 
+def marker_remap(cghf, ottf):
+    polycoeff = pfr.fit_trasformation_parameter(cghf, ottf)
+    base_cgh = pfr._expandbase(cghf[0, :], cghf[1, :])
+    cghf_tra = np.transpose(np.dot(np.transpose(base_cgh), np.transpose(polycoeff)))
+    return cghf_tra
 
 
 def marker_general_remap(cghf, ottf, pos2t):
@@ -208,10 +79,17 @@ def marker_general_remap(cghf, ottf, pos2t):
     return cghf_tra
 
 
+def par_remap(cgh_image, ott_image, cghf, ottf, forder=10):
+    par_on_ott, mask_float, cgh_tra, difference = pfr.image_transformation(
+        cgh_image, ott_image, cghf, ottf, forder=forder
+    )
+    cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
+    # cgh_tra = zern.removeZernike(cgh_tra,[1,2,3,4])
+    return cgh_tra
 
 
 def par_remap_only(cgh_image, cghf, ottf, forder=10):
-    _, _, cgh_tra, _ = pfr.image_transformation(
+    par_on_ott, mask_float, cgh_tra, difference = pfr.image_transformation(
         cgh_image, cgh_image * 0, cghf, ottf, forder=forder
     )
     cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
@@ -235,11 +113,19 @@ def marker_data_all(
     fl0 = osu.getFileList(tn0, fold=OPDSERIES)
     img0 = th.frame(0, fl0)
     img0 = np.fliplr(img0)
-    # fl1 = osu.getFileList(tn1, fold=OPDSERIES)
-    # img1 = th.frame(0, fl1)
+    fl1 = osu.getFileList(tn1, fold=OPDSERIES)
+    img1 = th.frame(0, fl1)
 
     p0 = getMarkers(tn0, flip=True, diam=24)
     p1 = getMarkers(tn1, diam=28)
+
+    # fig, (ax1,ax2) = plt.subplots(1,2, figsize=(12,6))
+    # ax1.imshow(img0)
+    # for i in range(shape(p0)[1]):
+    #    ax1.text(p0[1,i],p0[0,i],i)
+    # ax2.imshow(img1)
+    # for i in range(shape(p1)[1]):
+    #    ax2.text(p1[1,i],p1[0,i],i)
 
     p0 = coord2ottcoord(p0, off_cgh_marker)
     p1 = coord2ottcoord(p1, off_ott_marker)
@@ -248,9 +134,32 @@ def marker_data_all(
     return pcgh, pott
 
 
+def view_markers(p0, p1):
+    fig, ax = plt.subplots()  # figure()
+    plt.plot(p0[1, :], p0[0, :], "o")
+    ax.axis("equal")
+    plt.plot(p1[1, :], p1[0, :], "x")
+    for i in range(np.shape(p0)[1]):
+        ax.text(
+            p0[1, i], p0[0, i], str(i)
+        )  # modRB 20240518 was text(p0[1,:],p0[0,:],str(i))
+        ax.text(
+            p1[1, i] + 10, p1[0, i] + 10, str(i)
+        )  # text(p1[1,:]+10,p1[0,:]+10,str(i))
+    plt.title("Markers position comparison")
+    plt.show()
+    p00 = marker_remap(p0, p1)
+    dd = np.sqrt((p00[0, :] - p1[0, :]) ** 2 + (p00[1, :] - p1[1, :]) ** 2)
+    fig, ax, plt.subplots()  # figure()
+    plt.scatter(p1[0, :], p1[1, :], dd * 50, dd)
+    for i in range(np.shape(p0)[1]):
+        ax.text(p1[0, i], p0[1, i], str(i))
+    plt.title("Remapping error")
+    plt.colorbar()
+
 
 def plot_markers(p0):
-    _, ax = plt.subplots()
+    fig, ax = plt.subplots()
     plt.plot(p0[1, :], p0[0, :], "o")
     ax.axis("equal")
     plt.title("Markers position in the frame")
@@ -266,6 +175,28 @@ def markers_explorer(tn):
     plt.title(tn)
 
 
+def marker_data(tn_marker, mark_list, diam, flip=False):
+    """
+    usage:
+    for ott markers: marker_data(tn,mark_list, 28,flip=False)
+    for cgh markers: marker_data(tn,mark_list, 24,flip=True)
+    if tn_marker is a tnvector, mark list shall be a 2D vector
+    """
+    ttt = """for ott markers: marker_data(tn,mark_list, 28,flip=False)
+    for cgh markers: marker_data(tn,mark_list, 24,flip=True)
+    if tn_marker is a tnvector, mark list shall be a 2D vector')"""
+    print(ttt)
+    fl0 = osu.getFileList(tn_marker, fold=OPDSERIES)
+    img0 = th.frame(0, fl0)
+    if flip is True:
+        img0 = np.fliplr(img0)
+        print("flipping the frame")
+    off_marker = (th.readFrameCrop(tn_marker))[2:4]
+    p0 = getMarkers(tn_marker, flip, diam)
+    p0 = coord2ottcoord(p0, off_marker)
+    if mark_list is not None:
+        p0 = p0[:, mark_list]
+    return p0
 
 
 def image_data(tn_img, flip=False):
@@ -304,7 +235,73 @@ def read_init_data(tnconf):
     )
 
 
+def init_data(tnconf):
+    # (cgh_tn_marker,ott_tn_marker,mark_cgh_list,mark_ott_list,cgh_tn_img, ott_tn_img):
+    """ """
+    (
+        cgh_tn_marker,
+        ott_tn_marker,
+        mark_cgh_list,
+        mark_ott_list,
+        cgh_tn_img,
+        ott_tn_img,
+    ) = read_init_data(tnconf)
+    cghf = marker_data(cgh_tn_marker, mark_cgh_list, 24, flip=True)
+    # here modified
+    ntn = len(ott_tn_marker)
+    if ntn > 1:
+        print("Multi Tracknum")
+        nlen = []
+        for i in mark_ott_list:
+            nlen.append(len(i))
+        print("N tracknum" + str(ntn))
+        ottf = np.zeros([2, np.sum(nlen)])
+        pos = 0
+        for i in np.arange(ntn):
+            ottf[:, pos : pos + nlen[i]] = marker_data(
+                ott_tn_marker[i], mark_ott_list[i], 28, flip=False
+            )
+            pos = pos + nlen[i]
 
+    else:
+        ottf = marker_data(ott_tn_marker[0], mark_ott_list, 28, flip=False)
+
+    """    
+    if ntn < 15:
+        print('Multi Tracknum')
+        nlen=[]
+        for i in mark_ott_list:
+            nlen.append(len(i))
+        print('N tracknum'+str(ntn))
+        ottf = np.zeros([2,np.sum(nlen)])
+        pos = 0
+        for i in np.arange(ntn):
+            ottf[:,pos:pos+nlen[i]] = marker_data(ott_tn_marker[i],mark_ott_list[i], 28,flip=False)
+            pos = pos+nlen[i]
+
+    else:   
+        ottf = marker_data(ott_tn_marker,mark_ott_list, 28,flip=False)
+    """
+    # end of modif, keep the last line, unindented
+    cgh_image = image_data(cgh_tn_img, flip=True)
+    ott_image = image_data(ott_tn_img, flip=False)
+    return cgh_image, ott_image, cghf, ottf
+
+
+def register_par(tnconf, show=False, forder=10):
+    # cgh_tn_marker,ott_tn_marker,mark_cgh_list,mark_ott_list,cgh_tn_img, ott_tn_img, show=False):
+    cgh_image, ott_image, cghf, ottf = init_data(tnconf)
+    if show is not False:
+        view_markers(cghf, ottf)
+
+    cgh_tra = par_remap(cgh_image, ott_image, cghf, ottf, forder=forder)
+    cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
+    cgh_tra = zern.removeZernike(cgh_tra, [1, 2, 3, 4])
+    ott_image = zern.removeZernike(ott_image, [1, 2, 3, 4])
+    # tn = save_registration(cgh_tra,cgh_tn_img,cgh_tn_marker,ott_tn_marker)
+    tn = save_registration(cgh_tra, tnconf)
+
+    return cgh_tra, ott_image, tn
 
 
 def register_par_only(tnconf, show=False, forder=10):
@@ -323,7 +320,7 @@ def register_par_only(tnconf, show=False, forder=10):
 
 
 def save_registration(img, tnconf):  # (img,cgh_tn_img,cgh_tn_marker,ott_tn_marker):
-    tn = osu.newtn()
+    tn = newtn()
     print(tn)
     fold = foldname.PARABOLA_REMAPPED_FOLDER + "/" + tn + "/"
     os.mkdir(fold)

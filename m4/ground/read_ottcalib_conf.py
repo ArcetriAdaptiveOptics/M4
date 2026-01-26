@@ -1,9 +1,10 @@
 import configparser
 import json
 from m4.configuration.root import folders as foldname
+import os.path as _op
 
 basepath = foldname.OPT_DATA_ROOT_FOLDER
-calibfold = foldname.OTTCALIB_ROOT_FOLDER
+calibfold = basepath + '/OTTCalibConf'  #foldname.OTTCALIB_ROOT_FOLDER
 parname = "PAR"
 ncgh_tn_marker = "cgh_tn_marker"
 ncgh_tn_img = "cgh_tn_img"
@@ -47,7 +48,7 @@ def gimmetheconf(tn):
 
     """
     config = configparser.ConfigParser()
-    fname = calibfold + (tn + ".ini")
+    fname = _op.join(calibfold, tn + ".ini")
     print(fname)
     config.read(fname)
     # PAR
