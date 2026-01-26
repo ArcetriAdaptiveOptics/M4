@@ -66,6 +66,7 @@ ion()
 %matplotlib qt
 
 dm = AdOpticaDm()
+
 interf = PhaseCam(6110)
 
 c3=load_fits('/data/Arcetri/Data/M4Data/SysConfig/20250717_150000_flatId0.fits')

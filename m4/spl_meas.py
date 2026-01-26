@@ -313,6 +313,29 @@ class SplAnalyzer:
 
         return piston, piston_smooth
 
+    def fringes(self, tn):
+        from matplotlib import pyplot as plt
+
+        cube, _ = self.readMeasurement(tn)
+        wav = self.get_measurement_lambda(tn)
+        mat, _ = self.matrix_calc(wav,cube,cube)
+        npix = mat.shape[0]
+        extent2use = [0,npix-1,wav[0],wav[-1]]
+        plt.imshow(mat.T,extent = extent2use,aspect =0.3)
+        plt.xlabel('Pixel')
+        plt.ylabel('Wavelength')
+        plt.title(tn)
+        return mat
+    
+
+    def get_measurement_lambda(self,tn):
+        wav = _osu.load_fits(
+            _os.path.join(
+                _fn.SPL_DATA_ROOT_FOLDER, tn, "lambda_vector.fits"
+            )
+        )      
+        return wav
+
     def matrix_calc(
         self,
         lambda_vector: _ot.ArrayLike,
