@@ -32,7 +32,29 @@ class SplAcquirer:
         self._camera = camera
         self._filter = tunable_filter
         self._darkFrame1sec= None
+        self._curr_exptime = None
         self._logger = _SL(__class__)
+
+    def set_exptime(self,exptime):
+        """
+        Set the SPL camera exposure time, if the target value is different from the current one
+
+        Parameters:
+        -----------
+        exptime : float
+            the exposure time in [s]
+
+        Returns:
+        --------
+        """
+        if self._curr_exptime != exptime:
+            self._camera.set_exptime(exptime*1e6)
+            self._curr_exptime = exptime
+            #add some log here
+        else:
+            #add print or log here
+            pass
+
 
     def acquireDarkFrame(self, exptime: float, nframes: int = 1):
         """
@@ -42,7 +64,7 @@ class SplAcquirer:
         Parameters:
         -----------
         exptime : float
-            the exposure time in millisec
+            the exposure time in [s]
         nframes : int
             the number of frames to be averaged together
 
@@ -50,10 +72,11 @@ class SplAcquirer:
         --------
         the dark frames scaled to 1sec exposure time
         """
-        self._camera.set_exptime(exptime*1e3)
-        self._logger.info(f'Acquiring Dark frame for {exptime} ms exposure time, averaging {nframes} frames')
+        #self._camera.set_exptime(exptime*1e3)
+        self.set_exptime(exptime)
+        self._logger.info(f'Acquiring Dark frame for {exptime} s exposure time, averaging {nframes} frames')
         img = self._camera.acquire_frames(nframes)
-        self._darkFrame1sec = img/(exptime/1000)
+        self._darkFrame1sec = img/exptime
         return self._darkFrame1sec.copy()
 
     def _removeDarkFrame(self, img: _ot.ImageData, exptime: float) -> _ot.ImageData:
@@ -65,7 +88,7 @@ class SplAcquirer:
         img : ImageData
             The frame yto which subtract the Dark
         exptime : float
-            The exposure time in millisec
+            The exposure time in s
 
         Returns:
         --------
@@ -74,7 +97,7 @@ class SplAcquirer:
 
         if self._darkFrame1sec is not None:
             imgout = img - self._darkFrame1sec * exptime
-            self._logger.info(f'Subtracting the dark frame scaled for {exptime} ms exposure time')
+            self._logger.info(f'Subtracting the dark frame scaled for {exptime} s exposure time')
         else:
             imgout = img
         return imgout
@@ -93,7 +116,7 @@ class SplAcquirer:
         Parameters
         ----------
         exptime: float
-            Base exposure time of the camera in milliseconds
+            Base exposure time of the camera in seconds
         lambda_vector : ArrayLike, optional
             Wavelenghts vector, of wavelengths between 400 and 700 nm. If None,
             a default vector is used:
@@ -123,7 +146,7 @@ class SplAcquirer:
 
         datapath = _osu.create_data_folder(basepath=_fn.SPL_DATA_ROOT_FOLDER)
         tn = datapath.split("/")[-1]
-        
+        print(tn)
         _osu.save_fits(
             _os.path.join(datapath, "lambda_vector.fits"),
             lambda_vector,
@@ -137,12 +160,15 @@ class SplAcquirer:
             f"Preparing reference image acquisition"
         )
         self._filter.move_to(600)
-        self._camera.set_exptime(exptime / 2 * 1e3)
+        #self._camera.set_exptime(exptime / 2 * 1e3)
+        self.set_exptime(exptime/2)
         self._logger.info(
-            f"Acquiring reference image at 600 nm with exposure time of {self._camera.get_exptime()/1000} [ms]"
+            #f"Acquiring reference image at 600 nm with exposure time of {self._camera.get_exptime()/1000} [ms]"
+            f"Acquiring reference image at 600 nm with exposure time of {self._curr_exptime} [s]"
+
         )
         img = self._camera.acquire_frames()
-        img = self._removeDarkFrame(img, exptime / 2/1000)
+        img = self._removeDarkFrame(img, self._curr_exptime)
         if mask is None:
             mask = _np.zeros(img.shape)
         reference_image = _np.ma.masked_array(img, mask)
@@ -164,22 +190,26 @@ class SplAcquirer:
 
         for wl, expg in zip(lambda_vector, expgain):
             self._logger.info(
-                f"Acquiring image at {wl} [nm] with exposure time of {self._camera.get_exptime()/1000} [ms]"
+                #f"Acquiring image at {wl} [nm] with exposure time of {self._camera.get_exptime()/1000} [ms]"
+                f"Acquiring image at {wl} [nm] with exposure time of {self._curr_exptime} [s]"
+
             )
             print('Moving to lambda:' +str(wl))
             self._filter.move_to(wl)
-            self._camera.set_exptime(exptime * expg * 1e3)
+            #self._camera.set_exptime(exptime * expg * 1e3)
+            self.set_exptime(exptime * expg)
             img = self._camera.acquire_frames(nframes)
-            img = self._removeDarkFrame(img, exptime * expg/1000)
+            img = self._removeDarkFrame(img, self._curr_exptime)
             image = _fits_array(
                 data=img,
                 mask=mask,
                 header={
-                    "EXPTIME": self._camera.get_exptime() / 1000,
+                    "EXPTIME": self._curr_exptime,
                     "WAVELEN": wl,
                     "EXPGAIN": expg,
                 },
             )
+            image.writeto(_os.path.join(datapath, f"rawframe_{wl}nm.fits"), overwrite=True)
             crop = self._preProcessing(image, cy, cx)
             # crop_rot = scin.rotate(crop, 23,  reshape=False)
             crop.writeto(_os.path.join(datapath, f"image_{wl}nm.fits"), overwrite=True)
