@@ -75,6 +75,8 @@ class SplAcquirer:
         if self._darkFrame1sec is not None:
             imgout = img - self._darkFrame1sec * exptime
             self._logger.info(f'Subtracting the dark frame scaled for {exptime} ms exposure time')
+        else:
+            imgout = img
         return imgout
 
     def acquire(
@@ -164,6 +166,7 @@ class SplAcquirer:
             self._logger.info(
                 f"Acquiring image at {wl} [nm] with exposure time of {self._camera.get_exptime()/1000} [ms]"
             )
+            print('Moving to lambda:' +str(wl))
             self._filter.move_to(wl)
             self._camera.set_exptime(exptime * expg * 1e3)
             img = self._camera.acquire_frames(nframes)
