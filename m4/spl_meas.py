@@ -300,7 +300,6 @@ class SplAnalyzer:
         self._matrixSmooth = None
         self._darkFrame1sec = None
 
-    def 
 
     def setFringesTn(self, tn: str):
         """

@@ -51,7 +51,7 @@ class SplAcquirer:
             self._camera.set_exptime(exptime*1e6)
             self._curr_exptime = exptime
         else:
-            self._logging.warning("The requested exposure time for the camera is equal to the current one. Skipping"
+            self._logger.warning("The requested exposure time for the camera is equal to the current one. Skipping")
             pass
 
 
@@ -214,11 +214,54 @@ class SplAcquirer:
 
         return tn
 
-    def postProcessRawFrames(self):
+    def postProcessRawFrames(self, remove_median: bool = True, remove_dark: bool = True, crop: bool = True):
         """
+        Takes the raw frames acquired with the `acquire` method and
+        applies a soft processing controlled by input parameters.
+        
+        This processing is applied to every `rawframe_[wavelength]nm.fits` file
+        in the last measurement tracking number folder, and the result is saved
+        as `postprod_[wavelength]nm.fits`.
+        
+        Parameters:
+        -----------
+        remove_median : bool
+            If True, removes the median value from each frame.
+        remove_dark : bool
+            If True, removes the dark frame from each frame.
+        """
+        if not hasattr(self, '_last_measure_tn'):
+            self._logger.error("No measurement tracking number found. Please run `acquire` method first.")
+            raise AttributeError("No measurement tracking number found. Please run `acquire` method first.")
 
-        """
-        pass
+        datapath = _os.path.join(_fn.SPL_DATA_ROOT_FOLDER, self._last_measure_tn)
+        filelist = _osu.getFileList(
+            self._last_measure_tn, 
+            fold=_fn.SPL_DATA_ROOT_FOLDER, 
+            key="rawframe"
+        )
+        rawlist = _osu.loadCubeFromFilelist(filelist)
+
+        for img, filename in zip(rawlist, filelist):
+
+            if remove_dark:
+                img = self._removeDarkFrame(img, exptime=img.header['EXPTIME'])
+
+            if remove_median:
+                median_value = _np.median(img)
+                img = _np.clip(img - median_value, 0, None)
+                
+            if crop:
+                cy, cx = self._baricenterCalculator(img)
+                img = img[cy - 100 : cy + 100, cx - 150 : cx + 150]
+
+            new_filename = filename.replace("rawframe_", "postprod_")
+            new_filepath = _os.path.join(datapath, new_filename)
+            _osu.save_fits(new_filepath, img)
+        
+        self._logger.info(
+            f"Post-processed tn: {self._last_measure_tn}. Removed median: {remove_median}, Removed dark: {remove_dark}"
+        )
 
 
 
@@ -266,7 +309,6 @@ class SplAnalyzer:
         self._matrixSmooth = None
         self._darkFrame1sec = None
 
-    def 
 
     def setFringesTn(self, tn: str):
         """
