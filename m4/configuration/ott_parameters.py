@@ -118,7 +118,16 @@ class M4Parameters:
 class OpcUaParameters:
     """Numbers for opc ua parameters"""
 
-    server = "opc.tcp://192.168.22.100:48050"
+    #server = "opc.tcp://192.168.22.100:48050"
+    server = "opc.tcp://192.168.22.100:4840"
+    username = "Administrator"
+    password = "1"
+    
+    NODE_ID_TELEMETRY = "ns=4;s=MAIN.Telemetry"
+    NODE_ID_COMMAND_VARIABLE = "ns=4;s=MAIN.Cmd_Parser.Command"
+    NODE_ID_PLC_STATE = "ns=4;i=1301"
+    PLC_RUN_STATE_VALUE = 288
+    
     num_PT_sensor = 24
     min_angle, max_angle = np.array([-171, 181])
     min_r_slide, max_r_slide = np.array(
@@ -126,22 +135,22 @@ class OpcUaParameters:
     )  # modified RB 20210423: was -50; 9000
     min_slide, max_slide = np.array([-10000, 10000])
 
-    RA = 0  # angolo di rotazione
-    CAR = 1  # carrello dell RM
-    ST = 2  # slitta della parabola
-    RM1 = 3
-    RM2 = 4
-    RM3 = 5
+    RA   = 0  # angolo di rotazione
+    CAR  = 1  # carrello dell RM
+    ST   = 2  # slitta della parabola
+    RM1  = 3
+    RM2  = 4
+    RM3  = 5
     PAR1 = 6
     PAR2 = 7
     PAR3 = 8
 
-    RM_PISTON = 11
-    RM_TIP = 9
-    RM_TILT = 10
+    RM_TIP     = 9
+    RM_TILT    = 10
+    RM_PISTON  = 11
+    PAR_TIP    = 12
+    PAR_TILT   = 13
     PAR_PISTON = 14
-    PAR_TIP = 12
-    PAR_TILT = 13
 
     RM_KIN = 9
     PAR_KIN = 10
