@@ -35,7 +35,7 @@ class SplAcquirer:
         self._curr_exptime = None
         self._logger = _SL(__class__)
 
-    def set_exptime(self,exptime):
+    def set_exptime(self, exptime: float):
         """
         Set the SPL camera exposure time, if the target value is different from the current one
 
@@ -50,9 +50,8 @@ class SplAcquirer:
         if self._curr_exptime != exptime:
             self._camera.set_exptime(exptime*1e6)
             self._curr_exptime = exptime
-            #add some log here
         else:
-            #add print or log here
+            self._logging.warning("The requested exposure time for the camera is equal to the current one. Skipping"
             pass
 
 
@@ -72,7 +71,6 @@ class SplAcquirer:
         --------
         the dark frames scaled to 1sec exposure time
         """
-        #self._camera.set_exptime(exptime*1e3)
         self.set_exptime(exptime)
         self._logger.info(f'Acquiring Dark frame for {exptime} s exposure time, averaging {nframes} frames')
         img = self._camera.acquire_frames(nframes)
@@ -165,15 +163,12 @@ class SplAcquirer:
             f"Preparing reference image acquisition"
         )
         self._filter.move_to(600)
-        #self._camera.set_exptime(exptime / 2 * 1e3)
         self.set_exptime(exptime/2)
         self._logger.info(
-            #f"Acquiring reference image at 600 nm with exposure time of {self._camera.get_exptime()/1000} [ms]"
             f"Acquiring reference image at 600 nm with exposure time of {self._curr_exptime} [s]"
 
         )
         img = self._camera.acquire_frames()
-#        img = self._removeDarkFrame(img, self._curr_exptime)
         if mask is None:
             mask = _np.zeros(img.shape)
         reference_image = _np.ma.masked_array(img, mask)
@@ -182,9 +177,6 @@ class SplAcquirer:
                 f"{_np.max(reference_image)} > 4000 : Saturation detected!"
             )
 
-        # Find barycenter
-        cy, cx = self._baricenterCalculator(reference_image)
-        print('Baricenter of the reference frame @600 nm found at:'+str(cy)+', '+str(cx))
         # Create the Gain Vector
         expgain = _np.ones(lambda_vector.shape[0]) * 0.5
         expgain[_np.where(lambda_vector < 550)] = 1  # 8
@@ -193,38 +185,42 @@ class SplAcquirer:
         expgain[_np.where(lambda_vector > 700)] = 1.5  # 8
         self._logger.info(f"Acquisition of frames")
 
-        for wl, expg in zip(lambda_vector, expgain):
+        for wl, t_int in zip(lambda_vector, (expgain*exptime)):
             self._logger.info(
-                #f"Acquiring image at {wl} [nm] with exposure time of {self._camera.get_exptime()/1000} [ms]"
-                f"Acquiring image at {wl} [nm] with exposure time of {self._curr_exptime} [s]"
+                f"Acquiring image at {wl:.1f} [nm] with exposure time of {self._curr_exptime:.3f} [s]"
 
             )
-            print('Moving to lambda:' +str(wl))
+            print(f'Moving to lambda: {wl}')
             self._filter.move_to(wl)
-            #self._camera.set_exptime(exptime * expg * 1e3)
-            self.set_exptime(exptime * expg)
+            self.set_exptime(t_int)
             img = self._camera.acquire_frames(nframes)
-            img = self._removeDarkFrame(img, self._curr_exptime)
             image = _fits_array(
                 data=img,
                 mask=mask,
                 header={
                     "EXPTIME": self._curr_exptime,
                     "WAVELEN": wl,
-                    "EXPGAIN": expg,
+                    "EXPGAIN": t_int/self._curr_exptime,
                 },
             )
             image.writeto(_os.path.join(datapath, f"rawframe_{wl}nm.fits"), overwrite=True)
-            crop = self._preProcessing(image, cy, cx)
-            # crop_rot = scin.rotate(crop, 23,  reshape=False)
-            crop.writeto(_os.path.join(datapath, f"image_{wl}nm.fits"), overwrite=True)
 
         self._filter.move_to(600)
         self._logger.info(
             f"Saved tracking number: {tn}"
         )
 
+        self._last_measure_tn = tn
+
         return tn
+
+    def postProcessRawFrames(self):
+        """
+
+        """
+        pass
+
+
 
     def _baricenterCalculator(self, reference_image: _ot.ImageData):
         """
@@ -246,36 +242,6 @@ class SplAcquirer:
         img = reference_image.copy()
         cx, cy = _centroids.centroid_com(img, mask=(img < thr))
         return int(_np.round(cy)), int(_np.round(cx))
-
-    def _preProcessing(self, image: _ot.ImageData, cy: int, cx: int) -> _ot.FitsData:
-        """
-        Pre-processes the acquired image by subtracting the background and cropping around the PSF.
-
-        Parameters:
-        -----------
-        image : ImageData
-            The acquired image to be pre-processed.
-        cy : int
-            The y coordinate of the PSF centroid.
-        cx : int
-            The x coordinate of the PSF centroid.
-
-        Returns:
-        --------
-        crop : ImageData
-            The pre-processed cropped image.
-        """
-        # FIXME
-        xcrop = 145  # 150
-        ycrop = 95  # 100
-
-        tmp = _np.zeros((image.shape[0], image.shape[1]))
-        tmp[cy - ycrop : cy + ycrop, cx - xcrop : cx + xcrop] = 1
-        id_bkg = _np.where(tmp == 0)
-        bkg = _np.ma.mean(image[id_bkg])
-        img: _ot.FitsData = image - bkg
-        crop: _ot.FitsData = img[cy - ycrop : cy + ycrop, cx - xcrop : cx + xcrop]
-        return crop
 
 
 class SplAnalyzer:
