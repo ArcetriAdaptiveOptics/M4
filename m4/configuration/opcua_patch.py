@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jul 24 09:32:26 2025
+
+@author: lab
+"""
+
+# File: opcua_patch.py
+# Purpose: To silently hot-fix the bug in the python-opcua library.
+
 import re
 from enum import IntEnum
 from datetime import datetime

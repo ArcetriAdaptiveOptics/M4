@@ -128,6 +128,13 @@ class OpcUaParameters:
     NODE_ID_PLC_STATE = "ns=4;i=1301"
     PLC_RUN_STATE_VALUE = 288
     
+    # New PLC Devices indexing
+    RA  = 'RA'
+    CAR = 'CAR'
+    ST  = 'STW'
+    PAR = 'PAR'
+    RM  = 'RM'
+
     num_PT_sensor = 24
     min_angle, max_angle = np.array([-171, 181])
     min_r_slide, max_r_slide = np.array(
@@ -135,22 +142,23 @@ class OpcUaParameters:
     )  # modified RB 20210423: was -50; 9000
     min_slide, max_slide = np.array([-10000, 10000])
 
-    RA   = 0  # angolo di rotazione
-    CAR  = 1  # carrello dell RM
-    ST   = 2  # slitta della parabola
-    RM1  = 3
-    RM2  = 4
-    RM3  = 5
-    PAR1 = 6
-    PAR2 = 7
-    PAR3 = 8
+    ## LEGACY PLC DEVICE INDEXING
+    # RA   = 0  # angolo di rotazione
+    # CAR  = 1  # carrello dell RM
+    # ST   = 2  # slitta della parabola
+    # RM1  = 3
+    # RM2  = 4
+    # RM3  = 5
+    # PAR1 = 6
+    # PAR2 = 7
+    # PAR3 = 8
 
-    RM_TIP     = 9
-    RM_TILT    = 10
-    RM_PISTON  = 11
-    PAR_TIP    = 12
-    PAR_TILT   = 13
-    PAR_PISTON = 14
+    # RM_TIP     = 9
+    # RM_TILT    = 10
+    # RM_PISTON  = 11
+    # PAR_TIP    = 12
+    # PAR_TILT   = 13
+    # PAR_PISTON = 14
 
     RM_KIN = 9
     PAR_KIN = 10
