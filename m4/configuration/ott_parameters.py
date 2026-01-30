@@ -132,8 +132,8 @@ class OpcUaParameters:
     RA  = 'RA'
     CAR = 'CAR'
     ST  = 'STW'
-    PAR = 'PAR'
     RM  = 'RM'
+    PAR = 'PAR'
 
     num_PT_sensor = 24
     min_angle, max_angle = np.array([-171, 181])

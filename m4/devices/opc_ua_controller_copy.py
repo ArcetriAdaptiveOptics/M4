@@ -8,13 +8,15 @@ Pietro Ferraiuolo: Modified in 2026 w/ ADS-International
 import numpy as np
 from contextlib import contextmanager
 from opcua import Client
-import opcua as ua
+import opcua as _ua
+from opcua import ua
 from opticalib.ground.logger import SystemLogger
 from m4.configuration.ott_parameters import OpcUaParameters as _opcpar
 
 ## Necessary patch to fix python-opcua bug ##
 try:
     from m4.configuration import opcua_patch
+    del opcua_patch
 except Exception:
     pass
 
@@ -108,6 +110,7 @@ class OpcUaController:
             "HOME": ["HOME"],
             "STOP": ["STOP"],
         }
+        self._connected = False
 
     # LEGACY COMMAND TO (maybe) IMPLEMENT
     # stop (all devices)
@@ -143,84 +146,90 @@ class OpcUaController:
 
     def send_command(self, mode: str, device: str, target_values: float | list[float]):
         """ """
-        plc_is_running = self._check_plc_is_running()
-        if not plc_is_running is True:
-            raise RuntimeError("PLC is not in RUN state.") from plc_is_running
-        
-        ## Getting the mode
-        mode = mode.upper().strip()
-        if not any([mode == m for m in ["MOVE", "HOME", "STOP"]]):
-            raise ValueError(
-                f"Invalid mode: {mode}. Must be one of 'MOVE', 'HOME', 'STOP'."
-            )
-
-        component = self.component_selector(device)
-        is_axis = component.value in (1, 2, 3)  # RA/CAR/STW
-        is_tripod = component.value in (4, 5)  # RM/PAR
-
-        if not any([is_axis, is_tripod]):
-            raise ValueError(
-                f"Component {component.name}={component.value} not supported for MOVE/HOME/STOP by your rules."
-            )
-
         node, cmd = self._get_cmd_struct()
-        AxisCmdEnum = type(cmd.axisCmd)
-        TripodCmdEnum = type(cmd.tripodCmd)
-        AxisIdEnum = type(cmd.axisID)
-        SystemEnum = type(cmd.systemCmd) if hasattr(cmd, "systemCmd") else None
 
-        # 1) Apply component
-        cmd.componentID = component
-
-        # 2) Force axisID = 0 (hidden)
-        cmd.axisID = self.__zero_or_first(AxisIdEnum)
-
-        # 3) Clear numeric fields (avoid stale values)
-        cmd.targetPos = 0.0
-        cmd.tip = 0.0
-        cmd.tilt = 0.0
-        cmd.piston = 0.0
-
-        # 4) Clear enums to neutral (0 if exists)
-        if SystemEnum is not None:
-            cmd.systemCmd = self.__zero_or_first(SystemEnum)
-        cmd.axisCmd = self.__zero_or_first(AxisCmdEnum)
-        cmd.tripodCmd = self.__zero_or_first(TripodCmdEnum)
-
-        # 5) Set proper command enum + ask needed params
-        match mode:
-
-            case "MOVE":
-
-                if is_axis:
-                    cmd.axisCmd = self._choose_enum_by_mode(AxisCmdEnum, mode)
-                    cmd.targetPos = float(target_values)
-
-                elif is_tripod:
-                    cmd.tripodCmd = self._choose_enum_by_mode(TripodCmdEnum, mode)
-                    if not isinstance(target_values, list) or len(target_values) != 3:
-                        raise ValueError(
-                            "For TRIPOD MOVE, target_values must be a list of three floats: [tip, tilt, piston]."
-                        )
-                    cmd.tip = float(target_values[0])
-                    cmd.tilt = float(target_values[1])
-                    cmd.piston = float(target_values[2])
-
-            case "STOP":
-                pass
-
-            case "HOME":
-                pass
-
-            case _:
+        with self.connected():
+            plc_is_running = self._check_plc_is_running()
+            if not plc_is_running is True:
+                raise RuntimeError("PLC is not in RUN state.") from plc_is_running
+            
+            ## Getting the mode
+            mode = mode.upper().strip()
+            if not any([mode == m for m in ["MOVE", "HOME", "STOP"]]):
                 raise ValueError(
                     f"Invalid mode: {mode}. Must be one of 'MOVE', 'HOME', 'STOP'."
                 )
-        # 6) Write back
-        self._write_struct(node, cmd)
 
 
-    def component_selector(self, device: str) -> object:
+            component = self.component_selector(device, command_struct=cmd)
+            is_axis = component.value in (1, 2, 3)  # RA/CAR/STW
+            is_tripod = component.value in (4, 5)  # RM/PAR
+
+            if not any([is_axis, is_tripod]):
+                raise ValueError(
+                    f"Component {component.name}={component.value} not supported for MOVE/HOME/STOP by your rules."
+                )
+
+            AxisCmdEnum = type(cmd.axisCmd)
+            TripodCmdEnum = type(cmd.tripodCmd)
+            AxisIdEnum = type(cmd.axisID)
+            SystemEnum = type(cmd.systemCmd) if hasattr(cmd, "systemCmd") else None
+
+            # 1) Apply component
+            cmd.componentID = component
+
+            # 2) Force axisID = 0 (hidden)
+            cmd.axisID = self.__zero_or_first(AxisIdEnum)
+
+            # 3) Clear numeric fields (avoid stale values)
+            cmd.targetPos = 0.0
+            cmd.tip = 0.0
+            cmd.tilt = 0.0
+            cmd.piston = 0.0
+
+            # 4) Clear enums to neutral (0 if exists)
+            if SystemEnum is not None:
+                cmd.systemCmd = self.__zero_or_first(SystemEnum)
+            cmd.axisCmd = self.__zero_or_first(AxisCmdEnum)
+            cmd.tripodCmd = self.__zero_or_first(TripodCmdEnum)
+
+            # 5) Set proper command enum + ask needed params
+            match mode:
+
+                case "MOVE":
+
+                    if is_axis:
+                        cmd.axisCmd = self._choose_enum_by_mode(AxisCmdEnum, mode)
+                        cmd.targetPos = float(target_values)
+
+                    elif is_tripod:
+                        cmd.tripodCmd = self._choose_enum_by_mode(TripodCmdEnum, mode)
+                        if not isinstance(target_values, list) or len(target_values) != 3:
+                            raise ValueError(
+                                "For TRIPOD MOVE, target_values must be a list of three floats: [tip, tilt, piston]."
+                            )
+                        cmd.tip = float(target_values[0])
+                        cmd.tilt = float(target_values[1])
+                        cmd.piston = float(target_values[2])
+
+                case "STOP":
+                    pass
+
+                case "HOME":
+                    pass
+
+                case _:
+                    raise ValueError(
+                        f"Invalid mode: {mode}. Must be one of 'MOVE', 'HOME', 'STOP'."
+                    )
+
+            # 6) Write back
+            self._write_struct(node, cmd)
+            self._logger.info(
+                f"Sent command: mode={mode}, device={device}, target_values={target_values}"
+            )
+
+    def component_selector(self, device: str, command_struct: object = None) -> object:
         """
         Select the active component in the PLC.
 
@@ -228,19 +237,21 @@ class OpcUaController:
         ----------
         device : str
             The component to select.
+        command_struct: object
+            The command structure containing component information.
 
         Returns
         -------
         component: object
             The selected component ID, to be used to write the command to send.
         """
-        command_struct = self._get_cmd_struct()
-        members = list(type(command_struct.componentID))
+        if command_struct is None:
+            _, command_struct = self._get_cmd_struct()
+        members = self.__enum_members(type(command_struct.componentID))
         component = next((f for f in members if f.name == device), None)
         if component is None:
             raise ValueError(f"Invalid component ID: {component}")
         return component
-
 
     @contextmanager
     def connected(self):
@@ -253,17 +264,21 @@ class OpcUaController:
             # perform operations with self._client
         """
         try:
-            plc_is_running = self._check_plc_is_running()
-            if plc_is_running is True:
-                self._client.connect()
-                self._logger.info("Connected to OPC UA server.")
-                self._client.load_type_definitions()
-                self._logger.info("Type definitions loaded.")
-            else:
-                raise (plc_is_running)
+            if not self._connected:
+                plc_is_running = self._check_plc_is_running()
+                if plc_is_running is True:
+                    self._client.connect()
+                    self._logger.info("Connected to OPC UA server.")
+                    self._client.load_type_definitions()
+                    self._logger.info("Type definitions loaded.")
+                    self._connected = True
+                else:
+                    raise (plc_is_running)
             yield
         finally:
             self._client.disconnect()
+            self._logger.info("Disconnected from OPC UA server.")
+            self._connected = False
 
     def _choose_enum_by_mode(self, enum_cls: object, mode: str):
         """
@@ -347,15 +362,19 @@ class OpcUaController:
                 True if PLC is running, False otherwise
         """
         try:
-            self._client.connect()
+            connected_here = False
+            if not self._connected:
+                self._client.connect()
+                connected_here = True
             st = self._client.get_node(_opcpar.NODE_ID_PLC_STATE).get_value()
-            self._client.disconnect()
+            if connected_here:
+                self._client.disconnect()
             return st == _opcpar.PLC_RUN_STATE_VALUE
         except Exception as e:
             print(f"PLC state read error (ignored): {e}")
             return e
 
-    def _read_telemetry(self, print: bool = False):
+    def _read_telemetry(self, out: bool = False):
         """
         Access the PLC telemetry data structure, for reading.
 
@@ -369,7 +388,6 @@ class OpcUaController:
                 tel = node.get_value()
 
                 ## FOR DEBUGGING PURPOSES ##
-
                 def pretty_print_obj(obj: list, indent: int = 0, max_list: int = 30):
                     """Helper function to print telemetry readings"""
                     sp = " " * indent
@@ -392,10 +410,9 @@ class OpcUaController:
                         print(f"{sp}{k}:")
                         pretty_print_obj(v, indent + 4, max_list=max_list)
 
-                if print is True:
+                if out is True:
                     print("\n--- Telemetry ---")
                     pretty_print_obj(tel)
-
                 ###############################
 
                 return tel
@@ -405,7 +422,7 @@ class OpcUaController:
                 self._logger.error(f"Telemetry read error: {e}")
                 return None
 
-    def _write_struct(self, node: ua.Node, struct_instance: object):
+    def _write_struct(self, node: _ua.Node, struct_instance: object):
         """
         Write a structured data instance to the given OPC UA node.
         """
