@@ -74,6 +74,8 @@ class SplAcquirer:
         self.set_exptime(exptime)
         self._logger.info(f'Acquiring Dark frame for {exptime} s exposure time, averaging {nframes} frames')
         img = self._camera.acquire_frames(nframes)
+        if not hasattr(img, 'mask'):
+            img = _np.ma.masked_array(img, mask=_np.zeros_like(img))
         self._darkFrame1sec = img/exptime
         return self._darkFrame1sec.copy()
 
@@ -152,7 +154,7 @@ class SplAcquirer:
         )
 
         if self._darkFrame1sec is not None:
-            _osu.save_fits(_os.path.path(datapath, 'darkFrame.fits'), self._darkFrame1sec)
+            _osu.save_fits(_os.path.join(datapath, 'darkFrame.fits'), self._darkFrame1sec)
 
         self._logger.info(
             f"Starting SPL acquisition with tracking number: {tn}"
@@ -214,7 +216,7 @@ class SplAcquirer:
 
         return tn
 
-    def postProcessRawFrames(self, remove_median: bool = True, remove_dark: bool = True, crop: bool = True):
+    def postProcessRawFrames(self, tn: str = None, remove_median: bool = True, remove_dark: bool = True, crop: bool = True):
         """
         Takes the raw frames acquired with the `acquire` method and
         applies a soft processing controlled by input parameters.
@@ -230,13 +232,14 @@ class SplAcquirer:
         remove_dark : bool
             If True, removes the dark frame from each frame.
         """
+        tn = self._last_measure_tn if tn is None else tn
         if not hasattr(self, '_last_measure_tn'):
             self._logger.error("No measurement tracking number found. Please run `acquire` method first.")
             raise AttributeError("No measurement tracking number found. Please run `acquire` method first.")
 
-        datapath = _os.path.join(_fn.SPL_DATA_ROOT_FOLDER, self._last_measure_tn)
+        datapath = _os.path.join(_fn.SPL_DATA_ROOT_FOLDER, tn)
         filelist = _osu.getFileList(
-            self._last_measure_tn, 
+            tn, 
             fold=_fn.SPL_DATA_ROOT_FOLDER, 
             key="rawframe"
         )
@@ -260,9 +263,8 @@ class SplAcquirer:
             _osu.save_fits(new_filepath, img)
         
         self._logger.info(
-            f"Post-processed tn: {self._last_measure_tn}. Removed median: {remove_median}, Removed dark: {remove_dark}"
+            f"Post-processed tn: {tn}. Removed median: {remove_median}, Removed dark: {remove_dark}"
         )
-
 
 
     def _baricenterCalculator(self, reference_image: _ot.ImageData):
@@ -322,7 +324,7 @@ class SplAnalyzer:
         self.tn_fringes = tn
         self._fringes_fold = _os.path.join(_fn.SPL_FRINGES_ROOT_FOLDER, tn)
 
-    def analyzer(self, tn: str, remove_dark: bool = False) -> tuple[int, int]:
+    def analyzer(self, tn: str, remove_dark: bool = False, remove_median: bool = False, crop: bool = False) -> tuple[int, int]:
         """
         Analyze measurement data and compare it with synthetic data.
 
@@ -344,20 +346,17 @@ class SplAnalyzer:
             f"Analysis of tn = {tn} started."
         )
 
+        if any([x is True for x in [remove_dark, remove_median, crop]]):
+            self.postProcessRawFrames(tn, remove_median, remove_dark, crop)
+            raw = False
+        else:
+            raw = True
+
         datapath = _os.path.join(_fn.SPL_DATA_ROOT_FOLDER, tn)
 
         lambda_vector = _osu.load_fits(_os.path.join(datapath, "lambda_vector.fits" ))
 
-        if remove_dark:
-            try:
-                self._darkFrame1sec = _osu.load_fits(
-                    _os.path.join(datapath, 'darkFrame.fits')
-                )
-            except FileNotFoundError:
-                print(f"Dark frame not present in tn {tn}\nProceeding without removing the dark...")
-                remove_dark = False
-
-        cube, cube_normalized = self.readMeasurement(tn, remove_dark)
+        cube, cube_normalized = self.readMeasurement(tn, raw)
         matrix, matrix_smooth = self.matrix_calc(lambda_vector, cube, cube_normalized)
         piston, piston_smooth = self._templateComparison(
             matrix, matrix_smooth, lambda_vector
@@ -488,7 +487,59 @@ class SplAnalyzer:
             _os.path.join(_fn.SPL_ROOT_FOLDER, tn, "fringe_result.fits")
         )
 
-    def readMeasurement(self, tn: str, remove_dark: bool = False) -> tuple[_ot.CubeData, _ot.CubeData]:
+    def postProcessRawFrames(self, tn: str = None, remove_median: bool = True, remove_dark: bool = True, crop: bool = True):
+        """
+        Takes the raw frames acquired with the `acquire` method and
+        applies a soft processing controlled by input parameters.
+        
+        This processing is applied to every `rawframe_[wavelength]nm.fits` file
+        in the last measurement tracking number folder, and the result is saved
+        as `postprod_[wavelength]nm.fits`.
+        
+        Parameters:
+        -----------
+        remove_median : bool
+            If True, removes the median value from each frame.
+        remove_dark : bool
+            If True, removes the dark frame from each frame.
+        """
+        datapath = _os.path.join(_fn.SPL_DATA_ROOT_FOLDER, tn)
+        filelist = _osu.getFileList(
+            fold=datapath,
+            key="rawframe"
+        )
+        rawlist = [_osu.load_fits(x) for x in filelist]
+
+        for img, filename in zip(rawlist, filelist):
+
+            if remove_dark:
+                dark = _osu.load_fits(_os.path.join(datapath, 'darkFrame.fits'))
+                img = img - dark*img.header['EXPTIME']
+                img.header['RDARK'] = True
+
+            if remove_median:
+                median_value = _np.ma.median(img)
+                #img = (img - median_value).clip(0, None)
+                img = img-median_value
+                img[img < 0] = 0
+                img.header['RMEDIAN'] = True
+
+            if crop:
+                cy, cx = self._baricenterCalculator(img)
+                img = img[cy - 100 : cy + 100, cx - 150 : cx + 150]
+                img.header['CROPPED'] = True
+
+            new_filename = filename.replace("rawframe_", "postprod_")
+            new_filepath = _os.path.join(datapath, new_filename)
+            img.writeto(new_filepath, overwrite=True)
+#            _osu.save_fits(filepath=new_filepath, data=img, overwrite=True, header=header)
+
+        self._logger.info(
+            f"Post-processed tn: {tn}. Removed median: {remove_median}, Removed dark: {remove_dark}"
+        )
+
+
+    def readMeasurement(self, tn: str, raw: bool = True) -> tuple[_ot.CubeData, _ot.CubeData]:
         """
         Read images in a specific tracking number and return the cube of images
         and the cube of normalized images.
@@ -505,17 +556,12 @@ class SplAnalyzer:
         cube_normalized: numpy array
             Cube of normalized images [pixels, pixels, n_frames=lambda]
         """
-        cube = _osu.loadCubeFromFilelist(tn, fold='SPL',  key="image")
-        print('Swapping directions')
+        if raw:
+            key = 'rawframe'
+        else:
+            key = 'postprod'
+        cube = _osu.loadCubeFromFilelist(tn, fold='SPL',  key=key)
         cube = _np.transpose(cube,[1,0,2])  #modRB20250117 to manage now image orientation
-        if remove_dark:
-            if self._darkFrame1sec is not None:
-                newcube = []
-                for img in cube:
-                    newcube.append(img - self._darkFrame1sec)
-                cube = _np.ma.dstack(newcube)
-            else:
-                raise FileNotFoundError(f'No dark frame saved in tn:{tn}')
         cube_normalized = _np.array(list(map(
             lambda x: x / _np.sum(x), cube.transpose(2, 0, 1)
         ))).transpose(1, 2, 0)
@@ -545,6 +591,29 @@ class SplAnalyzer:
             baricenterCoord[1] + 75,
         ]
         return peak
+
+
+    def _baricenterCalculator(self, reference_image: _ot.ImageData):
+        """
+        Finds the centroid of the PSF in the reference image
+
+        Parameters:
+        -----------
+        reference_image : ImageData
+            The reference image from which to calculate the centroid.
+
+        Returns:
+        --------
+        cy, cx : int, int
+            The y and x coordinates of the centroid.
+        """
+        counts, bin_edges = _np.histogram(reference_image, bins=100)
+        bin_edges = bin_edges[1:]
+        thr = 5 * bin_edges[_np.where(counts == max(counts))]
+        img = reference_image.copy()
+        cx, cy = _centroids.centroid_com(img, mask=(img < thr))
+        return int(_np.round(cy)), int(_np.round(cx))
+
 
     def _templateComparison(
         self,
