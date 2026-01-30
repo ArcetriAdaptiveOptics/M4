@@ -155,6 +155,7 @@ class SplAcquirer:
 
         if self._darkFrame1sec is not None:
             _osu.save_fits(_os.path.join(datapath, 'darkFrame.fits'), self._darkFrame1sec)
+            print('Saved current dark frame')
 
         self._logger.info(
             f"Starting SPL acquisition with tracking number: {tn}"
@@ -164,6 +165,8 @@ class SplAcquirer:
         self._logger.info(
             f"Preparing reference image acquisition"
         )
+        """
+        # this part deleted as we do not need a reference image for the initial cropping
         self._filter.move_to(600)
         self.set_exptime(exptime/2)
         self._logger.info(
@@ -178,7 +181,7 @@ class SplAcquirer:
             self._logger.warning(
                 f"{_np.max(reference_image)} > 4000 : Saturation detected!"
             )
-
+        """
         # Create the Gain Vector
         expgain = _np.ones(lambda_vector.shape[0]) * 0.5
         expgain[_np.where(lambda_vector < 550)] = 1  # 8
@@ -188,14 +191,17 @@ class SplAcquirer:
         self._logger.info(f"Acquisition of frames")
 
         for wl, t_int in zip(lambda_vector, (expgain*exptime)):
+            self._filter.move_to(wl)
+            self.set_exptime(t_int)
             self._logger.info(
                 f"Acquiring image at {wl:.1f} [nm] with exposure time of {self._curr_exptime:.3f} [s]"
 
             )
             print(f'Moving to lambda: {wl}')
-            self._filter.move_to(wl)
-            self.set_exptime(t_int)
             img = self._camera.acquire_frames(nframes)
+            if mask is None:
+                mask = _np.zeros(img.shape)
+
             image = _fits_array(
                 data=img,
                 mask=mask,
@@ -216,7 +222,7 @@ class SplAcquirer:
 
         return tn
 
-    def postProcessRawFrames(self, tn: str = None, remove_median: bool = True, remove_dark: bool = True, crop: bool = True):
+    def delete_postProcessRawFrames(self, tn: str = None, remove_median: bool = True, remove_dark: bool = True, crop: bool = True):
         """
         Takes the raw frames acquired with the `acquire` method and
         applies a soft processing controlled by input parameters.
@@ -324,7 +330,7 @@ class SplAnalyzer:
         self.tn_fringes = tn
         self._fringes_fold = _os.path.join(_fn.SPL_FRINGES_ROOT_FOLDER, tn)
 
-    def analyzer(self, tn: str, remove_dark: bool = False, remove_median: bool = False, crop: bool = False) -> tuple[int, int]:
+    def analyzer(self, tn: str, remove_dark: bool = False, remove_median: bool = False, crop: bool = True) -> tuple[int, int]:
         """
         Analyze measurement data and compare it with synthetic data.
 
@@ -345,7 +351,7 @@ class SplAnalyzer:
         self._logger.info(
             f"Analysis of tn = {tn} started."
         )
-
+        print('Cropping enabled by default')
         if any([x is True for x in [remove_dark, remove_median, crop]]):
             self.postProcessRawFrames(tn, remove_median, remove_dark, crop)
             raw = False
@@ -364,7 +370,7 @@ class SplAnalyzer:
 
         self._savePistonResult(ntn, piston, piston_smooth)
         # FIXME: save matrix in the results folder
-        _osu.save_fits(_os.path.join(ntn, "fringe_result.fits"), matrix)
+        _osu.save_fits(_os.path.join(datapath, "fringe_result.fits"), matrix.T)
 
         return piston, piston_smooth
 
@@ -416,7 +422,9 @@ class SplAnalyzer:
         matrix_smooth: numpy array
             Smoothed matrix of fringes
         """
-        img = _np.sum(cube_normalized, 2)
+        #img = _np.sum(cube_normalized, 2)  ##?? qui un lobo è sparito...
+        img = _np.sum(cube, 2)
+
         pick = self._newThr(img)
         matrix = _np.zeros(
             (pick[3] - pick[2] + 1, lambda_vector.shape[0])
@@ -509,26 +517,42 @@ class SplAnalyzer:
             key="rawframe"
         )
         rawlist = [_osu.load_fits(x) for x in filelist]
-
+        imgstack = []
         for img, filename in zip(rawlist, filelist):
 
             if remove_dark:
+                print('Removing Dark')
                 dark = _osu.load_fits(_os.path.join(datapath, 'darkFrame.fits'))
                 img = img - dark*img.header['EXPTIME']
+                img[img < 0] = 0
+                print('and clipping negative values')
                 img.header['RDARK'] = True
 
             if remove_median:
+                print('Removing Median')
                 median_value = _np.ma.median(img)
                 #img = (img - median_value).clip(0, None)
                 img = img-median_value
-                img[img < 0] = 0
+                #img[img < 0] = 0
                 img.header['RMEDIAN'] = True
+            imgstack.append(img)
+        imgstackvec = _np.ma.dstack(imgstack)
+        imgsum = _np.ma.sum(imgstackvec,2)
+        cy, cx = self._baricenterCalculator(imgsum)
+        print('Found baricenter at:')
+        print(cy,cx)
 
+        for i in range(len(filelist)):
             if crop:
-                cy, cx = self._baricenterCalculator(img)
-                img = img[cy - 100 : cy + 100, cx - 150 : cx + 150]
+                print('Pre-cropping')
+                #cy, cx = self._baricenterCalculator(img)
+                #print('Found baricenter at:')
+                #print(cy,cx)
+                img = imgstack[i][cy - 100 : cy + 100, cx - 150 : cx + 150]
                 img.header['CROPPED'] = True
 
+            #new_filename = filename.replace("rawframe_", "postprod_")
+            filename = filelist[i]
             new_filename = filename.replace("rawframe_", "postprod_")
             new_filepath = _os.path.join(datapath, new_filename)
             img.writeto(new_filepath, overwrite=True)
@@ -558,8 +582,10 @@ class SplAnalyzer:
         """
         if raw:
             key = 'rawframe'
+            print('Reading rawframes')
         else:
             key = 'postprod'
+            print('Reading processed frames')
         cube = _osu.loadCubeFromFilelist(tn, fold='SPL',  key=key)
         cube = _np.transpose(cube,[1,0,2])  #modRB20250117 to manage now image orientation
         cube_normalized = _np.array(list(map(
@@ -584,6 +610,8 @@ class SplAnalyzer:
         cx, cy = _centroids.centroid_2dg(img) 
 
         baricenterCoord = [_np.int_(round(cy)), _np.int_(round(cx))]
+        print('Baricenter coord: ')
+        print(baricenterCoord)
         peak = [
             baricenterCoord[0] - 25,
             baricenterCoord[0] + 25,
