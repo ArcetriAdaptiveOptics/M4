@@ -1,18 +1,88 @@
 """
 Authors
-  - C. Selmi:  written in September 2020
+-------
+Chiara Selmi:  written in September 2020
+Pietro Ferraiuolo: Modified in 2026 w/ ADS-International
 """
 
-import logging
 import numpy as np
-import time
+from contextlib import contextmanager
 from opcua import Client
+import opcua as _opc
 from opcua import ua
-from m4.configuration.ott_parameters import OpcUaParameters
+from opticalib.ground.logger import SystemLogger
+from m4.configuration.ott_parameters import OpcUaParameters as _opcpar
 
-server = OpcUaParameters.server
-certificate = 'server_cert.der'
+## Necessary patch to fix python-opcua bug ##
+try:
+    from m4.configuration import opcua_patch
+    del opcua_patch
+except Exception:
+    pass
 
+##################### CERTIFICATE CHECKING AND GENERATION #####################
+
+def generate_certificate(cert_path: str, key_path: str):
+    from cryptography import x509
+    from cryptography.x509.oid import NameOID
+    from datetime import datetime, timedelta, timezone
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+
+    print("Generating client certificate and key...")
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+
+    subject = issuer = x509.Name(
+        [
+            x509.NameAttribute(NameOID.COUNTRY_NAME, "EN"),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PythonOpcUaClient"),
+        ]
+    )
+
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(issuer)
+        .public_key(private_key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(datetime.now(timezone.utc) - timedelta(days=1))
+        .not_valid_after(datetime.now(timezone.utc) + timedelta(days=3650))
+        .sign(private_key, hashes.SHA256())
+    )
+
+    with open(key_path, "wb") as f:
+        f.write(
+            private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption(),
+            )
+        )
+
+    with open(cert_path, "wb") as f:
+        f.write(cert.public_bytes(serialization.Encoding.DER))
+
+    print("Certificate and key created.")
+
+
+import os
+import sys
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+CLIENT_CERT_DER = os.path.join(SCRIPT_DIR, "client_cert.der")
+CLIENT_KEY_PEM = os.path.join(SCRIPT_DIR, "client_key.pem")
+SERVER_CERT_DER = os.path.join(SCRIPT_DIR, "server_cert.der")
+
+if not (os.path.exists(CLIENT_CERT_DER) and os.path.exists(CLIENT_KEY_PEM)):
+    generate_certificate(CLIENT_CERT_DER, CLIENT_KEY_PEM)
+
+if not os.path.exists(SERVER_CERT_DER):
+    print(f"Error: Server certificate not found at '{SERVER_CERT_DER}'")
+    sys.exit(1)
+
+del (SCRIPT_DIR, generate_certificate, os, sys)
+
+##################### CERTIFICATE CHECKING AND GENERATION #####################
 
 class OpcUaController:
     """
@@ -29,20 +99,115 @@ class OpcUaController:
 
     def __init__(self):
         """The constructor"""
-        self._logger = logging.getLogger("OPCUA:")
-        self._client = Client(url=server)
+        self._logger = SystemLogger(__class__)
+        self._client = None
+        self._connect_client()
+        self._cmd_keywords = {
+            "MOVE": ["FULL_MOVE"],
+            "HOME": ["HOME"],
+            "STOP": ["STOP"],
+        }
+        self._connected = False
 
-    def stop(self):
+    # LEGACY COMMAND TO (maybe) IMPLEMENT
+    # stop (all devices)
+    # get var positions
+    # set target position   For CAR, RA, STW
+    # set acts positions    For PAR and RM
+
+    def get_positions(self, device: str):
         """
-        Stop all commands
+        Reads the current position of the device. Specific for axis device (CAR,
+        RA, STW).
+        
+        Parameters
+        ----------
+        device : str
+            Device name (CAR, RA, STW)
+        
+        Returns
+        -------
+        current_pos: int [mm]
+            The device position.
         """
-        self._client.connect()
-        stop_node = self._client.get_node(self.STOP_NODE)
-        stop_type = stop_node.get_data_type_as_variant_type()
-        #         import pdb
-        #         pdb.set_trace()
-        stop_node.set_value(ua.DataValue(ua.Variant(True, stop_type)))
-        self._client.disconnect()
+        with self.connected():
+            telemetry = self._read_telemetry()
+            try:
+                dev_tel = getattr(telemetry, device)
+                pos = dev_tel.Pos.Act
+                self._logger.debug(f"Position of {device} = {pos}")
+                return pos
+            except Exception as e:
+                self._logger.error(f"Error accessing position for {device}: {e}")
+                print(f"Error accessing position for {device}: {e}")
+                return None
+    
+    def get_act_positions(self, device: str):
+        """
+        Reads the current act positions of the device. Specific for tripod devices
+        (RM, PAR).
+        
+        Parameters
+        ----------
+        device : str
+            Device name (RM, PAR)
+        
+        Returns
+        -------
+        current_pos: array
+            The device act positions [piston, tip, tilt] [mm, arcsec, arcsec].
+        """
+        with self.connected():
+            telemetry = self._read_telemetry()
+            try:
+                dev_tel = getattr(getattr(telemetry, device), 'PosAct')
+                piston = dev_tel.PISTON
+                tip = dev_tel.TIP
+                tilt = dev_tel.TILT
+                return [piston, tip, tilt]
+            except Exception as e:
+                self._logger.error(f"Error accessing act positions for {device}: {e}")
+                print(f"Error accessing act positions for {device}: {e}")
+                return None
+
+    def set_position(self, device: str, position: float|int):
+        """
+        Sets the target position of the device. Specific for axis device (CAR,
+        RA, STW).
+        
+        Parameters
+        ----------
+        device : str
+            Device name (CAR, RA, STW)
+        position : float
+            Target position [mm]
+        """
+        if not device in ["CAR", "RA", "STW"]:
+            raise ValueError(f"Device {device} not supported for set_position.")
+
+        self.send_command(mode="MOVE", device=device, target_values=position)
+
+    def set_act_positions(self, device: str, positions: list[float]):
+        """
+        Sets the target act positions of the device. Specific for tripod devices
+        (RM, PAR).
+        
+        Parameters
+        ----------
+        device : str
+            Device name (RM, PAR)
+        positions : list of float
+            Target positions [piston, tip, tilt] [mm, arcsec, arcsec]
+        """
+        if not device in ["RM", "PAR"]:
+            raise ValueError(f"Device {device} not supported for set_act_positions.")
+        
+        if len(positions) != 3:
+            raise ValueError(
+                "positions must be a list of three floats: [piston, tip, tilt]."
+            )
+
+        self.send_command(mode="MOVE", device=device, target_values=positions)
 
     def get_temperature_vector(self):
         """
@@ -51,171 +216,400 @@ class OpcUaController:
             temperature_vector: numpy array
                                 values obtained from PT
         """
-        self._client.connect()
-        temperature_node = self._client.get_node(self.TEMPERATURE_NODE)
-        temperature_vector = np.array(temperature_node.get_value()) / 100.0
-        self._client.disconnect()
-        return temperature_vector
-
-    def get_variables_positions(self):
+        with self.connected():
+            telemetry = self._read_telemetry()
+            try:
+                if hasattr(telemetry.System, "Temperatures"):
+                    tempvec = telemetry.System.Temperatures
+                    return np.asarray(tempvec)
+                else:
+                    self._logger.error(
+                        "Telemetry has no 'System.Temperatures' attribute"
+                    )
+                    return np.array([])
+            except Exception as e:
+                self._logger.error(f"Error accessing temperatures from telemetry: {e}")
+                print(f"Error accessing temperatures from telemetry: {e}")
+                return None
+    
+    def wait_for_stop(self, device: str, eps: float = 1e-3):
         """
-        Returns
-        -------
-            variables: numpy array
-                    all variables value
-        """
-        self._client.connect()
-        var_list = []
-        for i in range(len(OpcUaParameters.zabbix_variables_name)):
-            node = self._client.get_node("ns=7;s=MAIN.Drivers_input.f_PosAct[%d]" % i)
-            var = node.get_value()
-            var_list.append(var)
-        self._client.disconnect()
-        return np.array(var_list)
-
-    ### Command for object ###
-    def get_position(self, int_number):
-        """
+        Reads the telemetry until the device reaches the target position within 
+        a given tolerance.
+        
         Parameters
         ----------
-            int_number: int
-                    number of the chosen object
+        device : str
+            Device name (CAR, RA, STW, RM, PAR)
+        eps : float
+            Tolerance for position difference [mm]
+        """
+        import time
+
+        with self.connected():
+            while True:
+                try:
+                    telemetry = self._read_telemetry()
+                    dev_tel = getattr(telemetry, device)
+                    if device in ["RM", "PAR"]:
+                        pos = dev_tel.PosAct.__dict__
+                        tar = dev_tel.PosTar.__dict__
+                        diff = []
+                        for (pos, tar) in zip(pos.values(), tar.values()):
+                            diff.append(pos-tar)
+                        if all([abs(d) <= eps for d in diff]):
+                            break
+                        else:
+                            time.sleep(0.1)
+                            continue
+                    else:
+                        pos = dev_tel.Pos.Act
+                        tar = dev_tel.Pos.Tar    
+                        if abs(pos - tar) <= eps:
+                            break
+                        else:
+                            time.sleep(0.1)
+                            continue
+                except Exception as e:
+                    self._logger.error(f"Error accessing telemetry: {e}")
+                    print(f"Error accessing telemetry: {e}")
+                    break
+
+    def send_command(self, mode: str, device: str, target_values: float | list[float] = None) -> None:
+        """ """
+        node, cmd = self._get_cmd_struct()
+
+        with self.connected():
+            plc_is_running = self._check_plc_is_running()
+            if not plc_is_running is True:
+                raise RuntimeError("PLC is not in RUN state.") from plc_is_running
+            
+            ## Getting the mode
+            mode = mode.upper().strip()
+            if not any([mode == m for m in ["MOVE", "HOME", "STOP"]]):
+                raise ValueError(
+                    f"Invalid mode: {mode}. Must be one of 'MOVE', 'HOME', 'STOP'."
+                )
+
+            component = self.component_selector(device, command_struct=cmd)
+            is_axis = component.value in (1, 2, 3)  # RA/CAR/STW
+            is_tripod = component.value in (4, 5)  # RM/PAR
+
+            if not any([is_axis, is_tripod]):
+                raise ValueError(
+                    f"Component {component.name}={component.value} not supported for MOVE/HOME/STOP by your rules."
+                )
+
+            AxisCmdEnum = type(cmd.axisCmd)
+            TripodCmdEnum = type(cmd.tripodCmd)
+            AxisIdEnum = type(cmd.axisID)
+            SystemEnum = type(cmd.systemCmd) if hasattr(cmd, "systemCmd") else None
+
+            # 1) Apply component
+            cmd.componentID = component
+
+            # 2) Force axisID = 0 (hidden)
+            cmd.axisID = self.__zero_or_first(AxisIdEnum)
+
+            # 3) Clear numeric fields (avoid stale values)
+            cmd.targetPos = 0.0
+            cmd.tip = 0.0
+            cmd.tilt = 0.0
+            cmd.piston = 0.0
+
+            # 4) Clear enums to neutral (0 if exists)
+            if SystemEnum is not None:
+                cmd.systemCmd = self.__zero_or_first(SystemEnum)
+            cmd.axisCmd = self.__zero_or_first(AxisCmdEnum)
+            cmd.tripodCmd = self.__zero_or_first(TripodCmdEnum)
+
+            # 5) Set proper command enum + ask needed params
+            match mode:
+
+                case "MOVE":
+                    if target_values is None:
+                        raise ValueError("target_values must be provided for MOVE mode.")
+
+                    if is_axis:
+                        cmd.axisCmd = self._choose_enum_by_mode(AxisCmdEnum, mode)
+                        cmd.targetPos = float(target_values)
+
+                    elif is_tripod:
+                        cmd.tripodCmd = self._choose_enum_by_mode(TripodCmdEnum, mode)
+                        if not isinstance(target_values, list) or len(target_values) != 3:
+                            raise ValueError(
+                                "For TRIPOD MOVE, target_values must be a list of three floats: [tip, tilt, piston]."
+                            )
+                        cmd.tip = float(target_values[0])
+                        cmd.tilt = float(target_values[1])
+                        cmd.piston = float(target_values[2])
+
+                case "STOP":
+                    pass
+
+                case "HOME":
+                    pass
+
+                case _:
+                    raise ValueError(
+                        f"Invalid mode: {mode}. Must be one of 'MOVE', 'HOME', 'STOP'."
+                    )
+
+            # 6) Write back
+            self._write_struct(node, cmd)
+            self._logger.info(
+                f"Sent command: mode={mode}, device={device}, target_values={target_values}"
+            )
+
+    def component_selector(self, device: str, command_struct: object = None) -> object:
+        """
+        Select the active component in the PLC.
+
+        Parameters
+        ----------
+        device : str
+            The component to select.
+        command_struct: object
+            The command structure containing component information.
 
         Returns
         -------
-            position: float
-                    position of the requested object
+        component: object
+            The selected component ID, to be used to write the command to send.
         """
-        self._client.connect()
-        node = self._client.get_node(
-            "ns=7;s=MAIN.Drivers_input.f_PosAct[%d]" % int_number
+        if command_struct is None:
+            _, command_struct = self._get_cmd_struct()
+        members = self.__enum_members(type(command_struct.componentID))
+        component = next((f for f in members if f.name == device), None)
+        if component is None:
+            raise ValueError(f"Invalid component ID: {component}")
+        return component
+
+    @contextmanager
+    def connected(self):
+        """
+        Context manager to connect/disconnect the OPC UA client.
+
+        Usage
+        -----
+        with opcua_controller.connected():
+            # perform operations with self._client
+        """
+        try:
+            if not self._connected:
+                plc_is_running = self._check_plc_is_running()
+                if plc_is_running is True:
+                    self._client.connect()
+                    self._logger.info("Connected to OPC UA server.")
+                    self._client.load_type_definitions()
+                    self._logger.info("Type definitions loaded.")
+                    self._connected = True
+                else:
+                    raise (plc_is_running)
+            yield
+        finally:
+            self._client.disconnect()
+            self._logger.info("Disconnected from OPC UA server.")
+            self._connected = False
+
+    def _choose_enum_by_mode(self, enum_cls: object, mode: str):
+        """
+        mode: MOVE/HOME/STOP
+        keywords_map example:
+            {"MOVE":["FULL_MOVE"], "HOME":["HOME"], "STOP":["STOP"]}
+        """
+        mode = mode.upper().strip()
+        mem = self.__enum_members(enum_cls)
+        if not mem:
+            raise RuntimeError(f"Enum {enum_cls} has no members")
+
+        keywords = self._cmd_keywords.get(mode, [mode])
+
+        matches = []
+        for m in mem:
+            name = getattr(m, "name", str(m)).upper()
+            if any(k.upper() in name for k in keywords):
+                matches.append(m)
+
+        if len(matches) == 1:
+            return matches[0]
+        else:
+            raise ValueError(
+                f"Could not uniquely identify command for mode '{mode}'. Matches found: {[m.name for m in matches]}"
+            )
+
+    def _get_cmd_struct(self):
+        """
+        Access the PLC command data structure, for reading/writing.
+
+        Returns
+        -------
+        command_struct: command object
+
+        Raises
+        -------
+        RuntimeError
+            If the command struct is NULL or has no 'componentID' field.
+        """
+        with self.connected():
+            try:
+                command_node = self._client.get_node(_opcpar.NODE_ID_COMMAND_VARIABLE)
+                command_struct = command_node.get_value()
+
+                if command_struct is None:
+                    raise RuntimeError(
+                        "Command struct is NULL on server (PLC not initialized)."
+                    )
+
+                # Required Fields for CMD struct
+                required = [
+                    "axisCmd",
+                    "tripodCmd",
+                    "componentID",
+                    "axisID",
+                    "targetPos",
+                    "tip",
+                    "tilt",
+                    "piston",
+                ]
+                missing = [f for f in required if not hasattr(command_struct, f)]
+                if missing:
+                    self._logger.error(
+                        "Decoded ST_Command is missing fields: %s", missing
+                    )
+                    raise RuntimeError("Decoded ST_Command is missing fields:", missing)
+
+                return command_node, command_struct
+            except Exception as e:
+                self._logger.error(f"Command struct read error: {e}")
+                raise e
+
+    def _check_plc_is_running(self) -> bool | Exception:
+        """
+        Check if the PLC is in RUN state.
+
+        Returns
+        -------
+            is_running: bool
+                True if PLC is running, False otherwise
+        """
+        try:
+            connected_here = False
+            if not self._connected:
+                self._client.connect()
+                connected_here = True
+            st = self._client.get_node(_opcpar.NODE_ID_PLC_STATE).get_value()
+            if connected_here:
+                self._client.disconnect()
+            return st == _opcpar.PLC_RUN_STATE_VALUE
+        except Exception as e:
+            print(f"PLC state read error (ignored): {e}")
+            return e
+
+    def _read_telemetry(self, out: bool = False):
+        """
+        Access the PLC telemetry data structure, for reading.
+
+        Returns
+        -------
+            tel: telemetry object
+        """
+        with self.connected():
+            try:
+                node = self._client.get_node(_opcpar.NODE_ID_TELEMETRY)
+                tel = node.get_value()
+
+                ## FOR DEBUGGING PURPOSES ##
+                def pretty_print_obj(obj: list, indent: int = 0, max_list: int = 30):
+                    """Helper function to print telemetry readings"""
+                    sp = " " * indent
+
+                    if isinstance(obj, list):
+                        for i, item in enumerate(obj[:max_list]):
+                            print(f"{sp}[{i}]:")
+                            pretty_print_obj(item, indent + 4, max_list=max_list)
+                        if len(obj) > max_list:
+                            print(f"{sp}... ({len(obj) - max_list} more)")
+                        return
+
+                    if not hasattr(obj, "__dict__"):
+                        print(f"{sp}{obj}")
+                        return
+
+                    for k, v in obj.__dict__.items():
+                        if k.startswith("_"):
+                            continue
+                        print(f"{sp}{k}:")
+                        pretty_print_obj(v, indent + 4, max_list=max_list)
+
+                if out is True:
+                    print("\n--- Telemetry ---")
+                    pretty_print_obj(tel)
+                ###############################
+
+                return tel
+
+            except Exception as e:
+                print(f"Telemetry read error: {e}")
+                self._logger.error(f"Telemetry read error: {e}")
+                return None
+
+    def _write_struct(self, node: _opc.Node, struct_instance: object):
+        """
+        Write a structured data instance to the given OPC UA node.
+        """
+        dv = ua.DataValue(ua.Variant(struct_instance, ua.VariantType.ExtensionObject))
+        dv.SourceTimestamp = None
+        dv.ServerTimestamp = None
+        node.set_value(dv)
+
+    def _connect_client(self):
+        """
+        Try to connect to the OPC UA server.
+        """
+        import time
+
+        self._client = Client(url=_opcpar.server)
+        self._client.set_user(_opcpar.username)
+        self._client.set_password(_opcpar.password)
+        self._client.set_security_string(
+            "Basic256Sha256,SignAndEncrypt,%s,%s,%s"
+            % (CLIENT_CERT_DER, CLIENT_KEY_PEM, SERVER_CERT_DER)
         )
-        position = node.get_value()
-        self._client.disconnect()
-        self._logger.debug("Position = %f", position)
-        return position
 
-    def set_target_position(self, int_number, value):
-        """
-        Parameters
-        ----------
-            int_number: int
-                    number of the chosen object
-            value: float
-                value to assign to the chosen object
+        ## Try the connection to get errors early ##
+        try:
+            self._client.connect()
+            time.sleep(0.5)
+            self._client.disconnect()
+        except Exception as e:
+            self._logger.error(f"Failed to connect to OPC UA server: {e}")
+            raise ConnectionError(f"Failed to connect to OPC UA server: {e}")
 
-        Returns
-        -------
-            target_position: float
-                    value assigned to the chosen object
-                    (not applied)
-        """
-        self._client.connect()
-        node = self._client.get_node(
-            "ns=7;s=MAIN.f_TargetPosition_input[%d]" % int_number
-        )
-        type_node = node.get_data_type_as_variant_type()
-        node.set_value(ua.DataValue(ua.Variant(value, type_node)))
-        target_position = node.get_value()
-        self._client.disconnect()
-        self._logger.debug("Target position = %f", target_position)
-        return target_position
+    ### HELPER FUNCTIONS FOR ENUMERATING THE OBECTS ###
+    def __enum_members(self, enum_cls: object):
+        # IntEnum-like
+        try:
+            return list(enum_cls)
+        except Exception:
+            members = []
+            for k in dir(enum_cls):
+                if k.startswith("_"):
+                    continue
+                v = getattr(enum_cls, k)
+                try:
+                    if isinstance(v, enum_cls):
+                        members.append(v)
+                except Exception:
+                    pass
+            if not members:
+                raise RuntimeError(f"Enum {enum_cls} has no members")
+            return members
 
-    def move_object(self, int_number):
-        """
-        Function that applies command and moves object
-
-        Parameters
-        ----------
-            int_number: int
-                    number of the chosen object
-        """
-        self._client.connect()
-        node = self._client.get_node("ns=7;s=MAIN.b_MoveCmd[%d]" % int_number)
-        node_type = node.get_data_type_as_variant_type()
-        node.set_value(ua.DataValue(ua.Variant(True, node_type)))
-        self._client.disconnect()
-        self._logger.debug("Object moved successfully")
-
-    def _get_command_state(self, int_number):
-        """
-        Parameters
-        ----------
-            int_number: int
-                    number of the chosen object
-
-        Returns
-        -------
-            value: boolean
-                    position of the requested object
-        """
-        self._client.connect()
-        node = self._client.get_node("ns=7;s=MAIN.b_MoveCmd[%d]" % int_number)
-        value = node.get_value()
-        self._client.disconnect()
-        return value
-
-    def wait_for_stop(self, int_number):
-        """
-        Function to wait for the movement to be completed
-
-        Parameters
-        ----------
-            int_number: int
-                    number of the chosen object
-        """
-        value = self._get_command_state(int_number)
-        while value == True:
-            time.sleep(0.1)
-            value = self._get_command_state(int_number)
-
-    def readActsPositions(self, n1, n2, n3):
-        """
-        Function to read actuators positions
-
-        Parameters
-        ----------
-            n1, n2, n3: int
-                    number of the chosen object
-
-        Returns
-        -------
-            acts: numpy array
-                vector of actuators position
-        """
-        act1 = self.get_position(n1)
-        act2 = self.get_position(n2)
-        act3 = self.get_position(n3)
-        return np.array([act1, act2, act3])
-
-    def setActsPositions(self, n1, n2, n3, v1, v2, v3):
-        """
-        Function to set actuators positions
-
-        Parameters
-        ----------
-            n1, n2, n3: int
-                    number of the chosen object
-            v1, v2, v3: int, float
-                    value to pass to actuators
-
-        Returns
-        -------
-            acts: numpy array
-                vector of actuators position
-        """
-        act1 = self._setAct(n1, v1)
-        act2 = self._setAct(n2, v2)
-        act3 = self._setAct(n3, v3)
-        return np.array([act1, act2, act3])
-
-    def _setAct(self, number, value):
-        """specific function for actuators because on these
-        does not work the wait for stop (not set the transition
-        from true to false by ads)"""
-        self.set_target_position(number, value)
-        self.move_object(number)
-        time.sleep(10)
-        # self.wait_for_stop(number)
-        act = self.get_position(number)
-        return act
+    def __zero_or_first(self, enum_cls: object):
+        """Return the enum member with value zero, or the first member if none has value zero."""
+        mem = self.__enum_members(enum_cls)
+        for m in mem:
+            if int(m) == 0:
+                return m
+        return mem[0]

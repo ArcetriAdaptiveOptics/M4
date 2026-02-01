@@ -54,7 +54,6 @@ class SplAcquirer:
             self._logger.warning("The requested exposure time for the camera is equal to the current one. Skipping")
             pass
 
-
     def acquireDarkFrame(self, exptime: float, nframes: int = 1):
         """
         Calibrates a dark frame (or better a sky frame) to allow the subtraction
@@ -221,6 +220,31 @@ class SplAcquirer:
         self._last_measure_tn = tn
 
         return tn
+
+    def ccdCalibration(self, nframes: int = 25, texp: list[float] | None = None):
+        texp = [0.01,0.05,0.1,0.3,0.5,1,1.5,2,4,6,8] if texp is None else texp
+        datapath = _osu.create_data_folder(basepath=_fn.SPL_DATA_ROOT_FOLDER)
+        tn = datapath.split("/")[-1]
+        print(tn)
+        for i in texp:
+            self.set_exptime(i)
+            print('Acquiring with exp time '+f"{i}"+'s')
+            print(i)
+            img = self._camera.acquire_frames(nframes)
+            #if mask is None:
+            mask = _np.zeros(img.shape)
+            image = _fits_array(
+            data=img,
+            mask=mask,
+            header={
+                "EXPTIME": self._curr_exptime,
+                "WAVELEN": 'Dark'         ,
+                "NFRAMES":  nframes   }
+            )
+            image.writeto(_os.path.join(datapath, f"ccd_texp-{i}.fits"), overwrite=True)
+
+        return tn
+    
 
     def delete_postProcessRawFrames(self, tn: str = None, remove_median: bool = True, remove_dark: bool = True, crop: bool = True):
         """

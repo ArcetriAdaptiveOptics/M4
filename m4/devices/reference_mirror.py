@@ -3,8 +3,9 @@ Authors
   - C. Selmi: written in 2021
 """
 
-import logging
+from opticalib.ground.logger import SystemLogger
 import numpy as np
+from .opc_ua_controller import OpcUaController
 from m4.configuration.ott_parameters import OpcUaParameters, OttParameters
 
 
@@ -20,55 +21,43 @@ class OpcUaReferenceMirror:
         rm = OpcUaReferenceMirror(opcUa)
     """
 
-    def __init__(self, opcUa):
+    def __init__(self, opcUa: OpcUaController):
         """The constructor"""
         self._opcUa = opcUa
-        self._logger = logging.getLogger("OpcUaReferenceMirror")
+        self._logger = SystemLogger(__class__)
 
     def getPosition(self):
-        """Function to get the reference mirror position
+        """
+        Gets the reference mirror's actuators position.
 
         Returns
         -------
-            current_pos: int [-, -, mm, arcsec, arcsec, -]
-                            reference mirror position
+        current_pos: int [-, -, mm, arcsec, arcsec, -]
+            Reference mirror position
         """
-        current_pos = self._readRMPosition()
+        ptt = self._opcUa.get_act_positions(OpcUaParameters.RM)
+        current_pos = np.array(
+            [0, 0, float(ptt[0]), float(ptt[1]), float(ptt[2]), 0]
+        )
         self._logger.debug("Position = %s" % current_pos)
         return current_pos
 
-    def setPosition(self, absolute_position_in_mm):
-        """Function to set the absolute position of the reference mirror
+    def setPosition(self, absolute_position_in_mm: list[float | int]) -> list[float]:
+        """
+        Function to set the absolute position of the reference mirror's actuators.
 
         Parameters
         ----------
-        absolute_position_in_mm: numpy array [-, -, mm, arcsec, arcsec, -]
-                        vector of six value
+        absolute_position_in_mm: ArrayLike
+            Vector of the six dof values of reference mirror.
 
         Returns
         -------
-            current_pos: numpy array [-, -, mm, arcsec, arcsec, -]
-                        absolute reference mirror position
+        print of the reached position
         """
-        n_opc = np.array(
-            [OpcUaParameters.RM_PISTON, OpcUaParameters.RM_TIP, OpcUaParameters.RM_TILT]
-        )
-        for i in range(OttParameters.RM_DOF_PISTON.size):
-            j = OttParameters.RM_DOF_PISTON[i]
-            self._opcUa.set_target_position(n_opc[i], absolute_position_in_mm[j])
-            # print(start_position[j])
-        self._opcUa.move_object(OpcUaParameters.RM_KIN)
-        self._opcUa.wait_for_stop(OpcUaParameters.RM_KIN)
-        return self.getPosition()
+        dofs = OttParameters.RM_DOF_PISTON
+        to_command = absolute_position_in_mm[dofs]
+        self._opcUa.set_act_positions(OpcUaParameters.RM, to_command)
+        self._opcUa.wait_for_stop(OpcUaParameters.RM)
+        print(self.getPosition())
 
-    def _readRMPosition(self):
-        """
-        Returns
-        -------
-            current_pos: numpy array [-, -, mm, arcsec, arcsec, -]
-                        absolute reference mirror position
-        """
-        piston = self._opcUa.get_position(OpcUaParameters.RM_PISTON)
-        tip = self._opcUa.get_position(OpcUaParameters.RM_TIP)
-        tilt = self._opcUa.get_position(OpcUaParameters.RM_TILT)
-        return np.array([0, 0, float(piston), float(tip), float(tilt), 0])

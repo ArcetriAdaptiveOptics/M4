@@ -1,10 +1,12 @@
 """
 Authors
-  - C. Selmi: written in 2020
+-------
+Chiara Selmi: written in 2020
+Pietro Ferraiuolo: updated in 2026 w/ new API
 """
-
-import logging
 import numpy as np
+from opticalib.ground.logger import SystemLogger
+from .opc_ua_controller import OpcUaController
 from m4.configuration.ott_parameters import OpcUaParameters, OttParameters
 
 
@@ -19,59 +21,42 @@ class OpcUaParabola:
         par = OpcUaParabola(opcUa)
     """
 
-    def __init__(self, opcUa):
+    def __init__(self, opcUa: OpcUaController):
         """The constructor"""
-        self._opcUa = opcUa
-        self._logger = logging.getLogger("OpcUaParabola")
+        self._opcua = opcUa
+        self._logger = SystemLogger(__class__)
 
     def getPosition(self):
-        """Function to get the parabola position
+        """
+        Gets the parabola tripod's actuators position.
 
         Returns
         -------
         current_pos: int [-, -, mm, arcsec, arcsec, -]
-            parabola position
+            Tripod parabola position
         """
-        current_pos = self._readParPosition()
+        ptt = self._opcua.get_act_positions(OpcUaParameters.PAR)
+        current_pos = np.array(
+            [0, 0, float(ptt[0]), float(ptt[1]), float(ptt[2]), 0]
+        )
         self._logger.debug("Position = %s" % current_pos)
         return current_pos
 
     def setPosition(self, absolute_position_in_mm: list[float | int]) -> list[float]:
-        """Function to set the absolute position of the parabola
+        """
+        Function to set the absolute position of the parabola tripod's actuators.
 
         Parameters
         ----------
-        absolute_position_in_mm: numpy array [-, -, mm, arcsec, arcsec, -]
-            vector of six numbers containing dof values of parabola
+        absolute_position_in_mm: ArrayLike
+            Vector of the six dof values of parabola.
 
         Returns
         -------
-        current_pos: numpy array [mm]
-            absolute parabola position
+        print of the reached position
         """
-        n_opc = np.array(
-            [
-                OpcUaParameters.PAR_PISTON,
-                OpcUaParameters.PAR_TIP,
-                OpcUaParameters.PAR_TILT,
-            ]
-        )
-        for i in range(OttParameters.PARABOLA_DOF.size):
-            j = OttParameters.PARABOLA_DOF[i]
-            self._opcUa.set_target_position(n_opc[i], absolute_position_in_mm[j])
-            # print(start_position[j])
-        self._opcUa.move_object(OpcUaParameters.PAR_KIN)
-        self._opcUa.wait_for_stop(OpcUaParameters.PAR_KIN)
-        return self.getPosition()
-
-    def _readParPosition(self) -> list[float]:
-        """
-        Returns
-        -------
-            current_pos: numpy array [-, -, mm, arcsec, arcsec, -]
-                        absolute parabola position
-        """
-        piston = self._opcUa.get_position(OpcUaParameters.PAR_PISTON)
-        tip = self._opcUa.get_position(OpcUaParameters.PAR_TIP)
-        tilt = self._opcUa.get_position(OpcUaParameters.PAR_TILT)
-        return np.array([0, 0, float(piston), float(tip), float(tilt), 0])
+        dofs = OttParameters.PARABOLA_DOF
+        to_command = absolute_position_in_mm[dofs]
+        self._opcua.set_act_positions(OpcUaParameters.PAR, to_command)
+        self._opcua.wait_for_stop(OpcUaParameters.PAR)
+        print(self.getPosition())
