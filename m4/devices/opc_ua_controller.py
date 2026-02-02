@@ -252,27 +252,18 @@ class OpcUaController:
                     telemetry = self._read_telemetry()
                     dev_tel = getattr(telemetry, device)
                     if device in ["RM", "PAR"]:
-                        pos = dev_tel.PosAct.__dict__
-                        tar = dev_tel.PosTar.__dict__
-                        diff = []
-                        print('checking values')
-                        for (pos, tar) in zip(pos.values(), tar.values()):
-                            temp_diff = pos-tar
-                            print(temp_diff)
-                            if not temp_diff == pos:
-                                diff.append(pos-tar)
-                                print('appended')
-                            else:
-                                continue
-                        if all([abs(d) <= eps for d in diff]):
+                        legs = dev_tel.Legs
+                        fmstates = []
+                        for leg in legs:
+                            fmstates.append(leg.FMState)
+                        if all([fmstate.value == 0 for fmstate in fmstates]):
                             break
                         else:
                             time.sleep(0.1)
                             continue
                     else:
-                        pos = dev_tel.Pos.Act
-                        tar = dev_tel.Pos.Tar    
-                        if abs(pos - tar) <= eps:
+                        fmstate = dev_tel.FMState
+                        if fmstate.value == 0:
                             break
                         else:
                             time.sleep(0.1)
