@@ -255,8 +255,15 @@ class OpcUaController:
                         pos = dev_tel.PosAct.__dict__
                         tar = dev_tel.PosTar.__dict__
                         diff = []
+                        print('checking values')
                         for (pos, tar) in zip(pos.values(), tar.values()):
-                            diff.append(pos-tar)
+                            temp_diff = pos-tar
+                            print(temp_diff)
+                            if not temp_diff == pos:
+                                diff.append(pos-tar)
+                                print('appended')
+                            else:
+                                continue
                         if all([abs(d) <= eps for d in diff]):
                             break
                         else:
@@ -336,13 +343,13 @@ class OpcUaController:
 
                     elif is_tripod:
                         cmd.tripodCmd = self._choose_enum_by_mode(TripodCmdEnum, mode)
-                        if not isinstance(target_values, list) or len(target_values) != 3:
+                        if len(target_values) != 3:
                             raise ValueError(
                                 "For TRIPOD MOVE, target_values must be a list of three floats: [tip, tilt, piston]."
                             )
-                        cmd.tip = float(target_values[0])
-                        cmd.tilt = float(target_values[1])
-                        cmd.piston = float(target_values[2])
+                        cmd.tip = float(target_values[1])
+                        cmd.tilt = float(target_values[2])
+                        cmd.piston = float(target_values[0])
 
                 case "STOP":
                     pass
