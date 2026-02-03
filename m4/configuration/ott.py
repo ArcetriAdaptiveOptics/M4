@@ -53,7 +53,7 @@ from m4.simulator.fake_reference_mirror_slider import FakeReferenceMirrorSlider
 from opticalib.core.read_config import load_yaml_config
 
 
-def create_ott() -> tuple[object, object, object]:
+def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object, object, object]:
     """
     This function creates and initialize the OTT, creating all the devices, fake
     or real, accordingly to what specified in the .yaml configuration file.
@@ -164,25 +164,33 @@ def create_ott() -> tuple[object, object, object]:
         playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, "ott-ini.mp3"))
         playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, "ott-conf.mp3"))
 
-    try:
-        if config["dm"] is True:
-            dm = FakeM4DM()
+    out = [ott]
+
+    if not no_dm:
+        try:
+            if config["dm"] is True:
+                dm = FakeM4DM()
+            else:
+                from opticalib import AdOpticaDm
+    
+                dm = AdOpticaDm()
+        except Exception as e:
+            print(f"'{e}'")
+            dm = None
+
+        out.append(dm)
+
+    if not no_interf:
+        if config["interferometer"] is True:
+            interf = FakeInterferometer(ott, dm)
         else:
-            from opticalib import AdOpticaDm
+            from opticalib import PhaseCam
 
-            dm = AdOpticaDm()
-    except Exception as e:
-        print(f"'{e}'")
-        dm = None
+            interf = PhaseCam("6110")
 
-    if config["interferometer"] is True:
-        interf = FakeInterferometer(ott, dm)
-    else:
-        from opticalib import PhaseCam
+        out.append(interf)
 
-        interf = PhaseCam("6110")
-
-    return ott, dm, interf
+    return out
 
 
 class OTT:
