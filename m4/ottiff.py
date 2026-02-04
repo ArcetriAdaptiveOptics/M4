@@ -159,12 +159,16 @@ class OttIffAcquisition:
         newtn: str
             The tracking number of the new processed dataset.
         """
+        from opticalib.ground.geometry import draw_circular_pupil
+
+        mask = draw_circular_pupil(shape=(2000,2000), radius=990)
+
         if isinstance(tns, str):
             tns = [tns]
         ifp.process(tn=tns, save=True, rebin=rebin)
         newtns = []
         for j, tn in enumerate(tns):
-            newtn = ifp.cubeRoiProcessing(tn, activeRoiID[j], detrend, roinull, rebin, fitting_mask=self._cavity)
+            newtn = ifp.cubeRoiProcessing(tn, activeRoiID[j], detrend, roinull, rebin, fitting_mask=mask) #, fitting_mask=self._cavity)
             newtns.append(newtn)
             # _time.sleep(1) # WHY? 
         return newtns

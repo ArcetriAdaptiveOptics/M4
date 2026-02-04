@@ -49,11 +49,11 @@ class OttAligner(_al.Alignment):
             imglist = [imglist]
         for img in imglist:
             if self._surface is None:
-                coeff, _ = _zern.zernikeFit(img, self._zvec2fit)
+                coeff, _ = self._zfitter.fit(img, self._zvec2fit)
             else:
                 if self._correct_cavity is True:
                     img -= 2 * self._surface
-                coeff, _ = self._zfitter.fitOnROi(img, self._zvec2fit, "global")
+                coeff = self._zfitter.fitOnRoi(img, self._zvec2fit, "global")
             coefflist.append(coeff[self._zvec2use])
         if len(coefflist) == 1:
             coefflist = _np.array([c for c in coefflist[0]])
