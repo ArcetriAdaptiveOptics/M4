@@ -171,9 +171,9 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
             if config["dm"] is True:
                 dm = FakeM4DM()
             else:
-                from opticalib import AdOpticaDm
+                from opticalib.devices import DP
     
-                dm = AdOpticaDm()
+                dm = DP()
         except Exception as e:
             print(f"'{e}'")
             dm = None

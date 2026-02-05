@@ -133,6 +133,7 @@ class OttIffAcquisition:
         detrend: bool = False,
         roinull: bool = False,
         rebin: int = 1,
+        fitting_mask = None
     ):
         """
         This function groups together some image manipulations in presence of
@@ -161,14 +162,14 @@ class OttIffAcquisition:
         """
         from opticalib.ground.geometry import draw_circular_pupil
 
-        mask = draw_circular_pupil(shape=(2000,2000), radius=990)
+        #mask = draw_circular_pupil(shape=(2000,2000), radius=990)
 
         if isinstance(tns, str):
             tns = [tns]
         ifp.process(tn=tns, save=True, rebin=rebin)
         newtns = []
         for j, tn in enumerate(tns):
-            newtn = ifp.cubeRoiProcessing(tn, activeRoiID[j], detrend, roinull, rebin, fitting_mask=mask) #, fitting_mask=self._cavity)
+            newtn = ifp.cubeRoiProcessing(tn, activeRoiID[j], detrend, roinull, rebin, fitting_mask) #, fitting_mask=self._cavity)
             newtns.append(newtn)
             # _time.sleep(1) # WHY? 
         return newtns
