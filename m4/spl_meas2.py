@@ -401,7 +401,7 @@ class SplAnalyzer:
     def fringes(self, tn):
         from matplotlib import pyplot as plt
 
-        cube, _ = self.readMeasurement(tn)
+        cube, _ = self.readMeasurement(tn, raw=False)
         wav = self.get_measurement_lambda(tn)
         mat, _ = self.matrix_calc(wav,cube,cube)
         npix = mat.shape[0]
@@ -447,7 +447,7 @@ class SplAnalyzer:
             Smoothed matrix of fringes
         """
         #img = _np.sum(cube_normalized, 2)  ##?? qui un lobo è sparito...
-        img = _np.sum(cube, 2)
+        img = _np.ma.sum(cube, 2)
 
         pick = self._newThr(img)
         matrix = _np.zeros(
@@ -463,10 +463,10 @@ class SplAnalyzer:
             if crop_frame_cube is None:
                 crop_frame_cube = crop_frame
             else:
-                crop_frame_cube = _np.dstack((crop_frame_cube, crop_frame))
+                crop_frame_cube = _np.ma.dstack((crop_frame_cube, crop_frame))
 
-            y = _np.sum(crop_frame, 0)
-            area = _np.sum(y[:])
+            y = _np.ma.sum(crop_frame, 0)
+            area = _np.ma.sum(y[:])
             y_norm = y / area
             matrix[:, i] = y_norm
 
@@ -495,11 +495,11 @@ class SplAnalyzer:
         smooth: numpy array
                 smoothd data
         """
-        out0 = _np.convolve(a, _np.ones(WSZ, dtype=int), "valid") / WSZ
+        out0 = _np.ma.convolve(a, _np.ones(WSZ, dtype=int), "valid") / WSZ
         r = _np.arange(1, WSZ - 1, 2)
-        start = _np.cumsum(a[: WSZ - 1])[::2] / r
-        stop = (_np.cumsum(a[:-WSZ:-1])[::2] / r)[::-1]
-        return _np.concatenate((start, out0, stop))
+        start = _np.ma.cumsum(a[: WSZ - 1])[::2] / r
+        stop = (_np.ma.cumsum(a[:-WSZ:-1])[::2] / r)[::-1]
+        return _np.ma.concatenate((start, out0, stop))
 
     def get_matrix(self, tn: str) -> _ot.MatrixLike:
         """
