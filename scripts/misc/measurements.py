@@ -21,11 +21,13 @@ class Measurements:
     meas = Measurements(ott, interf)
     """
 
-    def __init__(self, interf, ott=None):
+    def __init__(self, interf, ott=None, surfFitRoutine = None):
         """The constructor"""
         self._ott = ott
         self._interf = interf
+        self._sfit = surfFitRoutine  #così??
         self.basepath = fold_name.BASE_DATA_PATH
+
 
     def opticalMonitoring(self, n_images, delay=0, start_delay=0, fullFrame=False, tracknum = None):
         """
@@ -71,7 +73,6 @@ class Measurements:
         for i in range(n_images):
             ti = time.time()
             dt = ti - t0
-#            masked_ima = self._interf.acquire_phasemap(1)
             masked_ima = self._interf.acquire_map(1)
             if fullFrame is not False:
                 masked_ima = self._interf.intoFullFrame(1)
@@ -79,22 +80,20 @@ class Measurements:
                 temp_vect = self._ott.temperature.getTemperature()
                 fits_file_name = os.path.join(savefolder, "temperature.fits")
                 opt.save_fits(fits_file_name, np.array(temp_list), overwrite=True)
+                temp_list.append(temp_vect)
 
             name = newtn() + ".fits"
             fits_file_name = os.path.join(savefolder, name)
             opt.save_fits(fits_file_name, masked_ima)
- #           pyfits.writeto(fits_file_name, masked_ima.data)
- #           pyfits.append(fits_file_name, masked_ima.mask.astype(np.uint8))
+            if self._sfit is not None:
+                sfits_file_name = os.path.join(savefolder, "zernike.fits")
+                coeff = self._sfit(masked_ima)
+                coeff_list.append(dt,coeff)
+                opt.save_fits(sfits_file_name, np.array(coeff_list), overwrite=True)
 
-            coef, mat = zern.zernikeFit(masked_ima, np.arange(10) + 1)
-            vect = np.append(dt, coef)
-            zer_list.append(vect)
-            temp_list.append(temp_vect)
-
-            fits_file_name = os.path.join(savefolder, "zernike.fits")
-            opt.save_fits(fits_file_name, np.array(zer_list), overwrite=True)
-#            pyfits.writeto(fits_file_name, np.array(zer_list), overwrite=True)
-#            pyfits.writeto(fits_file_name, np.array(temp_list), overwrite=True)
+            #coef, mat = zern.zernikeFit(masked_ima, np.arange(10) + 1) ## qui bisognerebbe capire come impostare il fit di zernike
+            #vect = np.append(dt, coef)
+            #zer_list.append(vect)
 
             time.sleep(delay)
         return tt

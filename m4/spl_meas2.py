@@ -106,6 +106,7 @@ class SplAcquirer:
         exptime: float,
         lambda_vector: _ot.ArrayLike | None = None,
         nframes: int = 1,
+        tracknum = None,
         mask: _ot.MaskData | None = None,
     ):
         """
@@ -143,8 +144,13 @@ class SplAcquirer:
         else:
             lambda_vector = _np.arange(440, 721, 20)
 
-        datapath = _osu.create_data_folder(basepath=_fn.SPL_DATA_ROOT_FOLDER)
-        tn = datapath.split("/")[-1]
+        if tracknum is None:
+            datapath = _osu.create_data_folder(basepath=_fn.SPL_DATA_ROOT_FOLDER)
+            tn = datapath.split("/")[-1]
+        else:
+            datapath = _os.path.join(_fn.BASE_DATA_PATH, _fn.SPL_DATA_ROOT_FOLDER,tracknum)
+            _os.mkdir(datapath)
+            tn = tracknum
         print(tn)
 
         _osu.save_fits(

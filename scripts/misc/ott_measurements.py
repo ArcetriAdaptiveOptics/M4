@@ -31,7 +31,7 @@ class Measurements:
         self.basepath = fold_name.BASE_DATA_PATH
         self.meas = measlib.Measurements(interf, ott)
 
-    def opticalMonitoring(self, n_images, delay=0, start_delay=0, fullFrame=False):
+    def opticalMonitoring(self, n_images, delay=0, start_delay=0, fullFrame=False, tracknum = None):
         """
         Acquisition of images for monitoring
 
@@ -52,7 +52,10 @@ class Measurements:
 
 
         store_in_folder = fold_name.OPD_SERIES_ROOT_FOLDER
-        tt = newtn()
+        if tracknum is None:
+            tt = newtn()
+        else:
+            tt = tracknum
         savefolder = os.path.join(store_in_folder, tt)
         print(tt)
         if os.path.exists(savefolder) == False:
@@ -63,42 +66,5 @@ class Measurements:
         if self._ott is not None:
             ott_status.save_positions(savefolder, self._ott)  # saving the ott status
         self.meas.opticalMonitoring(n_images, delay, start_delay, fullFrame, tt)
-        '''
-        print("waiting {:n} s...".format(start_delay))
-        time.sleep(start_delay)
-        print("start measuring")
-        zer_list = []
-        temp_list = []
-        t0 = time.time()
-        for i in range(n_images):
-            ti = time.time()
-            dt = ti - t0
-#            masked_ima = self._interf.acquire_phasemap(1)
-            masked_ima = self._interf.acquire_map(1)
-            if fullFrame is not False:
-                masked_ima = self._interf.intoFullFrame(1)
-            if self._ott is not None:
-                temp_vect = self._ott.temperature.getTemperature()
-                fits_file_name = os.path.join(savefolder, "temperature.fits")
-                opt.save_fits(fits_file_name, np.array(temp_list), overwrite=True)
-
-            name = newtn() + ".fits"
-            fits_file_name = os.path.join(savefolder, name)
-            opt.save_fits(fits_file_name, masked_ima)
- #           pyfits.writeto(fits_file_name, masked_ima.data)
- #           pyfits.append(fits_file_name, masked_ima.mask.astype(np.uint8))
-
-            coef, mat = zernike.zernikeFit(masked_ima, np.arange(10) + 1)
-            vect = np.append(dt, coef)
-            zer_list.append(vect)
-            temp_list.append(temp_vect)
-
-            fits_file_name = os.path.join(savefolder, "zernike.fits")
-            opt.save_fits(fits_file_name, np.array(zer_list), overwrite=True)
-#            pyfits.writeto(fits_file_name, np.array(zer_list), overwrite=True)
-#            pyfits.writeto(fits_file_name, np.array(temp_list), overwrite=True)
-
-            time.sleep(delay)
-            '''
         return tt
 
