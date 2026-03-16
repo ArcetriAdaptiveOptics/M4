@@ -1,22 +1,20 @@
 # 4D Configurations
-phasecam_markerconfig = "D:/config/20240608_negativeMarkersMask50mm.4Dini"
+phasecam_markerconfig    =     "D:/config/20240608_negativeMarkersMask50mm.4Dini"
 # phasecam_alignmentconfig = "D:/config/alignmentConf-noMask-dataFill-lowModThr.4Dini"
-phasecam_alignmentconfig = (
-    "D:/config/20250909_RMAlignment.4Dini"  # 20250717_RMAlignment.4Dini
-)
-phasecam_dmconfig = "D:/config/20250910_AllSegments-nospl.4Dini"
-phasecam_noiseconfig = "D:/config/20240608_negativeMarkersMask50mm.4Dini"
-phasecam_monitorconfig = "D:/config/20251001_monitoring.4Dini"
-phasecam_baseconfig = "D:/config/20250909_RMAlignment.4Dini"
+phasecam_OTTalignmentconfig =   "D:/config/20251106_RMmask-Alignment.4Dini" 
+phasecam_M4alignmentconfig  =   "D:/config/20260312_203000-segm0-alignment.4Dini"
+phasecam_dmconfig        =       "D:/config/20250910_AllSegments-nospl.4Dini"
+phasecam_noiseconfig     = "D:/config/20240608_negativeMarkersMask50mm.4Dini"
+phasecam_monitorconfig   = "D:/config/20251001_monitoring.4Dini"
+phasecam_baseconfig      = "D:/config/20250909_RMAlignment.4Dini"
 
 # Parabola registration
 remappedpar_tn = "20240521_161525"
 
 
 # alignment
-alignmentCalibration_tn = (
-    "20250923_142114"  # "20240521_120211"  # calibrated with par subtraction
-)
+alignmentCalibration_tn = "20260207_192654"
+
 
 # alignment Calibration
 alignCal_parPist = 0.7
@@ -40,3 +38,8 @@ truss_maxstepBeforeAlignment = 100
 parslider4segment = 0.757  # corresponds to current configuration with DP
 rmslider4alignment = 0.4
 rmsliderout = -0.1
+
+### Configuration for IFF sampling
+iff_zonal_amp     = 200e-9
+iff_modal_ampTN   = '20260218_220911'
+

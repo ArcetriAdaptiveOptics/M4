@@ -89,14 +89,14 @@ class OTTScripts:
 
     def __init__(self, ott=None, interf=None, dm=None):
         """The Constructor"""
-        #       print('Tell me, Master')
-        self._ott = ott
+        print('Tell me, Master')
+        self._ott    = ott
         self._interf = interf
-        self._dm = dm
-        self.meas = measurements.Measurements(interf, ott)
-        self.alignment = alignment.OttAligner(ott, interf)
+        self._dm     = dm
+        self.meas    = measurements.Measurements(interf, ott)
+        self.alignment  = alignment.OttAligner(ott, interf)
         self.collimator = opt_beam.Parabola(ott)
-        self.refMirror = opt_beam.ReferenceMirror(ott)
+        self.refMirror  = opt_beam.ReferenceMirror(ott)
 
     def configureOTT4Alignment(self):
         """
@@ -195,14 +195,14 @@ class OTTScripts:
         Returns
         -------
         """
-        self.config4D4Alignment()
+        cavity_or_dm = 'cavity'
+        if dof == [5,6]:
+            cavity_or_dm = 'dm'
+        self.config4D4Alignment(cavity_or_dm)
         self.alignment.load_calibration(myconf.alignmentCalibration_tn)
         doit, tnPar = self._checkAlignmInfo(move, removePar)
-        # zern2corrf = np.array([0,1])
-        # dofidf = np.array([3,4])
         if removePar == True:  # qui bisogna aggiungere il Tn dell'allineamento!!
             print("Reload fitting_surface, ToBeChecked!")
-            # self.alignment.reload_calibrated_parabola(tnPar)
         self.alignment.correct_alignment(dof, zz, move, nframes)
 
     def alignM4TT(self, nframes, move=0, removePar=True):
@@ -257,7 +257,7 @@ class OTTScripts:
                 Returns
                 -------
         """
-        zz = np.array([0, 1, 6, 7])
+        zz = np.array([0, 1, 3, 4])
         dd = np.array([1, 2, 3, 4])
         self.generalAlignment(zz, dd, nframes, move, removePar)
 
@@ -298,6 +298,7 @@ class OTTScripts:
                 Returns
                 -------
         """
+        self.config4D4Alignment(cavity_or_dm = 'cavity')
         doit, tnPar = self._checkAlignmInfo(1, removePar)
         par_pist = myconf.alignCal_parPist
         par_tip, par_tilt = myconf.alignCal_parTip, myconf.alignCal_parTilt
@@ -313,7 +314,7 @@ class OTTScripts:
         print(command_amp_vector)
         print(tnPar)
         print("Add here the command for OTT alignment calibration == PAR + RM")
-        # tncal = al.calibrate_PARAndRM( command_amp_vector,  n_frames   )
+        tncal = al.calibrate_alignment(cmdAmp, n_frames,save=True)
         return tncal
 
     def calibrateM4Alignment(self, cmdAmp, n_frames, save=True):
@@ -332,6 +333,7 @@ class OTTScripts:
                 Returns
                 -------
         """
+        self.config4D4Alignment(cavity_or_dm = 'dm')
         doit, tnPar = self._checkAlignmInfo(1, removePar)
         par_pist = myconf.alignCal_parPist * 0
         par_tip, par_tilt = myconf.alignCal_parTip * 0, myconf.alignCal_parTilt * 0
@@ -347,10 +349,10 @@ class OTTScripts:
         print(command_amp_vector)
         print(tnPar)
         print("Add here the command for OTT alignment calibration == PAR + RM")
-        # tncal = al.calibrate_PARAndRM( command_amp_vector,  n_frames   )
+        tncal = al.calibrate_alignment(cmdAmp, n_frames,save=True)
         return tncal
 
-    def config4D4Alignment(self):
+    def config4D4Alignment(self, cavity_or_dm = 'cavity'):
         """
         The function communicates with the 4D Focus SW to load the interferometer configuration file to enable the optical alignment.
         Parameters
@@ -359,8 +361,12 @@ class OTTScripts:
         Returns
         -------
         """
-        print("Applying 4D configuration file: " + myconf.phasecam_alignmentconfig)
-        self._interf.loadConfiguration(myconf.phasecam_alignmentconfig)
+        if cavity_or_dm == 'cavity':
+            cfile = myconf.phasecam_OTTalignmentconfig
+        if cavity_or_dm == 'dm':
+            cfile = myconf.phasecam_M4alignmentconfig
+        print("Applying 4D configuration file: " + cfile)
+        self._interf.loadConfiguration(cfile)
 
     def config4D4Markers(self):
         """
@@ -375,6 +381,19 @@ class OTTScripts:
         print("Applying 4D configuration file: " + myconf.phasecam_markerconfig)
         self._interf.loadConfiguration(myconf.phasecam_markerconfig)
 
+
+    def _checkAlignmInfo(self, move, removePar):
+        if move == 0:
+            print("Running in test mode, specify move=1 to actually align the OTT")
+            doit = False
+        else:
+            doit = True
+        if removePar == True:
+            tnPar = myconf.remappedpar_tn
+        else:
+            tnPar = None
+        return doit, tnPar
+
     def shiftAndTrackFlat(self):
         """
         moves the RM and adjusts the alignment at each steps
@@ -383,6 +402,33 @@ class OTTScripts:
 
     def shiftAndTrackTruss(self):
         pass
+
+
+
+class MeasurementScripts:
+    """
+    xxx
+
+    Methods
+    =======
+    acquireNoise
+    acquireTimeAverage
+    analyzeTimeAverage
+    acquireCurrentFootprint
+
+    """
+
+    def __init__(self, ott=None, interf=None, dm=None):
+        """The Constructor"""
+        print('Tell me, Master')
+        self._ott    = ott
+        self._interf = interf
+        self._dm     = dm
+        self.meas    = measurements.Measurements(interf, ott)
+        self.alignment  = alignment.OttAligner(ott, interf)
+        self.collimator = opt_beam.Parabola(ott)
+        self.refMirror  = opt_beam.ReferenceMirror(ott)
+
 
     def acquireNoise(self):
         self._interf.loadConfiguration(myconf.phasecam_noiseconfig)
@@ -407,18 +453,6 @@ class OTTScripts:
         c0 = mrk.measureMarkerPos(None, self._interf)
         return c0
 
-    def _checkAlignmInfo(self, move, removePar):
-        if move == 0:
-            print("Running in test mode, specify move=1 to actually align the OTT")
-            doit = False
-        else:
-            doit = True
-        if removePar == True:
-            tnPar = myconf.remappedpar_tn
-        else:
-            tnPar = None
-        return doit, tnPar
-
 
 class M4Scripts:
     """
@@ -426,8 +460,12 @@ class M4Scripts:
 
     Methods
     =======
-    loadFlat
-    acquireIff
+    initReconstructor
+    loadFlatCommand
+    relax
+    opticalFlat
+    acquireModalIFF
+    
 
     """
 
@@ -437,8 +475,13 @@ class M4Scripts:
 
         self.interf = interf
         self.dm = dm
+        self.ifa = opt.dmutils.iff_module
+        self.flattening = None
 
-    def loadFlat(tn):
+    def initReconstructor(tn):
+        self.flattening = opt.dmutils.flattening.Flattening(tn)
+
+    def loadFlatCommand(tn):
         """
         The function loads the actuator positions corresponding to a save flattening vector and applies the command to the DM after checking the bias vectors.
         Parameters
@@ -449,6 +492,22 @@ class M4Scripts:
         Returns
         -------
         """
-        basefold = ""
-        # dm.applyFlat(tn)
+        flatfile = os.path.join(opt.folders.FLAT_ROOT_FOLDER, tn, 'flatCommand.fits')
+        fcmd = opt.load_fits(flatfile)
+        self.dm.set_shape(fcmd)
+    
+    def relax():
+        self.dm.set_shape(-self.dm._last_cmd, differential = True, incremental = 10)
+    
+    def opticalFlat(nmodes):
         pass
+
+    def acquireModalIFF(modes, segment, amp):
+        pass
+
+    def generalIffAcquisition(modes, segment, amp):
+        #tn = iff_module.iffDataAcquisition(dm, interf,np.arange(111),amplitude=amp0)
+        #return tn
+        pass
+       
+
