@@ -54,6 +54,8 @@ from opticalib.dmutils import (
     iff_acquisition_preparation as ifa,
 )
 from opticalib.dmutils.flattening import Flattening
+from opticalib import analyzer as imgaz
+from opticalib.ground import modal_decomposer as mdl
 from scripts.misc import ott_measurements as measurements
 
 
@@ -196,7 +198,7 @@ class OTTScripts:
         -------
         """
         cavity_or_dm = 'cavity'
-        if dof == [5,6]:
+        if dof is [5,6]:
             cavity_or_dm = 'dm'
         self.config4D4Alignment(cavity_or_dm)
         self.alignment.load_calibration(myconf.alignmentCalibration_tn)
@@ -444,9 +446,10 @@ class MeasurementScripts:
         tn = self.meas.opticalMonitoring(nframes, delay)
         return tn
 
-    def analyzeTimeAverage(self, tn, zern2remove=[1, 2, 3]):
-        img = th.averageFrames(tn)
-        img = th.zernike.removeZernike(img, zern2remove)
+    def analyzeTimeAverage(self, tn, zern2remove=[1, 2, 3],fitmode = 'global'):
+        img = imgaz.averageFrames(tn)
+        zernfit = mdl.ZernikeFitter(img)
+        img = zernfit.removeZernike(img,zern2remove,fitmode)
         return img
 
     def acquireCurrentFootprint(self):
