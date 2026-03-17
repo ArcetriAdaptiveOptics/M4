@@ -283,7 +283,7 @@ class OTTScripts:
         dd = np.array([0])
         self.generalAlignment(zz, dd, nframes, move, removePar)
 
-    def calibrateOTTAlignment(self, cmdAmp, n_frames, save=True):
+    def calibrateOTTAlignment(self,  n_frames= 25, save=True):
         """
                 This function measures the alignment calibration for the OTT, as the Zernike amplitude (fotted over the RefMirror area and with the PAR as pupil, corresponding to the displacement of each relevant DoF in the OTT. In particular, the PAR dZ, rX and rY and RefMirr rX and rY are moved, while measuring tip, tilt, focus and both comaX and comaY.
                 Parameters
@@ -316,7 +316,7 @@ class OTTScripts:
         print(command_amp_vector)
         print(tnPar)
         print("Add here the command for OTT alignment calibration == PAR + RM")
-        tncal = al.calibrate_alignment(cmdAmp, n_frames,save=True)
+        tncal = al.calibrate_alignment(command_amp_vector, n_frames,save=True)
         return tncal
 
     def calibrateM4Alignment(self, cmdAmp, n_frames, save=True):
@@ -484,17 +484,19 @@ class M4Scripts:
     def initReconstructor(tn):
         self.flattening = opt.dmutils.flattening.Flattening(tn)
 
-    def loadFlatCommand(tn):
+    def loadFlatCommand(tn=None):
         """
         The function loads the actuator positions corresponding to a save flattening vector and applies the command to the DM after checking the bias vectors.
         Parameters
         ----------
         tn     :   str
-            the Tracking number where the data are saved
+            the Tracking number where the data are saved. If not passed (None), the default flat (tn saved in userconfig) will be applied
 
         Returns
         -------
         """
+        if tn is None:
+            tn = myconf.dm_defaultFlatCmd
         flatfile = os.path.join(opt.folders.FLAT_ROOT_FOLDER, tn, 'flatCommand.fits')
         fcmd = opt.load_fits(flatfile)
         self.dm.set_shape(fcmd)
@@ -502,8 +504,14 @@ class M4Scripts:
     def relax():
         self.dm.set_shape(-self.dm._last_cmd, differential = True, incremental = 10)
     
-    def opticalFlat(nmodes):
-        pass
+    def opticalFlat(nmodes, segmentId=[0,1], tn=None):
+        if tn is None:
+            tn = myconf.dm_defaultIFF
+        if segmentId is [0,1]:
+            mid = np.stack((np.arange(nmodes),np.arange(111,111+nmodes)),axis=0).flatten()
+        f = opt.dmutils.flattening.Flattening(tn)
+        f.applyFlatCommand(dm, interf, mid,modes2discard=2,nframes=4,incremental=10)
+        
 
     def acquireModalIFF(modes, segment, amp):
         pass
@@ -513,4 +521,33 @@ class M4Scripts:
         #return tn
         pass
        
+    def fitZernCommand(tn, nmodes, tid, roiid=None,n2discard = 2):
+    #print(tn)
+        f = self.initReconstructor(tn)
+        #f = Flattening(tn)
+        m = f._getMasterMask()
+        ss = m.shape
+        img = np.zeros(ss)
+        mm1 = np.ones(ss)
+        mm1[m == False] = 0
+        img = np.ma.masked_array(img,mm1)
+        zfit = md.ZernikeFitter(img)
+        roiimg = roi.roiGenerator(img)
+        cc, zmat=zfit.fit(img,[1,2,3])
+        img.data[img.mask == 0] = zmat[tid,:]
+        img.data[roiimg[roiid] == 1] = 0
+        img1 = img.copy()
+        img1 = np.ma.masked_array(img.data, roiimg[roiid])
+        if tid != 0:
+            print('Requested mode is not Piston, removing the mean and normalizing to 1 std')
+            img1 = img1 - np.ma.mean(img1)
+            img1 = img1/img1.std()
+        print('Mean, StD')
+        print(np.mean(img1));    print(img1.std())
+        img.data[roiimg[roiid] == 0] = img1.data[roiimg[roiid] == 0]
+        img.data[roiimg[roiid] == 1] = 0
+        f.loadImage2Shape(img)
+        f.computeRecMat(n2discard)  #nmodes 2 remove
+        fcmd = f.computeFlatCmd(nmodes)
+        return fcmd
 

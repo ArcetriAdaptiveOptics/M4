@@ -39,6 +39,11 @@ parslider4segment = 0.757  # corresponds to current configuration with DP
 rmslider4alignment = 0.4
 rmsliderout = -0.1
 
+
+### Configurations for the DM
+dm_defaultFlatCmd = '20260316_204445'
+dm_defaultIFF     = '20260313_102030'
+
 ### Configuration for IFF sampling
 iff_zonal_amp     = 200e-9
 iff_modal_ampTN   = '20260218_220911'
