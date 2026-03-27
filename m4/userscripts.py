@@ -34,7 +34,13 @@ Usage Example
 """
 
 import numpy as np
+import opticalib
+import os
 from m4.configuration import userconfig as myconf
+## patch to work from MicWs
+import Microgate.utils.setupLog as setupLog
+setupLog.consoleProfile()
+
 
 # from m4 import main, noise  # main is no longer required for alignment
 # from m4 import noise
@@ -427,9 +433,9 @@ class MeasurementScripts:
         self._interf = interf
         self._dm     = dm
         self.meas    = measurements.Measurements(interf, ott)
-        self.alignment  = alignment.OttAligner(ott, interf)
-        self.collimator = opt_beam.Parabola(ott)
-        self.refMirror  = opt_beam.ReferenceMirror(ott)
+        #self.alignment  = alignment.OttAligner(ott, interf)
+        #self.collimator = opt_beam.Parabola(ott)
+        #self.refMirror  = opt_beam.ReferenceMirror(ott)
 
 
     def acquireNoise(self):
@@ -478,11 +484,11 @@ class M4Scripts:
 
         self.interf = interf
         self.dm = dm
-        self.ifa = opt.dmutils.iff_module
+        self.ifa = opticalib.dmutils.iff_module
         self.flattening = None
 
     def initReconstructor(tn):
-        self.flattening = opt.dmutils.flattening.Flattening(tn)
+        self.flattening = opticalib.dmutils.flattening.Flattening(tn)
 
     def loadFlatCommand(tn=None):
         """
@@ -497,8 +503,10 @@ class M4Scripts:
         """
         if tn is None:
             tn = myconf.dm_defaultFlatCmd
-        flatfile = os.path.join(opt.folders.FLAT_ROOT_FOLDER, tn, 'flatCommand.fits')
-        fcmd = opt.load_fits(flatfile)
+            print(tn)
+        flatfold = opticalib.folders.FLAT_ROOT_FOLDER
+        flatfile = os.path.join(flatfold, tn, 'flatCommand.fits')
+        fcmd = opticalib.load_fits(flatfile)
         self.dm.set_shape(fcmd)
     
     def relax():
@@ -509,7 +517,7 @@ class M4Scripts:
             tn = myconf.dm_defaultIFF
         if segmentId is [0,1]:
             mid = np.stack((np.arange(nmodes),np.arange(111,111+nmodes)),axis=0).flatten()
-        f = opt.dmutils.flattening.Flattening(tn)
+        f = opticalib.dmutils.flattening.Flattening(tn)
         f.applyFlatCommand(dm, interf, mid,modes2discard=2,nframes=4,incremental=10)
         
 
