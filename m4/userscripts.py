@@ -551,3 +551,54 @@ class M4Scripts:
         fcmd = f.computeFlatCmd(nmodes)
         return fcmd
 
+
+
+class RequirementScripts:
+    """
+    xxx
+
+    Methods
+    =======
+    sampleSlope
+    sampleHF
+    sampleCurvature
+    
+    """
+
+    def __init__(self):
+        """The Constructor"""
+        
+
+    def sampleSlope(self,tn):
+        """
+        This function computes the surface slope of a frame against the slope error specification. The average of a time series measurements is computed and the slope is evaluated as the difference between the frame and its rolled one (shifted 1pix in both X and Y), normalized with the pixelscale. The result is rebinned to get rid of the pixel-by-pixel scatter
+        Parameters
+        ----------
+        tn     :   str
+            the Tracking number where the data are saved.
+
+        Returns
+        -------
+        val    : float
+            The std of the surface slope error (in arcsec)
+        """
+        img = opticalib.analyzer.average_frames(tn)
+        #dimg = img - _np.roll(img,[
+        pass
+
+    def sampleHF(self,image):
+        """
+        This function samples a given frame according to the specification for the HF error and returns the 95-th percentile of the sample. The input frame is obtained after calibrating a M4-segment realization with the local OTT calibration
+        Parameters
+        ----------
+        image     :   array
+            the calibrated frame (surface error)
+
+        Returns
+        -------
+        val    : float
+            The 95-th percentile of the WF sample
+        """
+        pass
+
+
