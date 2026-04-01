@@ -376,6 +376,21 @@ class OTTScripts:
         print("Applying 4D configuration file: " + cfile)
         self._interf.loadConfiguration(cfile)
 
+
+    def config4D4Segment(self, segment = None):
+        """
+        The function communicates with the 4D Focus SW to load the interferometer configuration file to enable the optical alignment.
+        Parameters
+        ----------
+
+        Returns
+        -------
+        """
+        if segment is None:
+            cfile = myconf.phasecam_segmentconfig
+        print("Applying 4D configuration file: " + cfile)
+        self._interf.loadConfiguration(cfile)
+
     def config4D4Markers(self):
         """
         The function communicates with the 4D Focus SW to load the interferometer configuration file to enable the acquisition of the markers.
@@ -485,12 +500,15 @@ class M4Scripts:
         self.interf = interf
         self.dm = dm
         self.ifa = opticalib.dmutils.iff_module
+        from opticalib.dmutils.iff_acquisition_preparation import IFFCapturePreparation
+        self.ifa.IFFCapturePreparation(dm)
+
         self.flattening = None
 
     def initReconstructor(tn):
         self.flattening = opticalib.dmutils.flattening.Flattening(tn)
 
-    def loadFlatCommand(tn=None):
+    def loadFlatCommand(self,flattn=None, incremental=10):
         """
         The function loads the actuator positions corresponding to a save flattening vector and applies the command to the DM after checking the bias vectors.
         Parameters
@@ -501,18 +519,17 @@ class M4Scripts:
         Returns
         -------
         """
-        if tn is None:
-            tn = myconf.dm_defaultFlatCmd
-            print(tn)
+        if flattn is None:
+            flattn = myconf.dm_defaultFlatCmd
         flatfold = opticalib.folders.FLAT_ROOT_FOLDER
-        flatfile = os.path.join(flatfold, tn, 'flatCommand.fits')
+        flatfile = os.path.join(flatfold, flattn, 'flatCommand.fits')
         fcmd = opticalib.load_fits(flatfile)
-        self.dm.set_shape(fcmd)
+        self.dm.set_shape(fcmd, incremental=incremental)
     
-    def relax():
+    def relax(self):
         self.dm.set_shape(-self.dm._last_cmd, differential = True, incremental = 10)
     
-    def opticalFlat(nmodes, segmentId=[0,1], tn=None):
+    def opticalFlat(self,nmodes, segmentId=[0,1], tn=None):
         if tn is None:
             tn = myconf.dm_defaultIFF
         if segmentId is [0,1]:
@@ -521,13 +538,28 @@ class M4Scripts:
         f.applyFlatCommand(dm, interf, mid,modes2discard=2,nframes=4,incremental=10)
         
 
-    def acquireModalIFF(modes, segment, amp):
+    def acquireModalIFF(modes, segment, amp=None):
+        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,usr.myconf.iff_modal_ampTN,'ampVector.fits')) if (amp is None) else amp
+        tn = self.generalIffAcquisition(modes, segment, amp, npushpull)
+
         pass
 
-    def generalIffAcquisition(modes, segment, amp):
-        #tn = iff_module.iffDataAcquisition(dm, interf,np.arange(111),amplitude=amp0)
-        #return tn
-        pass
+    def generalIffAcquisition(modes, amp, npushpull = 3,segment = None, view = False, modalbase = 'modal'):
+        
+        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,usr.myconf.iff_modal_ampTN,'ampVector.fits'))
+        template = np.ones(npushpull)
+        template[1::2]=-1
+        useinterf = interf if (view == False) else None
+        if segment is None:
+            mlist = modes
+        else:
+            mlist = np.arange(modes)+self.dm.nActsPerSegment*segment
+        self.ifa._updateModalBase(modalbase)
+        print(mlist)
+        print('Interf 2 use')
+        print(useinterf)
+        #tn = opticalib.dmutils.iff_module.iffDataAcquisition(self.dm, useinterf,mlist, amplitude=ampvec, template)
+        return tn
        
     def fitZernCommand(tn, nmodes, tid, roiid=None,n2discard = 2):
     #print(tn)

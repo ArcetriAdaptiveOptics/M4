@@ -3,7 +3,8 @@ phasecam_markerconfig    =     "D:/config/20240608_negativeMarkersMask50mm.4Dini
 # phasecam_alignmentconfig = "D:/config/alignmentConf-noMask-dataFill-lowModThr.4Dini"
 phasecam_OTTalignmentconfig =   "D:/config/20251106_RMmask-Alignment.4Dini" 
 phasecam_M4alignmentconfig  =   "D:/config/20260312_203000-segm0-alignment.4Dini"
-phasecam_dmconfig        =       "D:/config/20250910_AllSegments-nospl.4Dini"
+phasecam_dmconfig        =       "D:/config/20260317_151400-2000X2000-splremoved-OPTIMIZED-minSlope3x3.4Dini"  #20250910_AllSegments-nospl.4Dini"
+phasecam_segmentconfig  =       "D:/config/20260317_151400-2000X2000-splremoved-OPTIMIZED-minSlope3x3.4Dini"
 phasecam_noiseconfig     = "D:/config/20240608_negativeMarkersMask50mm.4Dini"
 phasecam_monitorconfig   = "D:/config/20251001_monitoring.4Dini"
 phasecam_baseconfig      = "D:/config/20250909_RMAlignment.4Dini"
@@ -42,9 +43,9 @@ rmsliderout = -0.1
 
 ### Configurations for the DM
 dm_defaultFlatCmd = '20260316_204445'
-dm_defaultIFF     = '20260313_102030'
+dm_defaultIFF     = '20260318_225155' #calibrated with optimized mask #'20260313_102030'
 
 ### Configuration for IFF sampling
-iff_zonal_amp     = 200e-9
+iff_zonal_amp     = 150e-9
 iff_modal_ampTN   = '20260218_220911'
 
