@@ -38,8 +38,8 @@ import opticalib
 import os
 from m4.configuration import userconfig as myconf
 ## patch to work from MicWs
-import Microgate.utils.setupLog as setupLog
-setupLog.consoleProfile()
+#import Microgate.utils.setupLog as setupLog
+#setupLog.consoleProfile()
 
 
 # from m4 import main, noise  # main is no longer required for alignment
@@ -607,9 +607,13 @@ class RequirementScripts:
 
     def __init__(self):
         """The Constructor"""
+        from m4.analyzers import requirement_analyzer as raz
+        self.pixscaleott = 0.00076  # mm/pix in full res 4D
+        self.hf_samplerad = 0.015  # mm
+        self.rebinfactor = 4
         
 
-    def sampleSlope(self,tn):
+    def sampleSlope(self,tn, rebfact = None):
         """
         This function computes the surface slope of a frame against the slope error specification. The average of a time series measurements is computed and the slope is evaluated as the difference between the frame and its rolled one (shifted 1pix in both X and Y), normalized with the pixelscale. The result is rebinned to get rid of the pixel-by-pixel scatter
         Parameters
@@ -622,11 +626,15 @@ class RequirementScripts:
         val    : float
             The std of the surface slope error (in arcsec)
         """
+        if rebfact is None:
+            rebfact = self.rebinfactor
         img = opticalib.analyzer.average_frames(tn)
-        #dimg = img - _np.roll(img,[
-        pass
+        dimg = img - _np.roll(img,(1,1),axis=(0,1))
+        dimg = az.modeRebinner(dimg,rebfact)
+        dimg = dimg/ (pixscaleott*rebfact) * 206265 #conversion surf --> slope --> arcsec
+        return dimg
 
-    def sampleHF(self,image):
+    def sampleHF(self,image, step = 400):
         """
         This function samples a given frame according to the specification for the HF error and returns the 95-th percentile of the sample. The input frame is obtained after calibrating a M4-segment realization with the local OTT calibration
         Parameters
@@ -639,6 +647,26 @@ class RequirementScripts:
         val    : float
             The 95-th percentile of the WF sample
         """
-        pass
+        #req, list_ima, result_vect =  raz.patches_analysis(image, hf_samplerad, 1/pixscaleott, step=step, n_patches=None)
+        image = image.copy()*2
+        print('Data converted to WF (2x)')
+        _, _, resvect =  raz.patches_analysis(image, hf_samplerad, 1/pixscaleott, step=step, n_patches=None)
+        return resvect
 
+    def sampleCurf(self, img):
+        """
+        This function samples a given frame according to the specification for the curvature error and returns the curvature values of the image. The input frame is obtained after calibrating a M4-segment realization with the local OTT calibration
+        Parameters
+        ----------
+        image     :   array
+            the calibrated frame (surface error)
+
+        Returns
+        -------
+        cval    : array
+            The curvature values computed over the frame
+        """
+
+        cval = raz.patches_analysis_map(img, 0.04, 1/px_ott, cpatch = 60)
+        return cval
 
