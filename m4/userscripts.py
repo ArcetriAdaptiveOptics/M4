@@ -501,7 +501,7 @@ class M4Scripts:
         self.dm = dm
         self.ifa = opticalib.dmutils.iff_module
         from opticalib.dmutils.iff_acquisition_preparation import IFFCapturePreparation as ifa
-        ifc = self.ifa.IFFCapturePreparation(dm)
+        #self.ifc = self.ifa.IFFCapturePreparation(dm)
 
         self.flattening = None
 
@@ -532,10 +532,10 @@ class M4Scripts:
     def opticalFlat(self,nmodes, segmentId=[0,1], tn=None):
         if tn is None:
             tn = myconf.dm_defaultIFF
-        if segmentId is [0,1]:
-            mid = np.stack((np.arange(nmodes),np.arange(111,111+nmodes)),axis=0).flatten()
+        #if segmentId == [0,1]:
+        mid = np.stack((np.arange(nmodes),np.arange(111,111+nmodes)),axis=0).flatten()
         f = opticalib.dmutils.flattening.Flattening(tn)
-        f.applyFlatCommand(dm, interf, mid,modes2discard=2,nframes=4,incremental=10)
+        f.applyFlatCommand(self.dm, self.interf, mid,modes2discard=2,nframes=4,incremental=10)
         
 
     def acquireModalIFF(modes, segment, amp=None):
