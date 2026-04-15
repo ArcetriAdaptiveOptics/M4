@@ -43,7 +43,7 @@ rmsliderout = -0.1
 
 ### Configurations for the DM
 dm_defaultFlatCmd = '20260316_204445'
-dm_defaultIFF     = '20260318_225155' #calibrated with optimized mask #'20260313_102030'
+dm_defaultIFF     = '20260313_102030' #'20260318_225155' #calibrated with optimized mask #'20260313_102030'
 
 ### Configuration for IFF sampling
 iff_zonal_amp     = 150e-9
