@@ -500,8 +500,8 @@ class M4Scripts:
         self.interf = interf
         self.dm = dm
         self.ifa = opticalib.dmutils.iff_module
-        from opticalib.dmutils.iff_acquisition_preparation import IFFCapturePreparation
-        self.ifa.IFFCapturePreparation(dm)
+        from opticalib.dmutils.iff_acquisition_preparation import IFFCapturePreparation as ifa
+        ifc = self.ifa.IFFCapturePreparation(dm)
 
         self.flattening = None
 
