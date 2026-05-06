@@ -32,7 +32,7 @@ def read_positions(tn: str) -> dict[str, float]:
         A dictionary containing the positions of the OTT devices.
     """
     fold = _osu.findTracknum(tn, complete_path=True)
-    f2read = _join(fold, tn, statusfilename)
+    f2read = _join(fold,  statusfilename)
     config = _cp.ConfigParser()
     print(f" Reading {f2read}...")
     config.read(f2read)
