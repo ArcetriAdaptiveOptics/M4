@@ -36,7 +36,8 @@ Usage Example
 import numpy as np
 import opticalib
 import os
-from m4.configuration import userconfig as myconf
+from opticalib.core.read_config import load_yaml_config as lya
+#from m4.configuration import userconfig as myconf
 ## patch to work from MicWs
 #import Microgate.utils.setupLog as setupLog
 #setupLog.consoleProfile()
@@ -64,9 +65,18 @@ from opticalib import analyzer as imgaz
 from opticalib.ground import modal_decomposer as mdl
 from scripts.misc import ott_measurements as measurements
 
+configfilename = 'userconfiguration.yaml'
 
 # fn = ufp.folders
 
+def read_userconfig(masterkey,label="BASE"):
+    myconf = lya(os.path.join(opt.folders.CONFIGURATION_FOLDER,configfilename))
+    theconf = myconf[masterkey]
+    z = theconf.get(label)
+    if z == None:
+        return theconf
+    else:
+        return z
 
 class OTTScripts:
     """
@@ -95,16 +105,18 @@ class OTTScripts:
 
     """
 
-    def __init__(self, ott=None, interf=None, dm=None):
+    def __init__(self, ott=None, interf=None):
         """The Constructor"""
         print('Tell me, Master')
         self._ott    = ott
         self._interf = interf
-        self._dm     = dm
         self.meas    = measurements.Measurements(interf, ott)
         self.alignment  = alignment.OttAligner(ott, interf)
         self.collimator = opt_beam.Parabola(ott)
         self.refMirror  = opt_beam.ReferenceMirror(ott)
+        myconf4d = read_userconfig('CONFIGURATION4D')
+        myconfott= read_userconfg('OTTMECH')
+        myconfottcal = read_userconf('OTTCAL')
 
     def configureOTT4Alignment(self):
         """
@@ -115,8 +127,8 @@ class OTTScripts:
         Returns
         -------
         """
-        print("Moving Reference Mirror to " + str(myconf.rmslider4alignment))
-        self.refMirror.moveRmsTo(myconf.rmslider4alignment)
+        print("Moving Reference Mirror to " + str(myconf4d['rmslider4alignment']))
+        self.refMirror.moveRmsTo(myconf4d['rmslider4alignment'])
 
     def configureOTTrefMirrorOut(self):
         """
@@ -127,8 +139,9 @@ class OTTScripts:
         Returns
         -------
         """
-        print("Moving Reference Mirror outside the beam to" + str(myconf.rmsliderout))
-        self.refMirror.moveRmsTo(myconf.rmsliderout)
+        conf = myconfott['rmsliderout']
+        print("Moving Reference Mirror outside the beam to" + str(conf))
+        self.refMirror.moveRmsTo(conf)
 
     def configureOTT4Segment(self):
         """
@@ -139,8 +152,9 @@ class OTTScripts:
         Returns
         -------
         """
-        print("Moving Truss to " + str(myconf.parslider4segment))
-        self.collimator.moveTrussTo(myconf.parslider4segment)
+        conf = myconfott['parslider4segment']
+        print("Moving Truss to " + str(conf)
+        self.collimator.moveTrussTo(conf)
 
     def whereisRef(self):
         """
@@ -203,11 +217,12 @@ class OTTScripts:
         Returns
         -------
         """
+        conf = myconfottcal['alignmentCalibration_tn']
         cavity_or_dm = 'cavity'
         if dof is [5,6]:
             cavity_or_dm = 'dm'
         self.config4D4Alignment(cavity_or_dm)
-        self.alignment.load_calibration(myconf.alignmentCalibration_tn)
+        self.alignment.load_calibration(conf)
         doit, tnPar = self._checkAlignmInfo(move, removePar)
         if removePar == True:  # qui bisogna aggiungere il Tn dell'allineamento!!
             print("Reload fitting_surface, ToBeChecked!")
@@ -306,12 +321,13 @@ class OTTScripts:
                 Returns
                 -------
         """
+        
         self.config4D4Alignment(cavity_or_dm = 'cavity')
         doit, tnPar = self._checkAlignmInfo(1, removePar)
-        par_pist = myconf.alignCal_parPist
-        par_tip, par_tilt = myconf.alignCal_parTip, myconf.alignCal_parTilt
-        rm_tip, rm_tilt = myconf.alignCal_rmTip, myconf.alignCal_rmTilt
-        m4_tip, m4_tilt = myconf.alignCal_m4Tip * 0, myconf.alignCal_m4Tilt * 0
+        par_pist = myconfott['alignCal_parPist']
+        par_tip, par_tilt = myconfott['alignCal_parTip'], myconfott['alignCal_parTilt']
+        rm_tip, rm_tilt = myconfott['alignCal_rmTip'], myconfott['alignCal_rmTilt']
+        m4_tip, m4_tilt = myconfott['alignCal_m4Tip'] * 0, myconfott['alignCal_m4Tilt'] * 0
 
         command_amp_vector = np.array(
             [par_pist, par_tip, par_tilt, rm_tip, rm_tilt, m4_tip, m4_tilt]
@@ -321,11 +337,10 @@ class OTTScripts:
         )
         print(command_amp_vector)
         print(tnPar)
-        print("Add here the command for OTT alignment calibration == PAR + RM")
         tncal = al.calibrate_alignment(command_amp_vector, n_frames,save=True)
         return tncal
 
-    def calibrateM4Alignment(self, cmdAmp, n_frames, save=True):
+    def calibrateM4Alignment(self, n_frames, save=True):
         """
                 This function measures the alignment calibration for the OTT, as the Zernike amplitude (fotted over the RefMirror area and with the PAR as pupil, corresponding to the displacement of each relevant DoF in the OTT. In particular, the PAR dZ, rX and rY and RefMirr rX and rY are moved, while measuring tip, tilt, focus and both comaX and comaY.
                 Parameters
@@ -343,10 +358,14 @@ class OTTScripts:
         """
         self.config4D4Alignment(cavity_or_dm = 'dm')
         doit, tnPar = self._checkAlignmInfo(1, removePar)
-        par_pist = myconf.alignCal_parPist * 0
-        par_tip, par_tilt = myconf.alignCal_parTip * 0, myconf.alignCal_parTilt * 0
-        rm_tip, rm_tilt = myconf.alignCal_rmTip * 0, myconf.alignCal_rmTilt * 0
-        m4_tip, m4_tilt = myconf.alignCal_m4Tip, myconf.alignCal_m4Tilt
+
+        par_pist = myconfott['alignCal_parPist']*0
+        par_tip, par_tilt = myconfott['alignCal_parTip']*0, myconfott['alignCal_parTilt']*0
+        rm_tip, rm_tilt = myconfott['alignCal_rmTip']*0, myconfott['alignCal_rmTilt']*0
+        m4_tip, m4_tilt = myconfott['alignCal_m4Tip'] , myconfott['alignCal_m4Tilt'] 
+
+
+)
 
         command_amp_vector = np.array(
             [par_pist, par_tip, par_tilt, rm_tip, rm_tilt, m4_tip, m4_tilt]
@@ -356,9 +375,26 @@ class OTTScripts:
         )
         print(command_amp_vector)
         print(tnPar)
-        print("Add here the command for OTT alignment calibration == PAR + RM")
         tncal = al.calibrate_alignment(cmdAmp, n_frames,save=True)
         return tncal
+
+    def currentMisalignment(self, cavity_or_dm = 'cavity', nframes = 16, removePar = True):
+        '''
+        '''
+        self.config4D4Alignment(cavity_or_dm)
+        doit, tnPar = self._checkAlignmInfo(0, removePar)
+        zernres = []
+        for in range(nframes):
+            fullimg = self.interf.acquireFullFrame(nframes)
+            zernres.append(al._zern_routine(fullimg))
+        zernres = np.array(zernres)
+        zernm = np.mean(zernres,0)
+        zernerr(np.std(zernres,0))
+        print('Residual alignment (Tip, Tilt, Focus, ComaX, ComaY) & Measurement error:')
+        print(zernm)
+        print(zernerr)
+        return zernm, zernerr
+
 
     def config4D4Alignment(self, cavity_or_dm = 'cavity'):
         """
@@ -369,10 +405,11 @@ class OTTScripts:
         Returns
         -------
         """
+        
         if cavity_or_dm == 'cavity':
-            cfile = myconf.phasecam_OTTalignmentconfig
+            cfile = myconf4d['OTTalignmentconfig']
         if cavity_or_dm == 'dm':
-            cfile = myconf.phasecam_M4alignmentconfig
+            cfile = myconf4d['M4alignmentconfig']
         print("Applying 4D configuration file: " + cfile)
         self._interf.loadConfiguration(cfile)
 
@@ -387,7 +424,7 @@ class OTTScripts:
         -------
         """
         if segment is None:
-            cfile = myconf.phasecam_segmentconfig
+            cfile = myconf4d['segmentconfig']
         print("Applying 4D configuration file: " + cfile)
         self._interf.loadConfiguration(cfile)
 
@@ -401,8 +438,9 @@ class OTTScripts:
         Returns
         -------
         """
-        print("Applying 4D configuration file: " + myconf.phasecam_markerconfig)
-        self._interf.loadConfiguration(myconf.phasecam_markerconfig)
+        conf = myconf4d['markerconfig']
+        print("Applying 4D configuration file: " + conf)
+        self._interf.loadConfiguration(conf)
 
 
     def _checkAlignmInfo(self, move, removePar):
@@ -412,7 +450,7 @@ class OTTScripts:
         else:
             doit = True
         if removePar == True:
-            tnPar = myconf.remappedpar_tn
+            tnPar = myconfottcal['remappedpar_tn']
         else:
             tnPar = None
         return doit, tnPar
@@ -448,26 +486,33 @@ class MeasurementScripts:
         self._interf = interf
         self._dm     = dm
         self.meas    = measurements.Measurements(interf, ott)
-        #self.alignment  = alignment.OttAligner(ott, interf)
+        self.alignment  = alignment.OttAligner(ott, interf)
         #self.collimator = opt_beam.Parabola(ott)
         #self.refMirror  = opt_beam.ReferenceMirror(ott)
-
+        myconf4d = read_userconfig('CONFIGURATION4D')
+        myconfott= read_userconfg('OTTMECH')
+        myconfottcal = read_userconf('OTTCAL')
+        myconfmeas   = read_userconf('MEASUREMENT')
 
     def acquireNoise(self):
-        self._interf.loadConfiguration(myconf.phasecam_noiseconfig)
-        tn = self._interf.capture(myconf.noise_nframes)
+        '''
+        '''
+        self._interf.loadConfiguration(myconf4d['phasecam_noiseconfig'])
+        tn = self._interf.capture(myconfmeas['noise_nframes'])
         self._interf.produce(tn)
-        self._interf.loadConfiguration(myconf.phasecam_baseconfig)
+        self._interf.loadConfiguration(myconf4d['baseconfig'])
         dfpath = fn.OPD_IMAGES_ROOT_FOLDER + "/" + tn + "/"
         noise.convection_noise(dfpath, myconf.noise_tau_vector)
         noise.noise_vibrations(dfpath, myconf.noise.difftemplate)
         return tn
 
-    def acquireTimeAverage(self, nframes, delay=2):
+    def acquireTimeSeries(self, nframes, delay=2):
+        '''
+        '''
         tn = self.meas.opticalMonitoring(nframes, delay)
         return tn
 
-    def analyzeTimeAverage(self, tn, zern2remove=[1, 2, 3],fitmode = 'global'):
+    def analyzeTimeSeries(self, tn, zern2remove=[1, 2, 3],fitmode = 'global'):
         img = imgaz.averageFrames(tn)
         zernfit = mdl.ZernikeFitter(img)
         img = zernfit.removeZernike(img,zern2remove,fitmode)
@@ -476,6 +521,7 @@ class MeasurementScripts:
     def acquireCurrentFootprint(self):
         c0 = mrk.measureMarkerPos(None, self._interf)
         return c0
+
 
 
 class M4Scripts:
@@ -502,8 +548,15 @@ class M4Scripts:
         self.ifa = opticalib.dmutils.iff_module
         from opticalib.dmutils.iff_acquisition_preparation import IFFCapturePreparation as ifa
         #self.ifc = self.ifa.IFFCapturePreparation(dm)
-
         self.flattening = None
+        myconf4d = read_userconfig('CONFIGURATION4D')
+        myconfott= read_userconfg('OTTMECH')
+        myconfottcal = read_userconf('OTTCAL')
+        myconfmeas   = read_userconf('MEASUREMENT')
+        myconfdmconf   = read_userconf('DM_CONFIG')
+        myconfdmmeas   = read_userconf('DM_MEAS')
+
+
 
     def initReconstructor(tn):
         self.flattening = opticalib.dmutils.flattening.Flattening(tn)
@@ -520,7 +573,7 @@ class M4Scripts:
         -------
         """
         if flattn is None:
-            flattn = myconf.dm_defaultFlatCmd
+            flattn = myconfdmconf['dm_defaultFlatCmd']
         flatfold = opticalib.folders.FLAT_ROOT_FOLDER
         flatfile = os.path.join(flatfold, flattn, 'flatCommand.fits')
         fcmd = opticalib.load_fits(flatfile)
@@ -531,7 +584,7 @@ class M4Scripts:
     
     def opticalFlat(self,nmodes, segmentId=[0,1], tn=None):
         if tn is None:
-            tn = myconf.dm_defaultIFF
+            tn = myconfdmcoinf['dm_defaultIFF']
         #if segmentId == [0,1]:
         mid = np.stack((np.arange(nmodes),np.arange(111,111+nmodes)),axis=0).flatten()
         f = opticalib.dmutils.flattening.Flattening(tn)
@@ -539,26 +592,25 @@ class M4Scripts:
         
 
     def acquireModalIFF(modes, segment, amp=None):
-        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,usr.myconf.iff_modal_ampTN,'ampVector.fits')) if (amp is None) else amp
+        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,usr.myconfdmmeas['iff_modal_ampTN'],'ampVector.fits')) if (amp is None) else amp
         tn = self.generalIffAcquisition(modes, segment, amp, npushpull)
 
         pass
 
-    def generalIffAcquisition(modes, amp, npushpull = 3,segment = None, view = False, modalbase = 'modal'):
+    def generalIffAcquisition(modes, amp, modalbase,npushpull = 3, segment = None, interferometer = self.interf):
         
         ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,usr.myconf.iff_modal_ampTN,'ampVector.fits'))
         template = np.ones(npushpull)
         template[1::2]=-1
-        useinterf = interf if (view == False) else None
         if segment is None:
             mlist = modes
         else:
             mlist = np.arange(modes)+self.dm.nActsPerSegment*segment
-        self.ifa._updateModalBase(modalbase)
+        #self.ifa._updateModalBase(modalbase)
         print(mlist)
         print('Interf 2 use')
         print(useinterf)
-        #tn = opticalib.dmutils.iff_module.iffDataAcquisition(self.dm, useinterf,mlist, amplitude=ampvec, template)
+        tn = opticalib.dmutils.iff_module.iffDataAcquisition(self.dm, interferometer,mlist, amplitude, template, modalbase, shuffle)
         return tn
        
     def fitZernCommand(tn, nmodes, tid, roiid=None,n2discard = 2):
