@@ -70,7 +70,7 @@ configfilename = 'userconfiguration.yaml'
 # fn = ufp.folders
 
 def read_userconfig(masterkey,label="BASE"):
-    myconf = lya(os.path.join(opt.folders.CONFIGURATION_FOLDER,configfilename))
+    myconf = lya(os.path.join(opticalib.folders.CONFIGURATION_FOLDER,configfilename))
     theconf = myconf[masterkey]
     z = theconf.get(label)
     if z == None:

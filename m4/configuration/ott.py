@@ -189,7 +189,13 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
             interf = PhaseCam("6110")
 
         out.append(interf)
-
+    par0 = ott.parabolaSlider.getPosition()
+    rm0  = ott.referenceMirrorSlider.getPosition()
+    if par0 == 0:
+        print('Sliding Tower not homed!')
+    if rm0 == 0:
+        print('Reference Mirror carriage not homed!')
+    
     return out
 
 
