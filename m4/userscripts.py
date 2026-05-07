@@ -153,7 +153,7 @@ class OTTScripts:
         -------
         """
         conf = myconfott['parslider4segment']
-        print("Moving Truss to " + str(conf)
+        print("Moving Truss to " + str(conf))
         self.collimator.moveTrussTo(conf)
 
     def whereisRef(self):
@@ -365,7 +365,7 @@ class OTTScripts:
         m4_tip, m4_tilt = myconfott['alignCal_m4Tip'] , myconfott['alignCal_m4Tilt'] 
 
 
-)
+
 
         command_amp_vector = np.array(
             [par_pist, par_tip, par_tilt, rm_tip, rm_tilt, m4_tip, m4_tilt]
@@ -384,7 +384,7 @@ class OTTScripts:
         self.config4D4Alignment(cavity_or_dm)
         doit, tnPar = self._checkAlignmInfo(0, removePar)
         zernres = []
-        for in range(nframes):
+        for i in range(nframes):
             fullimg = self.interf.acquireFullFrame(nframes)
             zernres.append(al._zern_routine(fullimg))
         zernres = np.array(zernres)
@@ -591,15 +591,15 @@ class M4Scripts:
         f.applyFlatCommand(self.dm, self.interf, mid,modes2discard=2,nframes=4,incremental=10)
         
 
-    def acquireModalIFF(modes, segment, amp=None):
+    def acquireModalIFF(self, modes, segment, amp=None):
         ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,usr.myconfdmmeas['iff_modal_ampTN'],'ampVector.fits')) if (amp is None) else amp
         tn = self.generalIffAcquisition(modes, segment, amp, npushpull)
 
         pass
 
-    def generalIffAcquisition(modes, amp, modalbase,npushpull = 3, segment = None, interferometer = self.interf):
+    def generalIffAcquisition(self, modes, amp, modalbase,npushpull = 3, segment = None, interferometer = None):
         
-        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,usr.myconf.iff_modal_ampTN,'ampVector.fits'))
+        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,myconfdmmeas['iff_modal_ampTN'],'ampVector.fits'))
         template = np.ones(npushpull)
         template[1::2]=-1
         if segment is None:
@@ -608,8 +608,8 @@ class M4Scripts:
             mlist = np.arange(modes)+self.dm.nActsPerSegment*segment
         #self.ifa._updateModalBase(modalbase)
         print(mlist)
-        print('Interf 2 use')
-        print(useinterf)
+        print('Interf 2 use:')
+        print(interferometer)
         tn = opticalib.dmutils.iff_module.iffDataAcquisition(self.dm, interferometer,mlist, amplitude, template, modalbase, shuffle)
         return tn
        
