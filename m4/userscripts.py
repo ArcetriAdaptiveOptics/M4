@@ -39,8 +39,10 @@ import os
 from opticalib.core.read_config import load_yaml_config as lya
 #from m4.configuration import userconfig as myconf
 ## patch to work from MicWs
-#import Microgate.utils.setupLog as setupLog
-#setupLog.consoleProfile()
+wsname = os.uname()[1]
+if wsname == 'm4dp':
+    import Microgate.utils.setupLog as setupLog
+    setupLog.consoleProfile()
 
 
 # from m4 import main, noise  # main is no longer required for alignment
@@ -114,9 +116,9 @@ class OTTScripts:
         self.alignment  = alignment.OttAligner(ott, interf)
         self.collimator = opt_beam.Parabola(ott)
         self.refMirror  = opt_beam.ReferenceMirror(ott)
-        myconf4d = read_userconfig('CONFIGURATION4D')
-        myconfott= read_userconfg('OTTMECH')
-        myconfottcal = read_userconf('OTTCAL')
+        self.myconf4d     = read_userconfig('CONFIGURATION4D')
+        self.myconfott    = read_userconfig('OTTMECH')
+        self.myconfottcal = read_userconfig('OTTCAL')
 
     def configureOTT4Alignment(self):
         """
@@ -127,8 +129,8 @@ class OTTScripts:
         Returns
         -------
         """
-        print("Moving Reference Mirror to " + str(myconf4d['rmslider4alignment']))
-        self.refMirror.moveRmsTo(myconf4d['rmslider4alignment'])
+        print("Moving Reference Mirror to " + str(self.myconfott['rmslider4alignment']))
+        self.refMirror.moveRmsTo(self.myconfott['rmslider4alignment'])
 
     def configureOTTrefMirrorOut(self):
         """
@@ -139,7 +141,7 @@ class OTTScripts:
         Returns
         -------
         """
-        conf = myconfott['rmsliderout']
+        conf = self.myconfott['rmsliderout']
         print("Moving Reference Mirror outside the beam to" + str(conf))
         self.refMirror.moveRmsTo(conf)
 
@@ -152,7 +154,7 @@ class OTTScripts:
         Returns
         -------
         """
-        conf = myconfott['parslider4segment']
+        conf = self.myconfott['parslider4segment']
         print("Moving Truss to " + str(conf))
         self.collimator.moveTrussTo(conf)
 
@@ -217,7 +219,7 @@ class OTTScripts:
         Returns
         -------
         """
-        conf = myconfottcal['alignmentCalibration_tn']
+        conf = self.myconfottcal['alignmentCalibration_tn']
         cavity_or_dm = 'cavity'
         if dof is [5,6]:
             cavity_or_dm = 'dm'
@@ -324,10 +326,10 @@ class OTTScripts:
         
         self.config4D4Alignment(cavity_or_dm = 'cavity')
         doit, tnPar = self._checkAlignmInfo(1, removePar)
-        par_pist = myconfott['alignCal_parPist']
-        par_tip, par_tilt = myconfott['alignCal_parTip'], myconfott['alignCal_parTilt']
-        rm_tip, rm_tilt = myconfott['alignCal_rmTip'], myconfott['alignCal_rmTilt']
-        m4_tip, m4_tilt = myconfott['alignCal_m4Tip'] * 0, myconfott['alignCal_m4Tilt'] * 0
+        par_pist = self.myconfott['alignCal_parPist']
+        par_tip, par_tilt = self.myconfott['alignCal_parTip'], self.myconfott['alignCal_parTilt']
+        rm_tip, rm_tilt = self.myconfott['alignCal_rmTip'], self.myconfott['alignCal_rmTilt']
+        m4_tip, m4_tilt = self.myconfott['alignCal_m4Tip'] * 0, self.myconfott['alignCal_m4Tilt'] * 0
 
         command_amp_vector = np.array(
             [par_pist, par_tip, par_tilt, rm_tip, rm_tilt, m4_tip, m4_tilt]
@@ -359,13 +361,10 @@ class OTTScripts:
         self.config4D4Alignment(cavity_or_dm = 'dm')
         doit, tnPar = self._checkAlignmInfo(1, removePar)
 
-        par_pist = myconfott['alignCal_parPist']*0
-        par_tip, par_tilt = myconfott['alignCal_parTip']*0, myconfott['alignCal_parTilt']*0
-        rm_tip, rm_tilt = myconfott['alignCal_rmTip']*0, myconfott['alignCal_rmTilt']*0
-        m4_tip, m4_tilt = myconfott['alignCal_m4Tip'] , myconfott['alignCal_m4Tilt'] 
-
-
-
+        par_pist = self.myconfott['alignCal_parPist']*0
+        par_tip, par_tilt = self.myconfott['alignCal_parTip']*0, self.myconfott['alignCal_parTilt']*0
+        rm_tip, rm_tilt = self.myconfott['alignCal_rmTip']*0, self.myconfott['alignCal_rmTilt']*0
+        m4_tip, m4_tilt = self.myconfott['alignCal_m4Tip'] , self.myconfott['alignCal_m4Tilt'] 
 
         command_amp_vector = np.array(
             [par_pist, par_tip, par_tilt, rm_tip, rm_tilt, m4_tip, m4_tilt]
@@ -407,9 +406,9 @@ class OTTScripts:
         """
         
         if cavity_or_dm == 'cavity':
-            cfile = myconf4d['OTTalignmentconfig']
+            cfile = self.myconf4d['OTTalignmentconfig']
         if cavity_or_dm == 'dm':
-            cfile = myconf4d['M4alignmentconfig']
+            cfile = self.myconf4d['M4alignmentconfig']
         print("Applying 4D configuration file: " + cfile)
         self._interf.loadConfiguration(cfile)
 
@@ -424,7 +423,7 @@ class OTTScripts:
         -------
         """
         if segment is None:
-            cfile = myconf4d['segmentconfig']
+            cfile = self.myconf4d['segmentconfig']
         print("Applying 4D configuration file: " + cfile)
         self._interf.loadConfiguration(cfile)
 
@@ -438,7 +437,7 @@ class OTTScripts:
         Returns
         -------
         """
-        conf = myconf4d['markerconfig']
+        conf = self.myconf4d['markerconfig']
         print("Applying 4D configuration file: " + conf)
         self._interf.loadConfiguration(conf)
 
