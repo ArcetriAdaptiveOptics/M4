@@ -204,6 +204,19 @@ class OpcUaParameters:
     )  # tot counts is 2**24, for positive and negative range
 
 
+class EeltExapodeParameters:
+    """Default KS connection values from the EELT console settings."""
+
+    #: IP address of the KS host that publishes telemetry.
+    sub_ip: str = "192.168.125.132"
+    #: TCP port on the KS that publishes telemetry.
+    sub_port: int = 56000
+    #: Local TCP port on which M4 publishes commands for the KS.
+    pub_port: int = 57000
+    #: Filter version used by the KS multipart frames.
+    filter_version: int = 17
+
+
 class OtherParameters:
     """ """
 

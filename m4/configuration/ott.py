@@ -31,7 +31,8 @@ import os
 import playsound
 from m4.devices.dp_motors import ZmqDpMotors
 from m4.devices.parabola import OpcUaParabola
-from m4.devices.m4_exapode import OpcUaM4Exapode
+from m4.devices.eelt_exapode import M4Exapode
+from m4.configuration.ott_parameters import EeltExapodeParameters as _ExapodePar
 from m4.simulator.fake_parabola import FakeParabola
 from m4.configuration.ott_parameters import Sound
 from m4.simulator.fake_m4_exapode import FakeM4Exapode
@@ -132,8 +133,12 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
     if config["m4Exapode"] is True:
         m4 = FakeM4Exapode()
     else:
-        opcUa = OpcUaController()
-        m4 = OpcUaM4Exapode(opcUa)
+        m4 = M4Exapode(
+            sub_ip=_ExapodePar.sub_ip,
+            sub_port=_ExapodePar.sub_port,
+            pub_port=_ExapodePar.pub_port,
+            filter_version=_ExapodePar.filter_version,
+        )
 
     ##########
     # Others #
