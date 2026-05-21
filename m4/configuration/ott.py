@@ -31,7 +31,7 @@ import os
 import playsound
 from m4.devices.dp_motors import ZmqDpMotors
 from m4.devices.parabola import OpcUaParabola
-from m4.devices.eelt_exapode import M4Exapode
+from m4.devices.eelt_exapode import M4Hexapode
 from m4.configuration.ott_parameters import EeltExapodeParameters as _ExapodePar
 from m4.simulator.fake_parabola import FakeParabola
 from m4.configuration.ott_parameters import Sound
@@ -54,7 +54,7 @@ from m4.simulator.fake_reference_mirror_slider import FakeReferenceMirrorSlider
 from opticalib.core.read_config import load_yaml_config
 wsname = os.uname()[1]
 if wsname == 'm4dp':
-    import Microgate.utils.setupLog as setupLog
+    import Microgate.utils.setupLog as setupLog # type: ignore
     setupLog.consoleProfile()
  
 
@@ -133,7 +133,7 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
     if config["m4Exapode"] is True:
         m4 = FakeM4Exapode()
     else:
-        m4 = M4Exapode(
+        m4 = M4Hexapode(
             sub_ip=_ExapodePar.sub_ip,
             sub_port=_ExapodePar.sub_port,
             pub_port=_ExapodePar.pub_port,

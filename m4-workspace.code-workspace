@@ -4,9 +4,6 @@
 			"name": "M4",
 			"path": "."
 		},
-		{
-			"path": "../../Downloads/EELT-Console"
-		}
 	],
 	"settings": {
 		"python.analysis.extraPaths": [
@@ -15,5 +12,6 @@
 		"cursorpyright.analysis.extraPaths": [
 			"~/git/opticalib/"
 		],
+		"dotnet.preferCSharpExtension": true,
 	}
 }

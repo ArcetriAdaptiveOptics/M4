@@ -179,7 +179,7 @@ def _as_position(values, *, name: str) -> _np.ndarray:
     return position
 
 
-class M4Exapode:
+class M4Hexapode:
     """OTT-facing adapter for the EELT M4 hexapod."""
 
     def __init__(
@@ -236,9 +236,28 @@ class M4Exapode:
 
         return self._position.copy()
 
-    def setPosition(self, absolute_position_in_mm) -> _np.ndarray:
+    def setPosition(self, absolute_position) -> _np.ndarray:
+        """
+        Set the hexapod absolute actuators position. The command is composed as:
+        (tx, ty, tz, rx, ry, rz), where Translation is in millimeters and 
+        Rotation in arcseconds.
+        
+        Parameters
+        ----------
+        absolute_position: ArrayLike
+            The target position for the hexapod actuators, specified as a list 
+            or array of six values corresponding to (tx, ty, tz, rx, ry, rz). 
+            Translation values should be in millimeters and rotation values in 
+            arcseconds.
+        
+        Returns
+        -------
+        position: ArrayLike
+            The current position of the hexapod actuators after sending the 
+            command.
+        """
         position_mm = _as_position(
-            absolute_position_in_mm, name="absolute_position_in_mm"
+            absolute_position, name="absolute_position"
         )
         payload = _encode_packed_doubles(1, position_mm * 1e-3)
         self._send_command("ks:hp:setpoint_dof", payload)
