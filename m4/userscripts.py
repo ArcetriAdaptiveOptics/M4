@@ -115,12 +115,13 @@ class OTTScripts:
         self.meas    = measurements.Measurements(interf, ott)
         self.alignment  = alignment.OttAligner(ott, interf)
         self.collimator = opt_beam.Parabola(ott)
+        self.revolver   = opt_beam.AngleRotator(ott)
         self.refMirror  = opt_beam.ReferenceMirror(ott)
         self.myconf4d     = read_userconfig('CONFIGURATION4D')
         self.myconfott    = read_userconfig('OTTMECH')
         self.myconfottcal = read_userconfig('OTTCAL')
 
-    def configureOTT4Alignment(self):
+    def deployReferenceMirror(self):
         """
         This function moves the Reference Mirror to the defined position in the OTT to allow the optical alignment.
         Parameters
@@ -132,7 +133,7 @@ class OTTScripts:
         print("Moving Reference Mirror to " + str(self.myconfott['rmslider4alignment']))
         self.refMirror.moveRmsTo(self.myconfott['rmslider4alignment'])
 
-    def configureOTTrefMirrorOut(self):
+    def retractReferenceMirror(self):
         """
         This function moves the Reference Mirror to the defined position outside the PAR footprint when measuring M4.
         Parameters
@@ -145,7 +146,22 @@ class OTTScripts:
         print("Moving Reference Mirror outside the beam to" + str(conf))
         self.refMirror.moveRmsTo(conf)
 
-    def configureOTT4Segment(self):
+    def deployBeam4Center(self):
+        """
+        This function moves the Parabolic Mirror to the defined position in the OTT to view the M4 segment.
+        Parameters
+        ----------
+
+        Returns
+        -------
+        """
+        #conf = self.myconfott['parslider4center']
+        conf = 0
+        print("Moving Truss to " + str(conf))
+        self.collimator.moveTrussTo(conf)
+
+
+    def deployBeam4Segment(self):
         """
         This function moves the Parabolic Mirror to the defined position in the OTT to view the M4 segment.
         Parameters
@@ -157,6 +173,20 @@ class OTTScripts:
         conf = self.myconfott['parslider4segment']
         print("Moving Truss to " + str(conf))
         self.collimator.moveTrussTo(conf)
+        
+    def rotateOTT4Segment(self, segment):
+        """
+        This function moves the Rotator Parabolic Mirror to a defined position in the OTT to view a specific M4 segment.
+        Parameters
+        ----------
+
+        Returns
+        -------
+        """
+        #conf = self.myconfott['parslider4segment']
+        #print("Moving Truss to " + str(conf))
+        #self.revolver.set_position(60*segment)
+
 
     def whereisRef(self):
         """
@@ -545,15 +575,18 @@ class M4Scripts:
         self.interf = interf
         self.dm = dm
         self.ifa = opticalib.dmutils.iff_module
+        self.ifp = opticalib.dmutils.iff_processing
         from opticalib.dmutils.iff_acquisition_preparation import IFFCapturePreparation as ifa
         #self.ifc = self.ifa.IFFCapturePreparation(dm)
         self.flattening = None
         myconf4d = read_userconfig('CONFIGURATION4D')
-        myconfott= read_userconfg('OTTMECH')
-        myconfottcal = read_userconf('OTTCAL')
-        myconfmeas   = read_userconf('MEASUREMENT')
-        myconfdmconf   = read_userconf('DM_CONFIG')
-        myconfdmmeas   = read_userconf('DM_MEAS')
+        myconfott= read_userconfig('OTTMECH')
+        myconfottcal = read_userconfig('OTTCAL')
+        myconfmeas   = read_userconfig('MEASUREMENT')
+        myconfdmconf   = read_userconfig('DM_CONFIG')
+        myconfdmmeas   = read_userconfig('DM_MEAS')
+        myconfiffproc  = read_userconfig('IFF_PROCESSING')
+        self._fitting_mask = None
 
 
 
@@ -590,15 +623,35 @@ class M4Scripts:
         f.applyFlatCommand(self.dm, self.interf, mid,modes2discard=2,nframes=4,incremental=10)
         
 
-    def acquireModalIFF(self, modes, segment, amp=None):
+    def acquireModalIFF(self, modes, segment, npushpull, n_repetitions=1,amp = None, shuffle = False, view = True):
+        modalbase = 'mirror'
+        theinterf = self.interf if view == False else None
         ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,usr.myconfdmmeas['iff_modal_ampTN'],'ampVector.fits')) if (amp is None) else amp
-        tn = self.generalIffAcquisition(modes, segment, amp, npushpull)
+        tn = self.generalIffAcquisition(modes, amp, modalbase,npushpull,shuffle, n_repetitions,segment)
 
+    def acquireZonalIFF(self, modes, segment, npushpull, n_repetitions=1,amp = None, shuffle = False, view = True):
+        modalbase = 'zonal'
+        theinterf = self.interf if view == False else None
+        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,usr.myconfdmmeas['iff_zonal_ampTN'],'ampVector.fits')) if (amp is None) else amp
+        tn = self.generalIffAcquisition(modes, amp, modalbase,npushpull,shuffle, n_repetitions,segment)
+
+    def iffProcess(tn):
+        self.ifp.process(tn, save = True, rebin=myconfiffproc["rebinfactor"])
+
+    def iffSingleSegmentProcess(tnlist, remove_mean = True, remove_median = False):
+        self.ifp.process(tn, save = True, rebin=myconfiffproc["rebinfactor"])
+        tnout = []
+        for i in tnlist:
+            tnout.append(self.ifp.cubeRoiProcessing(i, activeRoiId = myconfiffproc["segmentRoiID"],fitting_mask = self._fitting_mask, tt_detrend=True, mean_subtraction=remove_mean, roinull=True, median_subtraction = remove_median))
+        tnres = self.ifp.stackCubes(tnout) if len(tnout) > 1 else tnout
+        return tnres
+
+    def iffAllSegmentProcess():
         pass
 
-    def generalIffAcquisition(self, modes, amp, modalbase,npushpull = 3, segment = None, interferometer = None):
+    def generalIffAcquisition(self, modes, amp, modalbase,npushpull, shuffle,n_repetitions, segment = None, interferometer = None):
         
-        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,myconfdmmeas['iff_modal_ampTN'],'ampVector.fits'))
+       # ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,myconfdmmeas['iff_modal_ampTN'],'ampVector.fits'))
         template = np.ones(npushpull)
         template[1::2]=-1
         if segment is None:
@@ -609,7 +662,7 @@ class M4Scripts:
         print(mlist)
         print('Interf 2 use:')
         print(interferometer)
-        tn = opticalib.dmutils.iff_module.iffDataAcquisition(self.dm, interferometer,mlist, amplitude, template, modalbase, shuffle)
+        tn = opticalib.dmutils.iff_module.iffDataAcquisition(self.dm, interferometer,mlist, amp, template, modalbase, shuffle, n_repetitions)
         return tn
        
     def fitZernCommand(tn, nmodes, tid, roiid=None,n2discard = 2):

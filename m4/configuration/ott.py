@@ -28,7 +28,10 @@ ott, dm, interf = m4.create_ott()
 """
 
 import os
-import playsound
+try:
+    import playsound
+except:
+    print("Playsound not installed, I'll be quiet...")
 from m4.devices.dp_motors import ZmqDpMotors
 from m4.devices.parabola import OpcUaParabola
 from m4.devices.eelt_exapode import M4Hexapode

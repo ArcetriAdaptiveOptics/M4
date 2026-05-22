@@ -30,7 +30,10 @@ from m4 import noise
 from m4.configuration.root import folders as fn
 from m4.configuration import userconfig as uc
 from opticalib.ground.osutils import newtn as ts
-from opticalib.ground import zernike as zern
+#from opticalib.ground import zernike as zern
+from opticalib.ground import modal_decomposer
+zern = modal_decomposer.ZernikeFitter()
+
 from opticalib.ground import osutils as osu
 from opticalib.typings import InterferometerDevice as _ID
 
