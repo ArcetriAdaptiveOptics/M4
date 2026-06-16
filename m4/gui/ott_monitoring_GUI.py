@@ -26,7 +26,8 @@ Alternatively, to run a single sequence of monitoring, the method can be launche
 import time, os, shutil, threading, numpy as np
 from matplotlib.pyplot import tight_layout
 from guietta import Gui, _, ___, III, M, G, P, execute_in_main_thread
-from m4 import noise
+from opticalib import analyzer
+#from m4 import noise
 from m4.configuration.root import folders as fn
 from m4.configuration import userconfig as uc
 from opticalib.ground.osutils import newtn as ts
@@ -64,18 +65,21 @@ class SystemMonitoring:
     >>> mm.rungui()
     """
 
-    def __init__(self, interferometer: _ID):
+    def __init__(self, interferometer: _ID, processer = None):
         """The Constructor"""
         self._llog = os.path.join(fn.LOGGING_ROOT_FOLDER, "Monitor_CompleteLog.txt")
         self._slog = os.path.join(fn.LOGGING_ROOT_FOLDER, "Monitor_ShortLog.txt")
         self.template = np.array([3, 5, 7, 9])
+        self.tau_vector = np.arange(1, 21, 2)
         self.delay = 2
         self.n_frames = 5
         self.interf = interferometer
+        self.processer = processer if processer is not None else interferometer
         self.cam_info = None
         self.freq = None  # Hz - Gets updated every measure
         self.fast_data_path = None
         self.slow_data_path = None
+        self.theTN  = None
         self.__load_monitor_config()
         self.__update_interf_settings()
 
@@ -148,10 +152,12 @@ class SystemMonitoring:
 
         @execute_in_main_thread(gui)
         def show_results():
+            """
             results_gui.res1 = f"{self.slow_results[0]*1e9:.2f}"
             results_gui.res2 = f"{self.slow_results[1]*1e9:.2f}"
-            results_gui.res3 = f"{self.fast_tt[:,1].std()*1e9:.2f}"
+            results_gui.res3 = f"{self.fast_tt[:,0].std()*1e9:.2f}"
             results_gui.res4 = f"{self.slow_tt[:,1].std()*1e9:.2f}"
+            """
             camera_gui.cam1 = f"{self.freq:.1f}"
             camera_gui.cam2 = f"{self.cam_info[0]:d}"
             camera_gui.cam3 = f"{self.cam_info[1]:d}"
@@ -203,7 +209,7 @@ class SystemMonitoring:
             ax.set_xlabel("Frames per Template")
             ax.set_ylabel("Root Mean Square [nm]")
             ax.plot(
-                self.fast_results["vn"]["ntemp"],
+                self.template,
                 self.fast_results["vn"]["rms"],
                 "-o",
                 c="black",
@@ -219,7 +225,7 @@ class SystemMonitoring:
             ax.set_xlabel("Frames per Template")
             ax.set_ylabel("Tip - Tilt [nm]")
             ax.plot(
-                self.fast_results["vn"]["ntemp"],
+                self.template,
                 self.fast_results["vn"]["tt"],
                 "-o",
                 c="black",
@@ -235,12 +241,13 @@ class SystemMonitoring:
             ax.set_xlabel("Time [s]")
             ax.set_ylabel("Root Mean Square [nm]")
             ax.plot(
-                self.fast_results["cn"]["x"],
+                self.fast_results["cn"]["timevec"]  ,
                 self.fast_results["cn"]["rms"] * 1e9,
                 "-o",
                 c="black",
                 label="Measurements",
             )
+            """
             x = self.fast_results["cn"]["x"]
             pp = self.fast_results["cn"]["pp"]
             ax.plot(
@@ -256,6 +263,7 @@ class SystemMonitoring:
             ax.legend(loc="best", fontsize="small")
             ax.set_in_layout(tight_layout)
             ax.figure.canvas.draw()
+            """
 
         def plot4(gui, *args):
             ax = gui.plot4.ax
@@ -369,19 +377,18 @@ class SystemMonitoring:
         """
         tos = 0
         numbers_array = self.template
-        tau_vector = np.arange(1, 21, 2)
-        par1 = noise.noise_vibrations(
-            self.fast_data_path, numbers_array, tidy_or_shuffle=tos, show=False
-        )
-        par2 = noise.convection_noise(
-            self.fast_data_path, tau_vector, freq=self.freq, show=False
-        )
-        keys1 = ["rms", "tt", "ntemp", "ptv"]
-        keys2 = ["rms", "tt", "nmeas", "pp", "x", "fit"]
+        tau_vector = self.tau_vector  #np.arange(1, 21, 2)
+        timevec = tau_vector / self.freq  # vector of time gaps [s]
+        par1 = analyzer.noise_pushpull(self.theTN, numbers_array,[1,2,3] )  # --> resRMS, resTT
+        par2 = analyzer.noise_strfunct(self.theTN, tau_vector )  # --> meanRMS
+        keys1 = ["rms", "tt"]         # was ["rms", "tt", "ntemp", "ptv"]
+        keys2 = ["rms","timevec"]   # timevec is needed  # was ["rms", "tt", "nmeas", "pp", "x", "fit"]
         keys3 = ["vn", "cn"]
+        #par1  = [par1,numbers_array]
+        par2  = [par2,timevec]
         res1 = dict(zip(keys1, par1))
         res2 = dict(zip(keys2, par2))
-        tt = self._abs_tilt_analysis(self.fast_data_path, key=".4D")
+        tt = self._abs_tilt_analysis(self.theTN, key=".4D") #self._abs_tilt_analysis(self.fast_data_path, key=".4D")
         self.fast_tt = np.array([x for x in reversed(tt)])
         self.fast_results = dict(zip(keys3, (res1, res2)))
 
@@ -397,10 +404,10 @@ class SystemMonitoring:
             List of standard deviations of the zernike-removed subtracted images.
         """
         gap = 2
-        fl = osu.getFileList(fold=self.slow_data_path)
+        fl = osu.getFileList(self.theTN, key=".4D") #osu.getFileList(fold=self.slow_data_path)
         nfile = len(fl)
         npoints = int(nfile / gap)
-        tt = self._abs_tilt_analysis(self.slow_data_path, key=".fits")
+        tt = self._abs_tilt_analysis(self.theTN, key=".4D") #self._abs_tilt_analysis(self.slow_data_path, key=".fits")
         slist = []
         for i in range(0, npoints):
             q0 = osu.read_phasemap(fl[i * gap])
@@ -428,12 +435,14 @@ class SystemMonitoring:
         tt : list
             List of tip-tilt coefficients for each phasemap in the input path.
         """
-        fl = osu.getFileList(fold=path, key=key)
+        fl = osu.getFileList(path, key=key)
         nf = len(fl)
         tt = np.zeros([nf, 2])
         for i in range(0, nf):
             q = osu.read_phasemap(fl[i])
-            coeff, _ = zern.zernikeFit(q, [1, 2, 3])
+            if i == 0:
+                thezern = modal_decomposer.ZernikeFitter(q) 
+            coeff, _ = thezern.fit(q, [1, 2, 3])
             tt[i, :] = coeff[1:]
         return tt
 
@@ -444,8 +453,9 @@ class SystemMonitoring:
         """
         n_frames = int(self.freq * 3)
         tn = self.interf.capture(n_frames)
-        self.interf.produce(tn)
-        self.fast_data_path = os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn)
+        self.processer.produce(tn,load_interf_config=True)
+        self.theTN = tn
+        self.fast_data_path = os.path.join(fn.OPD_IMAGES_ROOT_FOLDER, tn) 
         print("Fast acquisition completed.")
 
     def _slow_acquisition(self):
@@ -455,6 +465,7 @@ class SystemMonitoring:
         """
         n_frames = self.n_frames
         tn = ts()
+        self.theTN = tn
         self.slow_data_path = os.path.join(fn.OPD_SERIES_ROOT_FOLDER, tn)
         os.mkdir(self.slow_data_path)
         i = 0

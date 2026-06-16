@@ -519,9 +519,9 @@ class MeasurementScripts:
         #self.collimator = opt_beam.Parabola(ott)
         #self.refMirror  = opt_beam.ReferenceMirror(ott)
         myconf4d = read_userconfig('CONFIGURATION4D')
-        myconfott= read_userconfg('OTTMECH')
-        myconfottcal = read_userconf('OTTCAL')
-        myconfmeas   = read_userconf('MEASUREMENT')
+        myconfott= read_userconfig('OTTMECH')
+        myconfottcal = read_userconfig('OTTCAL')
+        myconfmeas   = read_userconfig('MEASUREMENT')
 
     def acquireNoise(self):
         '''
