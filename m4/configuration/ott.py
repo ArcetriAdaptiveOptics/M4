@@ -197,8 +197,12 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
             interf = FakeInterferometer(ott, dm)
         else:
             from opticalib import PhaseCam
-
-            interf = PhaseCam("6110")
+            
+            if wsname=='m4dp':
+                model = '6110_mic'
+            else:
+                model = '6110'
+            interf = PhaseCam(model)
 
         out.append(interf)
     par0 = ott.parabolaSlider.getPosition()
