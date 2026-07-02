@@ -49,11 +49,11 @@ from .spl_meas import SplAcquirer, SplAnalyzer
 
 
 def create_spl():
-    from opticalib.devices import AVTCamera
+    from opticalib.devices import GigaVision
     from plico_motor import motor  # type: ignore
 
     # FIXME: would be better to read this from a configuration somewhere
-    camera = AVTCamera(name="SplCam0")
+    camera = GigaVision(name="SplCam0")
     filter = motor("localhost", 7300, axis=1)
 
     return SplAcquirer(camera=camera, filter_motor=filter)
