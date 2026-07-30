@@ -62,8 +62,8 @@ class OttAligner(_al.Alignment):
 
     def correct_alignment(
         self,
-        modes2correct: _ot.ArrayLike,
-        zern2correct: _ot.ArrayLike,
+        dof_to_use: _ot.ArrayLike,
+        modes_to_correct: _ot.ArrayLike,
         applycmd: bool = False,
         n_frames: int = 15,
     ) -> str | _ot.ArrayLike:
@@ -72,9 +72,9 @@ class OttAligner(_al.Alignment):
 
         Parameters
         ----------
-        modes2correct : array-like
+        dof_to_use : array-like
             Indices of the modes to correct.
-        zern2correct : array-like
+        modes_to_correct : array-like
             Indices of the Zernike coefficients to correct.
         tn : str, optional
             Tracking number of the intMat.fits to be used
@@ -102,8 +102,8 @@ class OttAligner(_al.Alignment):
         """
         coeffs_i = self._zern_routine(self._acquire[0](nframes=1))
         f_cmd = super().correct_alignment(
-            modes2correct=modes2correct,
-            zern2correct=zern2correct,
+            dof_to_use=dof_to_use,
+            modes_to_correct=modes_to_correct,
             apply=False,
             n_frames=n_frames,
         )
@@ -113,7 +113,7 @@ class OttAligner(_al.Alignment):
             super()._apply_command(f_cmd)
             coeffs_f = self._zern_routine(self._acquire[0](nframes=n_frames))
             self._write_correction_log(
-                modes2correct, zern2correct, ntn, coeffs_i, coeffs_f
+                dof_to_use, modes_to_correct, ntn, coeffs_i, coeffs_f
             )
             dirr = _join(_fn.ALIGN_RESULTS_ROOT_FOLDER, ntn)
             if not _exists(dirr):
@@ -123,7 +123,7 @@ class OttAligner(_al.Alignment):
             return
         else:
             ntn = "Nothing to save"
-            self._write_correction_log([-1], zern2correct, ntn, coeffs_i, coeffs_i)
+            self._write_correction_log([-1], modes_to_correct, ntn, coeffs_i, coeffs_i)
         return f_cmd
 
     def _write_correction_log(
