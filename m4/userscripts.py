@@ -440,7 +440,7 @@ class OTTScripts:
         if cavity_or_dm == 'dm':
             cfile = self.myconf4d['M4alignmentconfig']
         print("Applying 4D configuration file: " + cfile)
-        self._interf.loadConfiguration(cfile)
+        self._interf.load_configuration(cfile)
 
 
     def config4D4Segment(self, segment = None):
@@ -455,7 +455,7 @@ class OTTScripts:
         if segment is None:
             cfile = self.myconf4d['segmentconfig']
         print("Applying 4D configuration file: " + cfile)
-        self._interf.loadConfiguration(cfile)
+        self._interf.load_configuration(cfile)
 
     def config4D4Markers(self):
         """
@@ -469,7 +469,7 @@ class OTTScripts:
         """
         conf = self.myconf4d['markerconfig']
         print("Applying 4D configuration file: " + conf)
-        self._interf.loadConfiguration(conf)
+        self._interf.load_configuration(conf)
 
 
     def _checkAlignmInfo(self, move, removePar):
@@ -526,10 +526,10 @@ class MeasurementScripts:
     def acquireNoise(self):
         '''
         '''
-        self._interf.loadConfiguration(myconf4d['phasecam_noiseconfig'])
+        self._interf.load_configuration(myconf4d['phasecam_noiseconfig'])
         tn = self._interf.capture(myconfmeas['noise_nframes'])
         self._interf.produce(tn)
-        self._interf.loadConfiguration(myconf4d['baseconfig'])
+        self._interf.load_configuration(myconf4d['baseconfig'])
         dfpath = fn.OPD_IMAGES_ROOT_FOLDER + "/" + tn + "/"
         noise.convection_noise(dfpath, myconf.noise_tau_vector)
         noise.noise_vibrations(dfpath, myconf.noise.difftemplate)
