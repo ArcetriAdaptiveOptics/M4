@@ -23,7 +23,7 @@ class OttAligner(_al.Alignment):
         """The Initializer"""
         super().__init__(ott, interf)
         self._parabolatn = _al._sc.fitting_surface.split("/")[-2]
-        self._txt = _al._logger.txtLogger(
+        self._txt = _al._logger.TxtLogger(
             _al._os.path.join(_fn.ALIGNMENT_ROOT_FOLDER, "AlignmentLog.txt")
         )
         self._zfitter = _zern.ZernikeFitter(self._surface)

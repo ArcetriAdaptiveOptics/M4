@@ -36,7 +36,7 @@ Usage Example
 import numpy as np
 import opticalib
 import os
-from opticalib.core.config import load_yaml_config as lya
+from opticalib.core.config import load as lya
 #from m4.configuration import userconfig as myconf
 ## patch to work from MicWs
 wsname = os.uname()[1]
@@ -60,7 +60,7 @@ from m4.devices import opt_beam
 from opticalib.dmutils import (
     iff_module as ifm,
     iff_processing as ifp,
-    iff_acquisition_preparation as ifa,
+    iff_preparation as ifa,
 )
 from opticalib.dmutils.flattening import Flattening
 from opticalib import analyzer as imgaz
