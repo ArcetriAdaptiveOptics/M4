@@ -479,7 +479,7 @@ class OTTScripts:
         else:
             doit = True
         if removePar == True:
-            tnPar = myconfottcal['remappedpar_tn']
+            tnPar = self.myconfottcal['remappedpar_tn']
         else:
             tnPar = None
         return doit, tnPar
