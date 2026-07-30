@@ -23,7 +23,7 @@ Once the ott object has been created:
 
 import numpy as np
 from m4.configuration.ott_parameters import OttParameters
-from opticalib.core.read_config import load_yaml_config as _lyc
+from opticalib.core.config import load_yaml_config as _lyc
 
 config = _lyc()["SYSTEM"]["simulated.devices"]
 

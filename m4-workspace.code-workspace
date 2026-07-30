@@ -4,6 +4,9 @@
 			"name": "M4",
 			"path": "."
 		},
+		{
+			"path": "../opticalib"
+		}
 	],
 	"settings": {
 		"python.analysis.extraPaths": [

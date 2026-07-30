@@ -54,7 +54,7 @@ from m4.devices.temperature_sensors import OpcUaTemperatureSensors
 from m4.simulator.fake_temperature_sensors import FakeTemperatureSensors
 from m4.devices.reference_mirror_slider import OpcUaReferenceMirrorSlider
 from m4.simulator.fake_reference_mirror_slider import FakeReferenceMirrorSlider
-from opticalib.core.read_config import load_yaml_config
+from opticalib.core.config import load_yaml_config
 wsname = os.uname()[1]
 if wsname == 'm4dp':
     import Microgate.utils.setupLog as setupLog # type: ignore

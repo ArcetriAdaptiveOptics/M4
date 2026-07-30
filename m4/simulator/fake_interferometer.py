@@ -8,7 +8,7 @@ Author(s)
 import time
 import logging
 import numpy as np
-from opticalib.analyzer import modeRebinner
+from opticalib.analyzer import mode_rebinner
 from m4.simulator.ott_images import OttImages
 
 
@@ -62,7 +62,7 @@ class FakeInterferometer:
         images = np.dstack(ima_list)
         ima = np.mean(images, 2)
         masked_ima = np.ma.masked_array(ima, mask=masked_ima.mask)
-        masked_ima = modeRebinner(masked_ima, rebin)
+        masked_ima = mode_rebinner(masked_ima, rebin)
         return masked_ima
 
     def getCameraSettings(self):

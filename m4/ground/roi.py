@@ -6,7 +6,7 @@ specific M4 case.
 """
 
 import numpy as _np
-from opticalib import typings as _ot
+from opticalib.core import _types as _ot
 from skimage import measure as _meas
 
 

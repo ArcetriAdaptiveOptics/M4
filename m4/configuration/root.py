@@ -2,7 +2,7 @@ from opticalib.core import root as _oroot
 from os.path import join as _join
 
 
-class Folders(_oroot._folds):
+class Folders(_oroot._Folds):
 
     def __init__(self):
         super().__init__()

@@ -2,10 +2,12 @@ import os as _os
 import numpy as _np
 from tqdm import trange
 from m4 import folders as _fn
-from opticalib import typings as _ot
+from opticalib.core import _types as _ot
 from opticalib.ground import osutils as _osu
 from photutils import centroids as _centroids
-from opticalib.devices.cameras import AVTCamera as _cam
+#from opticalib.devices.cameras import AVTCamera as _cam
+from opticalib.devices.cameras import GigaVision as _cam
+
 from opticalib.ground.logger import SystemLogger as _SL
 from opticalib.core.fitsarray import fits_array as _fits_array
 
@@ -14,7 +16,7 @@ def _get_tunable_filter():
     initiate the tunable filter with standard parameters
     """
     from plico_motor import motor # type: ignore
-    from opticalib.core.read_config import getInterfConfig
+    from opticalib.core.config import getInterfConfig
     
     ip = getInterfConfig('PhaseCam6110')['ip']
     return motor(ip, 7200, axis=0)

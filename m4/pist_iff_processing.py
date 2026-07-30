@@ -43,12 +43,12 @@ import numpy as _np
 import shutil as _sh
 import configparser as _cp
 from tqdm import tqdm as _tqdm
-from opticalib import typings as _ot
+from opticalib.core import _types as _ot
 from opticalib.core.root import _folds
 from opticalib.core import fitsarray as _fa
-from opticalib.core import read_config as _rif
+from opticalib.core import config as _rif
 from concurrent.futures import ThreadPoolExecutor as _tpe
-from opticalib.analyzer.images_processing import cubeRebinner as _cr
+from opticalib.analyzer.images_processing import cube_rebinner as _cr
 from opticalib.ground import (
     modal_decomposer as _zern, osutils as _osu, roi as _roi
 )

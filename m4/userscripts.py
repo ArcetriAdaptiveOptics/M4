@@ -36,7 +36,7 @@ Usage Example
 import numpy as np
 import opticalib
 import os
-from opticalib.core.read_config import load_yaml_config as lya
+from opticalib.core.config import load_yaml_config as lya
 #from m4.configuration import userconfig as myconf
 ## patch to work from MicWs
 wsname = os.uname()[1]
@@ -583,7 +583,7 @@ class M4Scripts:
         myconfott= read_userconfig('OTTMECH')
         myconfottcal = read_userconfig('OTTCAL')
         myconfmeas   = read_userconfig('MEASUREMENT')
-        myconfdmconf   = read_userconfig('DM_CONFIG')
+        self.myconfdmconf   = read_userconfig('DM_CONFIG')
         myconfdmmeas   = read_userconfig('DM_MEAS')
         myconfiffproc  = read_userconfig('IFF_PROCESSING')
         self._fitting_mask = None
@@ -605,7 +605,7 @@ class M4Scripts:
         -------
         """
         if flattn is None:
-            flattn = myconfdmconf['dm_defaultFlatCmd']
+            flattn = self.myconfdmconf['dm_defaultFlatCmd']
         flatfold = opticalib.folders.FLAT_ROOT_FOLDER
         flatfile = os.path.join(flatfold, flattn, 'flatCommand.fits')
         fcmd = opticalib.load_fits(flatfile)
@@ -626,13 +626,13 @@ class M4Scripts:
     def acquireModalIFF(self, modes, segment, npushpull, n_repetitions=1,amp = None, shuffle = False, view = True):
         modalbase = 'mirror'
         theinterf = self.interf if view == False else None
-        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,usr.myconfdmmeas['iff_modal_ampTN'],'ampVector.fits')) if (amp is None) else amp
+        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,self.myconfdmmeas['iff_modal_ampTN'],'ampVector.fits')) if (amp is None) else amp
         tn = self.generalIffAcquisition(modes, amp, modalbase,npushpull,shuffle, n_repetitions,segment)
 
     def acquireZonalIFF(self, modes, segment, npushpull, n_repetitions=1,amp = None, shuffle = False, view = True):
         modalbase = 'zonal'
         theinterf = self.interf if view == False else None
-        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,usr.myconfdmmeas['iff_zonal_ampTN'],'ampVector.fits')) if (amp is None) else amp
+        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,self.myconfdmmeas['iff_zonal_ampTN'],'ampVector.fits')) if (amp is None) else amp
         tn = self.generalIffAcquisition(modes, amp, modalbase,npushpull,shuffle, n_repetitions,segment)
 
     def iffProcess(tn):
@@ -734,7 +734,7 @@ class RequirementScripts:
             rebfact = self.rebinfactor
         img = opticalib.analyzer.average_frames(tn)
         dimg = img - _np.roll(img,(1,1),axis=(0,1))
-        dimg = az.modeRebinner(dimg,rebfact)
+        dimg = az.mode_rebinner(dimg,rebfact)
         dimg = dimg/ (pixscaleott*rebfact) * 206265 #conversion surf --> slope --> arcsec
         return dimg
 

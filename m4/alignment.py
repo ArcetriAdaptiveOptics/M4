@@ -1,12 +1,12 @@
 import numpy as _np
 from m4 import folders as _fn
-from opticalib import typings as _ot
-from opticalib import alignment as _al
-from opticalib.ground import modal_decomposer as _zern
-from os.path import join as _join, exists as _exists
-from opticalib.ground.osutils import newtn as _newtn
+from opticalib.core import _types as _ot
 from tabulate import tabulate as _tbt
 from m4.configuration import ott_status as _otts
+from opticalib.procedures import alignment as _al
+from os.path import join as _join, exists as _exists
+from opticalib.ground.osutils import newtn as _newtn
+from opticalib.ground import modal_decomposer as _zern
 
 
 class OttAligner(_al.Alignment):

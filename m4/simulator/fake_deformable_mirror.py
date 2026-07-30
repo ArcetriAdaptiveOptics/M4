@@ -11,7 +11,7 @@ import logging
 import numpy as np
 from m4.configuration.ott_parameters import M4Parameters
 from m4.configuration import folders as conf
-from opticalib.analyzer import modeRebinner
+from opticalib.analyzer import mode_rebinner
 from opticalib.ground.osutils import newtn as _ts, load_fits as _lf, save_fits as _sf
 
 
@@ -95,7 +95,7 @@ class FakeM4DM:
                 self.set_shape(cmd)
                 if interf is not None:
                     img = interf.acquire_phasemap()
-                    img = modeRebinner(img, rebin)
+                    img = mode_rebinner(img, rebin)
                     path = _join(datafold, f"image_{i:05d}.fits")
                     _sf(path, img)
         self.set_shape(np.zeros(self.nActs))

@@ -2,8 +2,8 @@ import os as _os
 import time as _time
 import shutil as _sh
 import numpy as _np
-from opticalib import typings as ot
-from opticalib.core import read_config as _rif
+from opticalib.core import _types as ot
+from opticalib.core import config as _rif
 from opticalib.core.root import folders as _fn
 from opticalib.ground import (
     osutils as _osu,
@@ -11,8 +11,8 @@ from opticalib.ground import (
 )
 from opticalib.ground.modal_decomposer import ZernikeFitter as _ZF
 from opticalib.dmutils import iff_processing as ifp, iff_module as ifm
-from opticalib.analyzer import cubeRebinner
-from opticalib.alignment import _sc
+from opticalib.analyzer import cube_rebinner
+from opticalib.procedures.alignment import _sc
 
 _lf = _osu.load_fits
 _sf = _osu.save_fits
