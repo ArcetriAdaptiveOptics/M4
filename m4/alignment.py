@@ -78,7 +78,7 @@ class OttAligner(_al.Alignment):
             Indices of the Zernike coefficients to correct.
         tn : str, optional
             Tracking number of the intMat.fits to be used
-        apply : bool, optional
+        applycmd : bool, optional
             If True, the correction command will be applied to the system.
             If False (default), the correction command will be returned.
         n_frames : int, optional
@@ -87,8 +87,8 @@ class OttAligner(_al.Alignment):
         Returns
         -------
         numpy.ndarray or str
-            If `apply` is False, returns the correction command as a numpy array.
-            If `apply` is True, applies the correction command and returns a string
+            If `applycmd` is False, returns the correction command as a numpy array.
+            If `applycmd` is True, applies the correction command and returns a string
             indicating that the alignment has been corrected along with the current
             positions.
 
