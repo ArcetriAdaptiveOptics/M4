@@ -596,10 +596,13 @@ class M4Scripts:
 
         self.interf = interf
         self.dm = dm
+        #temporary modifications
+        '''
         self.ifa = opticalib.dmutils.iff_module
         self.ifp = opticalib.dmutils.iff_processing
         from opticalib.dmutils.iff_acquisition_preparation import IFFCapturePreparation as ifa
         #self.ifc = self.ifa.IFFCapturePreparation(dm)
+        '''
         self.flattening = None
         myconf4d = read_userconfig('CONFIGURATION4D')
         myconfott= read_userconfig('OTTMECH')
