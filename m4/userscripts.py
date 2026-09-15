@@ -642,11 +642,11 @@ class M4Scripts:
     def opticalFlat(self,nmodes, segmentId=[0,1], tn=None):
         print('Temporary implementation for DP: nmodes are flattened on both shells')
         if tn is None:
-            tn = myconfdmconf['dm_defaultIFF']
+            tn = self.myconfdmconf['dm_defaultIFF']
         #if segmentId == [0,1]:
         mid = np.stack((np.arange(nmodes),np.arange(111,111+nmodes)),axis=0).flatten()
         f = opticalib.dmutils.flattening.Flattening(tn)
-        f.applyFlatCommand(self.dm, self.interf, mid,modes2discard=2,nframes=4,incremental=10)
+        f.apply_flat_command(self.dm, self.interf, mid,modes2discard=2,nframes=4,incremental=10)
         
 
     def acquireModalIFF(self, modes, segment, npushpull, n_repetitions=1,amp = None, shuffle = False, view = True):
