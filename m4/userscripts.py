@@ -79,6 +79,19 @@ def read_userconfig(masterkey,label="BASE"):
         return theconf
     else:
         return z
+def userconfig_info():
+    keys = ['CONFIGURATION4D','OTTMECH','OTTCAL','MEASUREMENT','DM_CONFIG','IFF_PROCESSING']
+    val = []
+    for i in keys:
+        a = read_userconfig(i)
+        val.append(a)
+        print(' *** ',i)
+        k0 = a.keys()
+        for t in k0:
+            print(t, '  --> ', a.get(t))
+            
+    
+        
 
 class OTTScripts:
     """
@@ -219,7 +232,7 @@ class OTTScripts:
         print(str(pp))
         return pp
 
-    def generalAlignment(self, zz, dof, nframes, move=0, removePar=True):
+    def generalAlignment(self, zz, dof, nframes=4, move=0, removePar=True):
         """
         This function is a general script for managing the alignment, to be used in different configurations to align different items and different Zernikes in the OTT
         Parameters
@@ -259,6 +272,8 @@ class OTTScripts:
         if removePar == True:  # qui bisogna aggiungere il Tn dell'allineamento!!
             print("Reload fitting_surface, ToBeChecked!")
         self.alignment.correct_alignment(dof, zz, move, nframes)
+        print('Check the results in:', opticalib.folders.BASE_DATA_PATH+opticalib.folders.ALIGNMENT_ROOT_FOLDER+'AlignmentLog.txt')
+
 
     def alignM4TT(self, nframes, move=0, removePar=True):
         """
@@ -414,11 +429,11 @@ class OTTScripts:
         doit, tnPar = self._checkAlignmInfo(0, removePar)
         zernres = []
         for i in range(nframes):
-            fullimg = self.interf.acquireFullFrame(nframes)
-            zernres.append(al._zern_routine(fullimg))
+            fullimg = self._interf.acquire_full_frame()
+            zernres.append(self.alignment._zern_routine(fullimg))
         zernres = np.array(zernres)
-        zernm = np.mean(zernres,0)
-        zernerr(np.std(zernres,0))
+        zernm   = np.mean(zernres,0)
+        zernerr = np.std(zernres,0)
         print('Residual alignment (Tip, Tilt, Focus, ComaX, ComaY) & Measurement error:')
         print(zernm)
         print(zernerr)
