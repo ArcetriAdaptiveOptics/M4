@@ -640,8 +640,9 @@ class M4Scripts:
         self.dm.set_shape(-self.dm._last_cmd, differential = True, incremental = 10)
     
     def opticalFlat(self,nmodes, segmentId=[0,1], tn=None):
+        print('Temporary implementation for DP: nmodes are flattened on both shells')
         if tn is None:
-            tn = myconfdmcoinf['dm_defaultIFF']
+            tn = myconfdmconf['dm_defaultIFF']
         #if segmentId == [0,1]:
         mid = np.stack((np.arange(nmodes),np.arange(111,111+nmodes)),axis=0).flatten()
         f = opticalib.dmutils.flattening.Flattening(tn)
