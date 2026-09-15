@@ -57,11 +57,18 @@ if wsname == 'm4dp':
 # from opticalib import alignment
 from m4 import alignment
 from m4.devices import opt_beam
+# temporary modification
+'''
 from opticalib.dmutils import (
     iff_module as ifm,
     iff_processing as ifp,
     iff_preparation as ifa,
 )
+'''
+from opticalib.dmutils import  iff_processing as ifp, iff_preparation as ifa
+from opticalib.procedures import iff as ifa
+
+
 from opticalib.dmutils.flattening import Flattening
 from opticalib import analyzer as imgaz
 from opticalib.ground import modal_decomposer as mdl
