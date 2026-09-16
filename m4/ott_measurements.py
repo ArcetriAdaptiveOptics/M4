@@ -6,7 +6,8 @@ import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 #from opticalib import measurements as measlib
-from opticalib.procedures import measurements as measlib
+from scripts.misc import measurements as measlib
+#from opticalib.procedures import measurements as measlib
 from opticalib.ground.osutils import load_fits, save_fits, newtn
 from opticalib.ground import modal_decomposer as zern
 import opticalib as opt
@@ -29,7 +30,7 @@ class Measurements:
         self._ott = ott
         self._interf = interf
         self.basepath = fold_name.BASE_DATA_PATH
-        self.meas = measlib.TimeSeries(interf, ott)
+        self.meas = measlib.Measurements(interf, ott)
 
     def opticalMonitoring(self, n_images, delay=0, start_delay=0, fullFrame=False, tracknum = None):
         """

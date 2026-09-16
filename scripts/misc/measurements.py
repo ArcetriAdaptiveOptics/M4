@@ -58,7 +58,7 @@ class Measurements:
         print(tt)
         if os.path.exists(savefolder) == False:
             os.mkdir(savefolder)
-        self._interf.copy4DSettings(savefolder)
+        self._interf.copy_4d_settings(savefolder)
         #shutil.copy(Interferometer.SETTINGS_CONF_FILE_M4OTT_PC, dove)
         #shutil.move(os.path.join(dove, "AppSettings.ini"), os.path.join(dove, "4DSettings.ini")
         #if self._ott is not None:
