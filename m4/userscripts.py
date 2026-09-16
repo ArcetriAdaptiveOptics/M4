@@ -72,7 +72,7 @@ from opticalib.procedures import iff as ifa
 from opticalib.dmutils.flattening import Flattening
 from opticalib import analyzer as imgaz
 from opticalib.ground import modal_decomposer as mdl
-from scripts.misc import ott_measurements as measurements
+import ott_measurements as measurements
 
 configfilename = 'userconfiguration.yaml'
 
