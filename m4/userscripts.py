@@ -37,6 +37,7 @@ import numpy as np
 import opticalib
 import os
 from opticalib.core.config import load as lya
+pval = opticalib.core.config._parse_val
 #from m4.configuration import userconfig as myconf
 ## patch to work from MicWs
 wsname = os.uname()[1]
@@ -609,8 +610,8 @@ class M4Scripts:
         myconfottcal = read_userconfig('OTTCAL')
         myconfmeas   = read_userconfig('MEASUREMENT')
         self.myconfdmconf   = read_userconfig('DM_CONFIG')
-        myconfdmmeas   = read_userconfig('DM_MEAS')
-        myconfiffproc  = read_userconfig('IFF_PROCESSING')
+        self.myconfdmmeas   = read_userconfig('DM_MEAS')
+        self.myconfiffproc  = read_userconfig('IFF_PROCESSING')
         self._fitting_mask = None
 
 
@@ -654,12 +655,18 @@ class M4Scripts:
         theinterf = self.interf if view == False else None
         ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,self.myconfdmmeas['iff_modal_ampTN'],'ampVector.fits')) if (amp is None) else amp
         tn = self.generalIffAcquisition(modes, amp, modalbase,npushpull,shuffle, n_repetitions,segment)
+        print(tn)
+        return tn
 
     def acquireZonalIFF(self, modes, segment, npushpull, n_repetitions=1,amp = None, shuffle = False, view = True):
         modalbase = 'zonal'
         theinterf = self.interf if view == False else None
-        ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,self.myconfdmmeas['iff_zonal_ampTN'],'ampVector.fits')) if (amp is None) else amp
+        ampconf = pval(self.myconfdmmeas['iff_zonal_amp'])
+        if type(ampconf) == str:
+            ampvec = opticalib.load_fits(os.path.join(opticalib.folders.IFFUNCTIONS_ROOT_FOLDER,self.myconfdmmeas['iff_zonal_amp'],'ampVector.fits'))
         tn = self.generalIffAcquisition(modes, amp, modalbase,npushpull,shuffle, n_repetitions,segment)
+        print(tn)
+        return tn
 
     def iffProcess(tn):
         self.ifp.process(tn, save = True, rebin=myconfiffproc["rebinfactor"])
@@ -683,12 +690,20 @@ class M4Scripts:
         if segment is None:
             mlist = modes
         else:
-            mlist = np.arange(modes)+self.dm.nActsPerSegment*segment
+            if hasattr(modes,"__len__"):
+                mlist = modes+self.dm.nActsPerSegment*segment
+            else:
+                mlist = np.arange(modes)+self.dm.nActsPerSegment*segment
+
         #self.ifa._updateModalBase(modalbase)
         print(mlist)
         print('Interf 2 use:')
         print(interferometer)
-        tn = opticalib.dmutils.iff_module.iffDataAcquisition(self.dm, interferometer,mlist, amp, template, modalbase, shuffle, n_repetitions)
+        nmodes = len(mlist)
+        if type(amp) == float:
+            print('Amplitude provided as a single value, reforming for alla modes')
+            amp = np.zeros(nmodes)+amp
+        tn = opticalib.dmutils.iff_module.iff_data_acquisition(self.dm, interferometer,mlist, amp, template, modalbase, shuffle, n_repetitions)
         return tn
        
     def fitZernCommand(tn, nmodes, tid, roiid=None,n2discard = 2):
