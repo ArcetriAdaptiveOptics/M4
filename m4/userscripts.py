@@ -619,6 +619,16 @@ class M4Scripts:
     def initReconstructor(tn):
         self.flattening = opticalib.dmutils.flattening.Flattening(tn)
 
+    def readBrickTemperature(self):
+        tt = []
+        for idx, subSys in enumerate(self.dm._aoClient.aoSystem.aoSubSystem):
+            tmp = subSys.getStatus()
+            print('Sys%d' % idx)
+            for nodeIdx, st in enumerate(tmp):
+                #print('%2d'% nodeIdx, tmp[nodeIdx].pic.pbData.proc.finTemp)
+                tt.append(tmp[nodeIdx].pic.pbData.proc.finTemp)
+        return np.array(tt)
+
     def loadFlatCommand(self,flattn=None, incremental=10):
         """
         The function loads the actuator positions corresponding to a save flattening vector and applies the command to the DM after checking the bias vectors.
