@@ -80,6 +80,14 @@ configfilename = 'userconfiguration.yaml'
 
 # fn = ufp.folders
 
+def saveOTTStatus(self, basep, tn, theott, save_temperatures = False):
+    thefold = os.path.join(basep,tn)
+    print('Saving the OTT status in: '+ thefold)
+    ottstat.save_positions(thefold, theott)
+    is save_temperatures == True:
+        ottstat.save_temperatures(thefold, theott)
+
+
 def read_userconfig(masterkey,label="BASE"):
     myconf = lya(os.path.join(opticalib.folders.CONFIGURATION_FOLDER,configfilename))
     theconf = myconf[masterkey]
@@ -553,7 +561,7 @@ class MeasurementScripts:
         self._interf.load_configuration(myconf4d['phasecam_noiseconfig'])
         tn = self._interf.capture(myconfmeas['noise_nframes'])
         thefold = -join(opticalib.folders.OPD_IMAGES_ROOT_FOLDER,tn)
-        saveOTTStatus(opticalib.folders.OPD_IMAGES_ROOT_FOLDER,tn,save_temperatures=True)
+        saveOTTStatus(opticalib.folders.OPD_IMAGES_ROOT_FOLDER,tn, self._ott, save_temperatures=True)
 
         if process == True:
             self._interf.produce(tn)
@@ -574,7 +582,7 @@ class MeasurementScripts:
         '''
         '''
         tn = self.meas.opticalMonitoring(nframes, delay)
-        saveOTTStatus(opticalib.folders.OPD_SERIES_ROOT_FOLDER,tn)
+        saveOTTStatus(opticalib.folders.OPD_SERIES_ROOT_FOLDER,tn, self._ott)
         return tn
 
     def analyzeTimeSeries(self, tn, zern2remove=[1, 2, 3],fitmode = 'global'):
@@ -610,12 +618,13 @@ class M4Scripts:
 
     """
 
-    def __init__(self, dm=None, interf=None):
+    def __init__(self, ott, dm=None, interf=None):
         """The Constructor"""
         #       print('Tell me, Master')
 
         self.interf = interf
         self.dm = dm
+        self.ott = ott
         #temporary modifications
         '''
         self.ifa = opticalib.dmutils.iff_module
@@ -638,7 +647,8 @@ class M4Scripts:
     def initReconstructor(tn):
         self.flattening = opticalib.dmutils.flattening.Flattening(tn)
 
-    def readBrickTemperature(self):
+
+    def readBrickTemperature(self, filepath = None):
         tt = []
         for idx, subSys in enumerate(self.dm._aoClient.aoSystem.aoSubSystem):
             tmp = subSys.getStatus()
@@ -646,7 +656,10 @@ class M4Scripts:
             for nodeIdx, st in enumerate(tmp):
                 #print('%2d'% nodeIdx, tmp[nodeIdx].pic.pbData.proc.finTemp)
                 tt.append(tmp[nodeIdx].pic.pbData.proc.finTemp)
-        return np.array(tt)
+        tt = np.array(tt)
+        if filepath is not None:
+            opticalib.save_fits(os.path.join(filepath,'brickTemperatures.fits'),tt)
+        return tt
 
     def loadFlatCommand(self,flattn=None, incremental=10):
         """
@@ -676,7 +689,9 @@ class M4Scripts:
         #if segmentId == [0,1]:
         mid = np.stack((np.arange(nmodes),np.arange(111,111+nmodes)),axis=0).flatten()
         f = opticalib.dmutils.flattening.Flattening(tn)
-        f.apply_flat_command(self.dm, self.interf, mid,modes2discard=2,nframes=4,incremental=10)
+        tnres = f.apply_flat_command(self.dm, self.interf, mid,modes2discard=2,nframes=4,incremental=10)
+        tt = readBrickTemperature(os.path.join(opticalib.folders.FLAT_ROOT_FOLDER,tnres))
+         saveOTTStatus(opticalib.folders.FLAT_ROOT_FOLDER, tnres, ott, save_temperatures = True)
         
 
     def acquireModalIFF(self, modes, segment, npushpull, n_repetitions=1,amp = None, shuffle = False, view = True):
