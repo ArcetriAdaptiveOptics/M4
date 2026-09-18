@@ -80,11 +80,11 @@ configfilename = 'userconfiguration.yaml'
 
 # fn = ufp.folders
 
-def saveOTTStatus(self, basep, tn, theott, save_temperatures = False):
+def saveOTTStatus(basep, tn, theott, save_temperatures = False):
     thefold = os.path.join(basep,tn)
     print('Saving the OTT status in: '+ thefold)
     ottstat.save_positions(thefold, theott)
-    is save_temperatures == True:
+    if save_temperatures == True:
         ottstat.save_temperatures(thefold, theott)
 
 
@@ -550,22 +550,22 @@ class MeasurementScripts:
         self.alignment  = alignment.OttAligner(ott, interf)
         #self.collimator = opt_beam.Parabola(ott)
         #self.refMirror  = opt_beam.ReferenceMirror(ott)
-        myconf4d = read_userconfig('CONFIGURATION4D')
-        myconfott= read_userconfig('OTTMECH')
-        myconfottcal = read_userconfig('OTTCAL')
-        myconfmeas   = read_userconfig('MEASUREMENT')
+        self.myconf4d = read_userconfig('CONFIGURATION4D')
+        self.myconfott= read_userconfig('OTTMECH')
+        self.myconfottcal = read_userconfig('OTTCAL')
+        self.myconfmeas   = read_userconfig('MEASUREMENT')
 
     def acquireNoise(self,process = False):
         '''
         '''
-        self._interf.load_configuration(myconf4d['phasecam_noiseconfig'])
-        tn = self._interf.capture(myconfmeas['noise_nframes'])
-        thefold = -join(opticalib.folders.OPD_IMAGES_ROOT_FOLDER,tn)
-        saveOTTStatus(opticalib.folders.OPD_IMAGES_ROOT_FOLDER,tn, self._ott, save_temperatures=True)
+        self._interf.load_configuration(self.myconf4d['noiseconfig'])
+        tn = self._interf.capture(self.myconfmeas['noise_nframes'])
+        thefold = os.path.join(opticalib.folders.OPD_IMAGES_ROOT_FOLDER,tn)
+        #saveOTTStatus(opticalib.folders.OPD_IMAGES_ROOT_FOLDER,tn, self._ott, save_temperatures=True)
 
         if process == True:
             self._interf.produce(tn)
-            self._interf.load_configuration(myconf4d['baseconfig'])
+            self._interf.load_configuration(self.myconf4d['baseconfig'])
             analyzeNoise(tn)
             #dfpath = fn.OPD_IMAGES_ROOT_FOLDER + "/" + tn + "/"
             #noise.convection_noise(dfpath, myconf.noise_tau_vector)
@@ -574,8 +574,8 @@ class MeasurementScripts:
 
     def analyzeNoise(tn):
         dfpath = fn.OPD_IMAGES_ROOT_FOLDER + "/" + tn + "/"
-        noise.convection_noise(dfpath, myconf.noise_tau_vector)
-        noise.noise_vibrations(dfpath, myconf.noise.difftemplate)
+        noise.convection_noise(dfpath, self.myconf.noise_tau_vector)
+        noise.noise_vibrations(dfpath, self.myconf.noise.difftemplate)
 
 
     def acquireTimeSeries(self, nframes, delay=2):
@@ -594,13 +594,6 @@ class MeasurementScripts:
     def acquireCurrentFootprint(self):
         c0 = mrk.measureMarkerPos(None, self._interf)
         return c0
-
-    def saveOTTStatus(self, basep, tn, save_temperatures = False):
-        thefold = os.path.join(basep,tn)
-        print('Saving the OTT status in: '+ thefold)
-        ottstat.save_positions(thefold, self._ott)
-        is save_temperatures == True:
-            ottstat.save_temperatures(thefold, self._ott)
 
 
 class M4Scripts:
@@ -682,16 +675,16 @@ class M4Scripts:
     def relax(self):
         self.dm.set_shape(-self.dm._last_cmd, differential = True, incremental = 10)
     
-    def opticalFlat(self,nmodes, segmentId=[0,1], tn=None):
+    def opticalFlat(self,nmodes, segmentId=[0,1], tn=None, modes2discard=2,nframes=4):
         print('Temporary implementation for DP: nmodes are flattened on both shells')
         if tn is None:
             tn = self.myconfdmconf['dm_defaultIFF']
         #if segmentId == [0,1]:
         mid = np.stack((np.arange(nmodes),np.arange(111,111+nmodes)),axis=0).flatten()
         f = opticalib.dmutils.flattening.Flattening(tn)
-        tnres = f.apply_flat_command(self.dm, self.interf, mid,modes2discard=2,nframes=4,incremental=10)
-        tt = readBrickTemperature(os.path.join(opticalib.folders.FLAT_ROOT_FOLDER,tnres))
-         saveOTTStatus(opticalib.folders.FLAT_ROOT_FOLDER, tnres, ott, save_temperatures = True)
+        tnres = f.apply_flat_command(self.dm, self.interf, mid,modes2discard,nframes=nframes,incremental=10)
+        tt = self.readBrickTemperature(os.path.join(opticalib.folders.FLAT_ROOT_FOLDER,tnres))
+        saveOTTStatus(opticalib.folders.FLAT_ROOT_FOLDER, tnres, self.ott, save_temperatures = True)
         
 
     def acquireModalIFF(self, modes, segment, npushpull, n_repetitions=1,amp = None, shuffle = False, view = True):
