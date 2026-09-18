@@ -58,6 +58,7 @@ if wsname == 'm4dp':
 # from opticalib import alignment
 from m4 import alignment
 from m4.devices import opt_beam
+from m4.configuration import ott_status as ottstat
 # temporary modification
 '''
 from opticalib.dmutils import (
@@ -546,22 +547,34 @@ class MeasurementScripts:
         myconfottcal = read_userconfig('OTTCAL')
         myconfmeas   = read_userconfig('MEASUREMENT')
 
-    def acquireNoise(self):
+    def acquireNoise(self,process = False):
         '''
         '''
         self._interf.load_configuration(myconf4d['phasecam_noiseconfig'])
         tn = self._interf.capture(myconfmeas['noise_nframes'])
-        self._interf.produce(tn)
-        self._interf.load_configuration(myconf4d['baseconfig'])
+        thefold = -join(opticalib.folders.OPD_IMAGES_ROOT_FOLDER,tn)
+        saveOTTStatus(opticalib.folders.OPD_IMAGES_ROOT_FOLDER,tn,save_temperatures=True)
+
+        if process == True:
+            self._interf.produce(tn)
+            self._interf.load_configuration(myconf4d['baseconfig'])
+            analyzeNoise(tn)
+            #dfpath = fn.OPD_IMAGES_ROOT_FOLDER + "/" + tn + "/"
+            #noise.convection_noise(dfpath, myconf.noise_tau_vector)
+            #noise.noise_vibrations(dfpath, myconf.noise.difftemplate)
+        return tn
+
+    def analyzeNoise(tn):
         dfpath = fn.OPD_IMAGES_ROOT_FOLDER + "/" + tn + "/"
         noise.convection_noise(dfpath, myconf.noise_tau_vector)
         noise.noise_vibrations(dfpath, myconf.noise.difftemplate)
-        return tn
+
 
     def acquireTimeSeries(self, nframes, delay=2):
         '''
         '''
         tn = self.meas.opticalMonitoring(nframes, delay)
+        saveOTTStatus(opticalib.folders.OPD_SERIES_ROOT_FOLDER,tn)
         return tn
 
     def analyzeTimeSeries(self, tn, zern2remove=[1, 2, 3],fitmode = 'global'):
@@ -574,6 +587,12 @@ class MeasurementScripts:
         c0 = mrk.measureMarkerPos(None, self._interf)
         return c0
 
+    def saveOTTStatus(self, basep, tn, save_temperatures = False):
+        thefold = os.path.join(basep,tn)
+        print('Saving the OTT status in: '+ thefold)
+        ottstat.save_positions(thefold, self._ott)
+        is save_temperatures == True:
+            ottstat.save_temperatures(thefold, self._ott)
 
 
 class M4Scripts:
