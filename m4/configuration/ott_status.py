@@ -129,6 +129,21 @@ def save_positions(basepath, ott):
     f.close()
     return f"Status saved in {fname}"
 
+def save_temperatures(basepath,ott):
+    fitsfilename = _join(basepath,'temperatures.fits')
+    temper = ott.temperature.getTemperature()
+    _osu.save_fits(fitsfilename, temper)
+    txtfilename = _join(basepath,'temperatures.txt')
+    f = open(txtfilename, "w")
+    f.write(  "OTT Temperatures        = "
+            + _np.array2string(
+                temper, separator=",", formatter={"float_kind": lambda x: "%.2f" % x}
+            )
+            + "\n"
+        )
+    f.close()
+
+
 
 def go_to_geometry(tn, ott):
     """
