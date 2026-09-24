@@ -473,3 +473,73 @@ class AngleRotator:
         new_pos = old_pos + rel_deg
         self.setPosition(new_pos)
         return self.getPosition()
+
+class Hexapode:
+    
+    def __init__(self, ott: object):
+        """The Constructor"""
+        self._hexapode = ott.m4hexapode
+        self._rotator = ott.angleRotator
+        self._pos = ott.m4hexapode.getPosition()
+        self.angle_offset = OttParameters.ANGLE_OFFSET
+
+        if "m4hexapode" in config.keys():
+            self._config = config["m4hexapode"]
+        else:
+            raise KeyError("Parameter not found")
+    
+    def _rotation_matrix(self) -> np.ndarray:
+        """
+        Returns the rotation matrix of the hexapode based on its current position.
+
+        Returns
+        -------
+        rotation_matrix : np.ndarray
+            3x3 rotation matrix representing the orientation of the hexapode.
+        """
+        rotated_angle = self._rotator.getPosition()
+        angle = np.deg2rad(rotated_angle + self.angle_offset)
+        # Compute the rotation matrix based on the rotated angle
+
+        rotation_matrix = np.eye(3)
+        rotation_matrix[:2, :2] = np.array([
+            [np.cos(angle), -np.sin(angle)],
+            [np.sin(angle),  np.cos(angle)],
+        ])
+        return rotation_matrix
+    
+    def getPosition(self) -> float:
+        """
+        Returns the current position of the hexapode in degrees.
+
+        Returns
+        -------
+        current_pos : float
+            Current position of the hexapode, in degrees.
+        """
+        current_pos = self._hexapode.getPosition()
+        # current_pos[3:] @= self._rotation_matrix().T
+        return current_pos
+
+    def setTipTilt(self, tt: list[float], differential: bool = True) -> None:
+        """
+        Sets the tip-tilt angles of the hexapode.
+
+        Parameters
+        ----------
+        tt : list of float
+            Tip-tilt angles to set for the hexapode, in ``arcseconds``.
+        differential : bool, optional
+            If True, the tip-tilt angles are applied differentially, by default True.
+        """
+        tt = np.array(tt) / 3600  # Convert arcseconds to degrees
+        if not isinstance(tt, (list, np.ndarray)) or len(tt) != 2:
+            raise ValueError("Tip-tilt angles must be a list or array of two elements.")
+
+        fullcmd = self.getPosition() # or the hexapode one, depends...
+        if not differential:
+            fullcmd[3:5] = np.rad2deg(np.deg2rad(tt) @ self._rotation_matrix()[:2,:2].T)
+        else:
+            fullcmd[3:5] += np.rad2deg(np.deg2rad(tt) @ self._rotation_matrix()[:2,:2].T)
+
+        self._hexapode.setPosition(fullcmd)

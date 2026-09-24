@@ -13,7 +13,7 @@ try:
         "interferometer",
         "accelerometers",
         "angleRotator",
-        "m4Exapode",
+        "m4hexapode",
         "dp",
         "parSlider",
         "par",
@@ -28,7 +28,7 @@ except KeyError:
     config["SYSTEM"]["simulated.devices"]["interferometer"] = True
     config["SYSTEM"]["simulated.devices"]["accelerometers"] = True
     config["SYSTEM"]["simulated.devices"]["angleRotator"] = True
-    config["SYSTEM"]["simulated.devices"]["m4Exapode"] = True
+    config["SYSTEM"]["simulated.devices"]["m4hexapode"] = True
     config["SYSTEM"]["simulated.devices"]["dp"] = True
     config["SYSTEM"]["simulated.devices"]["parSlider"] = True
     config["SYSTEM"]["simulated.devices"]["par"] = True
