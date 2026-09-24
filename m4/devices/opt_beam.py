@@ -518,7 +518,7 @@ class Hexapode:
             Current position of the hexapode, in degrees.
         """
         current_pos = self._hexapode.getPosition()
-        # current_pos[3:] @= self._rotation_matrix().T
+        # current_pos[3:] @= self._rotation_matrix().T ?
         return current_pos
 
     def setTipTilt(self, tt: list[float], differential: bool = True) -> None:
@@ -543,3 +543,4 @@ class Hexapode:
             fullcmd[3:5] += np.rad2deg(np.deg2rad(tt) @ self._rotation_matrix()[:2,:2].T)
 
         self._hexapode.setPosition(fullcmd)
+        print(self.getPosition(), f"(Non-Rotated: {self._hexapode.getPosition()})") # ?
