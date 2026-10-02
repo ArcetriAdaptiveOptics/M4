@@ -176,7 +176,6 @@ class OTTScripts:
         self.myconf4d     = read_userconfig('CONFIGURATION4D')
         self.myconfott    = read_userconfig('OTTMECH')
         self.myconfottcal = read_userconfig('OTTCAL')
-        self.parabolamap  = opticalib.load_fits(os.path.join(opticalib.folders.OPT_DATA_ROOT_FOLDER,'ParabolaRemapped',self.myconfottcal['remappedpar_tn'],'par_remapped.fits'))
 
     def deployReferenceMirror(self):
         """
