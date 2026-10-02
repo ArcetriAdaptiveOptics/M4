@@ -107,8 +107,34 @@ def userconfig_info():
         for t in k0:
             print(t, '  --> ', a.get(t))
             
-    
-        
+   
+def into_full_frame(img, offs):
+    off = offs.copy()
+    off = np.flip(off)
+    nfullpix = np.array([2048, 2048])
+    fullimg = np.full(nfullpix, np.nan)  # was   _np.zeros(nfullpix)
+    fullmask = np.ones(nfullpix)
+    offx = off[0]
+    offy = off[1]
+    sx = np.shape(img)[0]  # croppar[2]
+    sy = np.shape(img)[1]  # croppar[3]
+    fullimg[offx : offx + sx, offy : offy + sy] = img.data
+    fullmask[offx : offx + sx, offy : offy + sy] = img.mask
+    fullimg = np.ma.masked_array(fullimg, fullmask)
+    return fullimg
+
+def get_parabola_calibration():
+    myconfottcal = read_userconfig('OTTCAL')
+    parabolamap  = opticalib.load_fits(os.path.join(opticalib.folders.OPT_DATA_ROOT_FOLDER,'ParabolaRemapped',myconfottcal['remappedpar_tn'],'par_remapped.fits'))
+    print('Surface map is SFE, single pass')
+    print('Calibration and processing Tracknum is:',myconfottcal['remappedpar_tn'])
+    return parabolamap
+
+def fit_ott_zernike(img, zlist):
+    parmap = get_parabola_calibration()
+    zfitg = mdl.ZernikeFitter(parmap)
+    cc, _ = zfitg.fit(img, zlist)
+    return cc
 
 class OTTScripts:
     """
@@ -150,6 +176,7 @@ class OTTScripts:
         self.myconf4d     = read_userconfig('CONFIGURATION4D')
         self.myconfott    = read_userconfig('OTTMECH')
         self.myconfottcal = read_userconfig('OTTCAL')
+        self.parabolamap  = opticalib.load_fits(os.path.join(opticalib.folders.OPT_DATA_ROOT_FOLDER,'ParabolaRemapped',self.myconfottcal['remappedpar_tn'],'par_remapped.fits'))
 
     def deployReferenceMirror(self):
         """
