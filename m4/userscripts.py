@@ -70,7 +70,8 @@ from opticalib.dmutils import (
 from opticalib.dmutils import  iff_processing as ifp, iff_preparation as ifa
 from opticalib.procedures import iff as ifa
 
-
+import configparser as cp
+getconfig = cp.ConfigParser()
 from opticalib.dmutils.flattening import Flattening
 from opticalib import analyzer as imgaz
 from opticalib.ground import modal_decomposer as mdl
@@ -96,6 +97,7 @@ def read_userconfig(masterkey,label="BASE"):
         return theconf
     else:
         return z
+
 def userconfig_info():
     keys = ['CONFIGURATION4D','OTTMECH','OTTCAL','MEASUREMENT','DM_CONFIG','IFF_PROCESSING']
     val = []
@@ -106,6 +108,15 @@ def userconfig_info():
         k0 = a.keys()
         for t in k0:
             print(t, '  --> ', a.get(t))
+
+def get_4Doffset(tn):
+    camsett =  opticalib.get_file_list(tn,key = 'Setting')
+    #if len(camsett) == 0:
+        #camsett =  opt.get_file_list(tnlist[i],key = '4DSett')
+    getconfig.read(camsett)
+    offx = int(float(getconfig['ACA2440']['OffsetX']))
+    offy = int(float(getconfig['ACA2440']['OffsetY']))
+    return [offx, offy]
             
    
 def into_full_frame(img, offs):
