@@ -134,11 +134,12 @@ def into_full_frame(img, offs):
     fullimg = np.ma.masked_array(fullimg, fullmask)
     return fullimg
 
-def get_parabola_calibration():
+def get_parabola_calibration(partn = None):
     myconfottcal = read_userconfig('OTTCAL')
-    parabolamap  = opticalib.load_fits(os.path.join(opticalib.folders.OPT_DATA_ROOT_FOLDER,'ParabolaRemapped',myconfottcal['remappedpar_tn'],'par_remapped.fits'))
+    the_partn = myconfottcal['remappedpar_tn'] if partn is None else partn
+    parabolamap  = opticalib.load_fits(os.path.join(opticalib.folders.OPT_DATA_ROOT_FOLDER,'ParabolaRemapped',the_partn,'par_remapped.fits'))
     print('Surface map is SFE, single pass')
-    print('Calibration and processing Tracknum is:',myconfottcal['remappedpar_tn'])
+    print('Calibration and processing Tracknum is: ',the_partn)
     return parabolamap
 
 def fit_ott_zernike(img, zlist):
