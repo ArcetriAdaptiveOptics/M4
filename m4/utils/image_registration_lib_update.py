@@ -12,29 +12,38 @@ from opticalib.ground import modal_decomposer as md
 # from opticalib.ground.osutils import newtn
 from opticalib.ground import osutils as osu # from m4.utils import osutils as osu
 
-from m4.configuration import folders as foldname
+#from m4.configuration import folders as foldname  modRB 20261008 replaced with opt.folders
+foldname = opticalib.folders 
 from m4.ground import read_ottcalib_conf as roc
 import m4.utils.parabola_footprint_registration as pr
 from m4.utils.parabola_identification import ParabolaActivities
-
+from m4 import userscripts as usr  #temporary, we need intoFullFrame
 zern = md.ZernikeFitter() # this is a guess, MM260121
 
 pa = ParabolaActivities()
 pfr = pr.ParabolaFootprintRegistration()
 OPDSERIES = foldname.OPD_SERIES_ROOT_FOLDER
 
+zern2remove_after = [1,2,3,4]
+marksizecgh = 24
+marksizeott = 28
 
 def init_data(tnconf):
     # (cgh_tn_marker,ott_tn_marker,mark_cgh_list,mark_ott_list,cgh_tn_img, ott_tn_img):
+    #(        cgh_tn_marker,        ott_tn_marker,        mark_cgh_list,        mark_ott_list,        cgh_tn_img,        ott_tn_img,    ) = read_init_data(tnconf)
     (
         cgh_tn_marker,
-        ott_tn_marker,
-        mark_cgh_list,
-        mark_ott_list,
         cgh_tn_img,
+        tnpar,
+        mark_cgh_list,
+        f0,
+        f1, 
+        ott_tn_marker,
         ott_tn_img,
+        mark_ott_list,
+        px_ott,
     ) = read_init_data(tnconf)
-    cghf = marker_data(cgh_tn_marker, mark_cgh_list, 24, flip=True)
+    cghf = marker_data(cgh_tn_marker, mark_cgh_list, marksizecgh, flip=True)
     # here modified
     ntn = len(ott_tn_marker)
     if ntn > 1:
@@ -47,46 +56,39 @@ def init_data(tnconf):
         pos = 0
         for i in np.arange(ntn):
             ottf[:, pos : pos + nlen[i]] = marker_data(
-                ott_tn_marker[i], mark_ott_list[i], 28, flip=False
+                ott_tn_marker[i], mark_ott_list[i], marksizeott, flip=False
             )
             pos = pos + nlen[i]
     else:
-        ottf = marker_data(ott_tn_marker[0], mark_ott_list, 28, flip=False)
-    """    
-    if ntn < 15:
-        print('Multi Tracknum')
-        nlen=[]
-        for i in mark_ott_list:
-            nlen.append(len(i))
-        print('N tracknum'+str(ntn))
-        ottf = np.zeros([2,np.sum(nlen)])
-        pos = 0
-        for i in np.arange(ntn):
-            ottf[:,pos:pos+nlen[i]] = marker_data(ott_tn_marker[i],mark_ott_list[i], 28,flip=False)
-            pos = pos+nlen[i]
-
-    else:   
-        ottf = marker_data(ott_tn_marker,mark_ott_list, 28,flip=False)
-    """
-    # end of modif, keep the last line, unindented
+        ottf = marker_data(ott_tn_marker[0], mark_ott_list, marksizeott, flip=False)
     cgh_image = image_data(cgh_tn_img, flip=True)
     ott_image = image_data(ott_tn_img, flip=False)
-    return cgh_image, ott_image, cghf, ottf
+    filtering_info = [f0, f1, px_ott]
+    return cgh_image, ott_image, cghf, ottf, filtering_info
 
 
-def register_par_only(tnconf, show=False, forder=10):
-    # cgh_tn_marker,ott_tn_marker,mark_cgh_list,mark_ott_list,cgh_tn_img, ott_tn_img, show=False):
-    cgh_image, ott_image, cghf, ottf = init_data(tnconf)
+def register_par_only(tnconf, show=False, forder=10, dosave = False):
+    cgh_image, ott_image, cghf, ottf,filtinfo = init_data(tnconf)
     if show is not False:
         view_markers(cghf, ottf)
     cgh_tra = par_remap_only(cgh_image,  cghf, ottf, forder=forder)
     cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
-    cgh_tra = zern.removeZernike(cgh_tra, [1, 2, 3, 4])
-    #ott_image = zern.removeZernike(ott_image, [1, 2, 3, 4])
-    # tn = save_registration(cgh_tra,cgh_tn_img,cgh_tn_marker,ott_tn_marker)
-    tn = save_registration(cgh_tra, tnconf)
+    cgh_tra = zern.remove_zernike(cgh_tra, zern2remove_after)
+    #par_filtered = az.comp_filtered_image(par_remapped,  d=filtinfo[2], verbose=True, disp=False, freq2filter=filtinfo[0:2])
+
+    tn = 'not saved'
+    if dosave is True:
+        tn = save_registration(cgh_tra, tnconf)
     print('Saved a new registration in '+tn)
     return cgh_tra
+
+def par_remap_only(cgh_image, cghf, ottf, forder=10):
+    _, _, cgh_tra, _ = pfr.image_transformation(
+        cgh_image, cgh_image * 0, cghf, ottf, forder=forder
+    )
+    cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
+    return cgh_tra
+
 
 def marker_data(tn_marker, mark_list, diam, flip=False):
     """
@@ -98,20 +100,31 @@ def marker_data(tn_marker, mark_list, diam, flip=False):
     """for ott markers: marker_data(tn,mark_list, 28,flip=False)
     for cgh markers: marker_data(tn,mark_list, 24,flip=True)
     if tn_marker is a tnvector, mark list shall be a 2D vector')"""
-    #fl0 = osu.getFileList(fold=os.path.join(OPDSERIES,tn_marker))
-    fl0 = osu.getFileList(tn_marker, key='20')
+    fl0 = osu.get_file_list(tn_marker, key='20')
     img0 = opticalib.read_phasemap(fl0[0])  #th.frame(0, fl0)
     if flip is True:
         img0 = np.fliplr(img0)
         print("flipping the frame")
     #off_marker = (th.readFrameCrop(tn_marker))[2:4]
-    off_marker = (opticalib.getCameraSettings(tn_marker))[2:4]
+    off_marker = (opticalib.get_camera_settings(tn_marker))[2:4]
 
     p0 = getMarkers(tn_marker, flip, diam)
     p0 = coord2ottcoord(p0, off_marker)
     if mark_list is not None:
         p0 = p0[:, mark_list]
     return p0
+
+def save_registration(img, tnconf):  # (img,cgh_tn_img,cgh_tn_marker,ott_tn_marker):
+    tn = osu.newtn()
+    print(tn) 
+    fold = foldname.PARABOLA_REMAPPED_FOLDER + "/" + tn + "/"
+    os.mkdir(fold)
+    name = fold + "par_remapped.fits"
+    pyfits.writeto(name, img.data)
+    pyfits.append(name, img.mask.astype(int))
+    copyConf(tnconf, tn)
+    return tn
+
 
 def view_markers(p0, p1):
     fig, ax = plt.subplots()  # figure()
@@ -120,11 +133,10 @@ def view_markers(p0, p1):
     plt.plot(p1[1, :], p1[0, :], "x")
     for i in range(np.shape(p0)[1]):
         ax.text(
-            p0[1, i], p0[0, i], str(i)
-        )  # modRB 20240518 was text(p0[1,:],p0[0,:],str(i))
+            p0[1, i], p0[0, i], str(i), color='b'  )  # modRB 20240518 was text(p0[1,:],p0[0,:],str(i))
+    for i in range(np.shape(p1)[1]):    #modRB20261008  added. otherwise the cycle over p1 cannot work
         ax.text(
-            p1[1, i] + 10, p1[0, i] + 10, str(i)
-        )  # text(p1[1,:]+10,p1[0,:]+10,str(i))
+            p1[1, i] + 10, p1[0, i] + 10, str(i), color='r'  )  # text(p1[1,:]+10,p1[0,:]+10,str(i))
     plt.title("Markers position comparison")
     plt.show()
     p00 = marker_remap(p0, p1)
@@ -137,8 +149,8 @@ def view_markers(p0, p1):
     plt.colorbar()
 
 
-def marker_remap(cghf, ottf):
-    polycoeff = pfr.fit_trasformation_parameter(cghf, ottf)
+def marker_remap(cghf, ottf, forder=10):
+    polycoeff = pfr.fit_trasformation_parameter(cghf, ottf,forder)
     base_cgh = pfr._expandbase(cghf[0, :], cghf[1, :])
     cghf_tra = np.transpose(np.dot(np.transpose(base_cgh), np.transpose(polycoeff)))
     return cghf_tra
@@ -152,17 +164,19 @@ def par_remap(cgh_image, ott_image, cghf, ottf, forder=10):
     # cgh_tra = zern.removeZernike(cgh_tra,[1,2,3,4])
     return cgh_tra
 
-def register_par(tnconf, show=False, forder=10):
+def register_par(tnconf, show=False, forder=10, dosave=False):
     # cgh_tn_marker,ott_tn_marker,mark_cgh_list,mark_ott_list,cgh_tn_img, ott_tn_img, show=False):
-    cgh_image, ott_image, cghf, ottf = init_data(tnconf)
+    cgh_image, ott_image, cghf, ottf,_ = init_data(tnconf)
     if show is not False:
         view_markers(cghf, ottf)
     cgh_tra = par_remap(cgh_image, ott_image, cghf, ottf, forder=forder)
     cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
-    cgh_tra = zern.removeZernike(cgh_tra, [1, 2, 3, 4])
-    ott_image = zern.removeZernike(ott_image, [1, 2, 3, 4])
+    cgh_tra = zern.remove_zernike(cgh_tra, [1, 2, 3, 4])
+    ott_image = zern.remove_zernike(ott_image, [1, 2, 3, 4])
     # tn = save_registration(cgh_tra,cgh_tn_img,cgh_tn_marker,ott_tn_marker)
-    tn = save_registration(cgh_tra, tnconf)
+    tn = 'not saved'
+    if dosave is True:
+        tn = save_registration(cgh_tra, tnconf)
     return cgh_tra, ott_image, tn
 
 
@@ -184,8 +198,7 @@ def crop_frame(imgin):
 
 def getMarkers(tn, flip=False, diam=24, thr=0.2):
     npix = 3.14 * (diam / 2) ** 2
-    #fl = osu.getFileList(tn, fold=OPDSERIES)  modRB
-    fl = osu.getFileList(tn, key='20')
+    fl = osu.get_file_list(tn, key='20')
     nf = len(fl)
     pos = np.zeros([2, 25, nf])
     for j in range(nf):
@@ -226,17 +239,6 @@ def marker_general_remap(cghf, ottf, pos2t):
     return cghf_tra
 
 
-
-
-def par_remap_only(cgh_image, cghf, ottf, forder=10):
-    _, _, cgh_tra, _ = pfr.image_transformation(
-        cgh_image, cgh_image * 0, cghf, ottf, forder=forder
-    )
-    cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
-    # cgh_tra = zern.removeZernike(cgh_tra,[1,2,3,4])
-    return cgh_tra
-
-
 def ott_remap(cgh_tra, ott_image):
     mask = ott_image.mask
     par_on_ott = np.ma.masked_array(cgh_tra.data, mask)
@@ -250,15 +252,14 @@ def marker_data_all(
 ):
     tn0 = cgh_tn_marker
     tn1 = ott_tn_marker
-    #fl0 = osu.getFileList(tn0, fold=OPDSERIES)  modRB
-    fl0 = osu.getFileList(tn0, key='20')
+    fl0 = osu.get_file_list(tn0, key='20')
     img0 = opticalib.read_phasemap(fl0[0]) #th.frame(0, fl0)
     img0 = np.fliplr(img0)
     # fl1 = osu.getFileList(tn1, fold=OPDSERIES)
     # img1 = th.frame(0, fl1)
 
-    p0 = getMarkers(tn0, flip=True, diam=24)
-    p1 = getMarkers(tn1, diam=28)
+    p0 = getMarkers(tn0, flip=True, diam=marksizecgh)
+    p1 = getMarkers(tn1, diam=marksizeott)
 
     p0 = coord2ottcoord(p0, off_cgh_marker)
     p1 = coord2ottcoord(p1, off_ott_marker)
@@ -294,10 +295,11 @@ def image_data(tn_img, flip=False):
     if flip is True:
         img = np.fliplr(img)
     # offs = (th.readFrameCrop(tn_img))[2:4]
-    conf = opticalib.getCameraSettings(tn_img)
+    conf = opticalib.get_camera_settings(tn_img)
     #offs = [conf["x-offset"], conf["y-offset"]]
     offs = conf[2:4]
-    img = th.frame2ottFrame(img, offs)
+    img = usr.into_full_frame(img, offs)
+    #img = th.frame2ottFrame(img, offs)
     return img
 
 
@@ -314,54 +316,19 @@ def read_init_data(tnconf):
         mark_ott_list,
         px_ott,
     ) = roc.gimmetheconf(tnconf)
+    #return (  cgh_tn_marker,    ott_tn_marker,        mark_cgh_list,        mark_ott_list,   cgh_tn_img,        ott_tn_img,  )
     return (
         cgh_tn_marker,
-        ott_tn_marker,
-        mark_cgh_list,
-        mark_ott_list,
         cgh_tn_img,
+        tnpar,
+        mark_cgh_list,
+        f0,
+        f1, 
+        ott_tn_marker,
         ott_tn_img,
+        mark_ott_list,
+        px_ott,
     )
-
-
-
-
-
-def register_par_only(tnconf, show=False, forder=10):
-    # cgh_tn_marker,ott_tn_marker,mark_cgh_list,mark_ott_list,cgh_tn_img, ott_tn_img, show=False):
-    cgh_image, ott_image, cghf, ottf = init_data(tnconf)
-    if show is not False:
-        view_markers(cghf, ottf)
-
-    cgh_tra = par_remap(cgh_image, ott_image, cghf, ottf, forder=forder)
-    cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
-    cgh_tra = zern.removeZernike(cgh_tra, [1, 2, 3, 4])
-    ott_image = zern.removeZernike(ott_image, [1, 2, 3, 4])
-    # tn = save_registration(cgh_tra,cgh_tn_img,cgh_tn_marker,ott_tn_marker)
-    tn = save_registration(cgh_tra, tnconf)
-    return cgh_tra, ott_image, tn
-
-
-def save_registration(img, tnconf):  # (img,cgh_tn_img,cgh_tn_marker,ott_tn_marker):
-    tn = osu.newtn()
-    print(tn)
-    fold = foldname.PARABOLA_REMAPPED_FOLDER + "/" + tn + "/"
-    os.mkdir(fold)
-    name = fold + "par_remapped.fits"
-    pyfits.writeto(name, img.data)
-    pyfits.append(name, img.mask.astype(int))
-    copyConf(tnconf, tn)
-    """
-    fobj = open(fold+'registration_info.txt','w')
-    s = 'PAR CGH Tracknum: '+cgh_tn_img+'\n'
-    fobj.write(s)
-    s = 'PAR CGH Markers Tracknum: '+cgh_tn_marker+'\n'
-    fobj.write(s)
-    s = 'OTT Markers Tracknum: '+ott_tn_marker+'\n'
-    fobj.write(s)
-    fobj.close
-    """
-    return tn
 
 
 def copyConf(tnconf, tnpar):
@@ -514,10 +481,6 @@ def view_subplots(imgott, imgpar, imgres, crpar=None, vm=50e-9, nopsd=0):
         plt.grid()
 
 
-def rmstitle(rr):
-    out = " SfE= " + str(int(rr.std() * 1e9)) + "nm"
-    return out
-
 
 def thresh_image(img1, threshold, zlist=[1, 2, 3, 4], inrad=0, out=0, crop=False):
     """
@@ -538,41 +501,6 @@ def thresh_image(img1, threshold, zlist=[1, 2, 3, 4], inrad=0, out=0, crop=False
         img = crop_frame(img)
     return img
 
-
-def quick243(img, pixs):  # pixs = [pix/m]
-    img1 = crop_frame(img)
-    dd = 0.03
-    pp = int(pixs * dd)  # .astype(int)
-    ss = (np.array(img1.shape) / pp).astype(int)
-    #    ss = np.array((img1.shape[0]/pp)).astype(int)
-    ww = np.zeros(ss)
-    for ii in np.arange(0, ss[0]):
-        for jj in np.arange(0, ss[1]):
-            kk = img1[ii * pp : ii * pp + pp, jj * pp : jj * pp + pp]
-            st = kk.std()
-            if st != np.nan:
-                ww[ii, jj] = st
-    mask = ww == 0
-    ww = np.ma.masked_array(ww.data, mask)
-    return ww
-
-
-def quick283(img, pixs):  # pixs = [pix/m]
-    img1 = crop_frame(img)
-    dd = 0.08
-    pp = int(pixs * dd)  # .astype(int)
-    ss = (np.array(img1.shape) / pp).astype(int)
-    #    ss = np.array((img1.shape[0]/pp)).astype(int)
-    ww = np.zeros(ss)
-    for ii in np.arange(0, ss[0]):
-        for jj in np.arange(0, ss[1]):
-            kk = img1[ii * pp : ii * pp + pp, jj * pp : jj * pp + pp]
-            st = kk.std()
-            if st != np.nan:
-                ww[ii, jj] = st
-    mask = ww == 0
-    ww = np.ma.masked_array(ww.data, mask)
-    return ww
 
 
 def adjust_marker(cghf, ottf, mid, ran):
@@ -650,3 +578,43 @@ def compSlopXY2(img, px, rfact, thr=None):
     # sli = np.ma.masked_array(sli, slm < 2)
     # sli = np.ma.masked_array(slid,(-1*slim+1))
     return sli
+
+def quick243(img, pixs):  # pixs = [pix/m]
+    img1 = crop_frame(img)
+    dd = 0.03
+    pp = int(pixs * dd)  # .astype(int)
+    ss = (np.array(img1.shape) / pp).astype(int)
+    #    ss = np.array((img1.shape[0]/pp)).astype(int)
+    ww = np.zeros(ss)
+    for ii in np.arange(0, ss[0]):
+        for jj in np.arange(0, ss[1]):
+            kk = img1[ii * pp : ii * pp + pp, jj * pp : jj * pp + pp]
+            st = kk.std()
+            if st != np.nan:
+                ww[ii, jj] = st
+    mask = ww == 0
+    ww = np.ma.masked_array(ww.data, mask)
+    return ww
+
+
+def quick283(img, pixs):  # pixs = [pix/m]
+    img1 = crop_frame(img)
+    dd = 0.08
+    pp = int(pixs * dd)  # .astype(int)
+    ss = (np.array(img1.shape) / pp).astype(int)
+    #    ss = np.array((img1.shape[0]/pp)).astype(int)
+    ww = np.zeros(ss)
+    for ii in np.arange(0, ss[0]):
+        for jj in np.arange(0, ss[1]):
+            kk = img1[ii * pp : ii * pp + pp, jj * pp : jj * pp + pp]
+            st = kk.std()
+            if st != np.nan:
+                ww[ii, jj] = st
+    mask = ww == 0
+    ww = np.ma.masked_array(ww.data, mask)
+    return ww
+
+def rmstitle(rr):
+    out = " SfE= " + str(int(rr.std() * 1e9)) + "nm"
+    return out
+

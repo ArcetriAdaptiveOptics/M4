@@ -110,13 +110,15 @@ def userconfig_info():
             print(t, '  --> ', a.get(t))
 
 def get_4Doffset(tn):
-    camsett =  opticalib.get_file_list(tn,key = 'Setting')
-    #if len(camsett) == 0:
-        #camsett =  opt.get_file_list(tnlist[i],key = '4DSett')
-    getconfig.read(camsett)
-    offx = int(float(getconfig['ACA2440']['OffsetX']))
-    offy = int(float(getconfig['ACA2440']['OffsetY']))
-    return [offx, offy]
+    sett = opt.get_camera_settings(tn)
+    offs = sett[2:4]
+    #camsett =  opticalib.get_file_list(tn,key = 'Setting')
+    ##if len(camsett) == 0:
+        ##camsett =  opt.get_file_list(tnlist[i],key = '4DSett')
+    #getconfig.read(camsett)
+    #offx = int(float(getconfig['ACA2440']['OffsetX']))
+    #offy = int(float(getconfig['ACA2440']['OffsetY']))
+    return offs
             
    
 def into_full_frame(img, offs):
