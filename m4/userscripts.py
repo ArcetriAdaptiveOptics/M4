@@ -110,7 +110,7 @@ def userconfig_info():
             print(t, '  --> ', a.get(t))
 
 def get_4Doffset(tn):
-    sett = opt.get_camera_settings(tn)
+    sett = opticalib.get_camera_settings(tn)
     offs = sett[2:4]
     #camsett =  opticalib.get_file_list(tn,key = 'Setting')
     ##if len(camsett) == 0:
