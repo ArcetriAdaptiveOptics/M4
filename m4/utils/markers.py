@@ -1,6 +1,7 @@
 import numpy as np
 import os
-from m4.ground import read_data
+import opticalib as opt
+#from m4.ground import read_data
 from opticalib.ground.osutils import newtn
 from m4.configuration import folders as foldname
 import configparser
@@ -14,10 +15,11 @@ pa = ParabolaActivities()
 phasemapname = "surfMap.fits"
 fringesname = "fringesImage.fits"
 markcentername = "markerCenter.ini"
-markersPath = foldname.MARKERS_ROOT_FOLDER  # folder where markers data are saved
+markerfolder = 'Markers'
+markersPath = os.path.join(opt.folder.BASE_DATA_PATH,markerfolder)  # folder where markers data are saved
 # modificare interferometer per aggiungere loadConfiguration
-markersConfig = "D:/config/20240608_negativeMarkersMask50mm.ini"  # negative mask (pass inside marker area)
-markersDiam = 10
+#markersConfig = "D:/config/20240608_negativeMarkersMask50mm.ini"  # negative mask (pass inside marker area)
+markersDiam = 7
 mlist0 = [2, 3, 4]
 mlist1 = [
     0,
@@ -28,7 +30,7 @@ mlist1 = [
 ]  # removed the act out of symmetry, or the fitEllipse will find an ellipse
 
 
-def acquireMarkersData(interf):
+def acquireMarkersData(interf, markersconfig = None):
     """
     Parameters
     ----------
@@ -41,19 +43,16 @@ def acquireMarkersData(interf):
     """
     tn = newtn()
     fold = os.path.join(markersPath, tn)
-    interf.loadConfiguration(
-        markersConfig
-    )  # such markersConfig is negative, i.e. mask outside the markers
-    q = (
-        interf.acquire_phasemap()
-    )  # this is requested since the detector image has no processing to add the mask
-    q = interf.intoFullFrame(q)
+    if markersconfig is not None:
+        interf.loadConfiguration( markersConfig)  # such markersConfig is negative, i.e. mask outside the markers
+    q =  interf.acquire_map()  # this is requested since the detector image has no processing to add the mask
+    q = interf.into_full_frame(q)
     ima = interf.acquire_detector()
     imamask = np.ones(ima.shape)
-    imamask[ima < 0.5 * np.nanmean(ima)] = 0  # was 2x
+    imamask[ima < 0.6 * np.nanmean(ima)] = 0  # was 2x
     ima = np.ma.masked_array(ima, -1 * imamask + 1)
     # ima = np.ma.masked_array(ima, q.mask) #to be deleted
-    ima = interf.intoFullFrame(ima)
+    ima = interf.into_full_frame(ima)
     os.mkdir(fold)
     interf.save_phasemap(fold, phasemapname, q)
     interf.save_phasemap(fold, fringesname, ima)
@@ -101,7 +100,7 @@ def loadMarkersData(tn):
     return img
 
 
-def findMarkers(img):
+def findMarkers(img, surfthresh=0.6):
     """
     This function find the markers in a detector image. The frame is supposed to be masked with a markers mask (individual mask diameters larger than actual markers size)
     Parameters
@@ -114,9 +113,13 @@ def findMarkers(img):
         markers position (same coordinate order as the frame
     """
     mpos = pa.rawMarkersPos(img)
+    print('Markers detected, areal sizes are:')
+    print(mpos["area"])
     npix = 3.14 * (markersDiam / 2) ** 2
-    athr = 0.7
-    pos = pa.filterMarkersPos(mpos, (-athr) * npix, (1 + athr) * npix)
+    print('Searching for markers with expected area:',npix)
+    thresh = [np.fix((1-surfthresh) * npix),np.fix((1+surfthresh) * npix)]
+    print('Filtering in the area range:',thresh[0],thresh[1])
+    pos = pa.filterMarkersPos(mpos, thresh[0],thresh[1])
     mpos = np.array([pos[1, :], pos[0, :]])
     return mpos
 

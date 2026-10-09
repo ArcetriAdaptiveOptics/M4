@@ -55,14 +55,20 @@ def gimmetheconf(tn):
     pp = config[parname]
     cgh_tn_marker = pp[ncgh_tn_marker]
     cgh_tn_img = pp[ncgh_tn_img]
-    tnpar = pp[ntnpar]
+    if ntnpar in pp.keys():
+        tnpar = pp[ntnpar]
+    else:
+        tnpar = ''
     mark_cgh_list = _get_nparray(pp, nmark_cgh_list)
     f0 = float(pp[nf0])
     f1 = float(pp[nf1])
 
     oo = config[ottname]
     ott_tn_marker = json.loads(oo[nott_tn_marker])
-    ott_tn_img = oo[nott_tn_img]
+    if nott_tn_img in oo.keys():
+        ott_tn_img = oo[nott_tn_img]
+    else:
+        ott_tn_img = ''
     mark_ott_list = _get_nparray(oo, nmark_ott_list)
     px_ott = float(oo[npx_ott])
 

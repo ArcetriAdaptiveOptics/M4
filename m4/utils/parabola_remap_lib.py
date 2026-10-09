@@ -28,8 +28,14 @@ zern2remove_after = [1,2,3,4]
 marksizecgh = 24
 marksizeott = 28
 
+### implement the registration on the fly
+#can be based on the key OTT_TN_MARKER = AUTO
+
 
 def register_parabola2ott(tnconf, show=False, forder=10, dosave = False):
+    '''
+    this is the function to be used
+    '''
     cgh_image, ott_image, cghf, ottf,filtinfo = init_data(tnconf)
     if show is not False:
         view_markers(cghf, ottf)
@@ -109,11 +115,14 @@ def marker_data(tn_marker, mark_list, diam, flip=False):
     """for ott markers: marker_data(tn,mark_list, 28,flip=False)
     for cgh markers: marker_data(tn,mark_list, 24,flip=True)
     if tn_marker is a tnvector, mark list shall be a 2D vector')"""
+    #### è necessario leggere img0??? il seguito è commentato, modRB 20261009
+    '''
     fl0 = osu.get_file_list(tn_marker, key='20')
     img0 = opticalib.read_phasemap(fl0[0])  #th.frame(0, fl0)
     if flip is True:
         img0 = np.fliplr(img0)
         print("flipping the frame")
+    '''
     off_marker = (opticalib.get_camera_settings(tn_marker))[2:4]
 
     p0 = getMarkers(tn_marker, flip, diam)
@@ -166,6 +175,9 @@ def marker_remap(cghf, ottf, forder=10):
 
 
 def getMarkers(tn, flip=False, diam=24, thr=0.2):
+    '''
+    This function reads some interferometer surface maps, maskef around the markers, and identify their centers
+    '''
     npix = 3.14 * (diam / 2) ** 2
     fl = osu.get_file_list(tn, key='20')
     nf = len(fl)
