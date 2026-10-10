@@ -631,6 +631,19 @@ class MeasurementScripts:
         img = zernfit.removeZernike(img,zern2remove,fitmode)
         return img
 
+    def acquire_ott_cavity(self, segment_or_center_view='segment'):
+        '''
+        This function loads the PAR image calibrated with the CGH and remaps it according the current marker position, acquired on the flight
+        '''
+        if segment_or_center_view == 'center':
+            regconf = 'Center_view'
+       if segment_or_center_view == 'segment':
+            regconf = 'Segment_view'
+        #to be decided:
+        #acquire marker
+        #run parabola_remap_lib.register_par(regconf)
+        pass
+
     def acquireCurrentFootprint(self):
         c0 = mrk.measureMarkerPos(None, self._interf)
         return c0
