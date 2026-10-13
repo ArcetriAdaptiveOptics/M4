@@ -637,7 +637,7 @@ class MeasurementScripts:
         '''
         if segment_or_center_view == 'center':
             regconf = 'Center_view'
-       if segment_or_center_view == 'segment':
+        if segment_or_center_view == 'segment':
             regconf = 'Segment_view'
         #to be decided:
         #acquire marker
