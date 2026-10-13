@@ -6,7 +6,7 @@ import numpy as np
 from astropy.io import fits as pyfits
 from matplotlib import pyplot as plt
 #from opticalib import measurements as measlib
-from scripts.misc import measurements as measlib
+from m4.utils import measurements_lib as measlib
 #from opticalib.procedures import measurements as measlib
 from opticalib.ground.osutils import load_fits, save_fits, newtn
 from opticalib.ground import modal_decomposer as zern
@@ -19,10 +19,10 @@ class Measurements:
     """
     HOW TO USE IT::
 
-    from m4.configuration import start
-    ott, interf = start.create_ott(conf='.../youConf.yaml')
-    from m4.mini_OTT.measurements import Measurements
-    meas = Measurements(ott, interf)
+    import m4
+    ott, dm, interf = m4.create_ott()
+    from m4.ott_measurements import Measurements
+    meas = Measurements(interf, ott)
     """
 
     def __init__(self, interf, ott=None):

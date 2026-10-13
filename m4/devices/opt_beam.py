@@ -12,8 +12,8 @@ How to Use it
 -------------
 Once the ott object has been created:
 
-    >>> from m4.configuration.start import create_ott
-    >>> ott, interf, dm = create_ott()
+    >>> from m4.configuration.ott import create_ott
+    >>> ott, dm, interf = create_ott()
 
     >>> from m4.devices.opt_beam import Parabola, ReferenceMirror, AngleRotator
     >>> par     = Parabola(ott, conf)

@@ -1,1 +1,9 @@
-recursive-include test *
+include README.md
+include Installation?Guide.md
+include How_to_use_it.md
+recursive-include docs *.rst *.py Makefile
+prune deprecated
+prune scripts
+prune test
+prune plans
+global-exclude __pycache__ *.py[cod]

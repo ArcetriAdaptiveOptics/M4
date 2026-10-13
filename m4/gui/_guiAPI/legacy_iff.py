@@ -157,7 +157,7 @@ class AnalyzerIFF:
             data_file_path = self._h5Folder  # viene da loadInfoFromIFFsTtFolder
         else:
             data_file_path = data_file_path
-        list = osu.getFileList(fold=data_file_path)
+        list = osu.get_file_list(fold=data_file_path)
 
         where = self._indexReorganization()
         ampl_reorg = self._amplitudeReorganization(

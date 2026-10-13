@@ -17,8 +17,12 @@ git checkout pf-SW-cleanup
 At this point, install the package by:
 
 ```bash
-pip install --use-pep517 .
+pip install -e .
 ```
+
+Install in editable mode (`-e`): the OPC-UA certificates (`m4/devices/*.der`, `*.pem`) are not part of the installed package, they are read from the source tree, and without them `import m4` exits with an error.
+
+Optional extras are available (`gui`, `sound`, `test`, `docs`), e.g. `pip install -e ".[gui,test]"`.
 
 ### Dependencies (OptiCalib)
 
@@ -64,7 +68,9 @@ This command will create the folders and configuration file, and start the ipyth
 
 ### m4
 
-After setting up the opticalib package, with it's configuration file
+The `m4gui` command is installed with the package: `m4gui -f experiments/m4` opens the GUI. Both `calpy` and `m4gui` set the `AOCONF` environment variable to the chosen configuration file, which is what `opticalib` and `m4` read; when working without them, export `AOCONF=~/experiments/m4/SysConfig/configuration.yaml` yourself.
+
+After setting up the opticalib package, with its configuration file, open the session with `calpy -f experiments/m4` and, inside the shell, run
 
 ```python
 import m4
@@ -79,6 +85,8 @@ The available functions/classes in the M4 package (as is) are:
 - `create_ott` - functions that returns the `ott`, the `dm` and the `interferometer` instances
 - `OttAligner` - A wrapper of the more general `opticalib.alignment.Alignment` class, specific for the OTT
 - `OttIffAcquisition` - A wrapper for iff acquisition and analysis specific for the DP. _Work in Progress..._
+
+Unused legacy code lives in the top-level `deprecated/` folder (see `deprecated/README.md`) and is not installed.
 
 ## Docs
 

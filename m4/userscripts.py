@@ -75,7 +75,7 @@ getconfig = cp.ConfigParser()
 from opticalib.dmutils.flattening import Flattening
 from opticalib import analyzer as imgaz
 from opticalib.ground import modal_decomposer as mdl
-import ott_measurements as measurements
+from m4 import ott_measurements as measurements
 
 configfilename = 'userconfiguration.yaml'
 
@@ -179,17 +179,17 @@ class OTTScripts:
 
     def __init__(self, ott=None, interf=None):
         """The Constructor"""
-        print('Tell me, Master')
         self._ott    = ott
         self._interf = interf
-        self.meas    = measurements.Measurements(interf, ott)
-        self.alignment  = alignment.OttAligner(ott, interf)
-        self.collimator = opt_beam.Parabola(ott)
-        self.revolver   = opt_beam.AngleRotator(ott)
-        self.refMirror  = opt_beam.ReferenceMirror(ott)
+        self.meas    = measurements.Measurements(self._interf, self._ott)
+        self.alignment  = alignment.OttAligner(self._ott, self._interf)
+        self.collimator = opt_beam.Parabola(self._ott)
+        self.revolver   = opt_beam.AngleRotator(self._ott)
+        self.refMirror  = opt_beam.ReferenceMirror(self._ott)
         self.myconf4d     = read_userconfig('CONFIGURATION4D')
         self.myconfott    = read_userconfig('OTTMECH')
         self.myconfottcal = read_userconfig('OTTCAL')
+        print('Tell me, Master')
 
     def deployReferenceMirror(self):
         """
@@ -626,9 +626,9 @@ class MeasurementScripts:
         return tn
 
     def analyzeTimeSeries(self, tn, zern2remove=[1, 2, 3],fitmode = 'global'):
-        img = imgaz.averageFrames(tn)
+        img = imgaz.average_frames(tn)
         zernfit = mdl.ZernikeFitter(img)
-        img = zernfit.removeZernike(img,zern2remove,fitmode)
+        img = zernfit.remove_zernike(img,zern2remove,fitmode)
         return img
 
     def acquire_ott_cavity(self, segment_or_center_view='segment'):
@@ -637,7 +637,7 @@ class MeasurementScripts:
         '''
         if segment_or_center_view == 'center':
             regconf = 'Center_view'
-       if segment_or_center_view == 'segment':
+        if segment_or_center_view == 'segment':
             regconf = 'Segment_view'
         #to be decided:
         #acquire marker
@@ -766,7 +766,7 @@ class M4Scripts:
         tnout = []
         for i in tnlist:
             tnout.append(self.ifp.cubeRoiProcessing(i, activeRoiId = myconfiffproc["segmentRoiID"],fitting_mask = self._fitting_mask, tt_detrend=True, mean_subtraction=remove_mean, roinull=True, median_subtraction = remove_median))
-        tnres = self.ifp.stackCubes(tnout) if len(tnout) > 1 else tnout
+        tnres = self.ifp.stack_cubes(tnout) if len(tnout) > 1 else tnout
         return tnres
 
     def iffAllSegmentProcess():
@@ -807,7 +807,7 @@ class M4Scripts:
         mm1[m == False] = 0
         img = np.ma.masked_array(img,mm1)
         zfit = md.ZernikeFitter(img)
-        roiimg = roi.roiGenerator(img)
+        roiimg = roi.roi_generator(img)
         cc, zmat=zfit.fit(img,[1,2,3])
         img.data[img.mask == 0] = zmat[tid,:]
         img.data[roiimg[roiid] == 1] = 0

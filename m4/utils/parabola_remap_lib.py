@@ -18,7 +18,7 @@ from m4.ground import read_ottcalib_conf as roc
 import m4.utils.parabola_footprint_registration as pr
 from m4.utils.parabola_identification import ParabolaActivities
 from m4 import userscripts as usr  #temporary, we need intoFullFrame
-zern = md.ZernikeFitter() # this is a guess, MM260121
+# Zernike removal: md.ZernikeFitter(img).remove_zernike(img, modes) fits on the image's own pupil; fresh instance per call, no shared state (verified)
 
 pa = ParabolaActivities()
 pfr = pr.ParabolaFootprintRegistration()
@@ -41,7 +41,7 @@ def register_parabola2ott(tnconf, show=False, forder=10, dosave = False):
         view_markers(cghf, ottf)
     cgh_tra = par_remap(cgh_image,  cghf, ottf, forder=forder)
     cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
-    cgh_tra = zern.remove_zernike(cgh_tra, zern2remove_after)
+    cgh_tra = md.ZernikeFitter(cgh_tra).remove_zernike(cgh_tra, zern2remove_after)
     #par_filtered = az.comp_filtered_image(par_remapped,  d=filtinfo[2], verbose=True, disp=False, freq2filter=filtinfo[0:2])
 
     tn = 'not saved'
@@ -312,11 +312,11 @@ def view_subplots(imgott, imgpar, imgres, crpar=None, vm=50e-9, nopsd=0):
         y = crpar[1]
         c = crpar[2]
         oc = imgott[x : x + c, y : y + c]
-        oc = zern.remov_zernike(oc, [1, 2, 3])
+        oc = md.ZernikeFitter(oc).remove_zernike(oc, [1, 2, 3])
         pc = 2 * imgpar[x : x + c, y : y + c]
-        pc = zern.removeZernike(pc, [1, 2, 3])
+        pc = md.ZernikeFitter(pc).remove_zernike(pc, [1, 2, 3])
         rc = imgres[x : x + c, y : y + c]
-        rc = zern.remove_zernike(rc, [1, 2, 3])
+        rc = md.ZernikeFitter(rc).remove_zernike(rc, [1, 2, 3])
     else:
         oc = imgott.copy()
         pc = 2 * imgpar

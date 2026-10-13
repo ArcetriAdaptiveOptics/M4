@@ -16,7 +16,7 @@ phasemapname = "surfMap.fits"
 fringesname = "fringesImage.fits"
 markcentername = "markerCenter.ini"
 markerfolder = 'Markers'
-markersPath = os.path.join(opt.folder.BASE_DATA_PATH,markerfolder)  # folder where markers data are saved
+markersPath = os.path.join(opt.folders.BASE_DATA_PATH,markerfolder)  # folder where markers data are saved
 # modificare interferometer per aggiungere loadConfiguration
 #markersConfig = "D:/config/20240608_negativeMarkersMask50mm.ini"  # negative mask (pass inside marker area)
 markersDiam = 7

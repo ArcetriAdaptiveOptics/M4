@@ -7,7 +7,6 @@ import numpy as np
 import os
 import glob
 #from m4.ground import geo
-from opticalib.ground import geo #requested for qpupil (available in geo)
 from m4.configuration.ott_parameters import OttParameters
 from astropy.io import fits as pyfits  #can be adjusted to match opticalib standards
 from skimage.draw import disk as draw_circle   #any replacement in opticalib??
@@ -20,6 +19,56 @@ from opticalib.ground.osutils import read_phasemap, load_fits
 #from m4.configuration import folders as config
 from opticalib.core.root import folders as config
 from matplotlib import pyplot as plt
+
+
+def _qpupil(mask, xx=None, yy=None, nocircle=0):
+    '''
+    Legacy m4.ground.geo.qpupil (created by Runa), restored verbatim because
+    opticalib.ground.geometry has no exact equivalent.
+
+    Parameters
+    ----------
+    mask: numpy array
+
+    Returns
+    ------
+    x0:
+    y0:
+    r:
+    xx: numpy array
+        grid of coordinates of the same size as input mask
+    yy: numpy array
+        grid of coordinates of the same size as input mask
+    '''
+    idx = np.where(mask == 1)
+    ss = np.shape(mask)
+    x = np.arange(ss[0]).astype(float)
+    x = np.transpose(np.tile(x, [ss[1], 1]))
+    y = np.arange(ss[1]).astype(float)
+    y = np.tile(y, [ss[0], 1])
+    xx = x
+    yy = y
+    x0 = 0
+    y0 = 0
+    r = 0
+    if nocircle == 0:
+        maxv = max(xx[idx])
+        minv = min(xx[idx])
+        r1 = (maxv-minv)/2
+        x0 = r1+minv
+        xx = xx - (minv + maxv)/2
+        xx = xx/((maxv - minv)/2)
+        mx = [minv, maxv]
+        maxv = max(yy[idx])
+        minv = min(yy[idx])
+        r2 = (maxv-minv)/2
+        y0 = r2 + minv
+        yy = yy - (minv+maxv)/2
+        yy = yy/((maxv-minv)/2)
+        r = np.mean([r1, r2])
+        my = [minv, maxv]
+        #imgout  = image[mx[0]:mx[1],my[0]:my[1]]
+    return x0, y0, r, xx, yy
 
 
 def patches_analysis(image, radius_m, pixelscale=None, step=None, n_patches=None):
@@ -221,7 +270,7 @@ def tiptilt_fit(ima):
     #    ima_ttr = np.ma.masked_array(new_image, mask=ima.mask)
     #    return ima_ttr
     if ima is not None:
-        ima_ttr = zernike.removeZernike(ima,[1,2,3])
+        ima_ttr = zernike.remove_zernike(ima,[1,2,3])
     return ima_ttr   #here we removed piston and tiptilt, was tiptilt only
 
 # def curv_fit(image, test_diameter):
@@ -381,7 +430,7 @@ def test242(image, pscale=None):
             rms slope in arcsec
     """
     mask = np.invert(image.mask).astype(int)
-    x, y, r, xx, yy = geo.qpupil(mask)
+    x, y, r, xx, yy = _qpupil(mask)
     if pscale is None:
         pscale = r * (1 / 0.17)
     else:
@@ -420,7 +469,7 @@ def test243(image, radius_m, pscale=None, step=None, n_patches=None):
     """
     # radius_m = 0.015 or 0.1
     mask = np.invert(image.mask).astype(int)
-    x, y, r, xx, yy = geo.qpupil(mask)
+    x, y, r, xx, yy = _qpupil(mask)
     print('pscale in OTT is 0.00076. pscale to be passed to this function is 1/0.00076')
     if pscale is None:
         pscale = r * (1 / 0.17)
@@ -452,7 +501,7 @@ def test283(image, pscale=None, step=None):
             roc at threshold 0.05
     """
     mask = np.invert(image.mask).astype(int)
-    x, y, r, xx, yy = geo.qpupil(mask)
+    x, y, r, xx, yy = _qpupil(mask)
     if pscale is None:
         pscale = r * (1 / 0.17)  # pscale[px/m]
     else:
@@ -483,7 +532,7 @@ def diffPiston(image):
     # coefd, mat = zernike.zernikeFit(imad, np.arange(3)+1)
     # diff_piston = coefs[0]-coefd[1]
 
-    cir = geo.qpupil(-1 * image.mask + 1)
+    cir = _qpupil(-1 * image.mask + 1)
     cir = cir[0:3]
     cir = np.fix(cir).astype(int)
     imas = image[0 : cir[0], :]
@@ -633,7 +682,7 @@ def robustImageFromDataSet(
             else:
                 cube = np.ma.dstack((cube, image))
         final_image = np.ma.mean(cube, axis=2)
-    image_ttr = zf.removeZernike(final_image, zernike_vector_to_subtract)
+    image_ttr = zernike.remove_zernike(final_image, zernike_vector_to_subtract)
     #modRB to meet opticalib definitions
     #coef, mat = zernike.zernikeFit(final_image, zernike_vector_to_subtract)
     #surf = zernike.zernikeSurface(final_image, coef, mat)

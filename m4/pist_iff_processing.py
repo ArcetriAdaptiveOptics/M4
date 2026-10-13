@@ -44,18 +44,17 @@ import shutil as _sh
 import configparser as _cp
 from tqdm import tqdm as _tqdm
 from opticalib.core import _types as _ot
-from opticalib.core.root import _folds
+from opticalib.core.root import folders as _fn
 from opticalib.core import fitsarray as _fa
 from opticalib.core import config as _rif
 from concurrent.futures import ThreadPoolExecutor as _tpe
-from opticalib.analyzer.images_processing import cube_rebinner as _cr
+from opticalib.analyzer.image_processing import cube_rebinner as _cr
 from opticalib.ground import (
     modal_decomposer as _zern, osutils as _osu, roi as _roi
 )
 
 # from scripts.misc.IFFPackage import actuator_identification_lib as _fa
 
-_fn = _folds()
 _config = _cp.ConfigParser()
 _ifFold = _fn.IFFUNCTIONS_ROOT_FOLDER
 _intMatFold = _fn.INTMAT_ROOT_FOLDER
@@ -216,14 +215,14 @@ def pistonProcess(
             img0 = _osu.read_phasemap(fl[j,p0-1])  #was(fl[p0-1])
             img1 = _osu.read_phasemap(fl[j,p0])    #was(fl[p0])
             dimg = _np.power(-1,i+1)*(img0-img1)
-            roiimg = _roi.roiGenerator(dimg)
+            roiimg = _roi.roi_generator(dimg)
             roilist = [actRoiId[j],auxRoiId[j]]
             roi0 = roiimg[roilist[0]]
             if pist_algorithm == 'average':
                 r0=(_np.mean(dimg[roiimg[roilist[0]] == 0]))
                 r1=(_np.mean(dimg[roiimg[roilist[1]] == 0]))
             if pist_algorithm == 'zernike':
-                ca = zfit.fitOnRoi(dimg,[1,2,3], "local")
+                ca = zfit.fit_on_roi(dimg,[1,2,3], "local")
                 r0 = ca[actRoiId[j],0]
                 r1 = ca[auxRoiId[j],0]
 
@@ -279,9 +278,9 @@ def tt_detrend(v, activeRoi, coeffs,zfit):
     r2rImage = v.copy()
     r2rImage.mask[activeRoi == 0] = True
 
-    #coeffs = zfitter.fitOnRoi(r2rImage, [1, 2, 3], mode="global")
+    #coeffs = zfitter.fit_on_roi(r2rImage, [1, 2, 3], mode="global")
     _, matrix = zfit.fit(v, [1, 2, 3])
-    surf2remove = zfit.makeSurface([1, 2, 3], v, coeffs=coeffs, mat=matrix, mode="full-aperture" )
+    surf2remove = zfit.make_surface([1, 2, 3], v, coeffs=coeffs, mat=matrix, mode="full-aperture" )
     v -= surf2remove
     return v
 
@@ -381,7 +380,7 @@ def cubeRoiProcessing(
     # Main Loop over cube images
     newcube = []
     for v in _tqdm(cube, desc=f"tn: {newtn}", unit="modes", ncols=80):
-        activeRoi = _roi.roiGenerator(v).pop(activeRoiID)  # type: ignore
+        activeRoi = _roi.roi_generator(v).pop(activeRoiID)  # type: ignore
 
         # We do Global ROI Fitting here:
         # Doing Local ROI fitting is equivalent (then right) only the there are
@@ -390,9 +389,9 @@ def cubeRoiProcessing(
             r2rImage = v.copy()
             r2rImage.mask[activeRoi == 0] = True
 
-            coeffs = zfitter.fitOnRoi(r2rImage, [1, 2, 3], mode="global")
+            coeffs = zfitter.fit_on_roi(r2rImage, [1, 2, 3], mode="global")
             _, matrix = zfitter.fit(v, [1, 2, 3])
-            surf2remove = zfitter.makeSurface(
+            surf2remove = zfitter.make_surface(
                 [1, 2, 3], v, coeffs=coeffs, mat=matrix, mode="global"
             )
 
@@ -458,7 +457,7 @@ def saveCube(
     cube : masked_array
         Data cube of the images, with shape (npx, npx, nmodes).
     """
-    cube = _osu.loadCubeFromFilelist(tn_or_fl=tn, fold=_ifFold, key="mode_")
+    cube = _osu.load_cube_from_filelist(tn_or_fl=tn, fold=_ifFold, key="mode_")
     #cube = _np.ma.expand_dims(img,axis=2)
     new_fold = _os.path.join(_intMatFold, tn)
     _os.makedirs(new_fold, exist_ok=True)
@@ -567,11 +566,11 @@ def filterZernikeCube(
     new_tn = _os.path.join(_intMatFold, _ts())
     CmdMat = _os.path.join(_intMatFold, tn, _MATRIX_FILE)
     ModesVec = _os.path.join(_intMatFold, tn, _MODES_FILE)
-    cube = _fa.FitsMaskedArray.fromFits(_os.path.join(_intMatFold, tn, _CUBE_FILE))
+    cube = _fa.FitsMaskedArray.from_fits(_os.path.join(_intMatFold, tn, _CUBE_FILE))
     zern_modes = zern_modes if zern_modes is not None else [1, 2, 3]
-    from opticalib.analyzer import removeZernikeFromCube
+    from opticalib.analyzer import remove_zernike_from_cube
 
-    ffcube = removeZernikeFromCube(cube, zern_modes, mode=mode)
+    ffcube = remove_zernike_from_cube(cube, zern_modes, mode=mode)
     # TODO: Problem with master mask... is it the data?
     # ffcube.mask = _roi.cubeMasterMask(ffcube)
 
@@ -632,7 +631,7 @@ def iffRedux(
     - io_workers controls the number of threads used to prefetch mode blocks.
     - prefetch controls how many future modes to keep in-flight.
     """
-    from opticalib.analyzer import pushPullReductionAlgorithm
+    from opticalib.analyzer import push_pull_reduction_algorithm
 
     fold = _os.path.join(_ifFold, tn)
     nmodes = len(modeList)
@@ -670,7 +669,7 @@ def iffRedux(
             if j < nmodes and j not in futures:
                 futures[j] = ex.submit(_read_mode, fileMat[j, :])
 
-            norm_img = pushPullReductionAlgorithm(
+            norm_img = push_pull_reduction_algorithm(
                 imagelist,
                 template,
                 normalization=(_np.max(((template.shape[0] - 1), 1)) * 2 * ampVect[i]),
@@ -702,7 +701,7 @@ def registrationRedux(tn: str, fileMat: list[str]) -> list[_ot.ImageData]:
     imgList : ArrayLike
         List of the processed registration images.
     """
-    from opticalib.analyzer import pushPullReductionAlgorithm
+    from opticalib.analyzer import push_pull_reduction_algorithm
 
     _, infoR, _, _ = _getAcqInfo(tn)
     template = infoR["template"]
@@ -713,7 +712,7 @@ def registrationRedux(tn: str, fileMat: list[str]) -> list[_ot.ImageData]:
     imglist = []
     for i in range(0, nActs - 1):
         imgs = [_osu.read_phasemap(x) for x in fileMat[i, :]]
-        img = pushPullReductionAlgorithm(imgs, template)
+        img = push_pull_reduction_algorithm(imgs, template)
         imglist.append(img)
     # cube = _np.ma.masked_array(imglist)
     # _osu.save_fits(_os.path.join(_intMatFold, tn, "regActCube.fits"), cube)
@@ -777,7 +776,7 @@ def getTriggerFrame(tn: str, amplitude: int | float = None, roi: int = None) -> 
     infoT, _, _, _ = _getAcqInfo(tn)
     if amplitude is not None:
         infoT["amplitude"] = amplitude
-    fileList = _osu.getFileList(tn, fold="OPDImages")
+    fileList = _osu.get_file_list(tn, fold="OPDImages")
     img0 = _osu.read_phasemap(fileList[0])
     go = i = 1
     thresh = infoT["amplitude"] / _np.sqrt(3)
@@ -789,12 +788,12 @@ def getTriggerFrame(tn: str, amplitude: int | float = None, roi: int = None) -> 
     while go != 0:
         img1 = _osu.read_phasemap(fileList[i])
         if not roi is None:
-            rois = _roi.roiGenerator(img0)
+            rois = _roi.roi_generator(img0)
             _ = rois.pop(roi)
             for r in rois:
                 img1.mask[r == 0] = True
                 img0.mask[r == 0] = True
-        rr2check = _np.nanstd(zfit.removeZernike(img1 - img0, [1, 2, 3]))
+        rr2check = _np.nanstd(zfit.remove_zernike(img1 - img0, [1, 2, 3]))
         print(f"Frame {i-1}: std = {rr2check:.2e}")
         if go > infoT["zeros"] + 1:
             msg = f"Frame {go}. Heading Zeros exceeded: std = {rr2check:.2e} < {thresh:.2e} (Amp/sqrt(3))"
@@ -831,7 +830,7 @@ def getRegFrames(tn: str, trigFrame: int) -> tuple[int, _ot.ArrayLike]:
         list.
     """
     _, infoR, _, _ = _getAcqInfo(tn)
-    timing = _rif.getTiming()
+    timing = _rif.get_timing()
     if infoR["zeros"] == 0 and len(infoR["modes"]) == 0:
         regStart = regEnd = (trigFrame + 1) if trigFrame != 0 else 0
     else:
@@ -861,7 +860,7 @@ def getRegFileMatrix(tn: str, trigFrame: int) -> tuple[int, _ot.ArrayLike]:
         _os.path.isdir(fold)
     else:
         fold = None
-    fileList = _osu.getFileList(tn, fold="OPDImages" if fold is None else fold)
+    fileList = _osu.get_file_list(tn, fold="OPDImages" if fold is None else fold)
     _, infoR, _, _ = _getAcqInfo(tn)
     regStart, regEnd = getRegFrames(tn, trigFrame)
     regList = fileList[regStart:regEnd]
@@ -890,7 +889,7 @@ def getIffFileMatrix(tn: str, trigFrame: int = None) -> _ot.ArrayLike:
         _os.path.isdir(fold)
     else:
         fold = None
-    fileList = _osu.getFileList(tn, fold="OPDImages" if fold is None else fold)
+    fileList = _osu.get_file_list(tn, fold="OPDImages" if fold is None else fold)
     _, _, infoIF, _ = _getAcqInfo(tn)
     _, regEnd = getRegFrames(tn, trigFrame)
     n_useful_frames = len(infoIF["modes"]) * len(infoIF["template"])
@@ -1026,10 +1025,10 @@ def _getAcqInfo(
         Information read about the IFFUNC option.
     """
     path = _os.path.join(_ifFold, tn) if tn is not None else _fn.CONFIGURATION_FOLDER
-    infoT = _rif.getIffConfig("TRIGGER", bpath=path)
-    infoR = _rif.getIffConfig("REGISTRATION", bpath=path)
-    infoIF = _rif.getIffConfig("IFFUNC", bpath=path)
-    infoDM = _rif.getDmIffConfig(bpath=path)
+    infoT = _rif.get_iff_config("TRIGGER", bpath=path)
+    infoR = _rif.get_iff_config("REGISTRATION", bpath=path)
+    infoIF = _rif.get_iff_config("IFFUNC", bpath=path)
+    infoDM = _rif.get_iff_config("DM", bpath=path)
     return infoT, infoR, infoIF, infoDM
 
 

@@ -36,7 +36,7 @@ from opticalib.ground import modal_decomposer
 zern = modal_decomposer.ZernikeFitter()
 
 from opticalib.ground import osutils as osu
-from opticalib.typings import InterferometerDevice as _ID
+from opticalib.core._types import InterferometerDevice as _ID
 
 
 class SystemMonitoring:
@@ -404,7 +404,7 @@ class SystemMonitoring:
             List of standard deviations of the zernike-removed subtracted images.
         """
         gap = 2
-        fl = osu.getFileList(self.theTN, key=".4D") #osu.getFileList(fold=self.slow_data_path)
+        fl = osu.get_file_list(self.theTN, key=".4D") #osu.getFileList(fold=self.slow_data_path)
         nfile = len(fl)
         npoints = int(nfile / gap)
         tt = self._abs_tilt_analysis(self.theTN, key=".4D") #self._abs_tilt_analysis(self.slow_data_path, key=".fits")
@@ -412,7 +412,7 @@ class SystemMonitoring:
         for i in range(0, npoints):
             q0 = osu.read_phasemap(fl[i * gap])
             q1 = osu.read_phasemap(fl[i * gap + 1])
-            diff = zern.removeZernike(q1 - q0)
+            diff = zern.remove_zernike(q1 - q0)
             slist.append(diff.std())
         svec = np.array(slist)
         mean = np.mean(svec)
@@ -435,7 +435,7 @@ class SystemMonitoring:
         tt : list
             List of tip-tilt coefficients for each phasemap in the input path.
         """
-        fl = osu.getFileList(path, key=key)
+        fl = osu.get_file_list(path, key=key)
         nf = len(fl)
         tt = np.zeros([nf, 2])
         for i in range(0, nf):
@@ -480,7 +480,7 @@ class SystemMonitoring:
         """
         Reads and loads the current interferometer settings.
         """
-        self.freq = self.interf.getFrameRate()
+        self.freq = self.interf.get_frame_rate()
         self.cam_info = self.interf.getCameraSettings()
 
     def __clear_data_folder(self, path):
@@ -500,7 +500,7 @@ class SystemMonitoring:
         Updates the interferometer settings with the monitoring acquisition
         configuration file, found in 'm4.configuration.userconfig'.
         """
-        self.interf.loadConfiguration(uc.phasecam_monitorconfig)
+        self.interf.load_configuration(uc.phasecam_monitorconfig)
         print("Monitoring interferometer configuration loaded.")
 
     def __load_default_config(self):

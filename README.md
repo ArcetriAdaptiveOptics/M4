@@ -4,35 +4,35 @@ Software per la calibrazione dello specchio deformabile M4
 
 ## Installare il pacchetto M4 da github
 Per installarlo potendo modificarne il contenuto:
-- git clone https://github.com/ChiaraSelmi/M4.git
+- git clone https://github.com/ArcetriAdaptiveOptics/M4.git
 - cd M4
-- python setup.py install
+- pip install -e .
 
-Per installarlo senza accesso al contenuto:
-- pip install git+https://github.com/ChiaraSelmi/M4.git
+Nota: installare in modalita' editable (`-e`). I certificati OPC-UA (`m4/devices/*.der`, `*.pem`) non fanno parte del pacchetto installato: vengono letti dalla cartella dei sorgenti, e in loro assenza `import m4` termina con errore.
+
+Dipendenze opzionali (extras): `pip install -e ".[gui,sound,test,docs]"`.
+
+Il pacchetto `opticalib` non e' su PyPI e va installato da github:
+- pip install git+https://github.com/pietroferraiuolo/labott.git
 
 Per scaricare i cambiamenti presenti su github:
 - git pull origin master
 
-## Start up
-- Aprire python (ipython --pylab) ed eseguire:
-  - from m4.configuration import start
-  - ott, interf, dm = start.create_ott('/....../M4/Data/SYSCONFData/Config.yaml')
+Il codice non piu' in uso si trova in `deprecated/` (vedi [deprecated/README.md](deprecated/README.md)); non viene installato.
 
-    NOTA: file di configurazione da modificare all'occorrenza inserendo:
-    - base_path: '/....../M4/Data'
-    - simulated_interf: True or False
-    - simulated_dm: True or False
-    - simulated_accelerometers: True or False
-    - simulated_angleRotator: True or False
-    - simulated_m4Exapode: True or False
-    - simulated_parSlider: True or False
-    - simulated_par: True or False
-    - simulated_rmSlider: True or False
-    - simulated_rm: True or False
-    - simulated_tempSensors: True or False
-  - from m4 import main
-  - main.start_log(logging_level) NOTA: ritorna il cammino del file di log
+## Start up
+Il file di configurazione di `opticalib` viene letto dalla variabile d'ambiente `AOCONF`.
+- Da terminale:
+  - calpy -f <cartella esperimento> --create : crea cartelle e file di configurazione (`SysConfig/configuration.yaml`) e apre ipython
+  - calpy -f <cartella esperimento> : apre ipython con la configurazione caricata
+  - calpy -h : mostra tutte le opzioni
+  - m4gui -f <cartella esperimento> : apre la GUI
+- Nella shell aperta con `calpy`, eseguire:
+  - import m4
+  - from m4 import create_ott
+
+    NOTA: all'import, `m4` aggiunge al file di configurazione la sezione `SYSTEM: simulated.devices` (solo i flag mancanti, impostati a True), con un flag per ciascun dispositivo:
+    - dm, interferometer, accelerometers, angleRotator, m4Exapode, dp, parSlider, par, rmSlider, rm, tempSensors: True (simulato) or False
 
 Leggere [How_to_use_it.md](https://github.com/ChiaraSelmi/M4/blob/master/How_to_use_it.md) per l'utilizzo di tutte le funzioni specifiche.
 

@@ -3,16 +3,10 @@
 		{
 			"name": "M4",
 			"path": "."
-		},
-		{
-			"path": "../opticalib"
 		}
 	],
 	"settings": {
 		"python.analysis.extraPaths": [
-			"~/git/opticalib/"
-		],
-		"cursorpyright.analysis.extraPaths": [
 			"~/git/opticalib/"
 		],
 		"dotnet.preferCSharpExtension": true,

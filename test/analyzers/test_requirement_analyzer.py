@@ -6,7 +6,7 @@ import unittest
 import os
 from m4.analyzers import requirement_analyzer as req_check
 from test.helper_test_library import testDataRootDir
-from m4.ground import read_data
+from opticalib.ground import osutils as read_data  # m4.ground.read_data was removed
 
 class TestRequirementAnalyzer(unittest.TestCase):
 

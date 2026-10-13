@@ -17,7 +17,7 @@ from m4.ground import read_ottcalib_conf as roc
 import m4.utils.parabola_footprint_registration as pr
 from m4.utils.parabola_identification import ParabolaActivities
 
-zern = md.ZernikeFitter() # this is a guess, MM260121
+# Zernike removal: md.ZernikeFitter(img).remove_zernike(img, modes) fits on the image's own pupil; fresh instance per call, no shared state (verified)
 
 pa = ParabolaActivities()
 pfr = pr.ParabolaFootprintRegistration()
@@ -142,8 +142,8 @@ def register_par(tnconf, show=False, forder=10):
         view_markers(cghf, ottf)
     cgh_tra = par_remap(cgh_image, ott_image, cghf, ottf, forder=forder)
     cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
-    cgh_tra = zern.removeZernike(cgh_tra, [1, 2, 3, 4])
-    ott_image = zern.removeZernike(ott_image, [1, 2, 3, 4])
+    cgh_tra = md.ZernikeFitter(cgh_tra).remove_zernike(cgh_tra, [1, 2, 3, 4])
+    ott_image = md.ZernikeFitter(ott_image).remove_zernike(ott_image, [1, 2, 3, 4])
     # tn = save_registration(cgh_tra,cgh_tn_img,cgh_tn_marker,ott_tn_marker)
     tn = save_registration(cgh_tra, tnconf)
     return cgh_tra, ott_image, tn
@@ -222,8 +222,8 @@ def par_remap_only(cgh_image, cghf, ottf, forder=10):
 def ott_remap(cgh_tra, ott_image):
     mask = ott_image.mask
     par_on_ott = np.ma.masked_array(cgh_tra.data, mask)
-    par_on_ott = zern.removeZernike(par_on_ott, [1, 2, 3, 4])
-    ott_image = zern.removeZernike(ott_image, [1, 2, 3, 4])
+    par_on_ott = md.ZernikeFitter(par_on_ott).remove_zernike(par_on_ott, [1, 2, 3, 4])
+    ott_image = md.ZernikeFitter(ott_image).remove_zernike(ott_image, [1, 2, 3, 4])
     return par_on_ott, ott_image
 
 
@@ -315,8 +315,8 @@ def register_par_only(tnconf, show=False, forder=10):
 
     cgh_tra = par_remap(cgh_image, ott_image, cghf, ottf, forder=forder)
     cgh_tra = np.ma.masked_array(cgh_tra.data, cgh_tra == 0)
-    cgh_tra = zern.removeZernike(cgh_tra, [1, 2, 3, 4])
-    ott_image = zern.removeZernike(ott_image, [1, 2, 3, 4])
+    cgh_tra = md.ZernikeFitter(cgh_tra).remove_zernike(cgh_tra, [1, 2, 3, 4])
+    ott_image = md.ZernikeFitter(ott_image).remove_zernike(ott_image, [1, 2, 3, 4])
     # tn = save_registration(cgh_tra,cgh_tn_img,cgh_tn_marker,ott_tn_marker)
     tn = save_registration(cgh_tra, tnconf)
     return cgh_tra, ott_image, tn
@@ -359,13 +359,13 @@ def load_registeredPar(tn, zlist=[1, 2, 3, 4]):
     img = hdu[0].data
     mask = hdu[1].data
     imgout = np.ma.masked_array(img, mask)
-    imgout = zern.removeZernike(imgout, zlist)
+    imgout = md.ZernikeFitter(imgout).remove_zernike(imgout, zlist)
     return imgout
 
 
 def load_ott(tn, zlist=[1, 2, 3, 4]):
     imgout = image_data(tn)
-    imgout = zern.removeZernike(imgout, zlist)
+    imgout = md.ZernikeFitter(imgout).remove_zernike(imgout, zlist)
     return imgout
 
 
@@ -389,7 +389,7 @@ def ott_calib(
     # par = zern.removeZernike(par, zlist) #if the par is distorted, better not fitting zernike...
     ott = load_ott(tnott)
     # ott = zern.removeZernike(ott,zlist)
-    ott = zern.removeZernikeAuxMask(ott, mm, zlist)
+    ott = md.ZernikeFitter(fit_mask=mm == 0).remove_zernike(ott, zlist)
 
     if filtfreq is not None:
         par = th.comp_filtered_image(
@@ -397,11 +397,11 @@ def ott_calib(
         )
     par = image_remask(par, ott)
     # par = zern.removeZernike(par, zlist)
-    par = zern.removeZernikeAuxMask(par, mm, zlist)
+    par = md.ZernikeFitter(fit_mask=mm == 0).remove_zernike(par, zlist)
 
     res = ott - 2 * par
     # res = zern.removeZernike(res, zlist)
-    res = zern.removeZernikeAuxMask(res, mm, zlist)
+    res = md.ZernikeFitter(fit_mask=mm == 0).remove_zernike(res, zlist)
 
     view_calibration(ott, par, res, vm=50e-9, crpar=crpar)
 
@@ -451,11 +451,11 @@ def view_subplots(imgott, imgpar, imgres, crpar=None, vm=50e-9, nopsd=0):
         y = crpar[1]
         c = crpar[2]
         oc = imgott[x : x + c, y : y + c]
-        oc = zern.removeZernike(oc, [1, 2, 3])
+        oc = md.ZernikeFitter(oc).remove_zernike(oc, [1, 2, 3])
         pc = 2 * imgpar[x : x + c, y : y + c]
-        pc = zern.removeZernike(pc, [1, 2, 3])
+        pc = md.ZernikeFitter(pc).remove_zernike(pc, [1, 2, 3])
         rc = imgres[x : x + c, y : y + c]
-        rc = zern.removeZernike(rc, [1, 2, 3])
+        rc = md.ZernikeFitter(rc).remove_zernike(rc, [1, 2, 3])
     else:
         oc = imgott.copy()
         pc = 2 * imgpar
@@ -505,7 +505,7 @@ def thresh_image(img1, threshold, zlist=[1, 2, 3, 4], inrad=0, out=0, crop=False
     """
     # if mask_cen != 0:
     #    img = mask_center(img,mask_cen)
-    img = zern.removeZernike(img1, zlist)
+    img = md.ZernikeFitter(img1).remove_zernike(img1, zlist)
     idx = np.where(abs(img) > threshold)
     img.mask[idx] = True
     if inrad != 0:

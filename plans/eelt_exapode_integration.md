@@ -167,7 +167,7 @@ the attribute and property names stay `_m4Exapode` / `m4Exapode` unchanged.
 No change needed: `"m4Exapode"` is already in the devices list and defaults. The config
 key `m4Exapode` continues to gate between `FakeM4Exapode` and the new real `M4Exapode`.
 
-### 5. EDIT — `__init_scripts__/pyott.py`
+### 5. EDIT — `m4/__init_scripts__/pyott.py`
 
 No change needed for the same reason — `m4Exapode` key is already present.
 

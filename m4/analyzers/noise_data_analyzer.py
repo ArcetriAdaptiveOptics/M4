@@ -8,10 +8,22 @@ import logging
 import numpy as np
 from astropy.io import fits as pyfits
 from m4.configuration.root import folders as fn
-from opticalib.ground import osutils as osu
+from opticalib.ground import osutils as osu, modal_decomposer as _md
 from m4.configuration.ott_parameters import Interferometer
 from m4.gui._guiAPI.legacy_iff import AnalyzerIFF
-from opticalib.ground import modal_decomposer as zernike
+
+
+def _fit_and_detrend(image, modes):
+    """
+    Fit the Zernike `modes` on the image's own pupil and subtract them.
+
+    Returns the fitted coefficients (Noll-normalised on the image pupil) and
+    the detrended image.
+    """
+    zf = _md.ZernikeFitter(image)
+    coef, mat = zf.fit(image, modes)
+    sur = zf.make_surface(modes, image, coeffs=coef, mat=mat)
+    return coef, image - sur
 
 
 def createFolderToStoreMeasurements():
@@ -181,9 +193,7 @@ class Noise:
         ptv_list = []
         for i in range(cube_to_process.shape[2]):
             image = cube_to_process[:, :, i]
-            coef, mat = zernike.zernikeFit(image, np.array([1, 2, 3]))
-            sur = zernike.zernikeSurface(image, coef, mat)
-            image_ttr = image - sur
+            coef, image_ttr = _fit_and_detrend(image, [1, 2, 3])
             ptv = np.max(image_ttr) - np.min(image_ttr)
             ptv_list.append(ptv)
             rms = image_ttr.std()
@@ -227,7 +237,7 @@ class Noise:
             print(name)
             # file_name = os.path.join(data_file_path, name)
             start_image = osu.read_phasemap(lista[i])
-            coef, _ = zernike.zernikeFit(start_image, np.array([2, 3]))
+            coef, _ = _md.ZernikeFitter(start_image).fit(start_image, [2, 3])
             coef_tip_list.append(coef[1])
             coef_tilt_list.append(coef[0])
         tip = np.array(coef_tip_list)
@@ -461,9 +471,9 @@ class Noise:
                     image_dist = osu.load_fits(lista[k + dist])
 
                 image_diff = image_k - image_dist
-                zernike_coeff_array, mat = zernike.zernikeFit(image_diff, zv)
-                sur = zernike.zernikeSurface(image_diff, zernike_coeff_array, mat)
-                image_ttr = image_diff - sur
+                zernike_coeff_array, image_ttr = _fit_and_detrend(
+                    image_diff, list(zv)
+                )
                 quad = np.sqrt(
                     zernike_coeff_array[0] ** 2 + zernike_coeff_array[1] ** 2
                 )
@@ -511,9 +521,7 @@ class Noise:
             # name = 'img_%04d' %j
             # file_name = os.path.join(data_file_path, name)
             image = image = osu.read_phasemap(lista[j])
-            zernike_coeff_array, mat = zernike.zernikeFit(image, np.array([2, 3]))
-            sur = zernike.zernikeSurface(image, zernike_coeff_array, mat)
-            image_ttr = image - sur
+            _, image_ttr = _fit_and_detrend(image, [2, 3])
             mean = image_ttr.mean()
             mean_list.append(mean)
 
@@ -545,7 +553,7 @@ class Noise:
             # name = 'img_%04d.h5' %j
             # file_name = os.path.join(data_file_path, name)
             image = image = osu.read_phasemap(lista[j])
-            coeff, mat = zernike.zernikeFit(image, np.array([1, 2, 3]))
+            coeff, _ = _md.ZernikeFitter(image).fit(image, [1, 2, 3])
 
             tt_list.append(coeff)
 
@@ -583,9 +591,9 @@ class Noise:
             List of data obtained through the file path.
 
         """
-        lista = osu.getFileList(fold=data_file_path, key=".h5")
+        lista = osu.get_file_list(fold=data_file_path, key=".h5")
         if len(lista) == 0:
-            lista = osu.getFileList(fold=data_file_path, key=".4D")
+            lista = osu.get_file_list(fold=data_file_path, key=".4D")
             if len(lista) == 0:
-                lista = osu.getFileList(fold=data_file_path, key=".fits")
+                lista = osu.get_file_list(fold=data_file_path, key=".fits")
         return lista
