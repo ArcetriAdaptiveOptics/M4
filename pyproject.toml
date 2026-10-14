@@ -26,18 +26,12 @@ dependencies = [
     "opticalib>=2.2.0",
     "numpy",
     "scipy",
-    "astropy",
-    "matplotlib",
     "h5py",
     "pandas",
-    "scikit-image>=0.19",
-    "arte",
-    "tqdm",
     "tabulate",
     "opcua",
     "cryptography",
     "pyzmq",
-    "ruamel.yaml",
 ]
 
 [project.urls]
