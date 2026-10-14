@@ -18,7 +18,8 @@ from m4.ground import read_ottcalib_conf as roc
 import m4.utils.parabola_footprint_registration as pr
 from m4.utils.parabola_identification import ParabolaActivities
 from m4 import userscripts as usr  #temporary, we need intoFullFrame
-# Zernike removal: md.ZernikeFitter(img).remove_zernike(img, modes) fits on the image's own pupil; fresh instance per call, no shared state (verified)
+from m4.utils import markers as mrk
+zern = md.ZernikeFitter() # this is a guess, MM260121
 
 pa = ParabolaActivities()
 pfr = pr.ParabolaFootprintRegistration()
@@ -124,8 +125,11 @@ def marker_data(tn_marker, mark_list, diam, flip=False):
         print("flipping the frame")
     '''
     off_marker = (opticalib.get_camera_settings(tn_marker))[2:4]
-
-    p0 = getMarkers(tn_marker, flip, diam)
+    if tn_marker == 'AUTO':
+        tn_marker = osu.list_tn('OPDSeries')[-1] #replace with Markers folders
+        p0 = getMarkers_from_intensity(tn_marker,flip)
+    else:
+        p0 = getMarkers(tn_marker, flip, diam)
     p0 = coord2ottcoord(p0, off_marker)
     if mark_list is not None:
         p0 = p0[:, mark_list]
@@ -181,6 +185,7 @@ def getMarkers(tn, flip=False, diam=24, thr=0.2):
     npix = 3.14 * (diam / 2) ** 2
     fl = osu.get_file_list(tn, key='20')
     nf = len(fl)
+    #qui correggere il ciclo for: perchè 25???
     pos = np.zeros([2, 25, nf])
     for j in range(nf):
         img = th.frame(j, fl)
@@ -196,6 +201,17 @@ def getMarkers(tn, flip=False, diam=24, thr=0.2):
     pos = np.average(pos, 2)
     return pos
 
+def getMarkers_from_intensity(tn):
+    fl = osu.get_file_list(tn, key='20')
+    nf = len(fl)
+    mpos = []
+    for i in nf:
+        img = opticalib.read_phasemap(i)
+        mpos.append(mrk.findMarkers(img))
+    mpos = np.array(mpos)
+    mpos = np.mean(mpos, 0)
+    #flip??? maybe already included in the coord swap in markers.findMarkers
+    return mpos
 
 def coord2ottcoord(vec1, off, flipOffset=True):
     off1 = off.copy()
