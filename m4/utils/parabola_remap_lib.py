@@ -126,7 +126,7 @@ def marker_data(tn_marker, mark_list, diam, flip=False):
     '''
     off_marker = (opticalib.get_camera_settings(tn_marker))[2:4]
     if tn_marker == 'AUTO':
-        tn_marker = osu.list_tn('OPDSeries')[-1] #replace with Markers folders
+        tn_marker = osu.list_tn('Markers')[-1] #replace with Markers folders
         p0 = getMarkers_from_intensity(tn_marker,flip)
     else:
         p0 = getMarkers(tn_marker, flip, diam)
@@ -202,14 +202,19 @@ def getMarkers(tn, flip=False, diam=24, thr=0.2):
     return pos
 
 def getMarkers_from_intensity(tn):
-    fl = osu.get_file_list(tn, key='20')
-    nf = len(fl)
+    fl = osu.get_file_list(tn, key='fringes')
+    '''
+    inf = len(fl)
     mpos = []
-    for i in nf:
+    for i in fl:
         img = opticalib.read_phasemap(i)
         mpos.append(mrk.findMarkers(img))
     mpos = np.array(mpos)
     mpos = np.mean(mpos, 0)
+    '''
+    img = opticalib.read_phasemap(i)
+    mpos =mrk.findMarkers(img)
+
     #flip??? maybe already included in the coord swap in markers.findMarkers
     return mpos
 
