@@ -84,7 +84,10 @@ def init_data(tnconf):
     ) = read_init_data(tnconf)
     cghf = marker_data(cgh_tn_marker, mark_cgh_list, marksizecgh, flip=True)
     # here modified
-    ntn = len(ott_tn_marker)
+    if type(ott_tn_marker) == str:
+        ntn = 0
+    else:
+        ntn = len(ott_tn_marker)
     if ntn > 1:
         print("Multi Tracknum")
         nlen = []
@@ -99,7 +102,7 @@ def init_data(tnconf):
             )
             pos = pos + nlen[i]
     else:
-        ottf = marker_data(ott_tn_marker[0], mark_ott_list, marksizeott, flip=False)
+        ottf = marker_data(ott_tn_marker, mark_ott_list, marksizeott, flip=False)  #was ott_tn_marker[0]  modRB20261015
     cgh_image = image_data(cgh_tn_img, flip=True)
     ott_image = image_data(ott_tn_img, flip=False)
     filtering_info = [f0, f1, px_ott]
@@ -124,26 +127,29 @@ def marker_data(tn_marker, mark_list, diam, flip=False):
         img0 = np.fliplr(img0)
         print("flipping the frame")
     '''
-    off_marker = (opticalib.get_camera_settings(tn_marker))[2:4]
     if tn_marker == 'AUTO':
         tn_marker = osu.list_tn('Markers')[-1] #replace with Markers folders
-        p0 = getMarkers_from_intensity(tn_marker,flip)
+        p0 = getMarkers_from_intensity(tn_marker)  #flip removed  modRB20261015
     else:
         p0 = getMarkers(tn_marker, flip, diam)
+    off_marker = (opticalib.get_camera_settings(tn_marker))[2:4]
     p0 = coord2ottcoord(p0, off_marker)
     if mark_list is not None:
         p0 = p0[:, mark_list]
     return p0
 
 def image_data(tn_img, flip=False):
-    path = foldname.OPD_SERIES_ROOT_FOLDER + "/"
-    fname = path + tn_img + "/average.fits"
-    img = opticalib.read_phasemap(fname)
-    if flip is True:
-        img = np.fliplr(img)
-    conf = opticalib.get_camera_settings(tn_img)
-    offs = conf[2:4]
-    img = usr.into_full_frame(img, offs)
+    if tn_img != '':
+        path = foldname.OPD_SERIES_ROOT_FOLDER + "/"
+        fname = path + tn_img + "/average.fits"
+        img = opticalib.read_phasemap(fname)
+        if flip is True:
+            img = np.fliplr(img)
+        conf = opticalib.get_camera_settings(tn_img)
+        offs = conf[2:4]
+        img = usr.into_full_frame(img, offs)
+    else:
+        img = 0
     return img
 
 
@@ -212,9 +218,17 @@ def getMarkers_from_intensity(tn):
     mpos = np.array(mpos)
     mpos = np.mean(mpos, 0)
     '''
-    img = opticalib.read_phasemap(i)
-    mpos =mrk.findMarkers(img)
-
+    if type(fl) == str:
+        img = opticalib.read_phasemap(fl)
+        mpos =mrk.findMarkers(img)
+    else:
+        mpos = []
+        for i in fl:
+            img = opticalib.read_phasemap(i)
+            mpos.append(mrk.findMarkers(img))
+        mpos = np.array(mpos)
+        mpos = np.mean(mpos, 0)
+    
     #flip??? maybe already included in the coord swap in markers.findMarkers
     return mpos
 

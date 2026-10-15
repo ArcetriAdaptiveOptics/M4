@@ -56,6 +56,7 @@ def acquireMarkersData(interf, markersconfig = None):
     os.mkdir(fold)
     interf.save_phasemap(fold, phasemapname, q)
     interf.save_phasemap(fold, fringesname, ima)
+    interf.copy_4d_setting(fold)
     print(tn)
     return tn
 
@@ -100,7 +101,7 @@ def loadMarkersData(tn):
     return img
 
 
-def findMarkers(img, surfthresh=0.6):
+def findMarkers(img, surfthresh=0.65):
     """
     This function find the markers in a detector image. The frame is supposed to be masked with a markers mask (individual mask diameters larger than actual markers size)
     Parameters

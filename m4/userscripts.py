@@ -110,14 +110,14 @@ def userconfig_info():
             print(t, '  --> ', a.get(t))
 
 def get_4Doffset(tn):
-    sett = opticalib.get_camera_settings(tn)
-    offs = sett[2:4]
-    #camsett =  opticalib.get_file_list(tn,key = 'Setting')
-    ##if len(camsett) == 0:
-        ##camsett =  opt.get_file_list(tnlist[i],key = '4DSett')
-    #getconfig.read(camsett)
-    #offx = int(float(getconfig['ACA2440']['OffsetX']))
-    #offy = int(float(getconfig['ACA2440']['OffsetY']))
+    #sett = opticalib.get_camera_settings(tn)
+    #offs = sett[2:4]
+    camsett =  opticalib.get_file_list(tn,key = 'Setting')
+    if len(camsett) == 0:
+        camsett =  opt.get_file_list(tnlist[i],key = '4DSett')
+    getconfig.read(camsett)
+    offx = int(float(getconfig['ACA2440']['OffsetX']))
+    offy = int(float(getconfig['ACA2440']['OffsetY']))
     return offs
             
    
@@ -642,7 +642,9 @@ class MeasurementScripts:
         #to be decided:
         #acquire marker
         #run parabola_remap_lib.register_par(regconf)
-        pass
+        mrk.acquireMarkersData(self._interf, markerconfig=None)
+        par = imgreg.register_parabola2ott(regconf,forder=6)
+        return par
 
     def acquireCurrentFootprint(self):
         c0 = mrk.measureMarkerPos(None, self._interf)
