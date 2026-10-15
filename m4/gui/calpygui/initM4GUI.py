@@ -18,4 +18,7 @@ if _m4_dir not in _sys.path:
     _sys.path.append(_m4_dir)
 
 del _os, _sys, _m4_dir
-print("M4 environment loaded: use the 'OTT user scripts' procedure to set up the OTT.")
+print(
+    "M4 environment loaded:\n"
+    "Use the 'OTT user scripts' procedure to set up the OTT."
+)
