@@ -21,6 +21,7 @@ from __future__ import annotations
 import logging as _logging
 import struct as _struct
 import time as _time
+from contextlib import contextmanager as _ctm
 
 import numpy as _np
 import zmq as _zmq
@@ -213,12 +214,24 @@ class M4Hexapode:
 
         self._pub.bind(f"tcp://*:{self.pub_port}")
 
-    def close(self) -> None:
-        self._sub.close(linger=0)
-        self._pub.close(linger=0)
-        self._context.term()
-
     def getPosition(self) -> _np.ndarray:
+        """
+        Gets the hexapod absolute actuators position. The returned position array
+        is composed as:
+        
+        ```python
+            (tx, ty, tz, rx, ry, rz)
+        ```
+        
+        where Translation (tx,ty,tz) is in millimeters and Rotation (rx,ry,rz)
+        in arcseconds.
+
+        Returns
+        -------
+        position: ArrayLike
+            The current position of the hexapod actuators after sending the 
+            command.
+        """
         latest = None
         while True:
             try:
@@ -236,12 +249,17 @@ class M4Hexapode:
 
         return self._position.copy()
 
-    def setPosition(self, absolute_position) -> _np.ndarray:
+    def setPosition(self, absolute_position: _np.ndarray) -> _np.ndarray:
         """
         Set the hexapod absolute actuators position. The command is composed as:
-        (tx, ty, tz, rx, ry, rz), where Translation is in millimeters and 
-        Rotation in arcseconds.
-        
+
+        ```python
+            (tx, ty, tz, rx, ry, rz)
+        ```
+
+        where Translation (tx,ty,tz) is in millimeters and Rotation (rx,ry,rz)
+        in arcseconds.
+
         Parameters
         ----------
         absolute_position: ArrayLike
@@ -249,7 +267,7 @@ class M4Hexapode:
             or array of six values corresponding to (tx, ty, tz, rx, ry, rz). 
             Translation values should be in millimeters and rotation values in 
             arcseconds.
-        
+
         Returns
         -------
         position: ArrayLike
@@ -263,20 +281,50 @@ class M4Hexapode:
         self._send_command("ks:hp:setpoint_dof", payload)
         return self.getPosition()
 
-    def getPositionInM(self) -> _np.ndarray:
-        return self.getPosition() * 1e-3
+    # def getPositionInM(self) -> _np.ndarray:
+    #     return self.getPosition() * 1e-3
 
-    def setPositionInM(self, absolute_position_in_m) -> _np.ndarray:
-        return self.setPosition(_as_position(absolute_position_in_m, name="absolute_position_in_m") * 1e3) * 1e-3
+    # def setPositionInM(self, absolute_position_in_m) -> _np.ndarray:
+    #     """Set position with iunput in meters in meters."""
+    #     return self.setPosition(
+    #         _as_position(
+    #             absolute_position_in_m, name="absolute_position_in_m"
+    #         ) * 1e3) * 1e-3
+
+    @_ctm
+    def loopEnabled(self):
+        """
+        Context manager for loop enabled state.
+        
+        It switches the loop ON while in the context and switches it back OFF on
+        exit.
+        """
+        try:
+            self.setLoopEnabled(True)
+            yield
+        except Exception as ex:
+            raise ex
+        finally:
+            self.setLoopEnabled(False)
 
     def setLoopEnabled(self, enabled: bool) -> None:
         self._send_command("ks:hp:loop", _encode_bool(1, enabled))
 
+    def acknowledgeError(self) -> None:
+        """Acknowledges any hexapod error."""
+        self._send_command("ks:acknowledge_error", _encode_bool(1, False))
+
     def stop(self) -> None:
+        """Halts the hexapod motion."""
         self._send_command("ks:hp:stop_motion", _encode_bool(1, False))
 
-    def acknowledgeError(self) -> None:
-        self._send_command("ks:acknowledge_error", _encode_bool(1, False))
+    def close(self) -> None:
+        """
+        Close the sockets and context to both the subscriber and publisher.
+        """
+        self._sub.close(linger=0)
+        self._pub.close(linger=0)
+        self._context.term()
 
     def _send_command(self, topic: str, payload: bytes) -> None:
         topic_hash = _TOPIC_HASHES[topic]
