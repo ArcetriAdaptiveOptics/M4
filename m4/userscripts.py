@@ -761,8 +761,8 @@ class M4Scripts:
     def iffProcess(tn):
         self.ifp.process(tn, save = True, rebin=myconfiffproc["rebinfactor"])
 
-    def iffSingleSegmentProcess(tnlist, remove_mean = True, remove_median = False):
-        self.ifp.process(tn, save = True, rebin=myconfiffproc["rebinfactor"])
+    def iffSingleSegmentProcess(self, tnlist, remove_mean = True, remove_median = False):
+        self.ifp.process(tnlist, save = True, rebin=myconfiffproc["rebinfactor"])
         tnout = []
         for i in tnlist:
             tnout.append(self.ifp.cubeRoiProcessing(i, activeRoiId = myconfiffproc["segmentRoiID"],fitting_mask = self._fitting_mask, tt_detrend=True, mean_subtraction=remove_mean, roinull=True, median_subtraction = remove_median))
