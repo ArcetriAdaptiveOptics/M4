@@ -136,12 +136,16 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
     if config["m4Exapode"] is True:
         m4 = FakeM4Exapode()
     else:
-        m4 = M4Hexapode(
-            sub_ip=_ExapodePar.sub_ip,
-            sub_port=_ExapodePar.sub_port,
-            pub_port=_ExapodePar.pub_port,
-            filter_version=_ExapodePar.filter_version,
-        )
+        try:
+            m4 = M4Hexapode(
+                sub_ip=_ExapodePar.sub_ip,
+                sub_port=_ExapodePar.sub_port,
+                pub_port=_ExapodePar.pub_port,
+                filter_version=_ExapodePar.filter_version,
+            )
+        except Exception as e:
+            print(f"M4 Hexapode unavailable: '{e}'")
+            m4 = None
 
     ##########
     # Others #
