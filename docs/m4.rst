@@ -60,6 +60,14 @@ m4.requirements\_checker module
     :show-inheritance:
 
 
+m4.spl module
+-------------
+
+.. automodule:: m4.spl
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 m4.SPL\_controller module
 -------------------------
 

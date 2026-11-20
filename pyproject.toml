@@ -22,8 +22,10 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    # snake_case API (get_iff_config, find_tracknum, ...) requires >= 2.2.0
-    "opticalib>=2.2.0",
+    # snake_case API (get_iff_config, find_tracknum, ...) requires >= 2.2.0;
+    # m4.spl (SPLChain) needs the generalized SPL API (datapath, _read_filter_mode,
+    # _analyze_datapath, ...) introduced in 2.5.5
+    "opticalib>=2.5.5",
     "numpy",
     "scipy",
     "h5py",
