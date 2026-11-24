@@ -13,7 +13,7 @@ try:
 except ImportError:
     IFFunctionsMaker = None
 from m4.configuration.ott import create_ott
-from m4.simulator.fake_interferometer import FakeInterferometer
+from deprecated.m4.simulator.fake_interferometer import FakeInterferometer
 # Note: m4.utils.optical_calibration.OpticalCalibration has been removed.
 # The functionality has been moved to opticalib.alignment.Alignment.
 # These tests are kept for reference but need to be rewritten to use the new API.
@@ -22,7 +22,7 @@ try:
 except ImportError:
     OpticalCalibration = None
 from m4.configuration.ott import OTT as ottobj
-from m4.simulator.fake_deformable_mirror import FakeM4DM
+from deprecated.m4.simulator.fake_deformable_mirror import FakeM4DM
 from m4.utils.optical_alignment import OpticalAlignment
 from unittest.mock import patch, MagicMock
 

@@ -79,7 +79,7 @@ class TestInfluenceFunctionsMaker(unittest.TestCase):
     @patch('numpy.load', autospec=True)
     def _createInterferometer(self, mock_rd, mock_load):
         from m4.configuration.ott import create_ott
-        from m4.simulator.fake_interferometer import FakeInterferometer
+        from deprecated.m4.simulator.fake_interferometer import FakeInterferometer
         ott, interf, dm = create_ott()#os.path.join(testDataRootDir(), 'base', 'Configurations', 'testConf.yaml'))
         self.assertIsInstance(interf, FakeInterferometer)
         return interf

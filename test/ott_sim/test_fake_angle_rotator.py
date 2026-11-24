@@ -3,7 +3,7 @@ Authors
   - C. Selmi: written in 2021
 '''
 import unittest
-from m4.simulator.fake_angle_rotator import FakeAngleRotator
+from deprecated.m4.simulator.fake_angle_rotator import FakeAngleRotator
 #from m4.devices.base_angle_rotator import BaseAngleRotator
 
 

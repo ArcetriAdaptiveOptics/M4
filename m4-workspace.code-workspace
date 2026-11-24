@@ -6,7 +6,7 @@
 		},
 		{
 			"name": "Opticalib",
-			"path": "../opticalib/"
+			"path": "../opticalib"
 		}
 	],
 	"settings": {

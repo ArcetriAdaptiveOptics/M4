@@ -5,7 +5,7 @@ Authors
 import unittest
 import numpy as np
 from numpy import testing
-from m4.simulator.fake_parabola import FakeParabola
+from deprecated.m4.simulator.fake_parabola import FakeParabola
 
 class TestFakeReferenceMirror(unittest.TestCase):
 

@@ -35,8 +35,8 @@ class TestCalc(unittest.TestCase):
     @patch('numpy.load', autospec=True)
     def _createOttAndInterf(self, mock_rd, mock_load):
         from m4.configuration.ott import create_ott
-        from m4.simulator.fake_parabola_slider import FakeParabolaSlider
-        from m4.simulator.fake_interferometer import FakeInterferometer
+        from deprecated.m4.simulator.fake_parabola_slider import FakeParabolaSlider
+        from deprecated.m4.simulator.fake_interferometer import FakeInterferometer
         ott, interf, dm = create_ott()
         self.assertIsInstance(ott.parabolaSlider, FakeParabolaSlider)
         self.assertIsInstance(interf, FakeInterferometer)

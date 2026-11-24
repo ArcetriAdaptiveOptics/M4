@@ -17,6 +17,7 @@ try:
         "accelerometers",
         "angleRotator",
         "m4Exapode",
+        "m4NySwitch",
         "dp",
         "parSlider",
         "par",
@@ -54,7 +55,7 @@ finally:
         globals().pop(_n, None)
 
 
-from m4.configuration.ott import create_ott
+from m4.devices.ott import create_ott
 from .alignment import OttAligner
 
 __all__ = [

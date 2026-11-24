@@ -6,7 +6,7 @@ Authors
 import os
 import unittest
 from unittest.mock import patch
-from m4.simulator.fake_accelerometers import FakeAccelerometers
+from deprecated.m4.simulator.fake_accelerometers import FakeAccelerometers
 from test.helper_test_library import testDataRootDir
 
 

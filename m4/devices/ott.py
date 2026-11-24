@@ -4,6 +4,7 @@ Author(s)
 - Chiara Selmi: written in 2020
                 modified in 2022
 - Pietro Ferraiuolo: modified in 2024
+                     modified in 2026
 
 Description
 -----------
@@ -25,46 +26,48 @@ How to Use it
 ```python
 import m4
 ott, dm, interf = m4.create_ott()
+```
+
 """
 
-import os
 try:
-    import playsound
+    import playsound # type: ignore
 except:
     print("Playsound not installed, I'll be quiet...")
-from m4.devices.dp_motors import ZmqDpMotors
-from m4.devices.parabola import OpcUaParabola
-from m4.devices.eelt_exapode import M4Hexapode
-from m4.configuration.ott_parameters import EeltExapodeParameters as _ExapodePar
-from m4.simulator.fake_parabola import FakeParabola
-from m4.configuration.ott_parameters import Sound
-from m4.simulator.fake_m4_exapode import FakeM4Exapode
-from m4.devices.angle_rotator import OpcUaAngleRotator
-from m4.devices.accelerometers import ZmqAccelerometers
-from m4.devices.opc_ua_controller import OpcUaController
-from m4.simulator.fake_deformable_mirror import FakeM4DM
-from m4.simulator.fake_angle_rotator import FakeAngleRotator
-from m4.devices.parabola_slider import OpcUaParabolaSlider
-from m4.devices.reference_mirror import OpcUaReferenceMirror
-from m4.simulator.fake_accelerometers import FakeAccelerometers
-from m4.simulator.fake_interferometer import FakeInterferometer
-from m4.simulator.fake_parabola_slider import FakeParabolaSlider
-from m4.simulator.fake_reference_mirror import FakeReferenceMirror
-from m4.devices.temperature_sensors import OpcUaTemperatureSensors
-from m4.simulator.fake_temperature_sensors import FakeTemperatureSensors
-from m4.devices.reference_mirror_slider import OpcUaReferenceMirrorSlider
-from m4.simulator.fake_reference_mirror_slider import FakeReferenceMirrorSlider
-from opticalib.core.config import load_yaml_config
+
+from . import OpcUaController
+from opticalib.core.config import load_yaml_config as _lyc
+from ..configuration.ott_parameters import (
+    EeltExapodeParameters as _ExapodePar,
+    Sound as _sound
+)
+
+# ------------------------------------------------ #
+#   Check if we are running on the M4 development  #
+#      platform and set up logging accordingly     #
+# ------------------------------------------------ #
+import os
 wsname = os.uname()[1]
-if wsname == 'm4dp':
+if wsname == 'm4dp': #TODO: right now the MICWS is `fedora` - need a custom name
     import Microgate.utils.setupLog as setupLog # type: ignore
     setupLog.consoleProfile()
+
+del wsname
  
 
-def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object, object, object]:
+def create_ott(
+    *, no_dm: bool = False, no_interf: bool = False
+) -> tuple[object, object, object]:
     """
     This function creates and initialize the OTT, creating all the devices, fake
     or real, accordingly to what specified in the .yaml configuration file.
+
+    Parameters
+    ----------
+    no_dm: bool, optional
+        If True, the Deformable Mirror will not be created, by default False
+    no_interf: bool, optional
+        If True, the Interferometer will not be created, by default False
 
     Returns
     -------
@@ -73,56 +76,71 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
         - the Parabola actuators and slider
         - the Reference Mirror actuators and slider
         - the Angle Rotator
-        - M4's Exapode (or DP motors)
+        - M4's Exapode (or DP motors) and Nyasmith Switcher
         - Temperature Sensors
         - Accelerometers
     dm: object
-        The Deformable Mirror (if available)
+        The M4 Deformable Mirror (if available)
     interf: object
-        The Interferometer (if available)
+        The 4D PhaseCam6110 Interferometer (if available)
     """
-    config = load_yaml_config()["SYSTEM"]["simulated.devices"]
+    config = _lyc()["SYSTEM"]["simulated.devices"]
 
-    ###########
-    # Sliders #
-    ###########
+    # ------------------ #
+    #       Sliders      #
+    # ------------------ #
 
     # Parabola Slider
     if config["parSlider"] is True:
-        parabola_slider = FakeParabolaSlider()
+        from ..simulator import ParabolaSlider
+        parabola_slider = ParabolaSlider
     else:
+        from . import OpcUaParabolaSlider
+
         opcUa = OpcUaController()
         parabola_slider = OpcUaParabolaSlider(opcUa)
 
     # Reference Mirror Slider
     if config["rmSlider"] is True:
-        reference_mirror_slider = FakeReferenceMirrorSlider()
+        from ..simulator import ReferenceMirrorSlider
+        reference_mirror_slider = ReferenceMirrorSlider
     else:
+        from . import OpcUaReferenceMirrorSlider
+
         opcUa = OpcUaController()
         reference_mirror_slider = OpcUaReferenceMirrorSlider(opcUa)
 
     # Rotator
     if config["angleRotator"] is True:
-        angle_rotator = FakeAngleRotator()
+        from ..simulator import AngleRotator
+        angle_rotator = AngleRotator
     else:
+        from . import OpcUaAngleRotator
+
         opcUa = OpcUaController()
         angle_rotator = OpcUaAngleRotator(opcUa)
 
-    #############
-    # alignment #
-    #############
+    # ---------------------- #
+    #   Alignment Controls   #
+    # ---------------------- #
 
     # Parabola
     if config["par"] is True:
-        parab = FakeParabola()
+        from ..simulator import Parabola
+        parab = Parabola
     else:
+        from . import OpcUaParabola
+
         opcUa = OpcUaController()
         parab = OpcUaParabola(opcUa)
 
     # Reference Mirror
     if config["rm"] is True:
-        reference_mirror = FakeReferenceMirror()
+        from ..simulator import ReferenceMirror
+        reference_mirror = ReferenceMirror
     else:
+        from . import OpcUaReferenceMirror
+
         opcUa = OpcUaController()
         reference_mirror = OpcUaReferenceMirror(opcUa)
 
@@ -130,14 +148,19 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
     if config["dp"] is True:
         dp = None
     else:
+        from . import ZmqDpMotors
+
         dp = ZmqDpMotors()
 
     # M4
     if config["m4Exapode"] is True:
-        m4 = FakeM4Exapode()
+        from ..simulator import M4Exapode
+        m4hp = M4Exapode
     else:
         try:
-            m4 = M4Hexapode(
+            from ..simulator import M4Hexapode
+
+            m4hp = M4Hexapode(
                 sub_ip=_ExapodePar.sub_ip,
                 sub_port=_ExapodePar.sub_port,
                 pub_port=_ExapodePar.pub_port,
@@ -145,21 +168,44 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
             )
         except Exception as e:
             print(f"M4 Hexapode unavailable: '{e}'")
-            m4 = None
+            m4hp = None
 
-    ##########
-    # Others #
-    ##########
+    if config["m4NySwitch"] is True:
+        from ..simulator import M4NyasmithSwitcher
+        m4sm = M4NyasmithSwitcher
+    else:
+        from . import NyasmithSwitcher
+
+        if config['m4Exapode'] is False:
+            m4sm = NyasmithSwitcher.fromHexapode(m4hp)
+        else:
+            m4sm = NyasmithSwitcher(
+                sub_ip=_ExapodePar.sub_ip,
+                sub_port=_ExapodePar.sub_port,
+                pub_port=_ExapodePar.pub_port,
+                filter_version=_ExapodePar.filter_version,
+            )
+
+
+    # ------------------ #
+    #       Others       #
+    # ------------------ #
 
     # Temperature Sensors and Accelerometers
     if config["accelerometers"] is True:
-        accelerometers = FakeAccelerometers()
+        from ..simulator import Accelerometer
+        accelerometers = Accelerometer
     else:
+        from . import ZmqAccelerometers
+
         accelerometers = ZmqAccelerometers()
 
     if config["tempSensors"] is True:
-        temperature_sensor = FakeTemperatureSensors()
+        from ..simulator import TemperatureSensor
+        temperature_sensor = TemperatureSensor
     else:
+        from . import OpcUaTemperatureSensors
+
         opcUa = OpcUaController()
         temperature_sensor = OpcUaTemperatureSensors(opcUa)
 
@@ -170,22 +216,27 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
         angle_rotator,
         parab,
         reference_mirror,
-        m4,
+        m4hp,
+        m4sm,
         dp,
         temperature_sensor,
         accelerometers,
     )
 
-    if Sound.PLAY is True:
-        playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, "ott-ini.mp3"))
-        playsound.playsound(os.path.join(Sound.AUDIO_FILE_PATH, "ott-conf.mp3"))
+    if _sound.PLAY is True:
+        playsound.playsound(os.path.join(_sound.AUDIO_FILE_PATH, "ott-ini.mp3"))
+        playsound.playsound(os.path.join(_sound.AUDIO_FILE_PATH, "ott-conf.mp3"))
 
     out = [ott]
 
+    # ------------------ #
+    #        DM          #
+    # ------------------ #
     if not no_dm:
         try:
             if config["dm"] is True:
-                dm = FakeM4DM()
+                from ..simulator import M4AU
+                dm = M4AU
             else:
                 from opticalib.devices import DP
     
@@ -196,9 +247,13 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
 
         out.append(dm)
 
+    # ------------------ #
+    #   Interferometer   #
+    # ------------------ #
     if not no_interf:
         if config["interferometer"] is True:
-            interf = FakeInterferometer(ott, dm)
+            from ..simulator import PhaseCam
+            interf = PhaseCam
         else:
             from opticalib import PhaseCam
             
@@ -209,6 +264,7 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
             interf = PhaseCam(model)
 
         out.append(interf)
+
     par0 = ott.parabolaSlider.getPosition()
     rm0  = ott.referenceMirrorSlider.getPosition()
     if par0 == 0:
@@ -217,7 +273,8 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
         print('Reference Mirror carriage not homed!')
     
     if len(out)==1:
-        return out[0] 
+        return out[0]
+
     return out
 
 
@@ -230,7 +287,8 @@ class OTT:
         angle_rotator: object,
         parabola: object,
         reference_mirror: object,
-        m4: object,
+        m4hp: object,
+        m4sm: object,
         dp: object,
         temperature_sensor: object,
         accelerometers: object,
@@ -242,7 +300,8 @@ class OTT:
         self._parabola = parabola
         self._reference_mirror = reference_mirror
         self._dp = dp if dp is not None else "DP not available"
-        self._m4Exapode = m4
+        self._m4Exapode = m4hp
+        self._m4NySwitch = m4sm
         self._pt = temperature_sensor
         self._acc = accelerometers
 
@@ -275,6 +334,10 @@ class OTT:
     @property
     def m4Exapode(self):
         return self._m4Exapode
+
+    @property
+    def m4Switcher(self):
+        return self._m4NySwitch
 
     # Other
     @property

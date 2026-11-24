@@ -9,7 +9,7 @@ import time
 import logging
 import numpy as np
 from opticalib.analyzer import mode_rebinner
-from m4.simulator.ott_images import OttImages
+from deprecated.m4.simulator.ott_images import OttImages
 
 
 class FakeInterferometer:

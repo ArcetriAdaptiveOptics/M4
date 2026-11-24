@@ -3,7 +3,7 @@ Authors
   - C. Selmi: written in 2021
 '''
 import unittest
-from m4.simulator.fake_temperature_sensors import FakeTemperatureSensors
+from deprecated.m4.simulator.fake_temperature_sensors import FakeTemperatureSensors
 
 class TestFakeTemperatureSensor(unittest.TestCase):
 

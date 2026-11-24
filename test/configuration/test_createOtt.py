@@ -5,17 +5,17 @@ Authors
 
 import unittest
 import numpy as np
-from m4.simulator.fake_parabola_slider import FakeParabolaSlider
-from m4.simulator.fake_reference_mirror_slider import FakeReferenceMirrorSlider
-from m4.simulator.fake_angle_rotator import FakeAngleRotator
-from m4.simulator.fake_parabola import FakeParabola
-from m4.simulator.fake_reference_mirror import FakeReferenceMirror
-from m4.simulator.fake_m4_exapode import FakeM4Exapode
-from m4.simulator.fake_temperature_sensors import FakeTemperatureSensors
+from deprecated.m4.simulator.fake_parabola_slider import FakeParabolaSlider
+from deprecated.m4.simulator.fake_reference_mirror_slider import FakeReferenceMirrorSlider
+from deprecated.m4.simulator.fake_angle_rotator import FakeAngleRotator
+from deprecated.m4.simulator.fake_parabola import FakeParabola
+from deprecated.m4.simulator.fake_reference_mirror import FakeReferenceMirror
+from deprecated.m4.simulator.fake_m4_exapode import FakeM4Exapode
+from deprecated.m4.simulator.fake_temperature_sensors import FakeTemperatureSensors
 from m4.configuration.ott import OTT
 from numpy import testing
 from m4.configuration.ott_parameters import OpcUaParameters
-from m4.simulator.fake_accelerometers import FakeAccelerometers
+from deprecated.m4.simulator.fake_accelerometers import FakeAccelerometers
 
 
 class TestOtt(unittest.TestCase):

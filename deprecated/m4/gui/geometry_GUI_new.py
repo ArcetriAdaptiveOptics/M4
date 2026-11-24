@@ -6,7 +6,7 @@ Authors
 import sys
 import time
 import numpy as np
-from m4.simulator.ott_images import OttImages
+from deprecated.m4.simulator.ott_images import OttImages
 from guietta import Gui, G, MA, _, ___, III, HB
 from m4.ground.package_data import data_root_dir
 
