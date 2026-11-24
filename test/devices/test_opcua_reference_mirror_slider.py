@@ -14,19 +14,18 @@ class TestOpcReferenceMirrorSlider(TestCase):
         self.rslide = OpcUaReferenceMirrorSlider(self.opc)
 
     def testCallsOpcOnGetPosition(self):
-        self.opc.get_position = Mock(return_value=37)
+        self.opc.get_positions = Mock(return_value=37)
         pos = self.rslide.getPosition()
-        self.opc.get_position.assert_called_once_with(OpcUaParameters.CAR)
+        self.opc.get_positions.assert_called_once_with(OpcUaParameters.CAR)
         self.assertAlmostEqual(pos, 37)
 
     def testCallsOpcOnSetPosition(self):
-        self.opc.get_position = Mock(return_value=100.14)
-        pos = self.rslide.setPosition(100.14)
-        self.opc.set_target_position.assert_called_once_with(
-            OpcUaParameters.CAR, 100.14)
-        self.opc.move_object.assert_called_once_with(OpcUaParameters.CAR)
+        self.opc.get_positions = Mock(return_value=100.14)
+        # setPosition prints the reached position and returns nothing
+        self.rslide.setPosition(100.14)
+        self.opc.set_position.assert_called_once_with(OpcUaParameters.CAR, 100.14)
         self.opc.wait_for_stop.assert_called_once_with(OpcUaParameters.CAR)
-        self.assertAlmostEqual(pos, 100.14)
+        self.opc.get_positions.assert_called_once_with(OpcUaParameters.CAR)
 
     def testMoveRelativeToCurrentPosition(self):
         self._mocked_pos = {}
@@ -36,16 +35,27 @@ class TestOpcReferenceMirrorSlider(TestCase):
 
         def side_effect_set(key, val):
             self._mocked_pos[key] = val
-            print("%s" % self._mocked_pos)
 
-        self.opc.get_position = Mock(side_effect=side_effect_get)
-        self.opc.set_target_position = Mock(side_effect=side_effect_set)
+        self.opc.get_positions = Mock(side_effect=side_effect_get)
+        self.opc.set_position = Mock(side_effect=side_effect_set)
 
         init_pos = 30
         self.rslide.setPosition(init_pos)
         curr_pos = self.rslide.getPosition()
 
         off = 19
-        fin_pos = self.rslide.setPosition(curr_pos + off)
+        self.rslide.setPosition(curr_pos + off)
+        fin_pos = self.rslide.getPosition()
 
         self.assertAlmostEqual(init_pos + off, fin_pos)
+
+    def testGetPositionInMeters(self):
+        self.opc.get_positions = Mock(return_value=2500.0)
+        self.assertAlmostEqual(self.rslide.getPositionInM(), 2.5)
+
+    def testOutOfRangeSlideRaises(self):
+        with self.assertRaises(ValueError):
+            self.rslide.setPosition(OpcUaParameters.max_r_slide + 1)
+        with self.assertRaises(ValueError):
+            self.rslide.setPosition(OpcUaParameters.min_r_slide - 1)
+        self.opc.set_position.assert_not_called()

@@ -52,7 +52,7 @@ class FakeAccelerometers:
             else:
                 signal = np.column_stack((signal, vector))
 
-        tt = newtc()
+        tt = newtn()
         name = tt + ".h5"
         final_destination = os.path.join(fold_name.ACCELEROMETERS_ROOT_FOLDER, name)
         # simulatore non rebinnato

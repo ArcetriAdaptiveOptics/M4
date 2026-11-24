@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 #from m4.gui import geometry_GUI
 
-from m4.configuration import ott
+from m4.devices.ott import create_ott
 from test.helper_test_library import testDataRootDir
 
 
@@ -24,6 +24,6 @@ class TestGui(unittest.TestCase):
             'MIRROR_System')
         mock_conf.MIRROR_FOLDER = want_mirror_root_folder
 
-        ott, interf, dm = ott.create_ott()
+        ott, dm, interf = create_ott()
         #g = GUI.Runner(ott)
         #.run()

@@ -35,24 +35,24 @@ try:
 except:
     print("Playsound not installed, I'll be quiet...")
 
-from . import OpcUaController
+# from .opc_ua_controller import OpcUaController
 from opticalib.core.config import load_yaml_config as _lyc
 from ..configuration.ott_parameters import (
     EeltExapodeParameters as _ExapodePar,
     Sound as _sound
 )
 
+_OPCUA_DEVICES = ("parSlider", "rmSlider", "angleRotator", "par", "rm", "tempSensors")
+
 # ------------------------------------------------ #
 #   Check if we are running on the M4 development  #
 #      platform and set up logging accordingly     #
 # ------------------------------------------------ #
 import os
-wsname = os.uname()[1]
-if wsname == 'm4dp': #TODO: right now the MICWS is `fedora` - need a custom name
+_wsname = os.uname()[1]
+if _wsname == 'm4dp': #TODO: right now the MICWS is `fedora` - need a custom name
     import Microgate.utils.setupLog as setupLog # type: ignore
     setupLog.consoleProfile()
-
-del wsname
  
 
 def create_ott(
@@ -86,6 +86,13 @@ def create_ott(
     """
     config = _lyc()["SYSTEM"]["simulated.devices"]
 
+#   TODO: Check if only one instance works
+
+    if any(config[d] is False for d in _OPCUA_DEVICES):
+        from .opc_ua_controller import OpcUaController
+
+        opcUa = OpcUaController()
+
     # ------------------ #
     #       Sliders      #
     # ------------------ #
@@ -93,31 +100,31 @@ def create_ott(
     # Parabola Slider
     if config["parSlider"] is True:
         from ..simulator import ParabolaSlider
-        parabola_slider = ParabolaSlider
+        parabola_slider = ParabolaSlider()
     else:
-        from . import OpcUaParabolaSlider
+        from .parabola_slider import OpcUaParabolaSlider
 
-        opcUa = OpcUaController()
+        #opcUa = OpcUaController()
         parabola_slider = OpcUaParabolaSlider(opcUa)
 
     # Reference Mirror Slider
     if config["rmSlider"] is True:
         from ..simulator import ReferenceMirrorSlider
-        reference_mirror_slider = ReferenceMirrorSlider
+        reference_mirror_slider = ReferenceMirrorSlider()
     else:
-        from . import OpcUaReferenceMirrorSlider
+        from .reference_mirror_slider import OpcUaReferenceMirrorSlider
 
-        opcUa = OpcUaController()
+        #opcUa = OpcUaController()
         reference_mirror_slider = OpcUaReferenceMirrorSlider(opcUa)
 
     # Rotator
     if config["angleRotator"] is True:
         from ..simulator import AngleRotator
-        angle_rotator = AngleRotator
+        angle_rotator = AngleRotator()
     else:
-        from . import OpcUaAngleRotator
+        from .angle_rotator import OpcUaAngleRotator
 
-        opcUa = OpcUaController()
+        #opcUa = OpcUaController()
         angle_rotator = OpcUaAngleRotator(opcUa)
 
     # ---------------------- #
@@ -127,38 +134,38 @@ def create_ott(
     # Parabola
     if config["par"] is True:
         from ..simulator import Parabola
-        parab = Parabola
+        parab = Parabola()
     else:
-        from . import OpcUaParabola
+        from .parabola import OpcUaParabola
 
-        opcUa = OpcUaController()
+        #opcUa = OpcUaController()
         parab = OpcUaParabola(opcUa)
 
     # Reference Mirror
     if config["rm"] is True:
         from ..simulator import ReferenceMirror
-        reference_mirror = ReferenceMirror
+        reference_mirror = ReferenceMirror()
     else:
-        from . import OpcUaReferenceMirror
+        from .reference_mirror import OpcUaReferenceMirror
 
-        opcUa = OpcUaController()
+        #opcUa = OpcUaController()
         reference_mirror = OpcUaReferenceMirror(opcUa)
 
     # DP
     if config["dp"] is True:
         dp = None
     else:
-        from . import ZmqDpMotors
+        from .dp_motors import ZmqDpMotors
 
         dp = ZmqDpMotors()
 
     # M4
     if config["m4Exapode"] is True:
         from ..simulator import M4Exapode
-        m4hp = M4Exapode
+        m4hp = M4Exapode()
     else:
         try:
-            from ..simulator import M4Hexapode
+            from .eelt_exapode import M4Hexapode
 
             m4hp = M4Hexapode(
                 sub_ip=_ExapodePar.sub_ip,
@@ -172,11 +179,12 @@ def create_ott(
 
     if config["m4NySwitch"] is True:
         from ..simulator import M4NyasmithSwitcher
-        m4sm = M4NyasmithSwitcher
-    else:
-        from . import NyasmithSwitcher
 
-        if config['m4Exapode'] is False:
+        m4sm = M4NyasmithSwitcher()
+    else:
+        from .eelt_exapode import NyasmithSwitcher
+
+        if config['m4Exapode'] is False and m4hp is not None:
             m4sm = NyasmithSwitcher.fromHexapode(m4hp)
         else:
             m4sm = NyasmithSwitcher(
@@ -194,19 +202,19 @@ def create_ott(
     # Temperature Sensors and Accelerometers
     if config["accelerometers"] is True:
         from ..simulator import Accelerometer
-        accelerometers = Accelerometer
+        accelerometers = Accelerometer()
     else:
-        from . import ZmqAccelerometers
+        from .accelerometers import ZmqAccelerometers
 
         accelerometers = ZmqAccelerometers()
 
     if config["tempSensors"] is True:
         from ..simulator import TemperatureSensor
-        temperature_sensor = TemperatureSensor
+        temperature_sensor = TemperatureSensor()
     else:
-        from . import OpcUaTemperatureSensors
+        from .temperature_sensors import OpcUaTemperatureSensors
 
-        opcUa = OpcUaController()
+        #opcUa = OpcUaController()
         temperature_sensor = OpcUaTemperatureSensors(opcUa)
 
     # OTT creation
@@ -236,7 +244,7 @@ def create_ott(
         try:
             if config["dm"] is True:
                 from ..simulator import M4AU
-                dm = M4AU
+                dm = M4AU()
             else:
                 from opticalib.devices import DP
     
@@ -253,11 +261,11 @@ def create_ott(
     if not no_interf:
         if config["interferometer"] is True:
             from ..simulator import PhaseCam
-            interf = PhaseCam
+            interf = PhaseCam()
         else:
             from opticalib import PhaseCam
             
-            if wsname=='m4dp':
+            if _wsname=='m4dp':
                 model = '6110_mic'
             else:
                 model = '6110'

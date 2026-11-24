@@ -26,7 +26,7 @@ MODULES = _modules()
 
 def test_modules_discovered():
     assert len(MODULES) > 10
-    assert "m4.configuration.ott" in MODULES
+    assert "m4.devices.ott" in MODULES
 
 
 def test_no_deprecated_module_is_discovered():

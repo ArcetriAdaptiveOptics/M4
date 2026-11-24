@@ -8,86 +8,62 @@ It replaces the old M4-OTT simulator, which used to be a real OTT devices simula
 Now it's used with legacy conventions to put placeholders in the OTT class when
 some devices are not available or do not need to be used.
 """
+_BASE_FNC = ("getPosition", "setPosition", "getPositionInM", "setPositionInM",
+             "acquireData", "getTemperature")
+_DM_FNC = ("get_shape", "set_shape", "upload_cmd_history", "run_cmd_history")
+_INTERF_FNC = ("acquire_map", "capture", "produce")
 
-__DEVICES_CLASSES__ = {
-    "dm": "M4AU",
-    "interferometer": "PhaseCam",
-    "accelerometers": "Accelerometer",
-    "angleRotator": "AngleRotator",
-    "m4Exapode": "M4Exapode",
-    "m4NySwitch": "M4NyasmithSwitcher",
-    "dp": "DP",
-    "parSlider": "ParabolaSlider",
-    "par": "Parabola",
-    "rmSlider": "ReferenceMirrorSlider",
-    "rm": "ReferenceMirror",
-    "tempSensors": "TemperatureSensor",
-}
-
-__BASE_PLH_FNC__ = [
-    "getPosition",
-    "setPosition",
-    "getPositionInM",
-    "setPositionInM",
-    "acquireData",
-    "getTemperature",
-]
-
-__BASE_DM_FNC__ = [
-    "get_shape",
-    "set_shape",
-    "upload_cmd_history",
-    "run_cmd_history",
-]
-
-__BASE_INTERF_FNC__ = [
-    "acquire_map",
-    "capture",
-    "produce"
-]
 
 class _BasePlaceholder:
-    def __init__(self, cls_name):
-        self.name = cls_name
+    """Stateless stand-in for an unavailable device: whitelisted calls are no-ops."""
+
+    _methods: frozenset[str] = frozenset(_BASE_FNC)
 
     def __getattr__(self, name):
-        if name in __BASE_PLH_FNC__:
-            print(f"Device is not real: {self.__repr__()}")
-            return lambda *args, **kwargs: None
-        raise AttributeError(f"{self.name} has no attribute {name}")
+        # only reached for attributes not found normally; dunders (pickle/copy
+        # probes) must raise, never be faked
+        if name.startswith("__") or name not in type(self)._methods:
+            raise AttributeError(f"{type(self).__name__} placeholder has no attribute {name!r}")
+
+        def _noop(*args, **kwargs):
+            print(f"{type(self).__name__}.{name}() called on a placeholder: no-op")
+            return None
+
+        _noop.__name__ = name
+        return _noop
 
     def __repr__(self):
-        return f"<Placeholder for {self.name}>"
+        return f"<Placeholder for {type(self).__name__}>"
 
     def __str__(self):
-        return f"{self.name}"
+        return type(self).__name__
+
 
 class _DmPlaceholder(_BasePlaceholder):
-    def __getattr__(self, name):
-        if name in __BASE_DM_FNC__:
-            print(f"Device is not real: {self.__repr__()}")
-            return lambda *args, **kwargs: None
-        raise AttributeError(f"{self.name} has no attribute {name}")
+    _methods = frozenset(_DM_FNC)
+
 
 class _InterfPlaceholder(_BasePlaceholder):
-    def __getattr__(self, name):
-        if name in __BASE_INTERF_FNC__:
-            print(f"Device is not real: {self.__repr__()}")
-            return lambda *args, **kwargs: None
-        raise AttributeError(f"{self.name} has no attribute {name}")
-
-def __getattr__(cls_name):
-    if not cls_name in __DEVICES_CLASSES__.values():
-        raise AttributeError(f"module {__name__} has no attribute {cls_name}")
-
-    match cls_name:
-        case 'M4AU':
-            placeholder_class = _DmPlaceholder
-        case 'PhaseCam':
-            placeholder_class = _InterfPlaceholder
-        case _:
-            placeholder_class = _BasePlaceholder
-    return placeholder_class(cls_name)
+    _methods = frozenset(_INTERF_FNC)
 
 
-__all__ = [str(__getattr__(x)) for x in __DEVICES_CLASSES__.values()]
+def _placeholder(name, base=_BasePlaceholder):
+    return type(name, (base,), {"__module__": __name__, "__qualname__": name})
+
+
+M4AU = _placeholder("M4AU", _DmPlaceholder)
+PhaseCam = _placeholder("PhaseCam", _InterfPlaceholder)
+Accelerometer = _placeholder("Accelerometer")
+AngleRotator = _placeholder("AngleRotator")
+M4Exapode = _placeholder("M4Exapode")
+M4NyasmithSwitcher = _placeholder("M4NyasmithSwitcher")
+DP = _placeholder("DP")
+ParabolaSlider = _placeholder("ParabolaSlider")
+Parabola = _placeholder("Parabola")
+ReferenceMirrorSlider = _placeholder("ReferenceMirrorSlider")
+ReferenceMirror = _placeholder("ReferenceMirror")
+TemperatureSensor = _placeholder("TemperatureSensor")
+
+__all__ = ["M4AU", "PhaseCam", "Accelerometer", "AngleRotator", "M4Exapode",
+           "M4NyasmithSwitcher", "DP", "ParabolaSlider", "Parabola",
+           "ReferenceMirrorSlider", "ReferenceMirror", "TemperatureSensor"]

@@ -4,29 +4,33 @@ Authors
 '''
 
 import os
+import shutil
+import tempfile
 import unittest
 from unittest.mock import patch
+
+import h5py
 from deprecated.m4.simulator.fake_accelerometers import FakeAccelerometers
-from test.helper_test_library import testDataRootDir
 
 
 class TestFakeAccelerometers(unittest.TestCase):
 
     def setUp(self):
         self.acc = FakeAccelerometers()
+        self._tmpdir = tempfile.mkdtemp()
 
     def tearDown(self):
-        os.unlink(self._fname)
+        shutil.rmtree(self._tmpdir, ignore_errors=True)
 
-    @patch('m4.simulator.fake_accelerometers.fold_name', unsafe=True)
+    @patch('deprecated.m4.simulator.fake_accelerometers.fold_name', unsafe=True)
     def testDataAcquisition(self, mock_fold_name):
-        want_acc_root_folder = os.path.join(
-            testDataRootDir(), 'base', 'M4Data',
-            'OPTData', 'AccelerometersData')
-        mock_fold_name.ACC_ROOT_FOLDER = want_acc_root_folder
+        mock_fold_name.ACCELEROMETERS_ROOT_FOLDER = self._tmpdir
 
-        tt = self.acc.acquireData()
-        name = tt + '.h5'
-        self._fname = os.path.join(want_acc_root_folder, name)
-        print("filename %s " % self._fname)
-        # TODO: test that the fname contains the correct matrix and attrs
+        tt = self.acc.acquireData(recording_seconds=1)
+        fname = os.path.join(self._tmpdir, tt + '.h5')
+
+        self.assertTrue(os.path.isfile(fname))
+        with h5py.File(fname, 'r') as hf:
+            self.assertIn('Accelerometers', hf)
+            self.assertEqual(hf['Accelerometers'].shape[0],
+                             hf.attrs['TIME'].shape[0])

@@ -4,34 +4,53 @@ Authors
 '''
 import os
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch, MagicMock
 from test.helper_test_library import testDataRootDir
 from m4.devices.accelerometers import ZmqAccelerometers
-from unittest.mock import patch
-from m4.type.accelerometers_data import AccelerometersData
+
+TT = '20210519_160814'
 
 
 class TestZmqAccelerometers(unittest.TestCase):
 
     def setUp(self):
         self.acc = ZmqAccelerometers()
-
-    @patch('m4.devices.accelerometers.fold_name', unsafe=True)
-    @patch('m4.devices.accelerometers.OpcUaParameters', unsafe=True)
-    @patch('zmq.Context', unsafe=True)
-    def testForDataAcquisition(self, mock_final_fold_name, mock_start_fold_name, zmq_mock):
-        want_acc_root_folder = os.path.join(
+        self.data_folder = os.path.join(
             testDataRootDir(), 'base', 'M4Data',
             'OPTData', 'AccelerometersData')
-        mock_final_fold_name.ACC_ROOT_FOLDER = want_acc_root_folder
-        mock_start_fold_name.accelerometers_data_folder = want_acc_root_folder
-        print(mock_start_fold_name.accelerometers_data_folder)
 
-        acc = ZmqAccelerometers()
-        #name = acc.acquireData()
+    @patch('m4.devices.accelerometers._time', MagicMock())
+    @patch('m4.devices.accelerometers._ntn', return_value=TT)
+    @patch('m4.devices.accelerometers._zmq')
+    def testForDataAcquisition(self, zmq_mock, ntn_mock):
+        # the real zmq socket is replaced: the server "replies" with one byte
+        socket = zmq_mock.Context.return_value.socket.return_value
+        socket.recv.return_value = b'0'
+        fake_params = SimpleNamespace(
+            accelerometers_server='tcp://fake:1234',
+            accelerometers_data_folder=self.data_folder)
+        fake_folders = SimpleNamespace(
+            ACCELEROMETERS_ROOT_FOLDER='/fake/root')
+        self.acc._acc = MagicMock()
 
-        tt = '20210519_160814.h5'
-        acc = AccelerometersData()
-        start = os.path.join(mock_start_fold_name.accelerometers_data_folder, tt)
-        final_destination = os.path.join(mock_final_fold_name.ACC_ROOT_FOLDER, tt)
-        #acc.convertAndSaveData(start, final_destination)
+        with patch('m4.devices.accelerometers._opcua', fake_params), \
+                patch('m4.devices.accelerometers._fn', fake_folders):
+            tt = self.acc.acquireData(3)
 
+        self.assertEqual(tt, TT)
+        socket.connect.assert_called_once_with('tcp://fake:1234')
+        socket.send_string.assert_called_once_with('START 3')
+        socket.disconnect.assert_called_once_with('tcp://fake:1234')
+        # the last file of the data folder is converted to the final place
+        self.acc._acc.convertAndSaveData.assert_called_once_with(
+            os.path.join(self.data_folder, TT + '.h5'),
+            os.path.join('/fake/root', TT + '.h5'))
+
+    @patch('m4.devices.accelerometers._time', MagicMock())
+    @patch('m4.devices.accelerometers._zmq')
+    def testNoReplyFromSocketRaises(self, zmq_mock):
+        socket = zmq_mock.Context.return_value.socket.return_value
+        socket.recv.side_effect = Exception('timeout')
+        with self.assertRaises(OSError):
+            self.acc.acquireData(1)

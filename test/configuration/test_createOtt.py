@@ -12,10 +12,11 @@ from deprecated.m4.simulator.fake_parabola import FakeParabola
 from deprecated.m4.simulator.fake_reference_mirror import FakeReferenceMirror
 from deprecated.m4.simulator.fake_m4_exapode import FakeM4Exapode
 from deprecated.m4.simulator.fake_temperature_sensors import FakeTemperatureSensors
-from m4.configuration.ott import OTT
+from m4.devices.ott import OTT
 from numpy import testing
 from m4.configuration.ott_parameters import OpcUaParameters
 from deprecated.m4.simulator.fake_accelerometers import FakeAccelerometers
+from m4 import simulator
 
 
 class TestOtt(unittest.TestCase):
@@ -27,6 +28,7 @@ class TestOtt(unittest.TestCase):
         parabola = FakeParabola()
         reference_mirror = FakeReferenceMirror()
         m4 = FakeM4Exapode()
+        self.m4sm = simulator.M4NyasmithSwitcher
         dp = None
         temperature_sensor = FakeTemperatureSensors()
         accelerometers = FakeAccelerometers()
@@ -37,6 +39,7 @@ class TestOtt(unittest.TestCase):
             parabola,
             reference_mirror,
             m4,
+            self.m4sm,
             dp,
             temperature_sensor,
             accelerometers)
@@ -64,3 +67,6 @@ class TestOtt(unittest.TestCase):
         testing.assert_allclose(self.ott.temperature.getTemperature(),
                                 np.zeros(OpcUaParameters.num_PT_sensor))
 
+    def testNySwitcherAndDp(self):
+        self.assertIs(self.ott.m4Switcher, self.m4sm)
+        self.assertEqual(self.ott.dp, "DP not available")

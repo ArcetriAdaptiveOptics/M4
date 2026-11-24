@@ -403,7 +403,7 @@ class OpcUaController:
                     self._logger.info("Type definitions loaded.")
                     self._connected = True
                 else:
-                    raise (plc_is_running)
+                    raise RuntimeError("PLC is not running.")
             yield
         finally:
             self._client.disconnect()

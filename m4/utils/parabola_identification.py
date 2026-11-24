@@ -52,7 +52,7 @@ class ParabolaActivities:
         circle_mask: numpy ndarray
             circolar mask representing the parabola (zeros for masked point)
         """
-        image_masked_central_fid = geo.draw_mask(
+        image_masked_central_fid = geo.draw_circular_pupil(
             image,
             int(image.shape[0] / 2),
             int(image.shape[1] / 2),

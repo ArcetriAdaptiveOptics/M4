@@ -4,6 +4,7 @@ Authors
 '''
 import unittest
 import os
+from types import SimpleNamespace
 from m4.analyzers.accelerometers_data_analyzer import AccelerometersDataAnalyzer
 from unittest.mock import patch
 from test.helper_test_library import testDataRootDir
@@ -17,13 +18,18 @@ class TestAccelerometersDataAnalyzer(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @patch('m4.type.accelerometers_data.fold_name', unsafe=True)
-    def testReadingAndAnalysis(self, mock_fold_name):
+    def testReadingAndAnalysis(self):
         want_acc_root_folder = os.path.join(
             testDataRootDir(), 'base', 'M4Data',
             'OPTData', 'AccelerometersData')
-        mock_fold_name.ACC_ROOT_FOLDER = want_acc_root_folder
+        fake_folders = SimpleNamespace(
+            ACCELEROMETERS_ROOT_FOLDER=want_acc_root_folder)
 
         tt = '20210519_160814'
-        self.ana = AccelerometersDataAnalyzer(tt)
+        with patch('m4.type.accelerometers_data.fold_name', fake_folders):
+            self.ana = AccelerometersDataAnalyzer(tt)
+        self.assertEqual(self.ana.tt, tt)
+        self.assertEqual(
+            self.ana._h5_file_path,
+            os.path.join(want_acc_root_folder, tt + '.h5'))
         #self.ana.readAndShow()

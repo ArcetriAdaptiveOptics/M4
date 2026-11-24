@@ -1,14 +1,16 @@
+from astropy import config
+
 from m4.configuration.root import folders
 
 import os as _os
 import tempfile as _tempfile
 
-from ruamel.yaml import YAML as _YAML
+from opticalib.core.config import (
+    load_yaml_config as _lyc,
+    dump_yaml_config as _dyc,
+)
 
-_gyml = _YAML()
-
-with open(folders.CONFIGURATION_FILE, "r") as f:
-    config = _gyml.load(f)
+config = _lyc(folders.CONFIGURATION_FILE)
 
 try:
     devices = [
@@ -41,7 +43,7 @@ try:
                 mode="w",
             ) as _tmp:
                 _tmp_path = _tmp.name
-                _gyml.dump(config, _tmp)
+                _dyc(config, _tmp)
             # keep the original file permissions (NamedTemporaryFile is 0600)
             _os.chmod(_tmp_path, _os.stat(folders.CONFIGURATION_FILE).st_mode & 0o7777)
             _os.replace(_tmp_path, folders.CONFIGURATION_FILE)
@@ -51,7 +53,10 @@ try:
             raise
         print("Updated configuration file with OTT Devices Settings.")
 finally:
-    for _n in ("config", "_YAML", "_gyml", "f", "devices", "device", "_system", "_simdev", "_missing", "_n", "_os", "_tempfile", "_tmp", "_tmp_path"):
+    for _n in (
+        "config", "_lyc", "_dyc", "f", "devices", "device", "_system",
+        "_simdev", "_missing", "_n", "_os", "_tempfile", "_tmp", "_tmp_path"
+    ):
         globals().pop(_n, None)
 
 

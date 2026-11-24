@@ -77,7 +77,6 @@ def test_pytest_testpaths(cfg):
 DIST = {
     "zmq": "pyzmq",
     "skimage": "scikit-image",
-    "ruamel": "ruamel.yaml",
     "yaml": "pyyaml",
     "serial": "pyserial",
     "playsound": "playsound",
