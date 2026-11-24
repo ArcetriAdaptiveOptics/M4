@@ -3,6 +3,10 @@
 		{
 			"name": "M4",
 			"path": "."
+		},
+		{
+			"name": "Opticalib",
+			"path": "../opticalib/"
 		}
 	],
 	"settings": {

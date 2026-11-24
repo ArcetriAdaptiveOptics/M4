@@ -39,7 +39,7 @@ def main() -> None:
         config_path = _resolve_experiment(args.config)
         os.environ["AOCONF"] = config_path
 
-    from m4.gui.calpygui import launch_gui
+    from .calpygui import launch_gui
 
     launch_gui(config_path)
 

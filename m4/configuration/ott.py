@@ -216,6 +216,8 @@ def create_ott(*, no_dm: bool = False, no_interf: bool = False) -> tuple[object,
     if rm0 == 0:
         print('Reference Mirror carriage not homed!')
     
+    if len(out)==1:
+        return out[0] 
     return out
 
 

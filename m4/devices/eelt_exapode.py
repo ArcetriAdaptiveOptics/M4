@@ -33,7 +33,7 @@ _WIRE_64BIT = 1
 _WIRE_LENGTH_DELIMITED = 2
 _WIRE_32BIT = 5
 
-_DEFAULT_FILTER_VERSION = 17
+_DEFAULT_FILTER_VERSION = 0 # 17
 
 _TOPIC_HASHES = {
     "ks:hp:mirror_pos": 1904128233,
@@ -214,6 +214,7 @@ class M4Hexapode:
 
         self._pub.bind(f"tcp://*:{self.pub_port}")
 
+
     def getPosition(self) -> _np.ndarray:
         """
         Gets the hexapod absolute actuators position. The returned position array
@@ -240,6 +241,7 @@ class M4Hexapode:
                 break
 
         if latest is None:
+            _logger.warning("No mirror_pos sample received. Reading last stored value.")
             return self._position.copy()
 
         try:
