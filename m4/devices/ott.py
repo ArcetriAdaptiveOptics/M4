@@ -49,11 +49,11 @@ _OPCUA_DEVICES = ("parSlider", "rmSlider", "angleRotator", "par", "rm", "tempSen
 #      platform and set up logging accordingly     #
 # ------------------------------------------------ #
 import os
-_wsname = os.uname()[1]
-if _wsname == 'm4dp': #TODO: right now the MICWS is `fedora` - need a custom name
+_wsname = os.getlogin()
+if _wsname == 'optdev': #TODO: right now the MICWS is `fedora` - need a custom name
     import Microgate.utils.setupLog as setupLog # type: ignore
     setupLog.consoleProfile()
- 
+
 
 def create_ott(
     *, no_dm: bool = False, no_interf: bool = False
@@ -246,9 +246,9 @@ def create_ott(
                 from ..simulator import M4AU
                 dm = M4AU()
             else:
-                from opticalib.devices import DP
+                from opticalib.devices import M4AU
     
-                dm = DP()
+                dm = M4AU()
         except Exception as e:
             print(f"'{e}'")
             dm = None
